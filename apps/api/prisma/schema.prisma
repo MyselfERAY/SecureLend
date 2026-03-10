@@ -1,0 +1,438 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id              String            @id @default(uuid()) @db.Uuid
+  tcknHash        String            @map("tckn_hash") @db.VarChar(128)
+  tcknMasked      String            @map("tckn_masked") @db.VarChar(13)
+  status          ApplicationStatus @default(PENDING)
+  creditLimit     Decimal?          @map("credit_limit") @db.Decimal(12, 2)
+  interestRate    Decimal?          @map("interest_rate") @db.Decimal(5, 2)
+  rejectionReason String?           @map("rejection_reason") @db.VarChar(500)
+  kkbScore        Int?              @map("kkb_score")
+  kpsVerified     Boolean           @default(false) @map("kps_verified")
+  ipAddress       String?           @map("ip_address") @db.VarChar(45)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  userId          String?           @map("user_id") @db.Uuid
+  user            User?             @relation(fields: [userId], references: [id])
+  contracts       Contract[]
+
+  @@index([tcknHash], map: "idx_application_tckn_hash")
+  @@index([status], map: "idx_application_status")
+  @@index([userId], map: "idx_application_user")
+  @@index([createdAt], map: "idx_application_created_at")
+  @@map("applications")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String   @map("entity_type") @db.VarChar(50)
+  entityId   String?  @map("entity_id") @db.Uuid
+  tcknMasked String?  @map("tckn_masked") @db.VarChar(13)
+  metadata   Json?
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at")
+  userId     String?  @map("user_id") @db.Uuid
+
+  @@index([entityType, entityId], map: "idx_audit_entity")
+  @@index([userId], map: "idx_audit_user")
+  @@index([createdAt], map: "idx_audit_created_at")
+  @@map("audit_logs")
+}
+
+model User {
+  id                String              @id @default(uuid()) @db.Uuid
+  tcknHash          String              @unique @map("tckn_hash") @db.VarChar(128)
+  tcknMasked        String              @map("tckn_masked") @db.VarChar(13)
+  fullName          String              @map("full_name") @db.VarChar(200)
+  phone             String              @db.VarChar(20)
+  phoneVerified     Boolean             @default(false) @map("phone_verified")
+  email             String?             @db.VarChar(255)
+  dateOfBirth       DateTime?           @map("date_of_birth") @db.Date
+  address           String?             @db.VarChar(500)
+  roles             UserRole[]          @default([])
+  kycStatus         KycStatus           @default(PENDING) @map("kyc_status")
+  kpsVerified       Boolean             @default(false) @map("kps_verified")
+  isActive          Boolean             @default(true) @map("is_active")
+  lastLoginAt       DateTime?           @map("last_login_at")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  applications      Application[]
+  bankAccounts      BankAccount[]
+  signatures        ContractSignature[]
+  landlordContracts Contract[]          @relation("ContractLandlord")
+  tenantContracts   Contract[]          @relation("ContractTenant")
+  kmhApplications   KmhApplication[]
+  otpCodes          OtpCode[]
+  ownedProperties   Property[]          @relation("PropertyOwner")
+  refreshTokens     RefreshToken[]
+
+  @@index([tcknHash], map: "idx_user_tckn_hash")
+  @@index([phone], map: "idx_user_phone")
+  @@index([kycStatus], map: "idx_user_kyc_status")
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash") @db.VarChar(128)
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  userAgent String?   @map("user_agent") @db.VarChar(500)
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash], map: "idx_refresh_token_hash")
+  @@index([userId], map: "idx_refresh_token_user")
+  @@index([expiresAt], map: "idx_refresh_token_expires")
+  @@map("refresh_tokens")
+}
+
+model OtpCode {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String?   @map("user_id") @db.Uuid
+  phone       String    @db.VarChar(20)
+  code        String    @db.VarChar(6)
+  purpose     String    @db.VarChar(50)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3) @map("max_attempts")
+  expiresAt   DateTime  @map("expires_at")
+  verifiedAt  DateTime? @map("verified_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone, purpose], map: "idx_otp_phone_purpose")
+  @@index([expiresAt], map: "idx_otp_expires")
+  @@map("otp_codes")
+}
+
+model KmhApplication {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String               @map("user_id") @db.Uuid
+  employmentStatus    EmploymentStatus     @map("employment_status")
+  monthlyIncome       Decimal              @map("monthly_income") @db.Decimal(12, 2)
+  employerName        String?              @map("employer_name") @db.VarChar(200)
+  residentialAddress  String               @map("residential_address") @db.VarChar(500)
+  estimatedRent       Decimal              @map("estimated_rent") @db.Decimal(12, 2)
+  status              KmhApplicationStatus @default(PENDING)
+  approvedLimit       Decimal?             @map("approved_limit") @db.Decimal(12, 2)
+  rejectionReason     String?              @map("rejection_reason") @db.VarChar(500)
+  bankReferenceNo     String?              @map("bank_reference_no") @db.VarChar(50)
+  onboardingCompleted Boolean              @default(false) @map("onboarding_completed")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at")
+  bankAccount         BankAccount?
+  user                User                 @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId], map: "idx_kmh_app_user")
+  @@index([status], map: "idx_kmh_app_status")
+  @@map("kmh_applications")
+}
+
+model Property {
+  id            String         @id @default(uuid()) @db.Uuid
+  ownerId       String         @map("owner_id") @db.Uuid
+  title         String         @db.VarChar(200)
+  addressLine1  String         @map("address_line_1") @db.VarChar(300)
+  addressLine2  String?        @map("address_line_2") @db.VarChar(300)
+  city          String         @db.VarChar(100)
+  district      String         @db.VarChar(100)
+  postalCode    String?        @map("postal_code") @db.VarChar(10)
+  propertyType  String         @map("property_type") @db.VarChar(50)
+  roomCount     String?        @map("room_count") @db.VarChar(10)
+  areaM2        Decimal?       @map("area_m2") @db.Decimal(8, 2)
+  floor         Int?
+  totalFloors   Int?           @map("total_floors")
+  monthlyRent   Decimal        @map("monthly_rent") @db.Decimal(12, 2)
+  depositAmount Decimal?       @map("deposit_amount") @db.Decimal(12, 2)
+  currency      String         @default("TRY") @db.VarChar(3)
+  description   String?
+  status        PropertyStatus @default(ACTIVE)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  contracts     Contract[]
+  owner         User           @relation("PropertyOwner", fields: [ownerId], references: [id])
+
+  @@index([ownerId], map: "idx_property_owner")
+  @@index([city, district], map: "idx_property_location")
+  @@index([status], map: "idx_property_status")
+  @@index([monthlyRent], map: "idx_property_rent")
+  @@map("properties")
+}
+
+model Contract {
+  id                String              @id @default(uuid()) @db.Uuid
+  propertyId        String              @map("property_id") @db.Uuid
+  tenantId          String              @map("tenant_id") @db.Uuid
+  landlordId        String              @map("landlord_id") @db.Uuid
+  applicationId     String?             @map("application_id") @db.Uuid
+  status            ContractStatus      @default(DRAFT)
+  monthlyRent       Decimal             @map("monthly_rent") @db.Decimal(12, 2)
+  depositAmount     Decimal?            @map("deposit_amount") @db.Decimal(12, 2)
+  currency          String              @default("TRY") @db.VarChar(3)
+  startDate         DateTime            @map("start_date") @db.Date
+  endDate           DateTime            @map("end_date") @db.Date
+  paymentDayOfMonth Int                 @default(1) @map("payment_day_of_month")
+  terms             String?
+  specialClauses    String?             @map("special_clauses")
+  terminatedAt      DateTime?           @map("terminated_at")
+  terminationReason String?             @map("termination_reason") @db.VarChar(500)
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  landlordIban      String?             @map("landlord_iban") @db.VarChar(26)
+  bankAccounts      BankAccount[]
+  commissions       Commission[]
+  signatures        ContractSignature[]
+  application       Application?        @relation(fields: [applicationId], references: [id])
+  landlord          User                @relation("ContractLandlord", fields: [landlordId], references: [id])
+  property          Property            @relation(fields: [propertyId], references: [id])
+  tenant            User                @relation("ContractTenant", fields: [tenantId], references: [id])
+  paymentOrders     PaymentOrder[]
+  payments          PaymentSchedule[]
+
+  @@index([propertyId], map: "idx_contract_property")
+  @@index([tenantId], map: "idx_contract_tenant")
+  @@index([landlordId], map: "idx_contract_landlord")
+  @@index([status], map: "idx_contract_status")
+  @@index([startDate, endDate], map: "idx_contract_dates")
+  @@map("contracts")
+}
+
+model ContractSignature {
+  id         String   @id @default(uuid()) @db.Uuid
+  contractId String   @map("contract_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  role       UserRole
+  signedAt   DateTime @default(now()) @map("signed_at")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  userAgent  String?  @map("user_agent") @db.VarChar(500)
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([contractId, userId], name: "uq_contract_signature_user")
+  @@index([contractId], map: "idx_signature_contract")
+  @@index([userId], map: "idx_signature_user")
+  @@map("contract_signatures")
+}
+
+model PaymentSchedule {
+  id          String           @id @default(uuid()) @db.Uuid
+  contractId  String           @map("contract_id") @db.Uuid
+  dueDate     DateTime         @map("due_date") @db.Date
+  amount      Decimal          @db.Decimal(12, 2)
+  currency    String           @default("TRY") @db.VarChar(3)
+  periodLabel String           @map("period_label") @db.VarChar(50)
+  status      PaymentStatus    @default(PENDING)
+  paidAt      DateTime?        @map("paid_at")
+  paidAmount  Decimal?         @map("paid_amount") @db.Decimal(12, 2)
+  failReason  String?          @map("fail_reason") @db.VarChar(500)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  transaction BankTransaction?
+  commission  Commission?
+  contract    Contract         @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId], map: "idx_payment_schedule_contract")
+  @@index([dueDate], map: "idx_payment_schedule_due_date")
+  @@index([status], map: "idx_payment_schedule_status")
+  @@map("payment_schedules")
+}
+
+model BankAccount {
+  id                   String            @id @default(uuid()) @db.Uuid
+  userId               String            @map("user_id") @db.Uuid
+  accountNumber        String            @unique @map("account_number") @db.VarChar(26)
+  accountType          BankAccountType   @map("account_type")
+  status               BankAccountStatus @default(PENDING_OPENING)
+  balance              Decimal           @default(0) @db.Decimal(14, 2)
+  currency             String            @default("TRY") @db.VarChar(3)
+  creditLimit          Decimal?          @map("credit_limit") @db.Decimal(12, 2)
+  interestRate         Decimal?          @map("interest_rate") @db.Decimal(5, 2)
+  openedAt             DateTime?         @map("opened_at")
+  closedAt             DateTime?         @map("closed_at")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  contractId           String?           @map("contract_id") @db.Uuid
+  kmhApplicationId     String?           @unique @map("kmh_application_id") @db.Uuid
+  contract             Contract?         @relation(fields: [contractId], references: [id])
+  kmhApplication       KmhApplication?   @relation(fields: [kmhApplicationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                 User              @relation(fields: [userId], references: [id])
+  outgoingTransactions BankTransaction[] @relation("TransactionFrom")
+  incomingTransactions BankTransaction[] @relation("TransactionTo")
+  paymentOrders        PaymentOrder[]
+
+  @@index([userId], map: "idx_bank_account_user")
+  @@index([contractId], map: "idx_bank_account_contract")
+  @@index([accountNumber], map: "idx_bank_account_number")
+  @@index([status], map: "idx_bank_account_status")
+  @@map("bank_accounts")
+}
+
+model BankTransaction {
+  id                String           @id @default(uuid()) @db.Uuid
+  fromAccountId     String?          @map("from_account_id") @db.Uuid
+  toAccountId       String?          @map("to_account_id") @db.Uuid
+  paymentScheduleId String?          @unique @map("payment_schedule_id") @db.Uuid
+  amount            Decimal          @db.Decimal(12, 2)
+  currency          String           @default("TRY") @db.VarChar(3)
+  description       String?          @db.VarChar(500)
+  referenceNo       String           @unique @map("reference_no") @db.VarChar(36)
+  status            String           @db.VarChar(20)
+  processedAt       DateTime?        @map("processed_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  fromAccount       BankAccount?     @relation("TransactionFrom", fields: [fromAccountId], references: [id])
+  paymentSchedule   PaymentSchedule? @relation(fields: [paymentScheduleId], references: [id])
+  toAccount         BankAccount?     @relation("TransactionTo", fields: [toAccountId], references: [id])
+
+  @@index([fromAccountId], map: "idx_transaction_from")
+  @@index([toAccountId], map: "idx_transaction_to")
+  @@index([referenceNo], map: "idx_transaction_reference")
+  @@index([createdAt], map: "idx_transaction_created")
+  @@map("bank_transactions")
+}
+
+model PaymentOrder {
+  id                String             @id @default(uuid()) @db.Uuid
+  contractId        String             @map("contract_id") @db.Uuid
+  fromAccountId     String             @map("from_account_id") @db.Uuid
+  toIban            String             @map("to_iban") @db.VarChar(26)
+  amount            Decimal            @db.Decimal(12, 2)
+  currency          String             @default("TRY") @db.VarChar(3)
+  dayOfMonth        Int                @map("day_of_month")
+  status            PaymentOrderStatus @default(ACTIVE)
+  nextExecutionDate DateTime           @map("next_execution_date") @db.Date
+  lastExecutedAt    DateTime?          @map("last_executed_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  contract          Contract           @relation(fields: [contractId], references: [id])
+  fromAccount       BankAccount        @relation(fields: [fromAccountId], references: [id])
+
+  @@index([contractId], map: "idx_payment_order_contract")
+  @@index([fromAccountId], map: "idx_payment_order_account")
+  @@index([status, nextExecutionDate], map: "idx_payment_order_next_exec")
+  @@map("payment_orders")
+}
+
+model Commission {
+  id                String          @id @default(uuid()) @db.Uuid
+  paymentScheduleId String          @unique @map("payment_schedule_id") @db.Uuid
+  contractId        String          @map("contract_id") @db.Uuid
+  totalAmount       Decimal         @map("total_amount") @db.Decimal(12, 2)
+  commissionRate    Decimal         @map("commission_rate") @db.Decimal(5, 4)
+  commissionAmount  Decimal         @map("commission_amount") @db.Decimal(12, 2)
+  landlordAmount    Decimal         @map("landlord_amount") @db.Decimal(12, 2)
+  currency          String          @default("TRY") @db.VarChar(3)
+  createdAt         DateTime        @default(now()) @map("created_at")
+  contract          Contract        @relation(fields: [contractId], references: [id])
+  paymentSchedule   PaymentSchedule @relation(fields: [paymentScheduleId], references: [id])
+
+  @@index([contractId], map: "idx_commission_contract")
+  @@index([createdAt], map: "idx_commission_created")
+  @@map("commissions")
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("application_status")
+}
+
+enum UserRole {
+  TENANT
+  LANDLORD
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum KycStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+
+  @@map("kyc_status")
+}
+
+enum ContractStatus {
+  DRAFT
+  PENDING_SIGNATURES
+  ACTIVE
+  TERMINATED
+  EXPIRED
+
+  @@map("contract_status")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  OVERDUE
+
+  @@map("payment_status")
+}
+
+enum PaymentOrderStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  COMPLETED
+
+  @@map("payment_order_status")
+}
+
+enum BankAccountType {
+  KMH
+  STANDARD
+
+  @@map("bank_account_type")
+}
+
+enum BankAccountStatus {
+  PENDING_OPENING
+  ACTIVE
+  FROZEN
+  CLOSED
+
+  @@map("bank_account_status")
+}
+
+enum PropertyStatus {
+  ACTIVE
+  RENTED
+  INACTIVE
+
+  @@map("property_status")
+}
+
+enum EmploymentStatus {
+  EMPLOYED
+  SELF_EMPLOYED
+  RETIRED
+  STUDENT
+  UNEMPLOYED
+
+  @@map("employment_status")
+}
+
+enum KmhApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("kmh_application_status")
+}

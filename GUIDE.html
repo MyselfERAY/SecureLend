@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureLend - Gelistirici ve Kullanici Kilavuzu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --primary: #1e40af;
+    --primary-light: #3b82f6;
+    --primary-dark: #1e3a8a;
+    --accent: #f59e0b;
+    --accent-light: #fbbf24;
+    --success: #059669;
+    --success-light: #10b981;
+    --danger: #dc2626;
+    --info: #0891b2;
+    --bg-light: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-code: #1e293b;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media print {
+    body { background: white; font-size: 12px; }
+    .sidebar { display: none; }
+    .main-content { margin-left: 0; }
+    pre { white-space: pre-wrap; word-break: break-all; }
+    .section { break-inside: avoid; }
+  }
+
+  /* ===== LAYOUT ===== */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--bg-code);
+    color: white;
+    padding: 24px 0;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 0 24px;
+    margin-bottom: 32px;
+  }
+
+  .sidebar-logo h2 {
+    font-size: 20px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sidebar-logo p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+
+  .sidebar-nav a:hover {
+    color: white;
+    background: rgba(255,255,255,0.05);
+    border-left-color: var(--primary-light);
+  }
+
+  .sidebar-nav a .nav-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 16px 24px;
+  }
+
+  .sidebar-section-label {
+    padding: 0 24px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #475569;
+    font-weight: 600;
+    margin-bottom: 8px;
+    margin-top: 8px;
+  }
+
+  .main-content {
+    margin-left: 280px;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .page-header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    color: white;
+    padding: 60px 48px;
+  }
+
+  .page-header h1 {
+    font-size: 40px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+
+  .page-header .subtitle {
+    font-size: 18px;
+    opacity: 0.8;
+    font-weight: 300;
+  }
+
+  .header-badges {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .header-badge {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ===== CONTAINER ===== */
+  .container { padding: 0 48px; }
+
+  /* ===== SECTION ===== */
+  .section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .section-title .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue { background: #dbeafe; }
+  .icon-green { background: #d1fae5; }
+  .icon-amber { background: #fef3c7; }
+  .icon-red { background: #fee2e2; }
+  .icon-purple { background: #ede9fe; }
+  .icon-cyan { background: #cffafe; }
+
+  .section-title h2 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .section-title p {
+    font-size: 15px;
+    color: var(--text-secondary);
+  }
+
+  /* ===== CODE BLOCKS ===== */
+  pre {
+    background: var(--bg-code);
+    color: #e2e8f0;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 16px 0;
+    border: 1px solid #334155;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--danger);
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  .code-label {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px 6px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .code-label + pre {
+    border-top-left-radius: 0;
+    margin-top: 0;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card p, .card li {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .card ul { padding-left: 20px; }
+  .card ul li { margin-bottom: 6px; }
+
+  /* ===== GRIDS ===== */
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main-content { margin-left: 0; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .container { padding: 0 24px; }
+    .page-header { padding: 40px 24px; }
+  }
+
+  /* ===== TABLES ===== */
+  .styled-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin: 16px 0;
+    font-size: 14px;
+  }
+
+  .styled-table thead {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  }
+
+  .styled-table th {
+    color: white;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .styled-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .styled-table tr:last-child td { border-bottom: none; }
+  .styled-table tbody tr:hover { background: var(--bg-light); }
+
+  .styled-table code {
+    font-size: 12px;
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ===== BADGES ===== */
+  .method-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+  }
+
+  .method-get { background: #dbeafe; color: var(--primary); }
+  .method-post { background: #d1fae5; color: #065f46; }
+  .method-patch { background: #fef3c7; color: #92400e; }
+  .method-delete { background: #fee2e2; color: var(--danger); }
+
+  .auth-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .auth-public { background: #d1fae5; color: #065f46; }
+  .auth-jwt { background: #dbeafe; color: var(--primary); }
+  .auth-admin { background: #fee2e2; color: var(--danger); }
+  .auth-landlord { background: #fef3c7; color: #92400e; }
+
+  /* ===== STEP LIST ===== */
+  .step-list { counter-reset: steps; list-style: none; padding: 0; }
+
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+
+  .step-list li::before {
+    content: counter(steps);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-content h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .step-content p {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* ===== ALERT BOXES ===== */
+  .alert {
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+  }
+
+  .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+
+  .alert-info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0c4a6e;
+  }
+
+  .alert-warning {
+    background: #fefce8;
+    border: 1px solid #fde047;
+    color: #713f12;
+  }
+
+  .alert-danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #7f1d1d;
+  }
+
+  .alert-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #14532d;
+  }
+
+  /* ===== ENV TABLE ===== */
+  .env-table {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .env-table td {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .env-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    width: 40%;
+  }
+
+  /* ===== TREE ===== */
+  .file-tree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    line-height: 2;
+  }
+
+  .file-tree .folder { color: var(--primary); font-weight: 600; }
+  .file-tree .file { color: var(--text-secondary); }
+  .file-tree .comment { color: var(--text-muted); font-style: italic; }
+
+  /* ===== TROUBLESHOOTING ===== */
+  .trouble-item {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .trouble-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: #fefce8;
+  }
+
+  .trouble-header .trouble-icon { font-size: 20px; }
+
+  .trouble-header h4 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .trouble-body {
+    padding: 16px 20px;
+  }
+
+  .trouble-body p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .trouble-body strong { color: var(--text-primary); }
+
+  /* ===== FOOTER ===== */
+  .guide-footer {
+    background: var(--bg-code);
+    color: white;
+    padding: 40px 48px;
+    text-align: center;
+  }
+
+  .guide-footer p { opacity: 0.7; font-size: 13px; margin-top: 8px; }
+
+  /* ===== USER TABLE ===== */
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .avatar-admin { background: #fee2e2; }
+  .avatar-landlord { background: #fef3c7; }
+  .avatar-tenant { background: #dbeafe; }
+
+  .user-info h4 { font-size: 15px; font-weight: 600; }
+  .user-info .user-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .user-info .role-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .role-admin { background: #fee2e2; color: var(--danger); }
+  .role-landlord { background: #fef3c7; color: #92400e; }
+  .role-tenant { background: #dbeafe; color: var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2>&#128214; SecureLend</h2>
+    <p>Gelistirici Kilavuzu v0.1.0</p>
+  </div>
+
+  <div class="sidebar-section-label">Baslangic</div>
+  <div class="sidebar-nav">
+    <a href="#quickstart"><span class="nav-icon">&#9889;</span> Hizli Baslangic</a>
+    <a href="#setup"><span class="nav-icon">&#128736;</span> Ortam Kurulumu</a>
+    <a href="#structure"><span class="nav-icon">&#128193;</span> Proje Yapisi</a>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section-label">Teknik Kilavuz</div>
+  <div class="sidebar-nav">
+    <a href="#database"><span class="nav-icon">&#128451;</span> Veritabani</a>
+    <a href="#backend"><span class="nav-icon">&#9881;</span> Backend API</a>
+    <a href="#frontend"><span class="nav-icon">&#128421;</span> Frontend</a>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section-label">Kullanim</div>
+  <div class="sidebar-nav">
+    <a href="#userguide"><span class="nav-icon">&#128100;</span> Kullanici Islemleri</a>
+    <a href="#endpoints"><span class="nav-icon">&#128279;</span> API Referansi</a>
+    <a href="#testusers"><span class="nav-icon">&#129489;</span> Test Kullanicilari</a>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section-label">Diger</div>
+  <div class="sidebar-nav">
+    <a href="#troubleshooting"><span class="nav-icon">&#128295;</span> Sorun Giderme</a>
+    <a href="#devnotes"><span class="nav-icon">&#128221;</span> Gelistirici Notlari</a>
+  </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main-content">
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <h1>&#128214; Gelistirici &amp; Kullanici Kilavuzu</h1>
+    <p class="subtitle">SecureLend Dijital Kira Platformu - Teknik Dokumantasyon</p>
+    <div class="header-badges">
+      <span class="header-badge">&#128640; NestJS 10</span>
+      <span class="header-badge">&#9883; Next.js 15</span>
+      <span class="header-badge">&#128024; PostgreSQL 16</span>
+      <span class="header-badge">&#128230; Turborepo Monorepo</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ===== 1. HIZLI BASLANGIC ===== -->
+    <section id="quickstart" class="section">
+      <div class="section-title">
+        <div class="icon icon-green">&#9889;</div>
+        <div>
+          <h2>Hizli Baslangic</h2>
+          <p>5 adimda projeyi calistirin</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>&#128221; On Gereksinimler</h3>
+        <table class="styled-table">
+          <thead><tr><th>Arac</th><th>Minimum Surum</th><th>Kontrol</th></tr></thead>
+          <tbody>
+            <tr><td>Node.js</td><td>v18+</td><td><code>node -v</code></td></tr>
+            <tr><td>pnpm</td><td>v9.15+</td><td><code>pnpm -v</code></td></tr>
+            <tr><td>PostgreSQL</td><td>14+</td><td><code>psql --version</code></td></tr>
+            <tr><td>Docker (opsiyonel)</td><td>20+</td><td><code>docker -v</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>&#128640; Kurulum Adimlari</h3>
+        <ol class="step-list">
+          <li><div class="step-content"><h4>Projeyi Klonla</h4><pre><code>git clone &lt;repo-url&gt; securelend
+cd securelend</code></pre></div></li>
+          <li><div class="step-content"><h4>Bagimliliklari Yukle</h4><pre><code>pnpm install</code></pre></div></li>
+          <li><div class="step-content"><h4>PostgreSQL'i Baslat</h4><pre><code>docker compose up -d</code></pre></div></li>
+          <li><div class="step-content"><h4>Veritabanini Hazirla</h4><pre><code>cd apps/api
+npx prisma migrate dev
+npx prisma generate
+cd ../..</code></pre></div></li>
+          <li><div class="step-content"><h4>Uygulamayi Baslat</h4><pre><code>pnpm dev</code></pre></div></li>
+        </ol>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="text-align:center; border-top: 4px solid var(--primary);">
+          <div style="font-size:36px; margin-bottom:8px;">&#127760;</div>
+          <h3 style="justify-content:center;">Frontend</h3>
+          <code style="font-size:16px;">localhost:3000</code>
+        </div>
+        <div class="card" style="text-align:center; border-top: 4px solid var(--success);">
+          <div style="font-size:36px; margin-bottom:8px;">&#9881;&#65039;</div>
+          <h3 style="justify-content:center;">Backend</h3>
+          <code style="font-size:16px;">localhost:4000</code>
+        </div>
+        <div class="card" style="text-align:center; border-top: 4px solid var(--accent);">
+          <div style="font-size:36px; margin-bottom:8px;">&#128203;</div>
+          <h3 style="justify-content:center;">Swagger UI</h3>
+          <code style="font-size:16px;">localhost:4000/api/docs</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. ORTAM KURULUMU ===== -->
+    <section id="setup" class="section">
+      <div class="section-title">
+        <div class="icon icon-blue">&#128736;</div>
+        <div>
+          <h2>Gelistirme Ortami Kurulumu</h2>
+          <p>Veritabani, ortam degiskenleri, build islemleri</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>&#128024; Veritabani (Docker)</h3>
+          <pre><code># PostgreSQL container baslat
+docker compose up -d
+
+# Durum kontrol
+docker compose ps
+
+# Loglar
+docker compose logs -f postgres</code></pre>
+          <table class="env-table" style="margin-top:16px;">
+            <tr><td>Host</td><td>localhost</td></tr>
+            <tr><td>Port</td><td>5432</td></tr>
+            <tr><td>DB</td><td>securelend</td></tr>
+            <tr><td>User</td><td>securelend</td></tr>
+            <tr><td>Password</td><td>securelend_dev_2024</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>&#128274; Ortam Degiskenleri</h3>
+          <p style="margin-bottom:8px;"><code>apps/api/.env</code></p>
+          <pre><code>NODE_ENV=development
+PORT=4000
+
+DATABASE_URL=postgresql://securelend:
+  securelend_dev_2024@localhost:5432/
+  securelend
+
+TCKN_HASH_PEPPER=a3f8b2c1d4e5...
+
+JWT_SECRET=dev_jwt_secret_change_...
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
+
+WEB_URL=http://localhost:3000</code></pre>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>&#128736; Yararli Komutlar</h3>
+        <div class="grid-2" style="margin-top:12px;">
+          <div>
+            <p style="font-weight:600; margin-bottom:8px;">Prisma Islemleri</p>
+            <pre><code>cd apps/api
+
+# Migration olustur
+npx prisma migrate dev --name aciklama
+
+# Client yeniden olustur
+npx prisma generate
+
+# Gorsel veritabani
+npx prisma studio
+
+# DB sifirla (DIKKAT!)
+npx prisma migrate reset</code></pre>
+          </div>
+          <div>
+            <p style="font-weight:600; margin-bottom:8px;">Build &amp; Calistirma</p>
+            <pre><code># Tum projeyi derle
+pnpm build
+
+# Sadece backend
+cd apps/api
+./node_modules/.bin/tsc \
+  -p tsconfig.build.json \
+  --incremental false
+
+# Servisleri baslat
+pnpm dev</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3. PROJE YAPISI ===== -->
+    <section id="structure" class="section">
+      <div class="section-title">
+        <div class="icon icon-purple">&#128193;</div>
+        <div>
+          <h2>Proje Yapisi</h2>
+          <p>Monorepo dosya organizasyonu</p>
+        </div>
+      </div>
+
+      <div class="file-tree">
+<span class="folder">securelend/</span>
+├── <span class="folder">apps/</span>
+│   ├── <span class="folder">api/</span>                          <span class="comment"># NestJS Backend</span>
+│   │   ├── <span class="folder">prisma/</span>
+│   │   │   ├── <span class="file">schema.prisma</span>         <span class="comment"># Veritabani semasi</span>
+│   │   │   └── <span class="folder">migrations/</span>
+│   │   └── <span class="folder">src/</span>
+│   │       ├── <span class="file">main.ts</span>               <span class="comment"># Giris noktasi, CORS, Swagger</span>
+│   │       ├── <span class="file">app.module.ts</span>          <span class="comment"># Ana modul, guard'lar</span>
+│   │       ├── <span class="folder">common/</span>               <span class="comment"># Filter, interceptor</span>
+│   │       └── <span class="folder">modules/</span>
+│   │           ├── <span class="folder">auth/</span>             <span class="comment"># Kimlik dogrulama</span>
+│   │           ├── <span class="folder">user/</span>             <span class="comment"># Kullanici yonetimi</span>
+│   │           ├── <span class="folder">bank/</span>             <span class="comment"># KMH &amp; banka islemleri</span>
+│   │           ├── <span class="folder">contract/</span>         <span class="comment"># Sozlesme yonetimi</span>
+│   │           ├── <span class="folder">property/</span>         <span class="comment"># Mulk yonetimi</span>
+│   │           ├── <span class="folder">payment/</span>          <span class="comment"># Odeme islemleri</span>
+│   │           ├── <span class="folder">admin/</span>            <span class="comment"># Admin paneli</span>
+│   │           ├── <span class="folder">notification/</span>     <span class="comment"># SMS servisi</span>
+│   │           ├── <span class="folder">encryption/</span>       <span class="comment"># TCKN sifreleme</span>
+│   │           ├── <span class="folder">credit-scoring/</span>   <span class="comment"># Kredi skorlama</span>
+│   │           ├── <span class="folder">identity-verification/</span> <span class="comment"># KPS</span>
+│   │           ├── <span class="folder">prisma/</span>           <span class="comment"># DB servisi</span>
+│   │           └── <span class="folder">health/</span>           <span class="comment"># Saglik kontrolu</span>
+│   │
+│   └── <span class="folder">web/</span>                          <span class="comment"># Next.js Frontend</span>
+│       └── <span class="folder">src/</span>
+│           ├── <span class="folder">app/</span>                  <span class="comment"># App Router sayfalari</span>
+│           │   ├── <span class="folder">auth/</span>             <span class="comment"># Login, Register, OTP</span>
+│           │   └── <span class="folder">dashboard/</span>        <span class="comment"># Ana panel + admin</span>
+│           ├── <span class="folder">components/</span>           <span class="comment"># Ortak bilesenler</span>
+│           └── <span class="folder">lib/</span>
+│               ├── <span class="file">api.ts</span>            <span class="comment"># API istemcisi</span>
+│               └── <span class="file">auth-context.tsx</span>  <span class="comment"># Oturum yonetimi</span>
+│
+├── <span class="folder">packages/</span>
+│   └── <span class="folder">shared/</span>                       <span class="comment"># Paylasilan paket</span>
+│       └── <span class="folder">src/</span>
+│           ├── <span class="folder">validation/</span>           <span class="comment"># TCKN, Zod semalari</span>
+│           ├── <span class="folder">utils/</span>                <span class="comment"># Maskeleme</span>
+│           └── <span class="folder">types/</span>                <span class="comment"># JSend, Application</span>
+│
+├── <span class="file">docker-compose.yml</span>
+├── <span class="file">turbo.json</span>
+└── <span class="file">pnpm-workspace.yaml</span>
+      </div>
+    </section>
+
+    <!-- ===== 4. VERITABANI ===== -->
+    <section id="database" class="section">
+      <div class="section-title">
+        <div class="icon icon-green">&#128451;</div>
+        <div>
+          <h2>Veritabani</h2>
+          <p>13 tablo, 10 enum - PostgreSQL 16 + Prisma 6</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>&#128279; Iliski Diyagrami</h3>
+        <pre style="background: white; color: var(--text-primary); border-color: var(--border); font-size: 14px; line-height: 2;"><code><span style="color:var(--primary);font-weight:700;">User</span> (1) ────&lt; (N) <span style="color:var(--success);font-weight:700;">KmhApplication</span>
+<span style="color:var(--primary);font-weight:700;">User</span> (1) ────&lt; (N) <span style="color:var(--accent);font-weight:700;">Property</span>
+<span style="color:var(--primary);font-weight:700;">User</span> (1) ────&lt; (N) <span style="color:var(--info);font-weight:700;">BankAccount</span>
+
+<span style="color:var(--accent);font-weight:700;">Property</span> (1) ────&lt; (N) <span style="color:var(--danger);font-weight:700;">Contract</span>
+
+<span style="color:var(--danger);font-weight:700;">Contract</span> (1) ────&lt; (N) <span style="color:#7c3aed;font-weight:700;">ContractSignature</span>
+<span style="color:var(--danger);font-weight:700;">Contract</span> (1) ────&lt; (N) <span style="color:var(--success);font-weight:700;">PaymentSchedule</span>
+<span style="color:var(--danger);font-weight:700;">Contract</span> (1) ────  (1) <span style="color:var(--info);font-weight:700;">PaymentOrder</span>
+
+<span style="color:var(--info);font-weight:700;">BankAccount</span> (1) ────&lt; (N) <span style="color:var(--text-muted);font-weight:700;">BankTransaction</span>
+<span style="color:var(--success);font-weight:700;">PaymentSchedule</span> (1) ──── (1) <span style="color:var(--accent);font-weight:700;">Commission</span></code></pre>
+      </div>
+
+      <div class="card">
+        <h3>&#128204; Onemli Enum Degerleri</h3>
+        <div class="grid-2" style="margin-top: 12px;">
+          <div>
+            <p><strong>ContractStatus:</strong></p>
+            <p style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+              <span style="color:var(--text-muted);">DRAFT</span> &#8594;
+              <span style="color:var(--accent);">PENDING_SIGNATURES</span> &#8594;
+              <span style="color:var(--success);">ACTIVE</span>
+            </p>
+            <p style="margin-top:12px;"><strong>KmhApplicationStatus:</strong></p>
+            <p style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+              <span style="color:var(--accent);">PENDING</span> &#8594;
+              <span style="color:var(--success);">APPROVED</span> | <span style="color:var(--danger);">REJECTED</span>
+            </p>
+          </div>
+          <div>
+            <p><strong>PaymentStatus:</strong></p>
+            <p style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+              <span style="color:var(--text-muted);">PENDING</span> &#8594;
+              <span style="color:var(--accent);">PROCESSING</span> &#8594;
+              <span style="color:var(--success);">COMPLETED</span> | <span style="color:var(--danger);">FAILED</span>
+            </p>
+            <p style="margin-top:12px;"><strong>UserRole:</strong></p>
+            <p style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+              <span class="role-tag role-tenant">TENANT</span>
+              <span class="role-tag role-landlord">LANDLORD</span>
+              <span class="role-tag role-admin">ADMIN</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. BACKEND API ===== -->
+    <section id="backend" class="section">
+      <div class="section-title">
+        <div class="icon icon-red">&#9881;</div>
+        <div>
+          <h2>Backend API Kilavuzu</h2>
+          <p>NestJS 10, JWT Auth, JSend yanit formati</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>&#128230; JSend Yanit Formati</h3>
+        <div class="grid-3" style="margin-top: 12px;">
+          <div>
+            <span class="code-label" style="background:var(--success);">Basarili</span>
+            <pre><code>{
+  "status": "success",
+  "data": { ... }
+}</code></pre>
+          </div>
+          <div>
+            <span class="code-label" style="background:var(--accent);">Dogrulama Hatasi</span>
+            <pre><code>{
+  "status": "fail",
+  "data": {
+    "message": "...",
+    "errors": [...]
+  }
+}</code></pre>
+          </div>
+          <div>
+            <span class="code-label" style="background:var(--danger);">Sunucu Hatasi</span>
+            <pre><code>{
+  "status": "error",
+  "message": "Beklenmeyen
+  bir hata olustu"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>&#128272; Kimlik Dogrulama Akisi</h3>
+        <pre><code>1. POST /api/auth/login      { tckn, phone }       -&gt; OTP gonderilir
+2. POST /api/auth/verify-otp  { phone, code }       -&gt; { accessToken, refreshToken }
+3. Her istekte Header:  Authorization: Bearer &lt;accessToken&gt;
+4. POST /api/auth/refresh      { refreshToken }     -&gt; Yeni token cifti</code></pre>
+        <div class="alert alert-info" style="margin-top:16px;">
+          <span class="alert-icon">&#128161;</span>
+          <div><strong>Gelistirme OTP'si:</strong> Tum kullanicilar icin sabit OTP: <code>111111</code></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>&#128272; Guard &amp; Decorator Kullanimi</h3>
+        <pre><code>// Tum route'lar varsayilan olarak JWT korumasindadir
+
+@Public()                              // JWT gerektirmez
+@Roles(UserRole.ADMIN)                 // Sadece admin
+@Roles(UserRole.TENANT, UserRole.LANDLORD)  // Kiraci veya ev sahibi
+@CurrentUser() user: { id: string }    // Mevcut kullanici bilgisi</code></pre>
+      </div>
+
+      <div class="card">
+        <h3>&#128268; Abstract Service Deseni</h3>
+        <p style="margin-bottom:12px;">Dis servisler abstract sinif + mock uygulama deseni ile yonetilir:</p>
+        <pre><code>// bank.service.ts (abstract)
+export abstract class BankService {
+  abstract openKmhAccount(userId: string, ...): Promise&lt;...&gt;;
+  abstract notifyContractSigned(contractId: string, kmhAccountId?: string): Promise&lt;...&gt;;
+}
+
+// mock-bank.service.ts (gelistirme)
+export class MockBankService extends BankService {
+  async openKmhAccount(...) { /* mock */ }
+}
+
+// bank.module.ts (DI)
+providers: [
+  { provide: BankService, useClass: MockBankService },
+]</code></pre>
+      </div>
+    </section>
+
+    <!-- ===== 6. FRONTEND ===== -->
+    <section id="frontend" class="section">
+      <div class="section-title">
+        <div class="icon icon-cyan">&#128421;</div>
+        <div>
+          <h2>Frontend Kilavuzu</h2>
+          <p>Next.js 15, React 19, Tailwind CSS</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>&#128193; Sayfa Yapisi</h3>
+          <p>Next.js 15 App Router kullanilir. Her sayfa <code>'use client'</code> direktifi ile client component olarak calisir.</p>
+          <pre><code>src/app/
+├── layout.tsx        # Root layout
+├── page.tsx          # Landing
+├── auth/
+│   ├── login/
+│   ├── register/
+│   └── verify-otp/
+└── dashboard/
+    ├── layout.tsx    # Sidebar nav
+    ├── bank/
+    ├── contracts/
+    ├── payments/
+    ├── properties/
+    ├── profile/
+    └── admin/</code></pre>
+        </div>
+        <div class="card">
+          <h3>&#128279; API Istemcisi</h3>
+          <p><code>src/lib/api.ts</code> - merkezi API baglantisi:</p>
+          <pre><code>const API_URL =
+  process.env.NEXT_PUBLIC_API_URL
+  || 'http://localhost:4000';
+
+const res = await fetch(
+  `${API_URL}/api/contracts`,
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+  }
+);
+const json = await res.json();
+// json.data icinde veri</code></pre>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>&#127912; Stillendirme - Tailwind CSS</h3>
+        <div class="grid-2" style="margin-top: 12px;">
+          <div>
+            <p style="font-weight:600; margin-bottom:8px;">Renk Paleti</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <span style="background:#2563eb; color:white; padding:4px 12px; border-radius:6px; font-size:13px;">Primary blue-600</span>
+              <span style="background:#059669; color:white; padding:4px 12px; border-radius:6px; font-size:13px;">Success green-600</span>
+              <span style="background:#dc2626; color:white; padding:4px 12px; border-radius:6px; font-size:13px;">Danger red-600</span>
+              <span style="background:#d97706; color:white; padding:4px 12px; border-radius:6px; font-size:13px;">Warning yellow-600</span>
+              <span style="background:#f9fafb; color:#333; padding:4px 12px; border-radius:6px; font-size:13px; border:1px solid #e5e7eb;">Background gray-50</span>
+            </div>
+          </div>
+          <div>
+            <p style="font-weight:600; margin-bottom:8px;">Ortak Card Deseni</p>
+            <pre><code>&lt;div className="bg-white
+  shadow-md rounded-xl p-6"&gt;
+  &lt;h2 className="text-xl
+    font-bold mb-4"&gt;Baslik&lt;/h2&gt;
+&lt;/div&gt;</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 7. KULLANICI ISLEMLERI ===== -->
+    <section id="userguide" class="section">
+      <div class="section-title">
+        <div class="icon icon-amber">&#128100;</div>
+        <div>
+          <h2>Kullanici Islemleri Kilavuzu</h2>
+          <p>Adim adim kullanim rehberi</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>&#128272; Kayit &amp; Giris</h3>
+        <ol class="step-list">
+          <li><div class="step-content"><h4>Kayit</h4><p><code>/auth/register</code> - TCKN, telefon, ad-soyad, dogum tarihi, rol (Kiraci/Ev Sahibi)</p></div></li>
+          <li><div class="step-content"><h4>Giris</h4><p><code>/auth/login</code> - TCKN ve telefon numarasi ile giris</p></div></li>
+          <li><div class="step-content"><h4>OTP Dogrulama</h4><p><code>/auth/verify-otp</code> - SMS kodu girin (dev: <code>111111</code>)</p></div></li>
+          <li><div class="step-content"><h4>Dashboard</h4><p>Otomatik yonlendirme - rol bazli menu goruntulenir</p></div></li>
+        </ol>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>&#128100; Kiraci - KMH Basvurusu</h3>
+          <ol class="step-list">
+            <li><div class="step-content"><h4>Banka Sayfasi</h4><p>Dashboard > Banka &amp; KMH</p></div></li>
+            <li><div class="step-content"><h4>Formu Doldur</h4><p>Istihdam durumu, aylik gelir, tahmini kira</p></div></li>
+            <li><div class="step-content"><h4>Onay Bekle</h4><p>Kriter: Gelir &ge; Kira &times; 2</p></div></li>
+            <li><div class="step-content"><h4>Onboarding</h4><p>Dijital kimlik dogrulama</p></div></li>
+            <li><div class="step-content"><h4>KMH Hesap</h4><p>Limit: Gelir &times; 3 (max 500K TL)</p></div></li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h3>&#127968; Ev Sahibi - Sozlesme</h3>
+          <ol class="step-list">
+            <li><div class="step-content"><h4>Mulk Ekle</h4><p>Dashboard > Mulklerim > Yeni Mulk</p></div></li>
+            <li><div class="step-content"><h4>Sozlesme Olustur</h4><p>Mulk sec, kiraci TCKN, kira, IBAN</p></div></li>
+            <li><div class="step-content"><h4>Imzala (1. imza)</h4><p>Sozlesme detay sayfasi > Imzala</p></div></li>
+            <li><div class="step-content"><h4>Kiraci Imzasini Bekle</h4><p>Kiraci KMH secer ve imzalar</p></div></li>
+            <li><div class="step-content"><h4>Aktif Sozlesme</h4><p>Otomatik odeme emri olusur</p></div></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="alert alert-success" style="margin-top:16px;">
+        <span class="alert-icon">&#9989;</span>
+        <div><strong>Imza Sureci:</strong> Ev Sahibi 1. imza &#8594; Kiraci KMH secer + 2. imza &#8594; Sozlesme ACTIVE &#8594; PaymentOrder otomatik olusur</div>
+      </div>
+    </section>
+
+    <!-- ===== 8. API REFERANSI ===== -->
+    <section id="endpoints" class="section">
+      <div class="section-title">
+        <div class="icon icon-blue">&#128279;</div>
+        <div>
+          <h2>API Endpoint Referansi</h2>
+          <p>38+ RESTful endpoint</p>
+        </div>
+      </div>
+
+      <!-- Auth -->
+      <div class="card">
+        <h3>&#128272; Auth Endpoints</h3>
+        <table class="styled-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Aciklama</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/auth/register</code></td><td>Kullanici kaydi</td><td><span class="auth-badge auth-public">Public</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/auth/login</code></td><td>Giris (OTP gonderir)</td><td><span class="auth-badge auth-public">Public</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/auth/verify-otp</code></td><td>OTP dogrulama</td><td><span class="auth-badge auth-public">Public</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/auth/refresh</code></td><td>Token yenileme</td><td><span class="auth-badge auth-public">Public</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- User -->
+      <div class="card">
+        <h3>&#128100; User Endpoints</h3>
+        <table class="styled-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Aciklama</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/users/me</code></td><td>Kendi profilim</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-patch">PATCH</span></td><td><code>/api/users/me</code></td><td>Profil guncelle</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/users/:id</code></td><td>Kullanici detay</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/users/add-role</code></td><td>Rol ekle</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Property -->
+      <div class="card">
+        <h3>&#127968; Property Endpoints</h3>
+        <table class="styled-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Aciklama</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/properties</code></td><td>Mulk listele</td><td><span class="auth-badge auth-landlord">LANDLORD</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/properties</code></td><td>Mulk ekle</td><td><span class="auth-badge auth-landlord">LANDLORD</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/properties/:id</code></td><td>Mulk detay</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-patch">PATCH</span></td><td><code>/api/properties/:id</code></td><td>Mulk guncelle</td><td><span class="auth-badge auth-landlord">LANDLORD</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Contract -->
+      <div class="card">
+        <h3>&#128196; Contract Endpoints</h3>
+        <table class="styled-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Aciklama</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/contracts</code></td><td>Sozlesme listele</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/contracts</code></td><td>Sozlesme olustur</td><td><span class="auth-badge auth-landlord">LANDLORD</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/contracts/:id</code></td><td>Sozlesme detay</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/contracts/:id/sign</code></td><td>Sozlesme imzala</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/contracts/:id/terminate</code></td><td>Sozlesme feshet</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bank -->
+      <div class="card">
+        <h3>&#127974; Bank / KMH Endpoints</h3>
+        <table class="styled-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Aciklama</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/bank/kmh/apply</code></td><td>KMH basvurusu</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/bank/kmh/applications</code></td><td>Basvurularim</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/bank/kmh/applications/:id</code></td><td>Basvuru detay</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/bank/kmh/onboarding/:id</code></td><td>Onboarding</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/bank/accounts</code></td><td>Hesap listele</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/bank/accounts/:id</code></td><td>Hesap detay</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-post">POST</span></td><td><code>/api/bank/transfer</code></td><td>Transfer</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/bank/payment-orders</code></td><td>Odeme emirleri</td><td><span class="auth-badge auth-jwt">JWT</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Admin -->
+      <div class="card">
+        <h3>&#9881;&#65039; Admin Endpoints</h3>
+        <table class="styled-table">
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Aciklama</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/admin/dashboard</code></td><td>Dashboard verileri</td><td><span class="auth-badge auth-admin">ADMIN</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/admin/users</code></td><td>Tum kullanicilar</td><td><span class="auth-badge auth-admin">ADMIN</span></td></tr>
+            <tr><td><span class="method-badge method-patch">PATCH</span></td><td><code>/api/admin/users/:id/role</code></td><td>Rol degistir</td><td><span class="auth-badge auth-admin">ADMIN</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/admin/contracts</code></td><td>Tum sozlesmeler</td><td><span class="auth-badge auth-admin">ADMIN</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/admin/payments</code></td><td>Tum odemeler</td><td><span class="auth-badge auth-admin">ADMIN</span></td></tr>
+            <tr><td><span class="method-badge method-get">GET</span></td><td><code>/api/admin/commissions</code></td><td>Komisyon raporu</td><td><span class="auth-badge auth-admin">ADMIN</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== 9. TEST KULLANICILARI ===== -->
+    <section id="testusers" class="section">
+      <div class="section-title">
+        <div class="icon icon-purple">&#129489;</div>
+        <div>
+          <h2>Test Kullanicilari</h2>
+          <p>Hazir test hesaplari - OTP: 111111</p>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div class="user-avatar avatar-admin">&#128119;</div>
+        <div class="user-info">
+          <h4>Admin <span class="role-tag role-admin">ADMIN</span></h4>
+          <div class="user-meta">TCKN: 10000000146 &nbsp;|&nbsp; Tel: 5000000000 &nbsp;|&nbsp; OTP: 111111</div>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div class="user-avatar avatar-landlord">&#127968;</div>
+        <div class="user-info">
+          <h4>Test Kullanici <span class="role-tag role-landlord">LANDLORD</span></h4>
+          <div class="user-meta">TCKN: 11111111110 &nbsp;|&nbsp; Tel: 5551112233 &nbsp;|&nbsp; OTP: 111111</div>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div class="user-avatar avatar-landlord">&#127968;</div>
+        <div class="user-info">
+          <h4>Eray <span class="role-tag role-landlord">LANDLORD</span></h4>
+          <div class="user-meta">TCKN: 20687068490 &nbsp;|&nbsp; Tel: 5324761538 &nbsp;|&nbsp; OTP: 111111</div>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div class="user-avatar avatar-tenant">&#128100;</div>
+        <div class="user-info">
+          <h4>Kiraci Ali <span class="role-tag role-tenant">TENANT</span></h4>
+          <div class="user-meta">TCKN: 10000000078 &nbsp;|&nbsp; Tel: 5559998877 &nbsp;|&nbsp; OTP: 111111</div>
+        </div>
+      </div>
+
+      <div class="user-card">
+        <div class="user-avatar avatar-tenant">&#128100;</div>
+        <div class="user-info">
+          <h4>Fatma Demir <span class="role-tag role-tenant">TENANT</span></h4>
+          <div class="user-meta">TCKN: 60000000028 &nbsp;|&nbsp; Tel: 5559876543 &nbsp;|&nbsp; OTP: 111111</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <h3>&#128268; cURL ile Test</h3>
+        <pre><code>API="http://localhost:4000"
+
+# 1. Login
+curl -s -X POST "$API/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"tckn":"10000000078","phone":"5559998877"}'
+
+# 2. OTP Dogrula
+TOKEN=$(curl -s -X POST "$API/api/auth/verify-otp" \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"5559998877","code":"111111"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])")
+
+# 3. Profil Bilgisi
+curl -s "$API/api/users/me" \
+  -H "Authorization: Bearer $TOKEN"
+
+# 4. KMH Basvurusu
+curl -s -X POST "$API/api/bank/kmh/apply" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"employmentStatus":"EMPLOYED","monthlyIncome":45000,
+       "employerName":"Tech AS","residentialAddress":"Istanbul",
+       "estimatedRent":15000}'</code></pre>
+      </div>
+    </section>
+
+    <!-- ===== 10. SORUN GIDERME ===== -->
+    <section id="troubleshooting" class="section">
+      <div class="section-title">
+        <div class="icon icon-amber">&#128295;</div>
+        <div>
+          <h2>Sik Karsilasilan Sorunlar</h2>
+          <p>Hata cozumleri ve yararli ipuclari</p>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#127760;</span>
+          <h4>"Failed to fetch" Hatasi</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Sorun:</strong> Frontend'den API'ye istek atildiginda "Failed to fetch" hatasi.</p>
+          <p><strong>Cozum:</strong> CORS ayarlarini kontrol edin. <code>apps/api/src/main.ts</code> dosyasinda frontend URL'inin origin listesinde oldugunundan emin olun.</p>
+          <pre><code>origin: ['http://localhost:3000', 'http://localhost:3001', process.env.WEB_URL]</code></pre>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#9201;&#65039;</span>
+          <h4>Rate Limit (429) Hatasi</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Sorun:</strong> Test sirasinda 429 Too Many Requests hatasi.</p>
+          <p><strong>Cozum:</strong> <code>app.module.ts</code> dosyasinda ThrottlerGuard'i yorum satirina alin.</p>
+          <pre><code>// { provide: APP_GUARD, useClass: ThrottlerGuard }</code></pre>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#128451;&#65039;</span>
+          <h4>Prisma Client Uyumsuzlugu</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Sorun:</strong> Schema degisikligi sonrasi "Unknown field" hatasi.</p>
+          <p><strong>Cozum:</strong></p>
+          <pre><code>cd apps/api && npx prisma generate && npx prisma migrate dev</code></pre>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#128274;</span>
+          <h4>JWT Token Suresi Dolmus (401)</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Sorun:</strong> 401 Unauthorized hatasi.</p>
+          <p><strong>Cozum:</strong> Access token 15 dakikada dolar. Refresh endpoint ile yenileyin.</p>
+          <pre><code>POST /api/auth/refresh  { "refreshToken": "&lt;token&gt;" }</code></pre>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#128176;</span>
+          <h4>KMH Basvurusu Reddedildi</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Sorun:</strong> KMH basvurusu REJECTED olarak donuyor.</p>
+          <p><strong>Cozum:</strong> Kriter: <code>monthlyIncome &ge; estimatedRent &times; 2</code>. Gelir tutarini en az tahmini kiranin 2 kati girin.</p>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#9999;&#65039;</span>
+          <h4>Kiraci Sozlesme Imzalayamiyor</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Sorun:</strong> "Aktif KMH hesabiniz bulunmuyor" hatasi.</p>
+          <p><strong>Cozum:</strong> Sirasiyla: (1) KMH basvurusu onaylanmis olmali, (2) Dijital onboarding tamamlanmis olmali, (3) KMH hesap ACTIVE olmali, (4) KMH limiti &ge; aylik kira olmali.</p>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-header">
+          <span class="trouble-icon">&#128268;</span>
+          <h4>Port Cakismasi (EADDRINUSE)</h4>
+        </div>
+        <div class="trouble-body">
+          <p><strong>Cozum:</strong></p>
+          <pre><code>lsof -i :4000    # Backend portu
+lsof -i :3000    # Frontend portu
+kill -9 &lt;PID&gt;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 11. GELISTIRICI NOTLARI ===== -->
+    <section id="devnotes" class="section">
+      <div class="section-title">
+        <div class="icon icon-blue">&#128221;</div>
+        <div>
+          <h2>Gelistirici Notlari</h2>
+          <p>Kod standartlari ve onemli bilgiler</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>&#128203; Kod Standartlari</h3>
+          <ul>
+            <li><strong>Dil:</strong> Tum kod Ingilizce, UI metinleri Turkce</li>
+            <li><strong>Format:</strong> TypeScript strict mode</li>
+            <li><strong>API Yanit:</strong> JSend formati</li>
+            <li><strong>DTO:</strong> class-validator ile dogrulama</li>
+            <li><strong>Log:</strong> TCKN/telefon/OTP maskelenir</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>&#128268; Gercek Servislere Gecis</h3>
+          <ul>
+            <li><code>MockBankService</code> &#8594; Gercek Banka API</li>
+            <li><code>MockSmsService</code> &#8594; Netgsm / Iletimerkezi</li>
+            <li><code>MockCreditScoringService</code> &#8594; KKB / Findeks</li>
+            <li><code>MockIdentityVerification</code> &#8594; E-Devlet KPS</li>
+          </ul>
+          <div class="alert alert-info" style="margin-top:12px;">
+            <span class="alert-icon">&#128161;</span>
+            <div>Sadece modul dosyasindaki <code>useClass</code> degisir, baska kod degisikligi gerekmez.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>&#128451;&#65039; Veritabani Erisimi</h3>
+        <pre><code># Dogrudan PostgreSQL erisimi
+psql -h localhost -U securelend -d securelend
+
+# Yararli sorgular
+SELECT * FROM users;
+SELECT * FROM contracts WHERE status = 'ACTIVE';
+SELECT * FROM bank_accounts WHERE account_type = 'KMH';
+SELECT * FROM payment_orders;
+SELECT * FROM commissions;
+
+# Gorsel arayuz
+cd apps/api && npx prisma studio</code></pre>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>&#128193; Onemli Dosyalar</h3>
+        <table class="styled-table">
+          <thead><tr><th>Dosya</th><th>Aciklama</th></tr></thead>
+          <tbody>
+            <tr><td><code>apps/api/src/main.ts</code></td><td>CORS, Swagger, global pipe/filter yapilandirmasi</td></tr>
+            <tr><td><code>apps/api/src/app.module.ts</code></td><td>Tum modul import'lari, guard tanimlamalari</td></tr>
+            <tr><td><code>apps/api/prisma/schema.prisma</code></td><td>Veritabani sema tanimi (13 model, 10 enum)</td></tr>
+            <tr><td><code>apps/web/src/lib/api.ts</code></td><td>Frontend merkezi API istemcisi</td></tr>
+            <tr><td><code>apps/web/src/lib/auth-context.tsx</code></td><td>React oturum yonetimi context'i</td></tr>
+            <tr><td><code>packages/shared/src/index.ts</code></td><td>Paylasilan yardimci fonksiyonlar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="guide-footer">
+    <div style="font-size: 28px;">&#128214;</div>
+    <p><strong>SecureLend</strong> - Gelistirici &amp; Kullanici Kilavuzu</p>
+    <p>v0.1.0 &bull; Subat 2026 &bull; Full-Stack TypeScript Monorepo</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

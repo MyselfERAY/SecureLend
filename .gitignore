@@ -1,0 +1,38 @@
+node_modules/
+dist/
+.next/
+.turbo/
+.env
+*.local
+
+# Prisma
+apps/api/prisma/migrations/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+
+# Build
+*.tsbuildinfo
+
+# Expo
+.expo/
+
+# Output
+output/
+
+# Claude
+.claude/
