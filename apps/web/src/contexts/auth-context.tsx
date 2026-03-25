@@ -1,85 +1,33 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@prisma/client';
 
-interface AuthState {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-}
-
-interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
-  updateUser: (userData: Partial<User>) => void;
-}
-
-interface RegisterData {
+interface User {
+  id: string;
   email: string;
-  password: string;
   firstName: string;
   lastName: string;
-  phone: string;
+  phone: string | null;
+  role: string;
 }
 
-type AuthAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_USER'; payload: User | null }
-  | { type: 'LOGOUT' }
-  | { type: 'UPDATE_USER'; payload: Partial<User> };
-
-const initialState: AuthState = {
-  user: null,
-  isLoading: true,
-  isAuthenticated: false,
-};
-
-function authReducer(state: AuthState, action: AuthAction): AuthState {
-  switch (action.type) {
-    case 'SET_LOADING':
-      return {
-        ...state,
-        isLoading: action.payload,
-      };
-    case 'SET_USER':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: !!action.payload,
-        isLoading: false,
-      };
-    case 'LOGOUT':
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      };
-    case 'UPDATE_USER':
-      return {
-        ...state,
-        user: state.user ? { ...state.user, ...action.payload } : null,
-      };
-    default:
-      return state;
-  }
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const login = async (email: string, password: string) => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -92,75 +40,49 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('Login failed');
       }
 
-      const userData = await response.json();
-      dispatch({ type: 'SET_USER', payload: userData.user });
+      const data = await response.json();
+      setUser(data.user);
     } catch (error) {
-      dispatch({ type: 'SET_LOADING', payload: false });
       throw error;
     }
   };
 
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-      dispatch({ type: 'LOGOUT' });
-    } catch (error) {
-      console.error('Logout error:', error);
-      dispatch({ type: 'LOGOUT' });
-    }
+  const logout = () => {
+    setUser(null);
+    // Clear any stored tokens or session data
   };
 
-  const register = async (userData: RegisterData) => {
+  const refreshUser = async () => {
     try {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Registration failed');
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      } else {
+        setUser(null);
       }
-
-      const result = await response.json();
-      dispatch({ type: 'SET_USER', payload: result.user });
     } catch (error) {
-      dispatch({ type: 'SET_LOADING', payload: false });
-      throw error;
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updateUser = (userData: Partial<User>) => {
-    dispatch({ type: 'UPDATE_USER', payload: userData });
-  };
-
-  const value: AuthContextType = {
-    ...state,
-    login,
-    logout,
-    register,
-    updateUser,
-  };
+  useEffect(() => {
+    refreshUser();
+  }, []);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
-  ) as JSX.Element;
+  );
 }
 
-export function useAuth(): AuthContextType {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
-
-export { AuthContext };
