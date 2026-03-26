@@ -43,7 +43,7 @@ export default function HomePage() {
                 SecureLend Platform
               </span>
               <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-                SecureLend - Kira Odeme Platformu
+                SecureLend - Dijital Kira Odeme Platformu
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
                 SecureLend; kiraci, ev sahibi ve banka arasindaki sureci tek merkezde yonetir. Sozlesme,
