@@ -23,6 +23,27 @@ const features = [
   },
 ];
 
+const testimonials = [
+  {
+    name: 'Ahmet Yılmaz',
+    role: 'Kiracı',
+    comment: 'Kiramı artık unutmuyorum, otomatik ödeniyor. Çok rahat bir sistem.',
+    avatar: 'AY'
+  },
+  {
+    name: 'Fatma Kaya',
+    role: 'Ev Sahibi',
+    comment: 'Kira gecikmesi tarih oldu. Tüm ödemeler zamanında geliyor.',
+    avatar: 'FK'
+  },
+  {
+    name: 'Mehmet Özkan',
+    role: 'Emlakçı',
+    comment: 'Tüm işlemleri tek platformdan yönetiyorum. Müşterilerim çok memnun.',
+    avatar: 'MÖ'
+  }
+];
+
 export default function HomePage() {
   const { tokens, isLoading } = useAuth();
   const router = useRouter();
@@ -93,6 +114,21 @@ export default function HomePage() {
             <FeatureCard key={feature.title} {...feature} />
           ))}
         </section>
+
+        <section className="mt-12">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Müşteri Yorumları</h2>
+            <p className="mt-4 text-lg text-slate-600">
+              SecureLend kullanıcılarımızın deneyimlerini keşfedin
+            </p>
+          </div>
+          
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {testimonials.map((testimonial, index) => (
+              <TestimonialCard key={index} {...testimonial} />
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );
@@ -123,6 +159,32 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
       </div>
       <h2 className="mt-4 text-base font-semibold text-slate-900">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">{desc}</p>
+    </article>
+  );
+}
+
+function TestimonialCard({ name, role, comment, avatar }: { name: string; role: string; comment: string; avatar: string }) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm">
+      <div className="flex items-center space-x-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+          <span className="text-sm font-semibold text-blue-700">{avatar}</span>
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">{name}</h3>
+          <p className="text-sm text-blue-600">{role}</p>
+        </div>
+      </div>
+      <blockquote className="mt-4 text-sm leading-6 text-slate-600">
+        "{comment}"
+      </blockquote>
+      <div className="mt-4 flex text-yellow-400">
+        {[...Array(5)].map((_, i) => (
+          <svg key={i} className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
     </article>
   );
 }
