@@ -23,11 +23,13 @@
   },
   "resolutions": {
     "@types/react": "^18.2.45",
-    "url-parse": "^1.5.10"
+    "url-parse": "^1.5.10",
+    "whatwg-url": "^14.0.0"
   },
   "pnpm": {
     "overrides": {
-      "url-parse": "^1.5.10"
+      "url-parse": "^1.5.10",
+      "whatwg-url": "^14.0.0"
     }
   },
   "workspaces": [
