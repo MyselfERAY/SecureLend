@@ -8,6 +8,7 @@ RUN pnpm install --no-frozen-lockfile
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 RUN pnpm --filter @securelend/shared build
+RUN cd apps/api && npx prisma generate
 RUN pnpm --filter @securelend/api build
 
 FROM node:20-alpine
