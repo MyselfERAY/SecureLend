@@ -1,21 +1,26 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { AuthProvider } from '../lib/auth-context';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { AuthProvider } from "@/contexts/auth-context";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'SecureLend - Guvenli Kira Platformu',
-  description: 'Kiracı, ev sahibi ve banka arasinda guvenli kira yonetimi',
+  title: "SecureLend",
+  description: "Güvenli emlak finansmanı platformu",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="tr">
-      <body className="antialiased min-h-screen">
-        <AuthProvider>{children}</AuthProvider>
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
