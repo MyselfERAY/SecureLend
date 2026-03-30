@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../lib/auth-context';
@@ -47,7 +47,14 @@ const testimonials = [
 export default function HomePage() {
   const { tokens, isLoading } = useAuth();
   const router = useRouter();
+  const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`)
+      .then((r) => r.json())
+      .then((d) => setApiStatus(d.status === 'success' ? 'online' : 'offline'))
+      .catch(() => setApiStatus('offline'));
+  }, []);
   useEffect(() => {
     if (!isLoading && tokens) {
       router.replace('/dashboard');
@@ -93,6 +100,20 @@ export default function HomePage() {
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-7">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Operasyon Ozeti</p>
+              <div className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
+                apiStatus === 'online' ? 'bg-emerald-50 text-emerald-700' :
+                apiStatus === 'offline' ? 'bg-red-50 text-red-700' :
+                'bg-slate-100 text-slate-500'
+              }`}>
+                <span className={`h-2 w-2 rounded-full ${
+                  apiStatus === 'online' ? 'bg-emerald-500' :
+                  apiStatus === 'offline' ? 'bg-red-500' :
+                  'bg-slate-400'
+                }`} />
+                {apiStatus === 'online' ? 'API Baglantisi Aktif' :
+                 apiStatus === 'offline' ? 'API Baglantisi Pasif' :
+                 'Kontrol ediliyor...'}
+              </div>
               <div className="mt-5 space-y-4">
                 <Metric label="Dogrulama ve onboarding" value="< 5 dk" />
                 <Metric label="Sozlesme durumu takibi" value="Gercek zamanli" />
