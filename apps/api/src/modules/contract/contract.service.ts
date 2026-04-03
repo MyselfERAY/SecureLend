@@ -1,6 +1,9 @@
 import {
-  Injectable, Logger, NotFoundException,
-  ForbiddenException, BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ContractStatus, UserRole, BankAccountType, BankAccountStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
