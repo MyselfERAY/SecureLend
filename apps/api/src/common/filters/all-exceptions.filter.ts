@@ -32,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else if (status === HttpStatus.UNAUTHORIZED) {
         body = {
           status: 'fail',
-          data: { message: 'Oturum acmaniz gerekiyor.' },
+          data: { message: exception.message || 'Oturum acmaniz gerekiyor.' },
         };
       } else if (status === HttpStatus.FORBIDDEN) {
         body = {
