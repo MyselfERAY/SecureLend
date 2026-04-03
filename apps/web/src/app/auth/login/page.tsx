@@ -101,6 +101,13 @@ export default function LoginPage() {
                 Kayit Ol
               </Link>
             </p>
+
+            <p className="text-center text-sm text-slate-600">
+              Kimlik dogrulama icin{' '}
+              <Link href="/kps" className="font-semibold text-blue-700 hover:text-blue-800">
+                KPS Dogrulama
+              </Link>
+            </p>
           </form>
         </section>
       </div>
