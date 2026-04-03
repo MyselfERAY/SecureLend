@@ -71,10 +71,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         };
       }
     } else {
-      this.logger.error('Unhandled exception', exception);
+      const errMsg = exception instanceof Error ? exception.message : String(exception);
+      this.logger.error(`Unhandled exception: ${errMsg}`, exception instanceof Error ? exception.stack : '');
       body = {
         status: 'error',
-        message: 'Bir hata olustu. Lutfen daha sonra tekrar deneyin.',
+        message: errMsg || 'Bir hata olustu. Lutfen daha sonra tekrar deneyin.',
       };
     }
 
