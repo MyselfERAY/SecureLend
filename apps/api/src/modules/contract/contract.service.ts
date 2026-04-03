@@ -33,6 +33,14 @@ export class ContractService {
     if (tenant.id === landlordId)
       throw new BadRequestException('Kendinizle sozlesme olusturulamaz');
 
+    // Auto-add TENANT role if missing (same pattern as property.service LANDLORD auto-assign)
+    if (!tenant.roles.includes(UserRole.TENANT)) {
+      await this.prisma.user.update({
+        where: { id: dto.tenantId },
+        data: { roles: { push: UserRole.TENANT } },
+      });
+    }
+
     const contract = await this.prisma.$transaction(async (tx) => {
       const c = await tx.contract.create({
         data: {

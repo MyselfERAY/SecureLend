@@ -117,11 +117,7 @@ export default function ContractsPage() {
         token: tokens!.accessToken,
       });
       if (res.status === 'success' && res.data) {
-        if (!res.data.roles?.includes('TENANT')) {
-          setTenantError('Bu kullanici kiraci rolune sahip degil');
-        } else {
-          setTenantResult(res.data);
-        }
+        setTenantResult(res.data);
       } else {
         setTenantError('Kullanici bulunamadi');
       }
