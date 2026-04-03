@@ -1,5 +1,16 @@
+import type { Metadata } from 'next';
 import { TcknForm } from '../../components/tckn-form';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Kredi Uygunluk Kontrolu',
+  description:
+    'TCKN ile kredi uygunluk kontrolu yapin. SecureLend uzerinden kira odeme uygunlugunuzu ve KMH limitinizi hizlica ogrenin.',
+  openGraph: {
+    title: 'Kredi Uygunluk Kontrolu | SecureLend',
+    description: 'TCKN ile kredi uygunluk kontrolu yapin. Kira odeme uygunlugunuzu ogrenin.',
+  },
+};
 
 export default function CreditCheckPage() {
   return (
