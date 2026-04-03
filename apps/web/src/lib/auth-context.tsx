@@ -160,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [tokens?.accessToken]);
 
   return (
-    // @ts-expect-error React 19 Context.Provider JSX type mismatch with @types/react@19.2
+    // @ts-ignore React 19 Context.Provider JSX type mismatch with @types/react@19.2
     <AuthContext.Provider value={{ user, tokens, isLoading, login, register, verifyOtp, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
