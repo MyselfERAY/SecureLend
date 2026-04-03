@@ -30,7 +30,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -160,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [tokens?.accessToken]);
 
   return (
+    // @ts-expect-error React 19 Context.Provider JSX type mismatch with @types/react@19.2
     <AuthContext.Provider value={{ user, tokens, isLoading, login, register, verifyOtp, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
@@ -168,6 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
