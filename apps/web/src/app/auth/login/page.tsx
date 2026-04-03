@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../lib/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [tckn, setTckn] = useState('');
   const [phone, setPhone] = useState('');
@@ -16,10 +15,11 @@ export default function LoginPage() {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get('expired') === '1') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('expired') === '1') {
       setSessionExpired(true);
     }
-  }, [searchParams]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
