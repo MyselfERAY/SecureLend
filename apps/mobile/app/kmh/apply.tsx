@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
-  KeyboardAvoidingView,
+  KeyboardAvoidingView, Modal, NativeSyntheticEvent, NativeScrollEvent,
 } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/lib/auth-context';
@@ -12,7 +12,6 @@ import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
 import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
 import { colors } from '../../src/theme/colors';
-import { hasConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
@@ -37,17 +36,17 @@ export default function KmhApplyScreen() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [consentFinancial, setConsentFinancial] = useState(false);
-
-  // Auto-check consent when returning from KMH financial consent screen
-  useFocusEffect(
-    useCallback(() => {
-      if (hasConsentScrolled('kmh_finansal')) {
-        setConsentFinancial(true);
-      }
-    }, [])
-  );
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [consentScrolledToBottom, setConsentScrolledToBottom] = useState(false);
 
   const showEmployer = employment === 'EMPLOYED' || employment === 'SELF_EMPLOYED';
+
+  const handleConsentScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+    if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 40) {
+      setConsentScrolledToBottom(true);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!tokens || !income || !rent || !address) {
@@ -211,10 +210,11 @@ export default function KmhApplyScreen() {
           <TouchableOpacity
             style={styles.consentRow}
             onPress={() => {
-              if (hasConsentScrolled('kmh_finansal')) {
-                setConsentFinancial((p) => !p);
+              if (consentFinancial) {
+                setConsentFinancial(false);
               } else {
-                router.push('/kvkk/kmh-acik-riza');
+                setConsentScrolledToBottom(false);
+                setShowConsentModal(true);
               }
             }}
             activeOpacity={0.7}
@@ -228,7 +228,7 @@ export default function KmhApplyScreen() {
               KMH basvurusu icin finansal verilerimin islenmesine acik riza veriyorum
             </Text>
             <TouchableOpacity
-              onPress={() => router.push('/kvkk/kmh-acik-riza')}
+              onPress={() => { setConsentScrolledToBottom(false); setShowConsentModal(true); }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               activeOpacity={0.7}
             >
@@ -250,6 +250,123 @@ export default function KmhApplyScreen() {
           <View style={{ height: 120 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* KMH Financial Consent Modal */}
+      <Modal visible={showConsentModal} animationType="slide">
+        <View style={styles.consentModalContainer}>
+          <View style={[styles.consentModalHeader, { paddingTop: insets.top + 8 }]}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => setShowConsentModal(false)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={22} color="#ffffff" />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>KMH Acik Riza</Text>
+              <Text style={styles.headerSubtitle}>Finansal veri isleme onayi</Text>
+            </View>
+            <View style={styles.consentIconWrap}>
+              <Ionicons name="shield-checkmark" size={22} color="#93c5fd" />
+            </View>
+          </View>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 20 }}
+            onScroll={handleConsentScroll}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={true}
+          >
+            <View style={styles.consentTextBox}>
+              <Text style={styles.consentBodyText}>
+{`KMH BASVURUSU ACIK RIZA BEYANI
+
+6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, SecureLend Teknoloji A.S. ("Sirket") tarafindan hazirlanan Aydinlatma Metnini okudum ve anladim.
+
+KMH (Kira Mevduat Hesabi) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
+
+1. ISLENEN FINANSAL VERILER
+
+- Aylik net gelir bilgisi
+- Istihdam durumu ve isveren bilgisi
+- Mevcut kredi ve borc yukumluluklerim
+- Tahmini kira tutari
+- Borc/gelir orani hesaplamalari
+- Varlik ve yukumluluk bilgilerim
+
+2. KKB (KREDI KAYIT BUROSU) SORGULAMASI
+
+Kredi degerlendirmesi icin KKB nezdinde kayitli kredi gecmisimin, mevcut kredi kullanimlarimin ve odeme performansimin sorgulanmasina riza veriyorum. Bu sorgulama sonucunda elde edilen bilgiler yalnizca KMH basvuru degerlendirmesi icin kullanilacaktir.
+
+3. FINDEKS SKORU ISLEME
+
+Findeks kredi notu ve kredi skorumun sorgulanmasina ve degerlendirme surecinde kullanilmasina onay veriyorum. Findeks skorum, kredi limitimin belirlenmesinde temel kriterlerden biri olarak dikkate alinacaktir.
+
+4. BANKA ILE PAYLASIM
+
+Kimlik ve finansal bilgilerimin, KMH hesap acilisi ve kredi degerlendirmesi amaciyla anlasmali banka ile paylasilmasina riza veriyorum. Paylasilacak bilgiler:
+- T.C. Kimlik Numarasi (dogrulama amacli)
+- Ad soyad ve dogum tarihi
+- Gelir ve istihdam bilgileri
+- KKB kredi raporu ozeti
+- Basvuru degerlendirme sonuclari
+
+5. OTOMATIK KARAR VERME
+
+KMH basvurumun degerlendirilmesinde otomatik sistemler (kredi skorlama algoritmalari) kullanildigini biliyorum. Bu otomatik degerlendirme sonucunda kredi limitim belirlenmekte veya basvurum reddedilebilmektedir. KVKK Madde 11/1-g uyarinca, otomatik isleme dayali sonuclara itiraz etme hakkima sahip oldugumu biliyorum.
+
+6. BORC/GELIR ORANI HESAPLAMASI
+
+Aylik gelir bilgim ve mevcut borc yukumluluklerim kullanilarak borc/gelir orani hesaplanacaktir. Bu oran, kredi limitimin belirlenmesinde ve basvurumun onaylanip onaylanmayacaginda belirleyici faktor olarak kullanilacaktir.
+
+7. AMAC SINIRLAMASI
+
+Yukarida belirtilen kisisel verilerim yalnizca asagidaki amaclarla islencektir:
+- KMH basvuru degerlendirmesi
+- Kredi limiti belirlenmesi
+- Hesap acilisi islemleri
+- Yasal raporlama yukumlulukleri (BDDK, MASAK)
+
+8. VERI SAKLAMA SURESI
+
+KMH basvuruma iliskin veriler:
+- Onaylanan basvurular: Hesap aktif oldugu surece + 10 yil
+- Reddedilen basvurular: Red tarihinden itibaren 3 yil
+- KKB sorgulama kayitlari: 5 yil
+
+9. RIZANIN GERI ALINMASI
+
+Bu rizami her zaman geri alma hakkima sahip oldugumu biliyorum. Ancak rizamin geri alinmasi halinde:
+- Devam eden KMH basvurum islenemeycektir
+- Yeni KMH basvurusu yapabilmem icin tekrar riza vermem gerekecektir
+- Geri alma oncesi islenmis veriler, yasal saklama surelerine tabidir
+
+Yukaridaki hususlari okudum, anladim ve kabul ediyorum.
+
+SecureLend Teknoloji A.S.
+info@kiraguvence.com`}
+              </Text>
+            </View>
+            <View style={{ height: 100 }} />
+          </ScrollView>
+          <View style={[styles.consentStickyBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <TouchableOpacity
+              style={[styles.consentApproveBtn, !consentScrolledToBottom && styles.consentApproveBtnDisabled]}
+              onPress={() => {
+                if (consentScrolledToBottom) {
+                  setConsentFinancial(true);
+                  setShowConsentModal(false);
+                }
+              }}
+              activeOpacity={consentScrolledToBottom ? 0.7 : 1}
+            >
+              <Text style={[styles.consentApproveBtnText, !consentScrolledToBottom && styles.consentApproveBtnTextDisabled]}>
+                {consentScrolledToBottom ? 'Okudum ve Onayliyorum' : 'Sona kadar okuyun'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -406,5 +523,65 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1d4ed8',
     lineHeight: 17,
+  },
+
+  // Consent Modal
+  consentModalContainer: { flex: 1, backgroundColor: '#f1f5f9' },
+  consentModalHeader: {
+    backgroundColor: DARK_NAVY,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  consentIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(37,99,235,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  consentTextBox: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    ...Platform.select({
+      ios: { shadowColor: '#0a1628', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 12 },
+      android: { elevation: 3 },
+    }),
+  },
+  consentBodyText: {
+    fontSize: 14,
+    color: colors.gray[700],
+    lineHeight: 22,
+  },
+  consentStickyBar: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.gray[200],
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.06, shadowRadius: 8 },
+      android: { elevation: 8 },
+    }),
+  },
+  consentApproveBtn: {
+    backgroundColor: '#2563eb',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  consentApproveBtnDisabled: {
+    backgroundColor: colors.gray[200],
+  },
+  consentApproveBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  consentApproveBtnTextDisabled: {
+    color: colors.gray[400],
   },
 });

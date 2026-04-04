@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
-  ActivityIndicator, Animated, Alert,
+  ActivityIndicator, Animated, Alert, Modal, NativeSyntheticEvent, NativeScrollEvent,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,6 +83,8 @@ export default function KmhOnboardingScreen() {
   const [processingState, setProcessingState] = useState<ProcessingState>('idle');
   const [showAgreements, setShowAgreements] = useState(false);
   const [agreementChecks, setAgreementChecks] = useState({ kmh: false, kvkk: false, genel: false });
+  const [activeAgreement, setActiveAgreement] = useState<'kmh' | 'kvkk' | 'genel' | null>(null);
+  const [agreementScrolled, setAgreementScrolled] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState('');
@@ -356,6 +358,293 @@ export default function KmhOnboardingScreen() {
     );
   }
 
+  const AGREEMENT_TEXTS: Record<string, { title: string; subtitle: string; body: string }> = {
+    kmh: {
+      title: 'KMH Sozlesmesi',
+      subtitle: 'Kira Mevduat Hesabi kosullari',
+      body: `KIRA MEVDUAT HESABI (KMH) SOZLESMESI
+
+Sozlesme No: [Otomatik atanacaktir]
+Tarih: [Basvuru tarihi]
+
+TARAFLAR
+
+Banka: SecureLend Anlasmali Banka A.S.
+Musteri: [Kullanici bilgileri]
+Platform: SecureLend Teknoloji A.S.
+
+MADDE 1 - TANIMLAR
+
+1.1. KMH (Kira Mevduat Hesabi): Kiracinin kira guvencesi olarak kullanilmak uzere acilan ozel mevduat hesabidir.
+1.2. Kredi Limiti: Musterinin gelir durumu, kredi gecmisi ve diger kriterlere gore belirlenen azami kredi kullanim tutaridir.
+1.3. Platform: SecureLend Teknoloji A.S. tarafindan isletilen kiraguvence.com web sitesi ve SecureLend mobil uygulamasidir.
+
+MADDE 2 - HESAP ACILISI VE KULLANIM KOSULLARI
+
+2.1. KMH, musterinin basvurusunun onaylanmasi ve musteri edinim surecinin (KYC) tamamlanmasinin ardindan acilir.
+2.2. Hesap, yalnizca kira odeme islemleri icin kullanilabilir. Baska amaclarla kullanim yasaktir.
+2.3. Hesap acilisi icin musterinin 18 yasini doldurmus T.C. vatandasi olmasi gereklidir.
+2.4. Musteri, hesap acilisi sirasinda verdigi tum bilgilerin dogru ve guncel oldugunu beyan eder.
+
+MADDE 3 - KREDI LIMITI VE FAIZ ORANI
+
+3.1. Kredi limiti, musterinin aylik geliri, mevcut borc yukumlulukleri, KKB kredi gecmisi ve Findeks skoru dikkate alinarak belirlenir.
+3.2. Onaylanan kredi limiti, basvuru tarihinde gecerli olan degerlendirme kriterlerine gore hesaplanmistir.
+3.3. Uygulanacak faiz orani, sozlesme tarihinde gecerli olan ve TCMB politika faiz oranina endeksli orandir.
+3.4. Banka, faiz oranini TCMB kararlarindaki degisikliklere paralel olarak guncelleme hakkini sakli tutar.
+
+MADDE 4 - KIRA ODEME MEKANIZMASI
+
+4.1. Kira odemesi, her ayin belirlenen gunu otomatik olarak KMH hesabindan ev sahibinin hesabina aktarilir.
+4.2. Platform komisyonu (%1) kira tutarindan dusulerek ev sahibine net tutar transfer edilir.
+4.3. Hesapta yeterli bakiye bulunmamasi durumunda kredi limiti kullanilir.
+4.4. Kredi limitinin asildigi durumlarda odeme gerceklestirilemez ve kiraci temerrude duser.
+
+MADDE 5 - GERI ODEME
+
+5.1. Kullanilan kredi tutari, belirlenen vadelerde aylik taksitler halinde geri odenir.
+5.2. Taksit odeme gunu, sozlesme imzalanirken belirlenen gundur.
+5.3. Erken odeme halinde kalan vade faizi tahsil edilmez (tuketici kredisi hukumleri uygulanir).
+
+MADDE 6 - TEMERUT VE GECIKME FAIZI
+
+6.1. Taksit odeme tarihinde odeme yapilmamasi halinde musteri temerrude duser.
+6.2. Temerut faizi, sozlesme faiz oraninin 1.5 kati olarak uygulanir.
+6.3. Ardisik 3 taksit odenmemesi halinde sozlesme feshedilebilir ve borcun tamami muaccel hale gelir.
+6.4. Geciken odemeler KKB ve Findeks'e olumsuz olarak bildirilir.
+
+MADDE 7 - HESAP KAPATMA
+
+7.1. Mevcut borcun tamamen odenmesi halinde hesap kapatilabilir.
+7.2. Kira sozlesmesinin sona ermesi durumunda, kalan borc yapılandırılarak hesap kapatma sureci baslatilir.
+7.3. Musterinin vefati halinde kanuni mirascilarla borcs tasfiyesi yapilir.
+
+MADDE 8 - GENEL HUKUMLER
+
+8.1. Bu sozlesme Turk Borclar Kanunu, Tuketici Kanunu ve Bankacilik Kanunu hukumlerine tabidir.
+8.2. Uyusmazliklarda Istanbul Mahkemeleri ve Icra Daireleri yetkilidir.
+8.3. Bu sozlesme 3 (uc) nusaha olarak duzenlenmisstir.
+
+SecureLend Anlasmali Banka A.S.
+SecureLend Teknoloji A.S.`,
+    },
+    kvkk: {
+      title: 'KVKK Aydinlatma',
+      subtitle: 'Kisisel verilerin korunmasi',
+      body: `KISISEL VERILERIN ISLENMESINE ILISKIN AYDINLATMA METNI
+
+SecureLend Teknoloji A.S. ("Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri bilgilendirmek istiyoruz.
+
+1. VERI SORUMLUSU
+
+SecureLend Teknoloji A.S.
+Adres: Istanbul, Turkiye
+Web: https://kiraguvence.com
+E-posta: info@kiraguvence.com
+
+2. ISLENEN KISISEL VERILER
+
+KMH hizmeti kapsaminda asagidaki kisisel verileriniz islenmektedir:
+
+a) Kimlik Bilgileri: T.C. Kimlik Numarasi (TCKN), ad soyad, dogum tarihi. TCKN, SHA-256 algoritmasiyla hash'lenerek saklanir.
+b) Iletisim Bilgileri: Cep telefonu numarasi, e-posta adresi.
+c) Finansal Bilgiler: Aylik net gelir, istihdam durumu, isveren bilgisi, tahmini kira tutari, mevcut kredi ve borc bilgileri.
+d) Kredi Degerlendirme Bilgileri: KKB kredi raporu, Findeks skoru, borc/gelir orani, kredi gecmisi.
+e) KYC Bilgileri: Kimlik dogrulama sonuclari, canlilik testi sonuclari, goruntulu gorusme kayitlari.
+f) Islem Bilgileri: Kira odeme gecmisi, sozlesme detaylari, hesap hareketleri.
+g) Teknik Bilgiler: IP adresi, cihaz bilgisi, isletim sistemi, erisim zamanlari, oturum bilgileri.
+
+3. ISLENME AMACI VE HUKUKI SEBEBI
+
+Kisisel verileriniz asagidaki amac ve hukuki sebeplerle islenmektedir:
+
+a) Sozlesmenin kurulmasi ve ifasi (KVKK m.5/2-c): KMH hesap acilisi, kredi degerlendirmesi, odeme islemleri.
+b) Hukuki yukumluluk (KVKK m.5/2-c): BDDK, MASAK, SPK mevzuati uyumlulugu, vergi mevzuati.
+c) Hakkin tesisi ve korunmasi (KVKK m.5/2-e): Hukuki sureclerin yurutulmesi, alacak takibi.
+d) Mesru menfaat (KVKK m.5/2-f): Risk degerlendirmesi, hizmet iyilestirme, dolandiricilik onleme.
+e) Acik riza (KVKK m.5/1): Pazarlama iletisimleri, profilleme, ucuncu taraf paylasimlari.
+
+4. VERILERIN AKTARIMI
+
+Kisisel verileriniz asagidaki taraflarla paylasilabilir:
+- Anlasmali bankalar (KMH hesap islemleri)
+- KKB/Findeks (kredi sorgulama)
+- BDDK, MASAK (yasal raporlama)
+- Bulut hizmet saglayicilari (guvenli veri saklama)
+- Hukuk musavirleri (hukuki sureclerde)
+
+5. SAKLAMA SURESI
+
+- Hesap bilgileri: Uyelik suresi + 10 yil
+- Finansal islemler: 10 yil (TTK)
+- KYC verileri: 10 yil (MASAK)
+- KKB sorgulama kayitlari: 5 yil
+- Log kayitlari: 2 yil
+
+6. HAKLARINIZ (KVKK Madde 11)
+
+a) Kisisel verilerinizin islenip islenmedigini ogrenme
+b) Islenmisse buna iliskin bilgi talep etme
+c) Islenme amacini ve amacina uygun kullanilip kullanilmadigini ogrenme
+d) Yurt icinde/disinda aktarildigi ucuncu kisileri bilme
+e) Eksik veya yanlis islenmesi halinde duzeltilmesini isteme
+f) Silinmesini veya yok edilmesini isteme
+g) Aktarim yapilan ucuncu kisilere bildirilmesini isteme
+h) Otomatik analiz sonucu aleyhinize bir sonuca itiraz etme
+i) Kanuna aykiri isleme nedeniyle zararin giderilmesini talep etme
+
+Haklarinizi kullanmak icin info@kiraguvence.com adresine basvurabilirsiniz.
+
+SecureLend Teknoloji A.S.`,
+    },
+    genel: {
+      title: 'Kullanim Kosullari',
+      subtitle: 'Genel hukum ve kosullar',
+      body: `GENEL KULLANIM KOSULLARI
+
+Son guncelleme: Nisan 2026
+
+SecureLend Teknoloji A.S. ("SecureLend") tarafindan isletilen kiraguvence.com web sitesi ve SecureLend mobil uygulamasini ("Platform") kullanarak asagidaki kosullari kabul etmis sayilirsiniz.
+
+MADDE 1 - HIZMET TANIMI
+
+1.1. SecureLend, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir platformdur.
+1.2. Platform, Kira Mevduat Hesabi (KMH) basvurusu, kira sozlesmesi yonetimi ve odeme takibi hizmetleri sunar.
+1.3. SecureLend bir banka veya finansal kurulus degildir. Kredi kararlari ve hesap yonetimi tamamen anlasmali bankalar tarafindan yurutulur.
+
+MADDE 2 - UYGUNLUK KOSULLARI
+
+2.1. Platform'u kullanabilmek icin:
+- 18 yasini doldurmus olmak
+- T.C. vatandasi olmak ve gecerli bir TCKN'ye sahip olmak
+- Aktif bir cep telefonu numarasina sahip olmak
+- Bu kosullari kabul etmek
+
+2.2. Tüzel kisiler platform'u kullanamazlar.
+
+MADDE 3 - HESAP YUKUMLULUKLERI
+
+3.1. Kullanici, kayit sirasinda dogru ve guncel bilgi saglamakla yukumludur.
+3.2. Hesap guvenliginden (sifre, OTP kodlari) kullanici sorumludur.
+3.3. Hesap bilgilerinin ucuncu kisilerle paylasilmamasi gerekmektedir.
+3.4. Supheli erisim durumunda derhal info@kiraguvence.com adresine bildirimde bulunulmalidir.
+
+MADDE 4 - YASAKLAR
+
+4.1. Platform asagidaki amaclarla kullanilamaz:
+- Sahte kimlik veya yaniltici bilgi ile islem yapma
+- Kara para aklama veya teror finansmani
+- Diger kullanicilarin haklarini ihlal etme
+- Platform'un teknik altyapisina zarar verme
+- Otomatik botlar veya scraping araclari kullanma
+
+MADDE 5 - KOMISYON VE UCRETLER
+
+5.1. Platform, basarili kira odemeleri uzerinden %1 oraninda komisyon tahsil eder.
+5.2. Komisyon, kira tutarindan dusulerek ev sahibine net tutar aktarilir.
+5.3. KMH hesap acilisi ve yonetimi icin banka tarafindan ayrica ucret alinabilir.
+5.4. Komisyon oranlari degisiklikleri en az 30 gun onceden bildirilir.
+
+MADDE 6 - SORUMLULUK SINIRI
+
+6.1. SecureLend, banka tarafindan verilen kredi kararlari, faiz oranlari ve hesap yonetimi konularinda sorumluluk kabul etmez.
+6.2. Platform kesintileri, teknik arizalar veya ucuncu taraf hizmet saglayici kaynakli sorunlardan dolayi dogrudan veya dolayli zararladan SecureLend sorumlu tutulamaz.
+6.3. SecureLend'in toplam sorumlulugu, kullanicinin son 12 ayda platform'a odedigi toplam komisyon tutari ile sinirlidir.
+
+MADDE 7 - FIKRI MULKIYET
+
+7.1. Platform uzerindeki tum icerik, tasarim, logo, yazilim ve algoritmalar SecureLend'e aittir.
+7.2. Kullanicilar, platform icerigini kopyalayamaz, dagitamaz veya ticari amacla kullanamazlar.
+
+MADDE 8 - SOZLESME DEGISIKLIKLERI
+
+8.1. SecureLend, bu kosullari degistirme hakkini sakli tutar.
+8.2. Onemli degisiklikler en az 30 gun oncesinden uygulama ici bildirim ile duyurulur.
+8.3. Degisikliklerin yururluge girmesinden sonra Platform'un kullanilmaya devam edilmesi, degisikliklerin kabul edilmesi anlamina gelir.
+
+MADDE 9 - FESIH
+
+9.1. Kullanici, hesabini her zaman kapatarak bu sozlesmeyi feshedebilir.
+9.2. Aktif KMH kredi borcu bulunan hesaplar, borc tamamen odenmeden kapatilamaz.
+9.3. SecureLend, kosullarin ihlali halinde hesabi askiya alma veya kapatma hakkina sahiptir.
+
+MADDE 10 - UYGULANACAK HUKUK VE UYUSMAZLIK
+
+10.1. Bu kosullar Turkiye Cumhuriyeti hukukuna tabidir.
+10.2. Uyusmazliklarda Istanbul Mahkemeleri ve Icra Daireleri yetkilidir.
+10.3. Tuketici uyusmazliklarinda 7036 sayili Kanun hukumleri saklidir.
+
+ILETISIM
+E-posta: info@kiraguvence.com
+Web: https://kiraguvence.com
+
+SecureLend Teknoloji A.S.`,
+    },
+  };
+
+  const handleAgreementScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+    if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 40) {
+      setAgreementScrolled(true);
+    }
+  };
+
+  // Individual agreement reading modal
+  if (activeAgreement) {
+    const agr = AGREEMENT_TEXTS[activeAgreement];
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <View style={styles.headerRow}>
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => setActiveAgreement(null)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="arrow-back" size={22} color="#ffffff" />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>{agr.title}</Text>
+              <Text style={styles.headerSubtitle}>{agr.subtitle}</Text>
+            </View>
+            <View style={styles.agrIconWrap}>
+              <Ionicons name="shield-checkmark" size={22} color="#93c5fd" />
+            </View>
+          </View>
+        </View>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 20 }}
+          onScroll={handleAgreementScroll}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={styles.agreementTextBox}>
+            <Text style={styles.agreementBody}>{agr.body}</Text>
+          </View>
+          <View style={{ height: 100 }} />
+        </ScrollView>
+        <View style={[styles.agrStickyBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <TouchableOpacity
+            style={[styles.agrApproveBtn, !agreementScrolled && styles.agrApproveBtnDisabled]}
+            onPress={() => {
+              if (agreementScrolled) {
+                setAgreementChecks((p) => ({ ...p, [activeAgreement]: true }));
+                setActiveAgreement(null);
+              }
+            }}
+            activeOpacity={agreementScrolled ? 0.7 : 1}
+          >
+            <Text style={[styles.agrApproveBtnText, !agreementScrolled && styles.agrApproveBtnTextDisabled]}>
+              {agreementScrolled ? 'Okudum ve Onayliyorum' : 'Sona kadar okuyun'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   // Agreements view
   if (showAgreements) {
     return (
@@ -372,59 +661,76 @@ export default function KmhOnboardingScreen() {
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <Text style={styles.headerTitle}>Sozlesme Onaylari</Text>
+              <Text style={styles.headerSubtitle}>Tum sozlesmeleri okuyun ve onaylayin</Text>
             </View>
           </View>
         </View>
         <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
-          {/* Agreement text */}
-          <View style={styles.agreementTextBox}>
-            <Text style={styles.agreementBody}>
-              {'KMH Sozlesmesi\n\n' +
-                'Bu sozlesme, SecureLend platformu uzerinden acilan Kira Mevduat Hesabi (KMH) hizmetine iliskin kosullari duzenlemektedir.\n\n' +
-                '1. Hesap Acilisi: KMH, kiracinin kira guvenceligi icin kullanilacak ozel bir mevduat hesabidir.\n\n' +
-                '2. Kredi Limiti: Onaylanan kredi limiti, belirlenen kriterler dogrultusunda hesaplanmistir.\n\n' +
-                '3. Faiz Orani: Uygulanacak faiz orani, sozlesme tarihinde gecerli olan orandir.\n\n' +
-                '4. Geri Odeme: Aylik taksitler, belirlenen odeme gunu itibariyle tahsil edilir.\n\n' +
-                '5. Temerrut: Odeme gecikmeleri durumunda gecikme faizi uygulanir.\n\n' +
-                'KVKK Aydinlatma Metni\n\n' +
-                'Kisisel verileriniz, 6698 sayili Kisisel Verilerin Korunmasi Kanunu kapsaminda islenmektedir. ' +
-                'Kimlik, iletisim ve finansal bilgileriniz hizmet sunumu amaciyla kullanilacaktir.\n\n' +
-                'Verileriniz yasal sureler boyunca saklanir ve yasal zorunluluklar disinda ucuncu taraflarla paylasilmaz.'}
-            </Text>
-          </View>
-
-          {/* Checkboxes */}
+          {/* KMH Agreement */}
           <TouchableOpacity
-            style={styles.checkRow}
-            onPress={() => setAgreementChecks((p) => ({ ...p, kmh: !p.kmh }))}
+            style={[styles.checkRow, agreementChecks.kmh && styles.checkRowDone]}
+            onPress={() => {
+              if (agreementChecks.kmh) {
+                setAgreementChecks((p) => ({ ...p, kmh: false }));
+              } else {
+                setAgreementScrolled(false);
+                setActiveAgreement('kmh');
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={[styles.checkbox, agreementChecks.kmh && styles.checkboxChecked]}>
               {agreementChecks.kmh && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
-            <Text style={styles.checkLabel}>KMH Sozlesmesini okudum ve kabul ediyorum</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.checkLabel}>KMH Sozlesmesini okudum ve kabul ediyorum</Text>
+              {!agreementChecks.kmh && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
+            </View>
+            {!agreementChecks.kmh && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.checkRow}
-            onPress={() => setAgreementChecks((p) => ({ ...p, kvkk: !p.kvkk }))}
+            style={[styles.checkRow, agreementChecks.kvkk && styles.checkRowDone]}
+            onPress={() => {
+              if (agreementChecks.kvkk) {
+                setAgreementChecks((p) => ({ ...p, kvkk: false }));
+              } else {
+                setAgreementScrolled(false);
+                setActiveAgreement('kvkk');
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={[styles.checkbox, agreementChecks.kvkk && styles.checkboxChecked]}>
               {agreementChecks.kvkk && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
-            <Text style={styles.checkLabel}>KVKK Aydinlatma Metnini okudum ve kabul ediyorum</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.checkLabel}>KVKK Aydinlatma Metnini okudum ve kabul ediyorum</Text>
+              {!agreementChecks.kvkk && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
+            </View>
+            {!agreementChecks.kvkk && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.checkRow}
-            onPress={() => setAgreementChecks((p) => ({ ...p, genel: !p.genel }))}
+            style={[styles.checkRow, agreementChecks.genel && styles.checkRowDone]}
+            onPress={() => {
+              if (agreementChecks.genel) {
+                setAgreementChecks((p) => ({ ...p, genel: false }));
+              } else {
+                setAgreementScrolled(false);
+                setActiveAgreement('genel');
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={[styles.checkbox, agreementChecks.genel && styles.checkboxChecked]}>
               {agreementChecks.genel && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
-            <Text style={styles.checkLabel}>Genel kulllanim kosullarini kabul ediyorum</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.checkLabel}>Genel kullanim kosullarini kabul ediyorum</Text>
+              {!agreementChecks.genel && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
+            </View>
+            {!agreementChecks.genel && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}
           </TouchableOpacity>
 
           <Button
@@ -811,8 +1117,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 16,
     padding: 20,
-    marginBottom: 20,
-    maxHeight: 300,
     ...Platform.select({
       ios: {
         shadowColor: '#0a1628',
@@ -827,6 +1131,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.gray[700],
     lineHeight: 22,
+  },
+  checkRowDone: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#10b981',
+  },
+  checkHint: {
+    fontSize: 12,
+    color: colors.gray[400],
+    marginTop: 2,
+  },
+  agrIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(37,99,235,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  agrStickyBar: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.gray[200],
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.06, shadowRadius: 8 },
+      android: { elevation: 8 },
+    }),
+  },
+  agrApproveBtn: {
+    backgroundColor: '#2563eb',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  agrApproveBtnDisabled: {
+    backgroundColor: colors.gray[200],
+  },
+  agrApproveBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  agrApproveBtnTextDisabled: {
+    color: colors.gray[400],
   },
   checkRow: {
     flexDirection: 'row',
