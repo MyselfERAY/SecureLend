@@ -37,6 +37,7 @@ export function getStatusBadge(status: string): { text: string; variant: BadgeVa
     APPROVED: { text: 'Onaylandi', variant: 'success' },
     PENDING: { text: 'Bekliyor', variant: 'warning' },
     PENDING_SIGNATURES: { text: 'Imza Bekleniyor', variant: 'warning' },
+    PENDING_ACTIVATION: { text: 'Aktivasyon Bekleniyor', variant: 'warning' },
     PROCESSING: { text: 'Isleniyor', variant: 'warning' },
     DRAFT: { text: 'Taslak', variant: 'gray' },
     INACTIVE: { text: 'Pasif', variant: 'gray' },

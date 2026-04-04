@@ -34,6 +34,8 @@ export default function ContractDetailScreen() {
   const [terminateReason, setTerminateReason] = useState('');
   const [terminating, setTerminating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uavtCode, setUavtCode] = useState('');
+  const [activating, setActivating] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState('');
 
   const loadData = useCallback(async () => {
@@ -62,7 +64,8 @@ export default function ContractDetailScreen() {
   const kmhAccounts = contract.tenantKmhAccounts || [];
   const selectedKmh = kmhAccounts.find((a) => a.accountId === selectedKmhId);
   const kmhOk = !isTenant || (selectedKmh != null && selectedKmh.creditLimit >= contract.monthlyRent);
-  const canSign = contract.status === 'PENDING_SIGNATURES' && !mySignature && kmhOk;
+  const canSign = contract.status === 'PENDING_SIGNATURES' && !mySignature;
+  const canActivate = contract.status === 'PENDING_ACTIVATION' && isTenant;
   const canTerminate = contract.status === 'ACTIVE';
 
   const handleSign = async () => {
@@ -76,6 +79,19 @@ export default function ContractDetailScreen() {
       await loadData();
     } else { setError(extractError(res)); }
     setSigning(false);
+  };
+
+  const handleActivate = async () => {
+    if (!tokens || !uavtCode.trim()) return;
+    setError(''); setActivating(true);
+    const body: any = { uavtCode: uavtCode.trim() };
+    if (selectedKmhId) body.kmhAccountId = selectedKmhId;
+
+    const res = await api(`/api/v1/contracts/${id}/activate`, { method: 'POST', body, token: tokens.accessToken });
+    if (res.status === 'success') {
+      await loadData();
+    } else { setError(extractError(res)); }
+    setActivating(false);
   };
 
   const handleTerminate = async () => {
@@ -412,6 +428,80 @@ export default function ContractDetailScreen() {
                   : 'Secilen hesabin limiti yetersiz.'}
             </Text>
           </View>
+        )}
+
+        {/* UAVT Activation Section */}
+        {canActivate && (
+          <>
+            <Text style={styles.sectionTitle}>Sozlesme Aktivasyonu</Text>
+            <View style={styles.sectionCard}>
+              <View style={{ padding: 16 }}>
+                <View style={[styles.alertBox, { backgroundColor: '#eff6ff', marginHorizontal: 0, marginVertical: 0, marginBottom: 16 }]}>
+                  <Ionicons name="information-circle" size={20} color="#2563eb" />
+                  <Text style={[styles.alertText, { color: '#1d4ed8' }]}>
+                    Sozlesmeyi aktif hale getirmek icin mulkun UAVT (Ulusal Adres Veri Tabani) numarasini girin. Banka, mulk sahipligi dogrulamasini yapacaktir.
+                  </Text>
+                </View>
+
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[700], marginBottom: 6 }}>
+                  UAVT Numarasi *
+                </Text>
+                <TextInput
+                  style={styles.terminateInput}
+                  placeholder="UAVT numarasini girin (e-Devlet veya tapudan)"
+                  value={uavtCode}
+                  onChangeText={(t) => setUavtCode(t.replace(/[^0-9]/g, ''))}
+                  keyboardType="number-pad"
+                  maxLength={20}
+                  placeholderTextColor={colors.gray[400]}
+                />
+
+                {/* KMH Selection for activation */}
+                {kmhAccounts.length > 1 && (
+                  <>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[700], marginBottom: 6, marginTop: 12 }}>
+                      KMH Hesabi Secin
+                    </Text>
+                    {kmhAccounts.map((acc) => {
+                      const isEligible = acc.creditLimit >= contract.monthlyRent;
+                      const isBound = acc.contractId && acc.contractId !== contract.id;
+                      const isSelected = selectedKmhId === acc.accountId;
+                      const disabled = !isEligible || !!isBound;
+                      return (
+                        <TouchableOpacity
+                          key={acc.accountId}
+                          onPress={() => !disabled && setSelectedKmhId(acc.accountId)}
+                          disabled={disabled}
+                          style={[styles.kmhItem, isSelected && styles.kmhItemSelected, disabled && styles.kmhItemDisabled]}
+                          activeOpacity={0.7}
+                        >
+                          <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                            {isSelected && <View style={styles.radioInner} />}
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.kmhNumber, disabled && { color: colors.gray[400] }]}>{acc.accountNumber}</Text>
+                            <Text style={styles.kmhLimit}>Limit: {acc.creditLimit.toLocaleString('tr-TR')} TL</Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.signButton, { marginTop: 16, backgroundColor: '#2563eb' }, (!uavtCode.trim() || activating) && { opacity: 0.5 }]}
+                  onPress={handleActivate}
+                  activeOpacity={0.8}
+                  disabled={!uavtCode.trim() || activating}
+                >
+                  <Ionicons name="shield-checkmark" size={22} color="#ffffff" />
+                  <Text style={styles.signButtonText}>
+                    {activating ? 'Dogrulanıyor...' : 'Sozlesmeyi Aktive Et'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
         )}
 
         {/* Action Buttons */}

@@ -215,6 +215,8 @@ model Contract {
   noticePeriodDays   Int                @default(30) @map("notice_period_days")
   documentPhotoUrl   String?            @map("document_photo_url") @db.VarChar(500)
   documentPhotoKey   String?            @map("document_photo_key") @db.VarChar(200)
+  uavtCode           String?            @map("uavt_code") @db.VarChar(20)
+  bankActivationRef  String?            @map("bank_activation_ref") @db.VarChar(100)
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   landlordIban      String?             @map("landlord_iban") @db.VarChar(26)
@@ -406,6 +408,7 @@ enum RentIncreaseType {
 enum ContractStatus {
   DRAFT
   PENDING_SIGNATURES
+  PENDING_ACTIVATION
   ACTIVE
   TERMINATED
   EXPIRED

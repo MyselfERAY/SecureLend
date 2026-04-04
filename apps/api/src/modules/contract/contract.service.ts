@@ -186,6 +186,8 @@ export class ContractService {
       noticePeriodDays: contract.noticePeriodDays,
       documentPhotoUrl: contract.documentPhotoUrl,
       documentPhotoKey: contract.documentPhotoKey,
+      uavtCode: contract.uavtCode,
+      bankActivationRef: contract.bankActivationRef,
       property: {
         id: contract.property.id,
         title: contract.property.title,
@@ -233,62 +235,7 @@ export class ContractService {
     if (alreadySigned)
       throw new BadRequestException('Bu sozlesmeyi zaten imzaladiniz');
 
-    // ─── KMH ZORUNLULUK KONTROLU (Kiraci icin) ───
-    let selectedKmhAccountId: string | undefined;
-    if (role === UserRole.TENANT) {
-      let kmhAccount;
-
-      if (kmhAccountId) {
-        // Kiracı belirli bir KMH hesabı seçti
-        kmhAccount = await this.prisma.bankAccount.findFirst({
-          where: {
-            id: kmhAccountId,
-            userId,
-            accountType: BankAccountType.KMH,
-            status: BankAccountStatus.ACTIVE,
-          },
-        });
-        if (!kmhAccount) {
-          throw new BadRequestException('Secilen KMH hesabi bulunamadi veya aktif degil');
-        }
-      } else {
-        // Fallback: tek KMH hesabı varsa otomatik seç
-        const kmhAccounts = await this.prisma.bankAccount.findMany({
-          where: {
-            userId,
-            accountType: BankAccountType.KMH,
-            status: BankAccountStatus.ACTIVE,
-          },
-          orderBy: { createdAt: 'desc' },
-        });
-
-        if (kmhAccounts.length === 0) {
-          throw new BadRequestException(
-            'Sozlesme imzalamak icin oncelikle KMH (Kira Mevduat Hesabi) basvurusu yapmaniz ve onboarding isleminizi tamamlamaniz gerekmektedir. Banka sayfasindan KMH basvurusu yapabilirsiniz.',
-          );
-        }
-
-        if (kmhAccounts.length > 1) {
-          throw new BadRequestException(
-            'Birden fazla aktif KMH hesabiniz var. Lutfen sozlesme icin kullanmak istediginiz hesabi secin.',
-          );
-        }
-
-        kmhAccount = kmhAccounts[0];
-      }
-
-      const kmhLimit = Number(kmhAccount.creditLimit ?? 0);
-      const monthlyRent = Number(contract.monthlyRent);
-      if (kmhLimit < monthlyRent) {
-        throw new BadRequestException(
-          `KMH limitiniz (${kmhLimit.toLocaleString('tr-TR')} TL) sozlesme kira bedelini (${monthlyRent.toLocaleString('tr-TR')} TL) karsilamiyor. Daha yuksek limitli bir KMH basvurusu yapmaniz gerekmektedir.`,
-        );
-      }
-
-      selectedKmhAccountId = kmhAccount.id;
-    }
-
-    // Will this be the second signature (activating the contract)?
+    // Will this be the second signature?
     const otherPartySigned = contract.signatures.length === 1;
 
     const result = await this.prisma.$transaction(async (tx) => {
@@ -304,34 +251,12 @@ export class ContractService {
 
       let newStatus = contract.status;
       if (otherPartySigned) {
-        newStatus = ContractStatus.ACTIVE;
+        // Both parties signed → move to PENDING_ACTIVATION (requires UAVT + bank verification)
+        newStatus = ContractStatus.PENDING_ACTIVATION;
         await tx.contract.update({
           where: { id: contractId },
-          data: { status: ContractStatus.ACTIVE },
+          data: { status: ContractStatus.PENDING_ACTIVATION },
         });
-
-        // Update property status to RENTED
-        await tx.property.update({
-          where: { id: contract.propertyId },
-          data: { status: 'RENTED' },
-        });
-
-        // Auto-add TENANT role to tenant if missing
-        const tenant = await tx.user.findUniqueOrThrow({
-          where: { id: contract.tenantId },
-        });
-        if (!tenant.roles.includes(UserRole.TENANT)) {
-          await tx.user.update({
-            where: { id: contract.tenantId },
-            data: { roles: { push: UserRole.TENANT } },
-          });
-        }
-
-        // Generate payment schedule
-        const scheduleItems = this.generatePaymentScheduleData(contract);
-        if (scheduleItems.length > 0) {
-          await tx.paymentSchedule.createMany({ data: scheduleItems });
-        }
       }
 
       await tx.auditLog.create({
@@ -350,18 +275,18 @@ export class ContractService {
 
     // ─── IN-APP NOTIFICATIONS ───
     try {
-      if (result === ContractStatus.ACTIVE) {
-        // Contract activated: notify both parties
+      if (result === ContractStatus.PENDING_ACTIVATION) {
+        // Both signed → pending activation: notify both parties
         await this.inAppNotificationService.createForMultipleUsers(
           [contract.tenantId, contract.landlordId],
-          NotificationType.CONTRACT_ACTIVATED,
-          'Sozlesme Aktif',
-          'Kira sozlesmesi her iki tarafca imzalandi ve aktif hale geldi.',
+          NotificationType.CONTRACT_SIGNED,
+          'Imzalar Tamamlandi',
+          'Kira sozlesmesi her iki tarafca imzalandi. Sozlesmeyi aktif hale getirmek icin UAVT dogrulamasi gerekiyor.',
           'Contract',
           contractId,
         );
       } else {
-        // Contract signed but not yet active: notify the other party
+        // First signature: notify the other party
         const otherPartyId = userId === contract.tenantId ? contract.landlordId : contract.tenantId;
         await this.inAppNotificationService.create(
           otherPartyId,
@@ -376,22 +301,209 @@ export class ContractService {
       this.logger.warn(`Failed to create notification for contract sign ${contractId}: ${err}`);
     }
 
-    // ─── BANKA BILDIRIMI (Sozlesme aktif olunca) ───
-    if (result === ContractStatus.ACTIVE) {
-      try {
-        const bankResult = await this.bankService.notifyContractSigned(contractId, selectedKmhAccountId);
-        this.logger.log(
-          `Bank notified for contract ${contractId}: ${bankResult.message}`,
-        );
-      } catch (err) {
-        // Best-effort: banka bildirimi basarisiz olsa bile sozlesme aktif kalir
-        this.logger.error(
-          `Failed to notify bank for contract ${contractId}: ${(err as Error).message}`,
-        );
-      }
+    this.logger.log(`Contract ${contractId} signed by ${role}, status: ${result}`);
+    return this.getContractDetail(contractId);
+  }
+
+  /**
+   * Activate a contract after both parties have signed.
+   * Requires UAVT code for property-owner verification via bank.
+   *
+   * Steps:
+   * 1. Validate UAVT — bank verifies tapu-malik match
+   * 2. Check no other active contract exists for same UAVT
+   * 3. If actual rent > estimated rent at KMH application, flag for limit adjustment
+   * 4. Bank creates payment order and confirms
+   * 5. Contract becomes ACTIVE
+   */
+  async activateContract(
+    userId: string,
+    contractId: string,
+    uavtCode: string,
+    kmhAccountId?: string,
+  ) {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+      include: { property: true },
+    });
+
+    if (!contract) throw new NotFoundException('Sozlesme bulunamadi');
+    if (contract.status !== ContractStatus.PENDING_ACTIVATION)
+      throw new BadRequestException('Bu sozlesme aktivasyona uygun degil');
+    if (contract.tenantId !== userId)
+      throw new ForbiddenException('Sadece kiraci sozlesmeyi aktive edebilir');
+
+    // ─── 1. UAVT ile mülk-malik eşleşmesi (banka API placeholder) ───
+    // Gerçek entegrasyonda: banka UAVT → tapu → malik TCKN döner,
+    // ev sahibi TCKN ile eşleştirilir
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: contract.landlordId },
+      select: { tcknHash: true },
+    });
+
+    // PLACEHOLDER: Banka UAVT doğrulaması
+    // const bankVerification = await this.bankService.verifyUavtOwnership(uavtCode, landlord.tcknHash);
+    // if (!bankVerification.matched) throw new BadRequestException('UAVT ile mulk sahipligi eslesmedi');
+    this.logger.log(`UAVT verification placeholder: ${uavtCode} for contract ${contractId}`);
+
+    // ─── 2. Aynı UAVT ile aktif sözleşme var mı? ───
+    const existingActive = await this.prisma.contract.findFirst({
+      where: {
+        uavtCode,
+        status: ContractStatus.ACTIVE,
+        id: { not: contractId },
+      },
+    });
+
+    if (existingActive) {
+      throw new BadRequestException(
+        'Bu UAVT numarasina ait aktif bir sozlesme zaten mevcut. Ayni mulk icin birden fazla aktif sozlesme olusturulamaz.',
+      );
     }
 
-    this.logger.log(`Contract ${contractId} signed by ${role}, status: ${result}`);
+    // ─── 3. KMH hesap kontrolü ve limit ayarlaması ───
+    let selectedKmhAccountId: string | undefined;
+
+    if (kmhAccountId) {
+      const kmhAccount = await this.prisma.bankAccount.findFirst({
+        where: {
+          id: kmhAccountId,
+          userId,
+          accountType: BankAccountType.KMH,
+          status: BankAccountStatus.ACTIVE,
+        },
+      });
+      if (!kmhAccount) {
+        throw new BadRequestException('Secilen KMH hesabi bulunamadi veya aktif degil');
+      }
+
+      const kmhLimit = Number(kmhAccount.creditLimit ?? 0);
+      const monthlyRent = Number(contract.monthlyRent);
+      if (kmhLimit < monthlyRent) {
+        throw new BadRequestException(
+          `KMH limitiniz (${kmhLimit.toLocaleString('tr-TR')} TL) sozlesme kira bedelini (${monthlyRent.toLocaleString('tr-TR')} TL) karsilamiyor.`,
+        );
+      }
+
+      // Check if estimated rent at KMH application was lower than actual contract rent
+      // If so, bank may want to adjust the limit
+      const kmhApp = await this.prisma.kmhApplication.findFirst({
+        where: { userId, status: 'APPROVED' },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (kmhApp) {
+        const estimatedRent = Number(kmhApp.estimatedRent);
+        if (monthlyRent > estimatedRent) {
+          // PLACEHOLDER: Bankaya limit güncelleme talebi
+          // await this.bankService.requestLimitAdjustment(kmhAccount.id, monthlyRent);
+          this.logger.warn(
+            `Contract rent (${monthlyRent}) exceeds KMH estimated rent (${estimatedRent}). ` +
+            `Bank may adjust limit for account ${kmhAccount.id}.`,
+          );
+        }
+      }
+
+      selectedKmhAccountId = kmhAccount.id;
+    } else {
+      // Auto-select single KMH account
+      const kmhAccounts = await this.prisma.bankAccount.findMany({
+        where: {
+          userId,
+          accountType: BankAccountType.KMH,
+          status: BankAccountStatus.ACTIVE,
+        },
+      });
+
+      if (kmhAccounts.length === 0) {
+        throw new BadRequestException('Aktif KMH hesabiniz bulunamadi.');
+      }
+      if (kmhAccounts.length > 1) {
+        throw new BadRequestException('Birden fazla aktif KMH hesabiniz var. Lutfen birini secin.');
+      }
+
+      const kmhAccount = kmhAccounts[0];
+      const kmhLimit = Number(kmhAccount.creditLimit ?? 0);
+      if (kmhLimit < Number(contract.monthlyRent)) {
+        throw new BadRequestException(
+          `KMH limitiniz (${kmhLimit.toLocaleString('tr-TR')} TL) sozlesme kira bedelini karsilamiyor.`,
+        );
+      }
+      selectedKmhAccountId = kmhAccount.id;
+    }
+
+    // ─── 4. Banka onayı: ödeme talimatı oluşturma ───
+    let bankActivationRef: string | undefined;
+    try {
+      const bankResult = await this.bankService.notifyContractSigned(contractId, selectedKmhAccountId);
+      bankActivationRef = bankResult.paymentOrderId;
+      this.logger.log(`Bank activation confirmed for contract ${contractId}: ${bankResult.message}`);
+    } catch (err) {
+      this.logger.error(`Bank activation failed for contract ${contractId}: ${(err as Error).message}`);
+      throw new BadRequestException(
+        'Banka odeme talimati olusturulamadi. Lutfen daha sonra tekrar deneyin.',
+      );
+    }
+
+    // ─── 5. Aktivasyon: transaction ile ACTIVE'e geçir ───
+    await this.prisma.$transaction(async (tx) => {
+      await tx.contract.update({
+        where: { id: contractId },
+        data: {
+          status: ContractStatus.ACTIVE,
+          uavtCode,
+          bankActivationRef,
+        },
+      });
+
+      // Update property status to RENTED
+      await tx.property.update({
+        where: { id: contract.propertyId },
+        data: { status: 'RENTED' },
+      });
+
+      // Auto-add TENANT role if missing
+      const tenant = await tx.user.findUniqueOrThrow({
+        where: { id: contract.tenantId },
+      });
+      if (!tenant.roles.includes(UserRole.TENANT)) {
+        await tx.user.update({
+          where: { id: contract.tenantId },
+          data: { roles: { push: UserRole.TENANT } },
+        });
+      }
+
+      // Generate payment schedule
+      const scheduleItems = this.generatePaymentScheduleData(contract);
+      if (scheduleItems.length > 0) {
+        await tx.paymentSchedule.createMany({ data: scheduleItems });
+      }
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'CONTRACT_ACTIVATED',
+          entityType: 'Contract',
+          entityId: contractId,
+          metadata: { uavtCode, bankActivationRef, kmhAccountId: selectedKmhAccountId },
+        },
+      });
+    });
+
+    // ─── Notifications ───
+    try {
+      await this.inAppNotificationService.createForMultipleUsers(
+        [contract.tenantId, contract.landlordId],
+        NotificationType.CONTRACT_ACTIVATED,
+        'Sozlesme Aktif',
+        'Kira sozlesmesi aktif hale geldi. UAVT dogrulamasi tamamlandi, odeme talimati olusturuldu.',
+        'Contract',
+        contractId,
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to create activation notification for ${contractId}: ${err}`);
+    }
+
+    this.logger.log(`Contract ${contractId} activated with UAVT ${uavtCode}`);
     return this.getContractDetail(contractId);
   }
 

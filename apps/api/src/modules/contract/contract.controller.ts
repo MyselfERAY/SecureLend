@@ -11,6 +11,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { ContractService } from './contract.service';
 import { CreateContractDto } from './dto/create-contract.dto';
+import { ActivateContractDto } from './dto/activate-contract.dto';
 
 @ApiTags('Contract')
 @ApiBearerAuth('access-token')
@@ -72,6 +73,20 @@ export class ContractController {
   ): Promise<JSendSuccess<unknown>> {
     const result = await this.contractService.uploadDocumentPhoto(id, user.id, body.photoBase64);
     return { status: 'success', data: result };
+  }
+
+  @Post(':id/activate')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { limit: 1, ttl: seconds(30) } })
+  async activate(
+    @CurrentUser() user: { id: string },
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ActivateContractDto,
+  ): Promise<JSendSuccess<unknown>> {
+    const contract = await this.contractService.activateContract(
+      user.id, id, dto.uavtCode, dto.kmhAccountId,
+    );
+    return { status: 'success', data: contract };
   }
 
   @Post(':id/terminate')
