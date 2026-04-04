@@ -62,7 +62,7 @@ function AuthGate() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="chat" options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Screen name="chat" options={{ headerShown: false }} />
       <Stack.Screen name="kmh" />
       <Stack.Screen name="kvkk" />
       <Stack.Screen name="notifications" />

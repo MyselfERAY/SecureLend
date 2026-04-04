@@ -137,6 +137,15 @@ export default function ChatRoomScreen() {
           headerStyle: { backgroundColor: colors.brand.dark },
           headerTintColor: colors.white,
           headerTitleStyle: { fontWeight: '700', fontSize: 17 },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={{ marginRight: 8 }}
+            >
+              <Ionicons name="chevron-back" size={26} color={colors.white} />
+            </TouchableOpacity>
+          ),
         }}
       />
       <KeyboardAvoidingView
