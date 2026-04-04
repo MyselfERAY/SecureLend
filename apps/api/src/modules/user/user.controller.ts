@@ -14,6 +14,15 @@ import { AddRoleDto } from './dto/add-role.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Get role-aware dashboard aggregate data' })
+  async getDashboard(
+    @CurrentUser('id') userId: string,
+  ) {
+    const data = await this.userService.getDashboard(userId);
+    return { status: 'success', data };
+  }
+
   @Get('search')
   @Throttle({ short: { limit: 5, ttl: seconds(10) } })
   async searchByPhone(

@@ -63,6 +63,17 @@ export class ContractController {
     return { status: 'success', data: contract };
   }
 
+  @Post(':id/upload-document')
+  @HttpCode(HttpStatus.OK)
+  async uploadDocumentPhoto(
+    @CurrentUser() user: { id: string },
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { photoBase64: string },
+  ): Promise<JSendSuccess<unknown>> {
+    const result = await this.contractService.uploadDocumentPhoto(id, user.id, body.photoBase64);
+    return { status: 'success', data: result };
+  }
+
   @Post(':id/terminate')
   @HttpCode(HttpStatus.OK)
   @Throttle({ short: { limit: 1, ttl: seconds(60) } })

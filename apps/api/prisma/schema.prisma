@@ -202,6 +202,14 @@ model Contract {
   specialClauses    String?             @map("special_clauses")
   terminatedAt      DateTime?           @map("terminated_at")
   terminationReason String?             @map("termination_reason") @db.VarChar(500)
+  rentIncreaseType   RentIncreaseType   @default(TUFE) @map("rent_increase_type")
+  rentIncreaseRate   Decimal?           @map("rent_increase_rate") @db.Decimal(5, 2)
+  furnitureIncluded  Boolean            @default(false) @map("furniture_included")
+  petsAllowed        Boolean            @default(false) @map("pets_allowed")
+  sublettingAllowed  Boolean            @default(false) @map("subletting_allowed")
+  noticePeriodDays   Int                @default(30) @map("notice_period_days")
+  documentPhotoUrl   String?            @map("document_photo_url") @db.VarChar(500)
+  documentPhotoKey   String?            @map("document_photo_key") @db.VarChar(200)
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   landlordIban      String?             @map("landlord_iban") @db.VarChar(26)
@@ -379,6 +387,14 @@ enum KycStatus {
   REJECTED
 
   @@map("kyc_status")
+}
+
+enum RentIncreaseType {
+  TUFE
+  FIXED_RATE
+  NONE
+
+  @@map("rent_increase_type")
 }
 
 enum ContractStatus {

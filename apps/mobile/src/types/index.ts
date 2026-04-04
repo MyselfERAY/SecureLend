@@ -174,3 +174,45 @@ export interface NotificationsResponse {
   total: number;
   unreadCount: number;
 }
+
+// Dashboard types
+export interface DashboardTenantData {
+  activeContracts: number;
+  totalMonthlyRent: number;
+  pendingPayments: number;
+  overduePayments: number;
+  totalPaid: number;
+  kmhStatus: string | null;
+  kmhLimit: number | null;
+  nextPaymentDate: string | null;
+  nextPaymentAmount: number | null;
+}
+
+export interface DashboardLandlordData {
+  activeContracts: number;
+  totalProperties: number;
+  rentedProperties: number;
+  totalMonthlyIncome: number;
+  totalReceived: number;
+  pendingPayments: number;
+  overduePayments: number;
+  occupancyRate: number;
+}
+
+export interface DashboardNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface DashboardData {
+  roles: string[];
+  fullName: string;
+  memberSince: string;
+  tenant?: DashboardTenantData;
+  landlord?: DashboardLandlordData;
+  recentNotifications: DashboardNotification[];
+}

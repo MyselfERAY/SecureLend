@@ -10,6 +10,7 @@ export type {
 } from './types/api-response';
 export { ApplicationStatus } from './types/application';
 export type { ApplicationResult } from './types/application';
+export { TBK_LEASE_TEMPLATE_VERSION, TBK_LEASE_SECTIONS } from './legal/contract-template';
 export {
   KVKK_VERSION,
   KVKK_AYDINLATMA_METNI,

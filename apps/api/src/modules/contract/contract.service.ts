@@ -60,6 +60,12 @@ export class ContractService {
           paymentDayOfMonth: dto.paymentDayOfMonth,
           terms: dto.terms,
           specialClauses: dto.specialClauses,
+          rentIncreaseType: dto.rentIncreaseType,
+          rentIncreaseRate: dto.rentIncreaseRate,
+          furnitureIncluded: dto.furnitureIncluded ?? false,
+          petsAllowed: dto.petsAllowed ?? false,
+          sublettingAllowed: dto.sublettingAllowed ?? false,
+          noticePeriodDays: dto.noticePeriodDays ?? 30,
           status: ContractStatus.PENDING_SIGNATURES,
         },
       });
@@ -172,6 +178,14 @@ export class ContractService {
       paymentDayOfMonth: contract.paymentDayOfMonth,
       terms: contract.terms,
       specialClauses: contract.specialClauses,
+      rentIncreaseType: contract.rentIncreaseType,
+      rentIncreaseRate: contract.rentIncreaseRate ? Number(contract.rentIncreaseRate) : undefined,
+      furnitureIncluded: contract.furnitureIncluded,
+      petsAllowed: contract.petsAllowed,
+      sublettingAllowed: contract.sublettingAllowed,
+      noticePeriodDays: contract.noticePeriodDays,
+      documentPhotoUrl: contract.documentPhotoUrl,
+      documentPhotoKey: contract.documentPhotoKey,
       property: {
         id: contract.property.id,
         title: contract.property.title,
@@ -439,6 +453,26 @@ export class ContractService {
     }
 
     return this.getContractDetail(contractId);
+  }
+
+  async uploadDocumentPhoto(contractId: string, userId: string, _photoBase64: string) {
+    const contract = await this.prisma.contract.findUnique({ where: { id: contractId } });
+    if (!contract) throw new NotFoundException('Sozlesme bulunamadi');
+    if (contract.tenantId !== userId && contract.landlordId !== userId)
+      throw new ForbiddenException('Bu sozlesmenin tarafi degilsiniz');
+
+    const photoKey = `contracts/${contractId}/document-${Date.now()}.jpg`;
+
+    await this.prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        documentPhotoUrl: `pending-upload://${photoKey}`,
+        documentPhotoKey: photoKey,
+      },
+    });
+
+    this.logger.log(`Document photo uploaded for contract ${contractId} by user ${userId}`);
+    return { photoKey, message: 'Belge kaydedildi. Dosya depolama aktif olunca yuklenecek.' };
   }
 
   // ─── Helpers ─────────────────────────────

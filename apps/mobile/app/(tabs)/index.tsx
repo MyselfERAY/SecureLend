@@ -12,12 +12,57 @@ import { getProfilePhoto } from '../../src/lib/storage';
 import { Badge, getStatusBadge } from '../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
 import { colors } from '../../src/theme/colors';
-import { ContractSummary, PaymentItem } from '../../src/types';
+import { ContractSummary, PaymentItem, DashboardData, DashboardNotification } from '../../src/types';
 import { useNotifications } from '../../src/hooks/useNotifications';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DARK_NAVY = '#0a1628';
 const DARK_NAVY_LIGHT = '#0f1d32';
+
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
+
+const NOTIF_ICON_MAP: Record<string, { name: IoniconsName; color: string; bg: string }> = {
+  KMH_APPROVED: { name: 'checkmark-circle', color: '#10b981', bg: '#ecfdf5' },
+  KMH_REJECTED: { name: 'close-circle', color: '#ef4444', bg: '#fef2f2' },
+  KMH_ONBOARDING_COMPLETE: { name: 'ribbon', color: '#2563eb', bg: '#eff6ff' },
+  CONTRACT_CREATED: { name: 'document-text', color: '#2563eb', bg: '#eff6ff' },
+  CONTRACT_SIGNED: { name: 'create', color: '#10b981', bg: '#ecfdf5' },
+  CONTRACT_ACTIVATED: { name: 'checkmark-done', color: '#10b981', bg: '#ecfdf5' },
+  CONTRACT_TERMINATED: { name: 'ban', color: '#ef4444', bg: '#fef2f2' },
+  PAYMENT_DUE: { name: 'time', color: '#f59e0b', bg: '#fffbeb' },
+  PAYMENT_OVERDUE: { name: 'alert-circle', color: '#ef4444', bg: '#fef2f2' },
+  PAYMENT_COMPLETED: { name: 'wallet', color: '#10b981', bg: '#ecfdf5' },
+  SYSTEM: { name: 'information-circle', color: '#2563eb', bg: '#eff6ff' },
+};
+
+const DEFAULT_NOTIF_ICON: { name: IoniconsName; color: string; bg: string } = {
+  name: 'notifications-outline',
+  color: colors.gray[500],
+  bg: colors.gray[100],
+};
+
+function formatTimeAgo(dateStr: string): string {
+  const now = Date.now();
+  const date = new Date(dateStr).getTime();
+  const diffMs = now - date;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHour = Math.floor(diffMs / 3600000);
+  const diffDay = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return 'Az once';
+  if (diffMin < 60) return `${diffMin} dk once`;
+  if (diffHour < 24) return `${diffHour} saat once`;
+  if (diffDay === 1) return 'Dun';
+  if (diffDay < 30) return `${diffDay} gun once`;
+  return new Date(dateStr).toLocaleDateString('tr-TR');
+}
+
+function formatCompact(amount: number): string {
+  if (amount >= 1000) {
+    return `${(amount / 1000).toFixed(0)}K TL`;
+  }
+  return `${amount} TL`;
+}
 
 export default function DashboardScreen() {
   const { user, tokens } = useAuth();
@@ -25,6 +70,7 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [contracts, setContracts] = useState<ContractSummary[]>([]);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
@@ -33,12 +79,14 @@ export default function DashboardScreen() {
   const loadData = useCallback(async () => {
     if (!tokens) return;
     try {
-      const [cRes, pRes] = await Promise.all([
+      const [cRes, pRes, dRes] = await Promise.all([
         api<ContractSummary[]>('/api/v1/contracts', { token: tokens.accessToken }),
         api<PaymentItem[]>('/api/v1/payments/my', { token: tokens.accessToken }),
+        api<DashboardData>('/api/v1/users/dashboard', { token: tokens.accessToken }),
       ]);
       if (cRes.status === 'success' && cRes.data) setContracts(cRes.data);
       if (pRes.status === 'success' && pRes.data) setPayments(pRes.data);
+      if (dRes.status === 'success' && dRes.data) setDashboard(dRes.data);
     } catch { /* ignore */ }
   }, [tokens]);
 
@@ -57,11 +105,20 @@ export default function DashboardScreen() {
 
   const activeContracts = contracts.filter((c) => c.status === 'ACTIVE');
   const pendingPayments = payments.filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE');
-  const totalMonthlyRent = activeContracts.reduce((sum, c) => sum + c.monthlyRent, 0);
 
-  const firstName = user?.fullName.split(' ')[0] || '';
-  const initials = user?.fullName
-    ? user.fullName.split(' ').map((n) => n.charAt(0)).join('').slice(0, 2).toUpperCase()
+  // Use dashboard data for metrics if available, fall back to local computation
+  const tenantMetrics = dashboard?.tenant;
+  const landlordMetrics = dashboard?.landlord;
+
+  const metricActiveContracts = tenantMetrics?.activeContracts ?? activeContracts.length;
+  const metricMonthlyRent = tenantMetrics?.totalMonthlyRent ?? activeContracts.reduce((sum, c) => sum + c.monthlyRent, 0);
+  const metricPendingCount = tenantMetrics
+    ? tenantMetrics.pendingPayments + tenantMetrics.overduePayments
+    : pendingPayments.length;
+
+  const firstName = dashboard?.fullName?.split(' ')[0] || user?.fullName?.split(' ')[0] || '';
+  const initials = (dashboard?.fullName || user?.fullName)
+    ? (dashboard?.fullName || user?.fullName || '').split(' ').map((n) => n.charAt(0)).join('').slice(0, 2).toUpperCase()
     : '?';
 
   const quickActions = [
@@ -105,6 +162,62 @@ export default function DashboardScreen() {
       subtitle: c.propertyTitle,
     });
   });
+
+  // KMH status card config
+  const kmhStatus = tenantMetrics?.kmhStatus;
+  const kmhLimit = tenantMetrics?.kmhLimit;
+
+  let kmhCard: { bg: string; borderColor: string; icon: IoniconsName; iconColor: string; title: string; subtitle: string; route: string } | null = null;
+  if (tenantMetrics) {
+    if (kmhStatus === 'APPROVED') {
+      kmhCard = {
+        bg: '#ecfdf5',
+        borderColor: '#10b981',
+        icon: 'checkmark-circle',
+        iconColor: '#10b981',
+        title: 'KMH Aktif',
+        subtitle: kmhLimit ? `Limit: ${kmhLimit.toLocaleString('tr-TR')} TL` : 'Hesabiniz aktif',
+        route: '/(tabs)/bank',
+      };
+    } else if (kmhStatus === 'PENDING') {
+      kmhCard = {
+        bg: '#fffbeb',
+        borderColor: '#f59e0b',
+        icon: 'time',
+        iconColor: '#f59e0b',
+        title: 'KMH Basvuru Bekliyor',
+        subtitle: 'Basvurunuz inceleniyor',
+        route: '/(tabs)/bank',
+      };
+    } else if (kmhStatus === 'REJECTED') {
+      kmhCard = {
+        bg: '#fef2f2',
+        borderColor: '#ef4444',
+        icon: 'close-circle',
+        iconColor: '#ef4444',
+        title: 'KMH Reddedildi',
+        subtitle: 'Yeni basvuru yapabilirsiniz',
+        route: '/(tabs)/bank',
+      };
+    } else {
+      kmhCard = {
+        bg: '#eff6ff',
+        borderColor: '#2563eb',
+        icon: 'card-outline',
+        iconColor: '#2563eb',
+        title: 'KMH Basvurusu Yap',
+        subtitle: 'Kira odeme kolayligi icin basvurun',
+        route: '/kmh/apply',
+      };
+    }
+  }
+
+  // Next payment card
+  const nextPaymentDate = tenantMetrics?.nextPaymentDate;
+  const nextPaymentAmount = tenantMetrics?.nextPaymentAmount;
+
+  // Recent notifications from dashboard
+  const recentNotifications = (dashboard?.recentNotifications ?? []).slice(0, 5);
 
   return (
     <ScrollView
@@ -151,24 +264,84 @@ export default function DashboardScreen() {
 
         <Text style={styles.heroGreeting}>Hos geldiniz, {firstName}</Text>
 
-        {/* Metric Pills */}
+        {/* Tenant Metric Pills */}
         <View style={styles.metricRow}>
           <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>{activeContracts.length}</Text>
+            <Text style={styles.metricValue}>{metricActiveContracts}</Text>
             <Text style={styles.metricLabel}>Aktif</Text>
           </View>
           <View style={styles.metricPill}>
             <Text style={styles.metricValue}>
-              {totalMonthlyRent > 0 ? `${(totalMonthlyRent / 1000).toFixed(0)}K TL` : '0'}
+              {metricMonthlyRent > 0 ? formatCompact(metricMonthlyRent) : '0'}
             </Text>
             <Text style={styles.metricLabel}>Bu Ay</Text>
           </View>
           <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>{pendingPayments.length}</Text>
+            <Text style={styles.metricValue}>{metricPendingCount}</Text>
             <Text style={styles.metricLabel}>Bekleyen</Text>
           </View>
         </View>
+
+        {/* Landlord Metric Pills */}
+        {landlordMetrics && (
+          <View style={[styles.metricRow, { marginTop: 12 }]}>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricValue}>{landlordMetrics.totalProperties}</Text>
+              <Text style={styles.metricLabel}>Mulk</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricValue}>
+                {landlordMetrics.totalMonthlyIncome > 0 ? formatCompact(landlordMetrics.totalMonthlyIncome) : '0'}
+              </Text>
+              <Text style={styles.metricLabel}>Gelir</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricValue}>{Math.round(landlordMetrics.occupancyRate)}%</Text>
+              <Text style={styles.metricLabel}>Doluluk</Text>
+            </View>
+          </View>
+        )}
       </View>
+
+      {/* KMH Status Card */}
+      {kmhCard && (
+        <TouchableOpacity
+          style={[styles.kmhCard, { backgroundColor: kmhCard.bg, borderColor: kmhCard.borderColor }]}
+          onPress={() => router.push(kmhCard!.route as any)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.kmhIconCircle, { backgroundColor: kmhCard.borderColor + '20' }]}>
+            <Ionicons name={kmhCard.icon} size={24} color={kmhCard.iconColor} />
+          </View>
+          <View style={styles.kmhContent}>
+            <Text style={[styles.kmhTitle, { color: kmhCard.borderColor }]}>{kmhCard.title}</Text>
+            <Text style={styles.kmhSubtitle}>{kmhCard.subtitle}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={kmhCard.borderColor} />
+        </TouchableOpacity>
+      )}
+
+      {/* Next Payment Card */}
+      {tenantMetrics && nextPaymentDate && nextPaymentAmount != null && (
+        <TouchableOpacity
+          style={styles.nextPaymentCard}
+          onPress={() => router.push('/(tabs)/payments')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.nextPaymentIconCircle}>
+            <Ionicons name="calendar-outline" size={22} color="#8b5cf6" />
+          </View>
+          <View style={styles.nextPaymentContent}>
+            <Text style={styles.nextPaymentLabel}>Sonraki Odeme</Text>
+            <Text style={styles.nextPaymentDate}>
+              {new Date(nextPaymentDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
+            </Text>
+          </View>
+          <Text style={styles.nextPaymentAmount}>
+            {nextPaymentAmount.toLocaleString('tr-TR')} TL
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Quick Actions */}
       <Text style={styles.sectionTitle}>Hizli Islemler</Text>
@@ -187,6 +360,40 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Recent Notifications */}
+      {recentNotifications.length > 0 && (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Bildirimler</Text>
+            <TouchableOpacity onPress={() => router.push('/notifications')} activeOpacity={0.7}>
+              <Text style={styles.seeAllText}>Tumunu Gor</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.notificationsCard}>
+            {recentNotifications.map((notif: DashboardNotification, i: number) => {
+              const iconInfo = NOTIF_ICON_MAP[notif.type] || DEFAULT_NOTIF_ICON;
+              return (
+                <View
+                  key={notif.id}
+                  style={[styles.notifItem, i < recentNotifications.length - 1 && styles.notifItemBorder]}
+                >
+                  <View style={[styles.notifIcon, { backgroundColor: iconInfo.bg }]}>
+                    <Ionicons name={iconInfo.name} size={18} color={iconInfo.color} />
+                  </View>
+                  <View style={styles.notifContent}>
+                    <Text style={[styles.notifTitle, !notif.isRead && styles.notifTitleUnread]} numberOfLines={1}>
+                      {notif.title}
+                    </Text>
+                    <Text style={styles.notifTime}>{formatTimeAgo(notif.createdAt)}</Text>
+                  </View>
+                  {!notif.isRead && <View style={styles.notifUnreadDot} />}
+                </View>
+              );
+            })}
+          </View>
+        </>
+      )}
 
       {/* Activity Feed */}
       {activityItems.length > 0 && (
@@ -410,6 +617,85 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.6)',
   },
 
+  // KMH Status Card
+  kmhCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 16,
+  },
+  kmhIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  kmhContent: {
+    flex: 1,
+  },
+  kmhTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  kmhSubtitle: {
+    fontSize: 13,
+    color: colors.gray[600],
+    marginTop: 2,
+  },
+
+  // Next Payment Card
+  nextPaymentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  nextPaymentIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f5f3ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  nextPaymentContent: {
+    flex: 1,
+  },
+  nextPaymentLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.gray[500],
+  },
+  nextPaymentDate: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.gray[900],
+    marginTop: 2,
+  },
+  nextPaymentAmount: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#8b5cf6',
+  },
+
   // Quick Actions
   sectionTitle: {
     fontSize: 17,
@@ -418,6 +704,17 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     marginTop: 4,
     paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingRight: 20,
+  },
+  seeAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2563eb',
   },
   quickGrid: {
     flexDirection: 'row',
@@ -442,6 +739,65 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.gray[700],
     textAlign: 'center',
+  },
+
+  // Notifications Section
+  notificationsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  notifItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+  },
+  notifItemBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.gray[100],
+  },
+  notifIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  notifContent: {
+    flex: 1,
+  },
+  notifTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.gray[700],
+  },
+  notifTitleUnread: {
+    fontWeight: '700',
+    color: colors.gray[900],
+  },
+  notifTime: {
+    fontSize: 12,
+    color: colors.gray[400],
+    marginTop: 2,
+  },
+  notifUnreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#2563eb',
+    marginLeft: 8,
   },
 
   // Activity Feed
