@@ -62,11 +62,14 @@ export async function registerForPushNotifications(
   try {
     const projectId =
       Constants.expoConfig?.extra?.eas?.projectId ??
-      Constants.easConfig?.projectId;
+      Constants.easConfig?.projectId ??
+      undefined;
 
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: projectId ?? undefined,
-    });
+    // In Expo Go without EAS, projectId may be unavailable.
+    // getExpoPushTokenAsync still works in dev if we omit it.
+    const tokenData = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : {},
+    );
 
     const pushToken = tokenData.data;
 
@@ -79,12 +82,12 @@ export async function registerForPushNotifications(
       });
       console.log('Push token registered with backend');
     } catch (error) {
-      console.error('Failed to send push token to backend:', error);
+      console.warn('Failed to send push token to backend:', error);
     }
 
     return pushToken;
   } catch (error) {
-    console.error('Failed to get push token:', error);
+    console.warn('Failed to get push token:', error);
     return null;
   }
 }

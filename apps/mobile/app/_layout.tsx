@@ -33,7 +33,8 @@ function AuthGate() {
 
     pushRegistered.current = true;
     registerForPushNotifications(tokens.accessToken).catch((err) => {
-      console.error('Push notification registration failed:', err);
+      // Silent fail in dev — push tokens require EAS project or production build
+      console.warn('Push notification registration skipped:', err?.message || err);
       pushRegistered.current = false;
     });
   }, [tokens]);
