@@ -218,6 +218,7 @@ export default function ProfileScreen() {
               <SettingsRow icon="person-outline" label="Ad Soyad" value={user?.fullName || ''} />
               <SettingsRow icon="call-outline" label="Telefon" value={`+90 ${user?.phone || ''}`} />
               <SettingsRow icon="id-card-outline" label="TCKN" value={user?.maskedTckn || ''} />
+              <SettingsRow icon="calendar-outline" label="Dogum Tarihi" value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'} />
               <SettingsRow icon="mail-outline" label="E-posta" value={user?.email || '-'} last />
               <TouchableOpacity style={styles.editButton} onPress={() => setEditing(true)} activeOpacity={0.7}>
                 <Ionicons name="create-outline" size={16} color="#2563eb" />

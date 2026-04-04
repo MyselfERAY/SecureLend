@@ -9,7 +9,9 @@ import {
   StatusBar,
   TouchableOpacity,
   Dimensions,
+  Modal,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
@@ -28,14 +30,34 @@ export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
   const [tckn, setTckn] = useState('');
   const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const formatDate = (date: Date) => {
+    const d = date.getDate().toString().padStart(2, '0');
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}.${m}.${y}`;
+  };
+
+  const toIsoDate = (date: Date) => {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const handleRegister = async () => {
     setError('');
+    if (!dateOfBirth) {
+      setError('Dogum tarihi zorunludur');
+      return;
+    }
     setLoading(true);
     try {
-      await auth.register(tckn, phone, fullName);
+      await auth.register(tckn, phone, fullName, toIsoDate(dateOfBirth));
       router.push({ pathname: '/(auth)/verify-otp', params: { phone } });
     } catch (e: any) {
       setError(e.message || 'Kayit basarisiz');
@@ -44,7 +66,7 @@ export default function RegisterScreen() {
     }
   };
 
-  const isValid = fullName.length >= 3 && tckn.length === 11 && phone.length === 10;
+  const isValid = fullName.length >= 3 && tckn.length === 11 && phone.length === 10 && dateOfBirth !== null;
 
   return (
     <View style={styles.root}>
@@ -126,6 +148,62 @@ export default function RegisterScreen() {
               keyboardType="phone-pad"
               maxLength={10}
             />
+
+            {/* Date of Birth */}
+            <Text style={styles.inputLabel}>Dogum Tarihi</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="calendar-outline" size={20} color={dateOfBirth ? colors.brand.dark : colors.gray[400]} />
+              <Text style={[styles.dateText, !dateOfBirth && styles.datePlaceholder]}>
+                {dateOfBirth ? formatDate(dateOfBirth) : 'Dogum tarihinizi secin'}
+              </Text>
+            </TouchableOpacity>
+
+            {Platform.OS === 'ios' ? (
+              <Modal visible={showDatePicker} transparent animationType="slide">
+                <View style={styles.dateModalOverlay}>
+                  <View style={styles.dateModalContent}>
+                    <View style={styles.dateModalHeader}>
+                      <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                        <Text style={styles.dateModalCancel}>Iptal</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.dateModalTitle}>Dogum Tarihi</Text>
+                      <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                        <Text style={styles.dateModalDone}>Tamam</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={dateOfBirth || new Date(1990, 0, 1)}
+                      mode="date"
+                      display="spinner"
+                      maximumDate={new Date(2010, 11, 31)}
+                      minimumDate={new Date(1940, 0, 1)}
+                      onChange={(_, selected) => {
+                        if (selected) setDateOfBirth(selected);
+                      }}
+                      locale="tr"
+                    />
+                  </View>
+                </View>
+              </Modal>
+            ) : (
+              showDatePicker && (
+                <DateTimePicker
+                  value={dateOfBirth || new Date(1990, 0, 1)}
+                  mode="date"
+                  display="default"
+                  maximumDate={new Date(2010, 11, 31)}
+                  minimumDate={new Date(1940, 0, 1)}
+                  onChange={(_, selected) => {
+                    setShowDatePicker(false);
+                    if (selected) setDateOfBirth(selected);
+                  }}
+                />
+              )
+            )}
 
             <Button
               title="Kayit Ol"
@@ -236,6 +314,69 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 28,
     lineHeight: 22,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.gray[500],
+    marginBottom: 6,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+  },
+  dateButton: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    height: 52,
+    backgroundColor: colors.gray[50],
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+    marginBottom: 16,
+    gap: 10,
+  },
+  dateText: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: colors.brand.dark,
+  },
+  datePlaceholder: {
+    color: colors.gray[400],
+  },
+  dateModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end' as const,
+  },
+  dateModalContent: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 34,
+  },
+  dateModalHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  dateModalCancel: {
+    fontSize: 16,
+    color: colors.gray[400],
+    fontWeight: '500' as const,
+  },
+  dateModalTitle: {
+    fontSize: 17,
+    fontWeight: '700' as const,
+    color: colors.brand.dark,
+  },
+  dateModalDone: {
+    fontSize: 16,
+    color: '#2563eb',
+    fontWeight: '700' as const,
   },
   submitButton: {
     marginTop: 8,

@@ -36,6 +36,7 @@ export class AuthController {
       dto.tckn,
       dto.phone,
       dto.fullName,
+      dto.dateOfBirth,
       ipAddress,
     );
     return { status: 'success', data: result };

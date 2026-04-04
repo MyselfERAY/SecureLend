@@ -36,6 +36,7 @@ export class AuthService {
     tckn: string,
     phone: string,
     fullName: string,
+    dateOfBirth: string,
     ipAddress: string,
   ) {
     if (!validateTckn(tckn)) {
@@ -67,6 +68,7 @@ export class AuthService {
           tcknMasked: maskedTckn,
           fullName,
           phone,
+          dateOfBirth: new Date(dateOfBirth),
           kpsVerified: true,
         },
       });

@@ -1,4 +1,4 @@
-import { IsString, Length, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsDateString, Length, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
@@ -14,4 +14,7 @@ export class RegisterDto {
   @MinLength(3, { message: 'Ad soyad en az 3 karakter olmali' })
   @MaxLength(200)
   fullName!: string;
+
+  @IsDateString({}, { message: 'Gecerli bir dogum tarihi girin (YYYY-MM-DD)' })
+  dateOfBirth!: string;
 }
