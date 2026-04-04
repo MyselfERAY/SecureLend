@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/lib/auth-context';
 import { api } from '../../src/lib/api';
-import { getProfilePhoto } from '../../src/lib/storage';
+import { getProfilePhoto, hasTutorialBeenSeen, setTutorialSeen } from '../../src/lib/storage';
+import Tutorial from '../../src/components/Tutorial';
 import { Badge, getStatusBadge } from '../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
 import { colors } from '../../src/theme/colors';
@@ -74,6 +75,8 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialChecked, setTutorialChecked] = useState(false);
   const { unreadCount } = useNotifications();
 
   const loadData = useCallback(async () => {
@@ -94,8 +97,14 @@ export default function DashboardScreen() {
     loadData().finally(() => setLoading(false));
     if (user?.id) {
       getProfilePhoto(user.id).then(setProfilePhoto);
+      // Check tutorial
+      hasTutorialBeenSeen(user.id).then((seen) => {
+        if (!seen) setShowTutorial(true);
+        setTutorialChecked(true);
+      });
     } else {
       setProfilePhoto(null);
+      setTutorialChecked(true);
     }
   }, [loadData, user?.id]);
 
@@ -105,7 +114,18 @@ export default function DashboardScreen() {
     setRefreshing(false);
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading || !tutorialChecked) return <LoadingSpinner />;
+
+  if (showTutorial) {
+    return (
+      <Tutorial
+        onComplete={() => {
+          setShowTutorial(false);
+          if (user?.id) setTutorialSeen(user.id);
+        }}
+      />
+    );
+  }
 
   const activeContracts = contracts.filter((c) => c.status === 'ACTIVE');
   const pendingPayments = payments.filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE');

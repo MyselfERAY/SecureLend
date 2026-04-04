@@ -48,6 +48,24 @@ export async function clearSavedCredentials(): Promise<void> {
   await SecureStore.deleteItemAsync(CREDENTIALS_KEY);
 }
 
+// Tutorial — shown once per user
+const TUTORIAL_KEY_PREFIX = 'securelend_tutorial_seen_';
+
+export async function hasTutorialBeenSeen(userId: string): Promise<boolean> {
+  if (!userId) return true; // Don't show if no user
+  try {
+    const val = await SecureStore.getItemAsync(`${TUTORIAL_KEY_PREFIX}${userId}`);
+    return val === '1';
+  } catch {
+    return false;
+  }
+}
+
+export async function setTutorialSeen(userId: string): Promise<void> {
+  if (!userId) return;
+  await SecureStore.setItemAsync(`${TUTORIAL_KEY_PREFIX}${userId}`, '1');
+}
+
 // Profile Photo — stored per user to prevent cross-user leakage
 const PHOTO_KEY_PREFIX = 'securelend_profile_photo_';
 

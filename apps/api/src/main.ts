@@ -74,6 +74,7 @@ async function bootstrap() {
     .addTag('Contract', 'Sözleşme yönetimi')
     .addTag('Payment', 'Ödeme işlemleri')
     .addTag('Bank', 'Banka ve KMH işlemleri')
+    .addTag('Chat', 'Mesajlaşma sistemi')
     .addTag('Health', 'Sistem sağlık kontrolü')
     .build();
 

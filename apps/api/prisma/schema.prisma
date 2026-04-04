@@ -75,8 +75,10 @@ model User {
   tenantContracts   Contract[]          @relation("ContractTenant")
   kmhApplications   KmhApplication[]
   otpCodes          OtpCode[]
-  ownedProperties   Property[]          @relation("PropertyOwner")
-  refreshTokens     RefreshToken[]
+  ownedProperties      Property[]              @relation("PropertyOwner")
+  refreshTokens        RefreshToken[]
+  chatParticipations   ChatRoomParticipant[]
+  chatMessages         ChatMessage[]
 
   @@index([tcknHash], map: "idx_user_tckn_hash")
   @@index([phone], map: "idx_user_phone")
@@ -225,6 +227,7 @@ model Contract {
   tenant            User                @relation("ContractTenant", fields: [tenantId], references: [id])
   paymentOrders     PaymentOrder[]
   payments          PaymentSchedule[]
+  chatRooms         ChatRoom[]
 
   @@index([propertyId], map: "idx_contract_property")
   @@index([tenantId], map: "idx_contract_tenant")
@@ -528,4 +531,60 @@ model Notification {
   @@index([userId, isRead], map: "idx_notification_user_read")
   @@index([createdAt], map: "idx_notification_created")
   @@map("notifications")
+}
+
+// ─── Chat System ───────────────────────────────────────────────
+
+enum ChatRoomType {
+  CONTRACT
+  SUPPORT
+
+  @@map("chat_room_type")
+}
+
+model ChatRoom {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type         ChatRoomType
+  contractId   String?            @map("contract_id") @db.Uuid
+  title        String?            @db.VarChar(200)
+  isActive     Boolean            @default(true) @map("is_active")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  contract     Contract?          @relation(fields: [contractId], references: [id])
+  participants ChatRoomParticipant[]
+  messages     ChatMessage[]
+
+  @@index([contractId], map: "idx_chat_room_contract")
+  @@index([type], map: "idx_chat_room_type")
+  @@map("chat_rooms")
+}
+
+model ChatRoomParticipant {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatRoomId String   @map("chat_room_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  joinedAt   DateTime @default(now()) @map("joined_at") @db.Timestamptz()
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([chatRoomId, userId], name: "uq_chat_participant")
+  @@index([userId], map: "idx_chat_participant_user")
+  @@map("chat_room_participants")
+}
+
+model ChatMessage {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  chatRoomId String   @map("chat_room_id") @db.Uuid
+  senderId   String   @map("sender_id") @db.Uuid
+  content    String   @db.VarChar(2000)
+  isRead     Boolean  @default(false) @map("is_read")
+  readAt     DateTime? @map("read_at") @db.Timestamptz()
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  sender     User     @relation(fields: [senderId], references: [id])
+
+  @@index([chatRoomId, createdAt], map: "idx_chat_message_room_date")
+  @@index([senderId], map: "idx_chat_message_sender")
+  @@index([chatRoomId, isRead], map: "idx_chat_message_unread")
+  @@map("chat_messages")
 }

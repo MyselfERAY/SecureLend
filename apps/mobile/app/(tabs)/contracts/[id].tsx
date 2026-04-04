@@ -443,6 +443,45 @@ export default function ContractDetailScreen() {
           </View>
         )}
 
+        {/* Chat Button */}
+        {isParty && (contract.status === 'ACTIVE' || contract.status === 'PENDING_SIGNATURES') && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.chatButton}
+              activeOpacity={0.8}
+              onPress={async () => {
+                if (!tokens?.accessToken) return;
+                try {
+                  const res = await api<{ id: string }>(`/api/v1/chat/rooms/contract/${id}`, {
+                    method: 'POST',
+                    token: tokens.accessToken,
+                  });
+                  if (res.status === 'success' && res.data) {
+                    const otherParty = isTenant ? contract.landlord.fullName : contract.tenant.fullName;
+                    router.push({
+                      pathname: '/chat/[roomId]',
+                      params: { roomId: res.data.id, title: otherParty },
+                    });
+                  }
+                } catch {
+                  setError('Sohbet olusturulamadi');
+                }
+              }}
+            >
+              <View style={styles.chatIconWrap}>
+                <Ionicons name="chatbubbles-outline" size={20} color="#2563eb" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.uploadTitle}>Mesaj Gonder</Text>
+                <Text style={styles.uploadSubtitle}>
+                  {isTenant ? 'Ev sahibi ile sohbet et' : 'Kiraci ile sohbet et'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Payment Schedule */}
         {payments.length > 0 && (
           <>
@@ -778,6 +817,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.gray[400],
     marginTop: 2,
+  },
+
+  // Chat Button
+  chatButton: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  chatIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Fixed Sign Button

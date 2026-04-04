@@ -146,21 +146,7 @@ export default function BankPage() {
     finally { setSubmitting(false); }
   };
 
-  const handleOnboarding = async (applicationId: string) => {
-    setFormError(''); setFormSuccess('');
-    try {
-      const res = await api<any>(`/api/v1/bank/kmh/${applicationId}/complete-onboarding`, {
-        method: 'POST',
-        token: tokens!.accessToken,
-      });
-      if (res.status === 'success' && res.data) {
-        setFormSuccess(`KMH hesabiniz acildi! IBAN: ${res.data.accountNumber}, Limit: ${Number(res.data.creditLimit).toLocaleString('tr-TR')} TL`);
-        await Promise.all([loadApplications(), loadAccounts()]);
-      } else {
-        setFormError((res as any).data?.message || 'Onboarding hatasi');
-      }
-    } catch (err: any) { setFormError(err.message); }
-  };
+  // Digital onboarding is only available on mobile app
 
   const pendingOnboarding = applications.find(
     (a) => a.status === 'APPROVED' && !a.onboardingCompleted,
@@ -230,12 +216,20 @@ export default function BankPage() {
                 Hesabinizi aktif hale getirmek icin digital onboarding isleminizi tamamlayin.
               </p>
               <p className="mb-4 text-xs text-yellow-400/60">Referans: {pendingOnboarding.bankReferenceNo}</p>
-              <button
-                onClick={() => handleOnboarding(pendingOnboarding.id)}
-                className="rounded-lg bg-yellow-600 px-6 py-3 font-semibold text-white transition hover:bg-yellow-700"
-              >
-                Digital Onboarding Tamamla
-              </button>
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-300">Mobil Uygulama Gerekli</p>
+                    <p className="mt-1 text-sm text-blue-300/80">
+                      Digital onboarding islemi (kimlik dogrulama, selfie, video dogrulama) yalnizca mobil uygulama uzerinden tamamlanabilir.
+                      Lutfen Kira Guvence mobil uygulamasini indirip onboarding isleminizi oradan tamamlayin.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

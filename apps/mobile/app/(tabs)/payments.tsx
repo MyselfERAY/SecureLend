@@ -291,6 +291,33 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Support Chat */}
+        <TouchableOpacity
+          style={styles.supportButton}
+          activeOpacity={0.7}
+          onPress={async () => {
+            if (!tokens?.accessToken) return;
+            try {
+              const res = await api<{ id: string }>('/api/v1/chat/rooms/support', {
+                method: 'POST',
+                token: tokens.accessToken,
+              });
+              if (res.status === 'success' && res.data) {
+                router.push({
+                  pathname: '/chat/[roomId]',
+                  params: { roomId: res.data.id, title: 'Teknik Destek' },
+                });
+              }
+            } catch {
+              // ignore
+            }
+          }}
+        >
+          <Ionicons name="headset-outline" size={20} color={colors.primary[600]} />
+          <Text style={styles.supportText}>Teknik Destek</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+        </TouchableOpacity>
+
         {/* Logout */}
         <TouchableOpacity style={styles.logoutButton} onPress={logout} activeOpacity={0.7}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
@@ -541,6 +568,32 @@ const styles = StyleSheet.create({
   },
   kycLabel: { fontSize: 12, color: colors.gray[400], fontWeight: '500' },
   kycValue: { fontSize: 15, fontWeight: '600', color: colors.gray[800], marginTop: 2 },
+
+  // Support
+  supportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+    marginHorizontal: 20,
+    marginBottom: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  supportText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.primary[600],
+  },
 
   // Logout
   logoutButton: {

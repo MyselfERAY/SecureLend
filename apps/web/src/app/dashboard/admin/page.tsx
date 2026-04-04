@@ -88,6 +88,7 @@ export default function AdminDashboardPage() {
           <AdminLink href="/dashboard/admin/contracts" title="Sozlesmeler" desc="Tum sozlesmeleri goruntule" icon="S" />
           <AdminLink href="/dashboard/admin/payments" title="Odemeler" desc="Odeme gecmisi ve detaylar" icon="O" />
           <AdminLink href="/dashboard/admin/commissions" title="Komisyon Raporu" desc="Gelir ve komisyon detaylari" icon="K" />
+          <AdminLink href="/dashboard/admin/support" title="Destek Mesajlari" desc="Kullanici destek talepleri" icon="D" />
         </div>
       </div>
     </div>
