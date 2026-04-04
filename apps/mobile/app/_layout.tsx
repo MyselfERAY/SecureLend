@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/lib/auth-context';
@@ -58,7 +58,17 @@ function AuthGate() {
     return cleanup;
   }, []);
 
-  return <Slot />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="chat" options={{ headerShown: false, presentation: 'card' }} />
+      <Stack.Screen name="kmh" />
+      <Stack.Screen name="kvkk" />
+      <Stack.Screen name="notifications" />
+      <Stack.Screen name="profile" />
+    </Stack>
+  );
 }
 
 export default function RootLayout() {

@@ -509,6 +509,7 @@ enum NotificationType {
   PAYMENT_DUE
   PAYMENT_OVERDUE
   PAYMENT_COMPLETED
+  CHAT_MESSAGE
   SYSTEM
 
   @@map("notification_type")

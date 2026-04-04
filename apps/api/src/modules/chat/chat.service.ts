@@ -1,9 +1,14 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: InAppNotificationService,
+  ) {}
 
   /**
    * Get or create a CONTRACT chat room for a given contract.
@@ -244,6 +249,9 @@ export class ChatService {
       data: { updatedAt: new Date() },
     });
 
+    // Notify other participants (async, non-blocking)
+    this.notifyParticipants(roomId, userId, message.sender.fullName, content).catch(() => {});
+
     return {
       id: message.id,
       content: message.content,
@@ -292,6 +300,31 @@ export class ChatService {
   }
 
   // ─── Helpers ───────────────────────────────────
+
+  private async notifyParticipants(
+    roomId: string,
+    senderId: string,
+    senderName: string,
+    content: string,
+  ) {
+    const participants = await this.prisma.chatRoomParticipant.findMany({
+      where: { chatRoomId: roomId, userId: { not: senderId } },
+      select: { userId: true },
+    });
+
+    const preview = content.length > 80 ? content.slice(0, 80) + '...' : content;
+
+    for (const p of participants) {
+      await this.notificationService.create(
+        p.userId,
+        NotificationType.CHAT_MESSAGE,
+        `${senderName} mesaj gonderdi`,
+        preview,
+        'ChatRoom',
+        roomId,
+      ).catch(() => {});
+    }
+  }
 
   private async verifyParticipant(roomId: string, userId: string) {
     const participant = await this.prisma.chatRoomParticipant.findUnique({

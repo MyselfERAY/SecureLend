@@ -128,6 +128,12 @@ function handleNotificationNavigation(
       router.push('/(tabs)/bank');
       break;
 
+    case 'CHAT_MESSAGE':
+      if (entityId) {
+        router.push({ pathname: '/chat/[roomId]', params: { roomId: entityId } });
+      }
+      break;
+
     default:
       // For SYSTEM and unknown types, go to home
       router.push('/(tabs)');

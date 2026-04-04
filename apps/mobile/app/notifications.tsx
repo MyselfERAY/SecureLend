@@ -25,6 +25,7 @@ const ICON_MAP: Record<string, { name: IoniconsName; color: string; bg: string }
   PAYMENT_DUE: { name: 'time', color: '#f59e0b', bg: '#fffbeb' },
   PAYMENT_OVERDUE: { name: 'alert-circle', color: '#ef4444', bg: '#fef2f2' },
   PAYMENT_COMPLETED: { name: 'wallet', color: '#10b981', bg: '#ecfdf5' },
+  CHAT_MESSAGE: { name: 'chatbubble-ellipses', color: '#8b5cf6', bg: '#f5f3ff' },
   SYSTEM: { name: 'information-circle', color: '#2563eb', bg: '#eff6ff' },
 };
 
@@ -69,7 +70,9 @@ export default function NotificationsScreen() {
         await markAsRead(item.id);
       }
       // Navigate to related entity if available
-      if (item.entityType === 'CONTRACT' && item.entityId) {
+      if (item.entityType === 'ChatRoom' && item.entityId) {
+        router.push({ pathname: '/chat/[roomId]', params: { roomId: item.entityId } });
+      } else if (item.entityType === 'CONTRACT' && item.entityId) {
         router.push(`/(tabs)/contracts/${item.entityId}`);
       } else if (item.entityType === 'PAYMENT' && item.entityId) {
         router.push('/(tabs)/payments');
