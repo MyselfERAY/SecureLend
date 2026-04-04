@@ -98,30 +98,41 @@ export default function ContractDetailScreen() {
   const pickDocumentPhoto = async (source: 'camera' | 'library') => {
     let result: ImagePicker.ImagePickerResult;
 
+    const imageOptions: ImagePicker.ImagePickerOptions = {
+      quality: 0.6,
+      base64: true,
+      // Resize to max 1600px to keep base64 under ~2MB
+      allowsEditing: false,
+    };
+
     if (source === 'camera') {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
         Alert.alert('Izin Gerekli', 'Kamera izni verilmedi.');
         return;
       }
-      result = await ImagePicker.launchCameraAsync({
-        quality: 0.7,
-        base64: true,
-      });
+      result = await ImagePicker.launchCameraAsync(imageOptions);
     } else {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
         Alert.alert('Izin Gerekli', 'Galeri izni verilmedi.');
         return;
       }
-      result = await ImagePicker.launchImageLibraryAsync({
-        quality: 0.7,
-        base64: true,
-      });
+      result = await ImagePicker.launchImageLibraryAsync(imageOptions);
     }
 
     if (!result.canceled && result.assets[0]?.base64) {
-      await uploadDocument(result.assets[0].base64);
+      const base64 = result.assets[0].base64;
+      // Check base64 size (~7MB limit to stay under 10MB JSON body)
+      const sizeInMB = (base64.length * 3) / 4 / 1024 / 1024;
+      if (sizeInMB > 7) {
+        Alert.alert(
+          'Dosya Cok Buyuk',
+          `Fotograf ${sizeInMB.toFixed(1)}MB. Lutfen daha kucuk bir fotograf secin veya kamera ile cekin.`,
+        );
+        return;
+      }
+      await uploadDocument(base64);
     }
   };
 

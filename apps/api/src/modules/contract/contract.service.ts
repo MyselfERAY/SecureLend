@@ -455,7 +455,16 @@ export class ContractService {
     return this.getContractDetail(contractId);
   }
 
-  async uploadDocumentPhoto(contractId: string, userId: string, _photoBase64: string) {
+  async uploadDocumentPhoto(contractId: string, userId: string, photoBase64: string) {
+    if (!photoBase64 || photoBase64.length === 0) {
+      throw new ForbiddenException('Fotograf verisi bos');
+    }
+    // Base64 size check: ~10MB decoded limit
+    const approxSizeBytes = (photoBase64.length * 3) / 4;
+    if (approxSizeBytes > 10 * 1024 * 1024) {
+      throw new ForbiddenException('Fotograf cok buyuk (max 10MB)');
+    }
+
     const contract = await this.prisma.contract.findUnique({ where: { id: contractId } });
     if (!contract) throw new NotFoundException('Sozlesme bulunamadi');
     if (contract.tenantId !== userId && contract.landlordId !== userId)
