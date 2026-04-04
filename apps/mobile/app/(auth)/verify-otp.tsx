@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
 import { OtpInput } from '../../src/components/OtpInput';
 import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
 import { colors } from '../../src/theme/colors';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const HEADER_HEIGHT = 200;
+const CARD_OVERLAP = 24;
+const RESEND_COOLDOWN = 45;
 
 export default function VerifyOtpScreen() {
   const { phone } = useLocalSearchParams<{ phone: string }>();
@@ -13,82 +27,248 @@ export default function VerifyOtpScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [resendTimer, setResendTimer] = useState(RESEND_COOLDOWN);
 
   const maskedPhone = phone
     ? `+90 ${phone.slice(0, 3)} *** ** ${phone.slice(-2)}`
     : '';
 
-  const handleComplete = async (code: string) => {
-    if (!phone || loading) return;
-    setError('');
-    setLoading(true);
-    setHasError(false);
-    try {
-      await auth.verifyOtp(phone, code);
-      router.replace('/(tabs)');
-    } catch (e: any) {
-      setError(e.message || 'OTP dogrulama basarisiz');
-      setHasError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => {
+      setResendTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleComplete = useCallback(
+    async (code: string) => {
+      if (!phone || loading) return;
+      setError('');
+      setLoading(true);
+      setHasError(false);
+      try {
+        await auth.verifyOtp(phone, code);
+        router.replace('/(tabs)');
+      } catch (e: any) {
+        setError(e.message || 'OTP dogrulama basarisiz');
+        setHasError(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [phone, loading, auth, router],
+  );
+
+  const handleResend = useCallback(() => {
+    if (resendTimer > 0) return;
+    setResendTimer(RESEND_COOLDOWN);
+    // Resend logic would go here
+  }, [resendTimer]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoBox}>
-        <View style={styles.iconCircle}>
-          <Text style={styles.iconText}>📱</Text>
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.brand.dark} />
+
+      {/* Dark Navy Header - shorter */}
+      <View style={styles.header}>
+        {/* Decorative dots */}
+        <View style={styles.dotsContainer}>
+          {Array.from({ length: 3 }).map((_, row) =>
+            Array.from({ length: 8 }).map((__, col) => (
+              <View
+                key={`${row}-${col}`}
+                style={[
+                  styles.dot,
+                  {
+                    top: 30 + row * 28,
+                    left: 20 + col * (SCREEN_WIDTH / 8),
+                    opacity: 0.04 + (row % 3) * 0.02,
+                  },
+                ]}
+              />
+            )),
+          )}
         </View>
-        <Text style={styles.title}>SMS Dogrulama</Text>
-        <Text style={styles.subtitle}>{maskedPhone}</Text>
-        <Text style={styles.desc}>Telefonunuza gonderilen 6 haneli kodu girin</Text>
+
+        {/* Back Button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
+        </TouchableOpacity>
+
+        <View style={styles.headerContent}>
+          <View style={styles.lockIcon}>
+            <Ionicons name="lock-closed" size={36} color={colors.white} />
+          </View>
+          <Text style={styles.headerTitle}>Dogrulama</Text>
+        </View>
       </View>
 
+      {/* White Card */}
       <View style={styles.card}>
-        {error ? <ErrorMessage message={error} onDismiss={() => setError('')} /> : null}
+        <Text style={styles.cardSubtitle}>
+          6 haneli dogrulama kodunu girin
+        </Text>
+        <Text style={styles.phoneText}>{maskedPhone}</Text>
 
-        <OtpInput onComplete={handleComplete} error={hasError} />
+        {error ? (
+          <ErrorMessage
+            message={error}
+            onDismiss={() => {
+              setError('');
+              setHasError(false);
+            }}
+          />
+        ) : null}
+
+        <View style={styles.otpSection}>
+          <OtpInput onComplete={handleComplete} error={hasError} />
+        </View>
 
         {loading && (
-          <Text style={styles.loadingText}>Dogrulaniyor...</Text>
+          <View style={styles.loadingRow}>
+            <ActivityIndicator size="small" color={colors.primary[600]} />
+            <Text style={styles.loadingText}>Dogrulaniyor...</Text>
+          </View>
         )}
 
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>Gelistirme Modu</Text>
-          <Text style={styles.infoText}>OTP kodu: 111111</Text>
-        </View>
+        {/* Resend */}
+        <TouchableOpacity
+          style={styles.resendButton}
+          onPress={handleResend}
+          disabled={resendTimer > 0}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.resendText,
+              resendTimer > 0 && styles.resendTextDisabled,
+            ]}
+          >
+            {resendTimer > 0
+              ? `Tekrar gonder (${resendTimer}s)`
+              : 'Tekrar gonder'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
+    backgroundColor: colors.brand.dark,
+  },
+  header: {
+    height: HEADER_HEIGHT,
+    backgroundColor: colors.brand.dark,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: CARD_OVERLAP + 24,
+    overflow: 'hidden',
+  },
+  dotsContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  dot: {
+    position: 'absolute',
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.white,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 56,
+    left: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     justifyContent: 'center',
-    padding: 24,
+    alignItems: 'center',
   },
-  logoBox: { alignItems: 'center', marginBottom: 32 },
-  iconCircle: {
-    width: 64, height: 64, borderRadius: 20,
-    backgroundColor: colors.primary[600], justifyContent: 'center', alignItems: 'center', marginBottom: 16,
+  headerContent: {
+    alignItems: 'center',
   },
-  iconText: { fontSize: 28 },
-  title: { fontSize: 24, fontWeight: '800', color: colors.gray[900] },
-  subtitle: { fontSize: 16, fontWeight: '600', color: colors.primary[600], marginTop: 8 },
-  desc: { fontSize: 14, color: colors.gray[500], marginTop: 4, textAlign: 'center' },
+  lockIcon: {
+    width: 68,
+    height: 68,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.white,
+    letterSpacing: -0.3,
+  },
   card: {
-    backgroundColor: colors.white, borderRadius: 16, padding: 24,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 5,
+    flex: 1,
+    backgroundColor: colors.brand.cardBg,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -CARD_OVERLAP,
+    paddingHorizontal: 24,
+    paddingTop: 36,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  cardSubtitle: {
+    fontSize: 16,
+    color: colors.gray[500],
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  phoneText: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.brand.dark,
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 28,
+    letterSpacing: 0.5,
+  },
+  otpSection: {
+    marginBottom: 8,
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+    gap: 8,
   },
   loadingText: {
-    textAlign: 'center', marginTop: 16, fontSize: 14, color: colors.primary[600], fontWeight: '500',
+    fontSize: 14,
+    color: colors.primary[600],
+    fontWeight: '600',
   },
-  infoBox: {
-    backgroundColor: colors.yellow[50], borderWidth: 1, borderColor: colors.yellow[300],
-    borderRadius: 10, padding: 12, marginTop: 24,
+  resendButton: {
+    alignItems: 'center',
+    marginTop: 32,
+    paddingVertical: 12,
   },
-  infoTitle: { fontSize: 13, fontWeight: '600', color: colors.yellow[800] },
-  infoText: { fontSize: 13, color: colors.yellow[700], marginTop: 2, fontFamily: 'monospace' },
+  resendText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.primary[600],
+  },
+  resendTextDisabled: {
+    color: colors.gray[400],
+    fontWeight: '500',
+  },
 });

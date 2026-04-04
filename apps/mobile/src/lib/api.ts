@@ -1,13 +1,6 @@
-import { Platform } from 'react-native';
-
-// ngrok public URL — internetten erişim için
-// Lokalde test için 'http://localhost:4000' kullanabilirsin
-const NGROK_API_URL = 'https://nitrogenous-isabel-unslopped.ngrok-free.dev';
-
-const API_URL = NGROK_API_URL || Platform.select({
-  android: 'http://10.0.2.2:4000',
-  default: 'http://localhost:4000',
-});
+// Always use production API (works on both Expo Go and production builds)
+// For local API testing, change this to your machine's LAN IP: http://192.168.x.x:4000
+const API_URL = 'https://securelend-production.up.railway.app';
 
 interface ApiOptions {
   method?: string;
@@ -22,7 +15,7 @@ export async function api<T = unknown>(
   const { method = 'GET', body, token } = options;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
+    // 'ngrok-skip-browser-warning': 'true',
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

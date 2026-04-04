@@ -3,6 +3,8 @@ export const colors = {
     50: '#eff6ff',
     100: '#dbeafe',
     200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
     500: '#3b82f6',
     600: '#2563eb',
     700: '#1d4ed8',
@@ -55,4 +57,16 @@ export const colors = {
   },
   white: '#ffffff',
   black: '#000000',
+  brand: {
+    gradient: ['#0a1628', '#162d50', '#1e3a6e'] as readonly string[],
+    dark: '#0a1628',
+    surface: '#f8fafc',
+    cardBg: '#ffffff',
+  },
+  semantic: {
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#3b82f6',
+  },
 };

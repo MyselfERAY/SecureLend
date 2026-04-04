@@ -1,8 +1,16 @@
-import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  Pressable,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import { colors } from '../../theme/colors';
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'success';
 
 interface ButtonProps {
   title: string;
@@ -15,13 +23,38 @@ interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const variantStyles: Record<Variant, { bg: string; text: string; border?: string }> = {
-  primary: { bg: colors.primary[600], text: colors.white },
-  secondary: { bg: colors.gray[200], text: colors.gray[700] },
-  danger: { bg: colors.red[600], text: colors.white },
-  success: { bg: colors.green[600], text: colors.white },
-  outline: { bg: 'transparent', text: colors.primary[600], border: colors.primary[600] },
-  ghost: { bg: 'transparent', text: colors.primary[600] },
+const variantConfig: Record<Variant, { bg: string; text: string; border?: string; pressedBg: string }> = {
+  primary: {
+    bg: colors.primary[600],
+    text: colors.white,
+    pressedBg: colors.primary[700],
+  },
+  secondary: {
+    bg: colors.gray[100],
+    text: colors.gray[700],
+    pressedBg: colors.gray[200],
+  },
+  outline: {
+    bg: 'transparent',
+    text: colors.primary[600],
+    border: colors.primary[200],
+    pressedBg: colors.primary[50],
+  },
+  danger: {
+    bg: colors.red[600],
+    text: colors.white,
+    pressedBg: colors.red[700],
+  },
+  success: {
+    bg: colors.green[600],
+    text: colors.white,
+    pressedBg: colors.green[700],
+  },
+  ghost: {
+    bg: 'transparent',
+    text: colors.primary[600],
+    pressedBg: colors.primary[50],
+  },
 };
 
 export function Button({
@@ -34,47 +67,80 @@ export function Button({
   textStyle,
   size = 'md',
 }: ButtonProps) {
-  const v = variantStyles[variant];
+  const config = variantConfig[variant];
   const isDisabled = disabled || loading;
-  const paddingV = size === 'sm' ? 8 : size === 'lg' ? 16 : 12;
-  const paddingH = size === 'sm' ? 16 : size === 'lg' ? 24 : 20;
-  const fontSize = size === 'sm' ? 13 : size === 'lg' ? 17 : 15;
+
+  const height = size === 'sm' ? 40 : size === 'lg' ? 56 : 50;
+  const fontSize = size === 'sm' ? 14 : size === 'lg' ? 17 : 16;
+  const radius = size === 'sm' ? 10 : 14;
+
+  const triggerHaptics = useCallback(() => {
+    try {
+      const Haptics = require('expo-haptics');
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {
+      // expo-haptics not installed, skip
+    }
+  }, []);
+
+  const handlePress = useCallback(() => {
+    triggerHaptics();
+    onPress();
+  }, [onPress, triggerHaptics]);
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
+    <Pressable
+      onPress={handlePress}
       disabled={isDisabled}
-      style={[
+      style={({ pressed }) => [
         styles.base,
         {
-          backgroundColor: v.bg,
-          paddingVertical: paddingV,
-          paddingHorizontal: paddingH,
-          borderColor: v.border || 'transparent',
-          borderWidth: v.border ? 1.5 : 0,
-          opacity: isDisabled ? 0.5 : 1,
+          height,
+          borderRadius: radius,
+          backgroundColor: pressed ? config.pressedBg : config.bg,
+          borderColor: config.border || 'transparent',
+          borderWidth: config.border ? 1.5 : 0,
+          opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1,
         },
+        variant === 'primary' && styles.primaryShadow,
+        variant === 'success' && styles.successShadow,
         style,
       ]}
-      activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator color={v.text} size="small" />
+        <ActivityIndicator color={config.text} size="small" />
       ) : (
-        <Text style={[styles.text, { color: v.text, fontSize }, textStyle]}>{title}</Text>
+        <Text style={[styles.text, { color: config.text, fontSize }, textStyle]}>
+          {title}
+        </Text>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    paddingHorizontal: 24,
   },
   text: {
     fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  primaryShadow: {
+    shadowColor: colors.primary[600],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  successShadow: {
+    shadowColor: colors.green[600],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

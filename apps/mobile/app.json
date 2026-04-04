@@ -31,7 +31,15 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Profil fotografinizi secmek icin galeri erisimi gereklidir.",
+          "cameraPermission": "Profil fotografinizi cekmek icin kamera erisimi gereklidir."
+        }
+      ]
     ]
   }
 }

@@ -1,5 +1,12 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TextInputProps } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TextInputProps,
+  Animated,
+} from 'react-native';
 import { colors } from '../../theme/colors';
 
 interface InputProps extends TextInputProps {
@@ -8,11 +15,58 @@ interface InputProps extends TextInputProps {
   prefix?: string;
 }
 
-export function Input({ label, error, prefix, style, ...props }: InputProps) {
+export function Input({ label, error, prefix, style, onFocus, onBlur, ...props }: InputProps) {
+  const [isFocused, setIsFocused] = useState(false);
+  const borderAnim = useRef(new Animated.Value(0)).current;
+
+  const handleFocus = (e: any) => {
+    setIsFocused(true);
+    Animated.timing(borderAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+    onFocus?.(e);
+  };
+
+  const handleBlur = (e: any) => {
+    setIsFocused(false);
+    Animated.timing(borderAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+    onBlur?.(e);
+  };
+
+  const borderColor = error
+    ? colors.red[500]
+    : isFocused
+    ? colors.primary[500]
+    : colors.gray[200];
+
+  const backgroundColor = error
+    ? colors.red[50]
+    : isFocused
+    ? '#f0f5ff'
+    : colors.white;
+
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
+      {label && (
+        <Text style={[styles.label, isFocused && styles.labelFocused, error && styles.labelError]}>
+          {label}
+        </Text>
+      )}
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            borderColor,
+            backgroundColor,
+          },
+        ]}
+      >
         {prefix && (
           <View style={styles.prefixBox}>
             <Text style={styles.prefixText}>{prefix}</Text>
@@ -21,6 +75,9 @@ export function Input({ label, error, prefix, style, ...props }: InputProps) {
         <TextInput
           style={[styles.input, prefix ? styles.inputWithPrefix : null, style]}
           placeholderTextColor={colors.gray[400]}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          selectionColor={colors.primary[500]}
           {...props}
         />
       </View>
@@ -30,49 +87,56 @@ export function Input({ label, error, prefix, style, ...props }: InputProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 16 },
+  container: {
+    marginBottom: 20,
+  },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.gray[700],
-    marginBottom: 6,
+    color: colors.gray[500],
+    marginBottom: 8,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  labelFocused: {
+    color: colors.primary[600],
+  },
+  labelError: {
+    color: colors.red[500],
   },
   inputWrapper: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: colors.gray[300],
-    borderRadius: 10,
-    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderRadius: 14,
     overflow: 'hidden',
-  },
-  inputError: {
-    borderColor: colors.red[500],
   },
   input: {
     flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
+    height: 52,
+    paddingHorizontal: 16,
+    fontSize: 16,
     color: colors.gray[900],
+    fontWeight: '500',
   },
   inputWithPrefix: {
-    paddingLeft: 8,
+    paddingLeft: 12,
   },
   prefixBox: {
-    backgroundColor: colors.gray[100],
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     justifyContent: 'center',
     borderRightWidth: 1,
-    borderRightColor: colors.gray[300],
+    borderRightColor: colors.gray[200],
   },
   prefixText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.gray[500],
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.gray[600],
   },
   errorText: {
     fontSize: 12,
     color: colors.red[600],
-    marginTop: 4,
+    marginTop: 6,
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });

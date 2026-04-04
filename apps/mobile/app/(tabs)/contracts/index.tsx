@@ -1,17 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet,
+  View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, extractError } from '../../../src/lib/api';
-import { Card } from '../../../src/components/ui/Card';
 import { Button } from '../../../src/components/ui/Button';
 import { Input } from '../../../src/components/ui/Input';
 import { Badge, getStatusBadge } from '../../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../../src/components/ui/LoadingSpinner';
 import { ErrorMessage } from '../../../src/components/ui/ErrorMessage';
 import { SuccessMessage } from '../../../src/components/ui/ErrorMessage';
+import { BottomSheet } from '../../../src/components/ui/Modal';
 import { colors } from '../../../src/theme/colors';
 import { ContractSummary, Property } from '../../../src/types';
 
@@ -22,12 +23,22 @@ interface TenantResult {
   phone: string;
 }
 
+type FilterTab = 'ALL' | 'ACTIVE' | 'PENDING_SIGNATURES' | 'TERMINATED';
+
+const filterTabs: { key: FilterTab; label: string }[] = [
+  { key: 'ALL', label: 'Tumu' },
+  { key: 'ACTIVE', label: 'Aktif' },
+  { key: 'PENDING_SIGNATURES', label: 'Bekleyen' },
+  { key: 'TERMINATED', label: 'Sonlanan' },
+];
+
 export default function ContractsListScreen() {
   const { tokens, user } = useAuth();
   const router = useRouter();
   const [contracts, setContracts] = useState<ContractSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterTab>('ALL');
 
   // Create form state
   const [showForm, setShowForm] = useState(false);
@@ -121,26 +132,147 @@ export default function ContractsListScreen() {
 
   if (loading) return <LoadingSpinner />;
 
+  const filteredContracts = activeFilter === 'ALL'
+    ? contracts
+    : contracts.filter((c) => c.status === activeFilter);
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      {/* Create Button */}
-      {isLandlord && (
-        <Button
-          title={showForm ? 'Iptal' : '+ Yeni Sozlesme'}
-          variant={showForm ? 'secondary' : 'primary'}
-          onPress={() => { setShowForm(!showForm); if (showForm) resetForm(); }}
-          style={{ marginBottom: 16 }}
-        />
+    <>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Filter Chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filterContent}
+        >
+          {filterTabs.map((tab) => {
+            const isActive = activeFilter === tab.key;
+            const count = tab.key === 'ALL' ? contracts.length : contracts.filter((c) => c.status === tab.key).length;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
+                onPress={() => setActiveFilter(tab.key)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+                  {tab.label}
+                </Text>
+                {count > 0 && (
+                  <View style={[styles.filterCount, isActive && styles.filterCountActive]}>
+                    <Text style={[styles.filterCountText, isActive && styles.filterCountTextActive]}>{count}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* Contracts List */}
+        {filteredContracts.length === 0 ? (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="document-text-outline" size={48} color={colors.gray[300]} />
+            </View>
+            <Text style={styles.emptyTitle}>
+              {contracts.length === 0 ? 'Henuz sozlesmeniz yok' : 'Bu filtrede sozlesme bulunamadi'}
+            </Text>
+            <Text style={styles.emptySubtitle}>Sozlesme olusturarak kiralama surecini baslatin.</Text>
+            {isLandlord && contracts.length === 0 && (
+              <Button title="Sozlesme Olustur" onPress={() => setShowForm(true)} style={{ marginTop: 20, width: 220 }} />
+            )}
+          </View>
+        ) : (
+          filteredContracts.map((c) => {
+            const sb = getStatusBadge(c.status);
+            return (
+              <TouchableOpacity
+                key={c.id}
+                style={styles.contractCard}
+                onPress={() => router.push(`/(tabs)/contracts/${c.id}`)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.cardTop}>
+                  <View style={styles.cardIconWrap}>
+                    <Ionicons name="document-text" size={20} color="#2563eb" />
+                  </View>
+                  <Badge text={sb.text} variant={sb.variant} />
+                </View>
+
+                <Text style={styles.cardTitle} numberOfLines={1}>{c.propertyTitle}</Text>
+
+                <View style={styles.cardParties}>
+                  <View style={styles.partyRow}>
+                    <Text style={styles.partyLabel}>Kiraci</Text>
+                    <Text style={styles.partyValue} numberOfLines={1}>{c.tenantName}</Text>
+                  </View>
+                  <View style={styles.partyRow}>
+                    <Text style={styles.partyLabel}>Ev Sahibi</Text>
+                    <Text style={styles.partyValue} numberOfLines={1}>{c.landlordName}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.cardDivider} />
+
+                <View style={styles.cardBottom}>
+                  <View>
+                    <Text style={styles.cardAmount}>
+                      {c.monthlyRent.toLocaleString('tr-TR')} TL
+                      <Text style={styles.cardPer}>/ay</Text>
+                    </Text>
+                    <Text style={styles.cardDates}>
+                      {new Date(c.startDate).toLocaleDateString('tr-TR')} - {new Date(c.endDate).toLocaleDateString('tr-TR')}
+                    </Text>
+                  </View>
+                  {c.signatureCount !== undefined && (
+                    <View style={styles.sigBadge}>
+                      <Ionicons
+                        name={c.signatureCount >= 2 ? 'checkmark-circle' : 'create-outline'}
+                        size={14}
+                        color={c.signatureCount >= 2 ? '#10b981' : colors.gray[500]}
+                      />
+                      <Text style={[styles.sigText, c.signatureCount >= 2 && { color: '#10b981' }]}>
+                        {c.signatureCount}/2{c.mySignature ? ' (Imzaladim)' : ''}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.cardArrow}>
+                  <Ionicons name="chevron-forward" size={18} color={colors.gray[300]} />
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        )}
+
+        <View style={{ height: 80 }} />
+      </ScrollView>
+
+      {/* FAB */}
+      {isLandlord && contracts.length > 0 && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => { resetForm(); setFormError(''); setShowForm(true); }}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="add" size={28} color={colors.white} />
+        </TouchableOpacity>
       )}
 
-      {/* Create Form */}
-      {showForm && (
-        <Card style={{ marginBottom: 16 }}>
-          <Text style={styles.formTitle}>Yeni Sozlesme</Text>
+      {/* Create Form - Bottom Sheet */}
+      <BottomSheet
+        visible={showForm}
+        onClose={() => { setShowForm(false); resetForm(); }}
+        title="Yeni Sozlesme"
+      >
+        <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 500 }}>
           {formError ? <ErrorMessage message={formError} /> : null}
 
           {/* Tenant Search */}
@@ -156,36 +288,40 @@ export default function ContractsListScreen() {
                 maxLength={10}
               />
             </View>
-            <Button title="Ara" onPress={searchTenant} loading={tenantSearching} size="sm" style={{ height: 48, marginBottom: 16 }} />
+            <Button title="Ara" onPress={searchTenant} loading={tenantSearching} size="sm" style={{ height: 48, marginBottom: 20 }} />
           </View>
           {tenantError ? <Text style={styles.errorSmall}>{tenantError}</Text> : null}
           {tenantResult && (
-            <Card style={{ backgroundColor: colors.green[50], borderColor: colors.green[200], marginBottom: 12 }}>
-              <Text style={{ fontWeight: '600', color: colors.green[700] }}>{tenantResult.fullName}</Text>
-              <Text style={{ fontSize: 13, color: colors.green[600] }}>TCKN: {tenantResult.maskedTckn}</Text>
-            </Card>
+            <View style={styles.tenantFound}>
+              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+              <View style={{ marginLeft: 10, flex: 1 }}>
+                <Text style={styles.tenantName}>{tenantResult.fullName}</Text>
+                <Text style={styles.tenantTckn}>TCKN: {tenantResult.maskedTckn}</Text>
+              </View>
+            </View>
           )}
 
           {/* Property Selector */}
           <Text style={styles.pickLabel}>Mulk Sec</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
             {properties.map((p) => (
-              <TouchableOpacity key={p.id} onPress={() => selectProperty(p)}>
+              <TouchableOpacity key={p.id} onPress={() => selectProperty(p)} activeOpacity={0.7}>
                 <View style={[styles.propPill, selectedPropertyId === p.id && styles.propPillActive]}>
-                  <Text style={[styles.propPillTitle, selectedPropertyId === p.id && { color: colors.primary[700] }]}>{p.title}</Text>
-                  <Text style={styles.propPillRent}>₺{p.monthlyRent.toLocaleString('tr-TR')}</Text>
+                  <Ionicons name="business" size={16} color={selectedPropertyId === p.id ? '#2563eb' : colors.gray[400]} />
+                  <Text style={[styles.propPillTitle, selectedPropertyId === p.id && { color: '#1d4ed8' }]}>{p.title}</Text>
+                  <Text style={styles.propPillRent}>{p.monthlyRent.toLocaleString('tr-TR')} TL</Text>
                 </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
           {/* Dates */}
-          <View style={styles.row}>
+          <View style={styles.formRow}>
             <View style={{ flex: 1 }}><Input label="Baslangic *" placeholder="YYYY-MM-DD" value={startDate} onChangeText={setStartDate} /></View>
             <View style={{ flex: 1 }}><Input label="Bitis *" placeholder="YYYY-MM-DD" value={endDate} onChangeText={setEndDate} /></View>
           </View>
 
-          <View style={styles.row}>
+          <View style={styles.formRow}>
             <View style={{ flex: 1 }}><Input label="Kira (TL) *" value={monthlyRent} onChangeText={(t) => setMonthlyRent(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
             <View style={{ flex: 1 }}><Input label="Depozito" value={depositAmount} onChangeText={(t) => setDepositAmount(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
           </View>
@@ -204,54 +340,249 @@ export default function ContractsListScreen() {
           <Input label="Sozlesme Sartlari" value={terms} onChangeText={setTerms} multiline numberOfLines={3} />
           <Input label="Ozel Sartlar" value={specialClauses} onChangeText={setSpecialClauses} multiline numberOfLines={2} />
 
-          <Button title="Sozlesme Olustur" onPress={handleCreate} loading={submitting} disabled={!tenantResult || !selectedPropertyId} />
-        </Card>
-      )}
-
-      {/* Contracts List */}
-      {contracts.length === 0 ? (
-        <Card><Text style={styles.emptyText}>Henuz sozlesmeniz bulunmuyor.</Text></Card>
-      ) : (
-        contracts.map((c) => (
-          <TouchableOpacity key={c.id} onPress={() => router.push(`/(tabs)/contracts/${c.id}`)}>
-            <Card style={{ marginBottom: 10 }}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{c.propertyTitle}</Text>
-                <Badge {...getStatusBadge(c.status)} />
-              </View>
-              <Text style={styles.cardMeta}>Kiraci: {c.tenantName} | Ev Sahibi: {c.landlordName}</Text>
-              <Text style={styles.cardMeta}>{new Date(c.startDate).toLocaleDateString('tr-TR')} - {new Date(c.endDate).toLocaleDateString('tr-TR')}</Text>
-              <View style={styles.cardFooter}>
-                <Text style={styles.cardAmount}>₺{c.monthlyRent.toLocaleString('tr-TR')}/ay</Text>
-                {c.signatureCount !== undefined && (
-                  <Text style={styles.sigCount}>{c.signatureCount}/2 imza{c.mySignature ? ' (Imzaladim)' : ''}</Text>
-                )}
-              </View>
-            </Card>
-          </TouchableOpacity>
-        ))
-      )}
-    </ScrollView>
+          <Button title="Sozlesme Olustur" onPress={handleCreate} loading={submitting} disabled={!tenantResult || !selectedPropertyId} style={{ marginBottom: 16 }} />
+        </ScrollView>
+      </BottomSheet>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.gray[50] },
-  content: { padding: 16, paddingBottom: 32 },
-  formTitle: { fontSize: 18, fontWeight: '700', color: colors.gray[900], marginBottom: 16 },
-  pickLabel: { fontSize: 14, fontWeight: '600', color: colors.gray[700], marginBottom: 6 },
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
+  content: { padding: 20, paddingBottom: 32 },
+
+  // Filter Chips
+  filterScroll: { marginHorizontal: -20, marginBottom: 20 },
+  filterContent: { paddingHorizontal: 20, gap: 8 },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 24,
+    backgroundColor: colors.white,
+    gap: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+      },
+      android: { elevation: 1 },
+    }),
+  },
+  filterChipActive: {
+    backgroundColor: '#0a1628',
+  },
+  filterChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.gray[600],
+  },
+  filterChipTextActive: {
+    color: '#ffffff',
+  },
+  filterCount: {
+    backgroundColor: colors.gray[100],
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterCountActive: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  filterCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.gray[600],
+  },
+  filterCountTextActive: {
+    color: '#ffffff',
+  },
+
+  // Contract Cards
+  contractCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 12,
+    position: 'relative',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cardIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.gray[900],
+    marginBottom: 10,
+  },
+  cardParties: {
+    gap: 6,
+    marginBottom: 12,
+  },
+  partyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  partyLabel: {
+    fontSize: 13,
+    color: colors.gray[400],
+    width: 80,
+    fontWeight: '500',
+  },
+  partyValue: {
+    fontSize: 13,
+    color: colors.gray[700],
+    fontWeight: '500',
+    flex: 1,
+  },
+  cardDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.gray[200],
+    marginBottom: 12,
+  },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  cardAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.gray[900],
+  },
+  cardPer: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.gray[400],
+  },
+  cardDates: {
+    fontSize: 12,
+    color: colors.gray[500],
+    marginTop: 4,
+  },
+  sigBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.gray[50],
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  sigText: {
+    fontSize: 12,
+    color: colors.gray[500],
+    fontWeight: '500',
+  },
+  cardArrow: {
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    marginTop: -9,
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 64,
+    paddingHorizontal: 32,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.gray[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.gray[700],
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 15,
+    color: colors.gray[500],
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+
+  // FAB
+  fab: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#2563eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
+      },
+      android: { elevation: 8 },
+    }),
+  },
+
+  // Form
+  pickLabel: { fontSize: 13, fontWeight: '600', color: colors.gray[500], marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   searchRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  errorSmall: { fontSize: 12, color: colors.red[600], marginBottom: 8, marginTop: -8 },
-  row: { flexDirection: 'row', gap: 10 },
-  propPill: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.gray[100], borderWidth: 1, borderColor: colors.gray[200], marginRight: 8 },
-  propPillActive: { backgroundColor: colors.primary[50], borderColor: colors.primary[500] },
+  errorSmall: { fontSize: 12, color: '#ef4444', marginBottom: 8, marginTop: -8 },
+  formRow: { flexDirection: 'row', gap: 10 },
+  tenantFound: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ecfdf5',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+  },
+  tenantName: { fontWeight: '600', color: '#059669', fontSize: 14 },
+  tenantTckn: { fontSize: 12, color: '#10b981', marginTop: 2 },
+  propPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: colors.gray[50],
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+    marginRight: 8,
+    alignItems: 'center',
+    gap: 4,
+  },
+  propPillActive: { backgroundColor: '#eff6ff', borderColor: '#2563eb' },
   propPillTitle: { fontSize: 14, fontWeight: '600', color: colors.gray[700] },
-  propPillRent: { fontSize: 12, color: colors.gray[500], marginTop: 2 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: colors.gray[900], flex: 1, marginRight: 8 },
-  cardMeta: { fontSize: 13, color: colors.gray[500], marginTop: 4 },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
-  cardAmount: { fontSize: 17, fontWeight: '700', color: colors.primary[600] },
-  sigCount: { fontSize: 12, color: colors.gray[400] },
-  emptyText: { fontSize: 14, color: colors.gray[500], textAlign: 'center', padding: 16 },
+  propPillRent: { fontSize: 12, color: colors.gray[500] },
 });

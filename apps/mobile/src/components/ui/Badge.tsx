@@ -7,21 +7,25 @@ type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'gray';
 interface BadgeProps {
   text: string;
   variant?: BadgeVariant;
+  dot?: boolean;
+  size?: 'sm' | 'md';
 }
 
-const variantColors: Record<BadgeVariant, { bg: string; text: string }> = {
-  success: { bg: colors.green[100], text: colors.green[700] },
-  warning: { bg: colors.yellow[100], text: colors.yellow[800] },
-  danger: { bg: colors.red[100], text: colors.red[700] },
-  info: { bg: colors.primary[100], text: colors.primary[700] },
-  gray: { bg: colors.gray[100], text: colors.gray[600] },
+const variantColors: Record<BadgeVariant, { bg: string; text: string; dot: string }> = {
+  success: { bg: '#ecfdf5', text: '#059669', dot: '#10b981' },
+  warning: { bg: '#fffbeb', text: '#d97706', dot: '#f59e0b' },
+  danger: { bg: '#fef2f2', text: '#dc2626', dot: '#ef4444' },
+  info: { bg: '#eff6ff', text: '#2563eb', dot: '#3b82f6' },
+  gray: { bg: colors.gray[100], text: colors.gray[600], dot: colors.gray[400] },
 };
 
-export function Badge({ text, variant = 'gray' }: BadgeProps) {
+export function Badge({ text, variant = 'gray', dot = true, size = 'md' }: BadgeProps) {
   const v = variantColors[variant];
+  const isSmall = size === 'sm';
   return (
-    <View style={[styles.badge, { backgroundColor: v.bg }]}>
-      <Text style={[styles.text, { color: v.text }]}>{text}</Text>
+    <View style={[styles.badge, { backgroundColor: v.bg }, isSmall && styles.badgeSm]}>
+      {dot && <View style={[styles.dot, { backgroundColor: v.dot }]} />}
+      <Text style={[styles.text, { color: v.text }, isSmall && styles.textSm]}>{text}</Text>
     </View>
   );
 }
@@ -48,13 +52,32 @@ export function getStatusBadge(status: string): { text: string; variant: BadgeVa
 
 const styles = StyleSheet.create({
   badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 13,
     alignSelf: 'flex-start',
+    height: 26,
+  },
+  badgeSm: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    height: 22,
+    borderRadius: 11,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
   },
   text: {
     fontSize: 12,
     fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  textSm: {
+    fontSize: 11,
   },
 });
