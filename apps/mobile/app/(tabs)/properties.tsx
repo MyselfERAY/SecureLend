@@ -123,7 +123,7 @@ const pickerStyles = StyleSheet.create({
 });
 
 export default function PropertiesScreen() {
-  const { tokens, user, refreshUser } = useAuth();
+  const { tokens, refreshUser } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -141,8 +141,6 @@ export default function PropertiesScreen() {
     if (!form.city) return [];
     return DISTRICTS[form.city] || [];
   }, [form.city]);
-
-  const isLandlord = user?.roles.includes('LANDLORD');
 
   const loadProperties = useCallback(async () => {
     if (!tokens) return;
@@ -255,13 +253,11 @@ export default function PropertiesScreen() {
             <Text style={styles.emptySubtitle}>
               Mulk ekleyerek kiralama surecini baslatin.
             </Text>
-            {isLandlord && (
-              <Button
-                title="Mulk Ekle"
-                onPress={() => { setEditingId(null); setForm(initialForm); setShowForm(true); }}
-                style={{ marginTop: 20, width: 200 }}
-              />
-            )}
+            <Button
+              title="Mulk Ekle"
+              onPress={() => { setEditingId(null); setForm(initialForm); setShowForm(true); }}
+              style={{ marginTop: 20, width: 200 }}
+            />
           </View>
         ) : (
           properties.map((p) => (
@@ -269,7 +265,7 @@ export default function PropertiesScreen() {
               key={p.id}
               style={styles.propertyCard}
               activeOpacity={0.7}
-              onPress={() => isLandlord && p.status !== 'RENTED' ? startEdit(p) : null}
+              onPress={() => p.status !== 'RENTED' ? startEdit(p) : null}
             >
               <View style={styles.cardRow}>
                 {/* Large rounded icon area */}
@@ -295,7 +291,7 @@ export default function PropertiesScreen() {
                       {p.monthlyRent.toLocaleString('tr-TR')} TL
                       <Text style={styles.cardRentPer}>/ay</Text>
                     </Text>
-                    {p.status !== 'RENTED' && isLandlord && (
+                    {p.status !== 'RENTED' && (
                       <View style={styles.cardActions}>
                         <TouchableOpacity
                           style={styles.actionIconBtn}
@@ -326,7 +322,7 @@ export default function PropertiesScreen() {
       </ScrollView>
 
       {/* FAB */}
-      {isLandlord && properties.length > 0 && (
+      {properties.length > 0 && (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => { setEditingId(null); setForm(initialForm); setFormError(''); setShowForm(true); }}
