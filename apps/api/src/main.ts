@@ -6,6 +6,19 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
+function buildCorsOrigins(): (string | RegExp)[] {
+  const webUrl = process.env.WEB_URL || 'http://localhost:3000';
+  const origins: (string | RegExp)[] = [
+    webUrl,
+    'https://kiraguvence.com',
+    'https://www.kiraguvence.com',
+  ];
+  if (process.env.NODE_ENV !== 'production') {
+    origins.push('http://localhost:3000', 'http://localhost:8081', /^http:\/\/192\.168\.\d+\.\d+:\d+$/);
+  }
+  return origins;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
@@ -13,13 +26,15 @@ async function bootstrap() {
   // Security headers
   app.use(helmet());
 
-  // CORS
+  // CORS — restricted to known origins
+  const corsOrigins = buildCorsOrigins();
   app.enableCors({
-    origin: true,
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
+  logger.log(`CORS origins: ${corsOrigins.map(o => o.toString()).join(', ')}`);
 
   // Swagger API Documentation
   const config = new DocumentBuilder()

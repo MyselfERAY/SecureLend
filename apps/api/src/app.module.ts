@@ -37,22 +37,22 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
         fallthrough: true,
       },
     }),
-    // DEV: Rate limit gevsetildi
+    // Rate limiting — production-ready defaults
     ThrottlerModule.forRoot([
       {
         name: 'short',
         ttl: seconds(1),
-        limit: 100,
+        limit: 10,
       },
       {
         name: 'medium',
         ttl: seconds(10),
-        limit: 500,
+        limit: 50,
       },
       {
         name: 'long',
         ttl: minutes(1),
-        limit: 3000,
+        limit: 200,
       },
     ]),
     PrismaModule,
@@ -72,11 +72,10 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     HealthModule,
   ],
   providers: [
-    // DEV: ThrottlerGuard devre disi birakildi
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
