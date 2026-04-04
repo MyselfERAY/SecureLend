@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Platform,
+  Modal as RNModal, FlatList, TextInput, Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
@@ -13,6 +14,7 @@ import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
 import { BottomSheet, ConfirmModal } from '../../src/components/ui/Modal';
 import { colors } from '../../src/theme/colors';
 import { Property } from '../../src/types';
+import { PROVINCES, DISTRICTS } from '../../src/data/turkey-locations';
 
 const propertyTypes = [
   { value: 'APARTMENT', label: 'Daire', icon: 'business', color: '#2563eb', bg: '#eff6ff' },
@@ -22,9 +24,108 @@ const propertyTypes = [
 ];
 
 const initialForm = {
-  title: '', addressLine1: '', city: '', district: '', propertyType: 'APARTMENT',
-  roomCount: '', areaM2: '', floor: '', totalFloors: '', monthlyRent: '', depositAmount: '',
+  title: '', addressLine1: '', city: '', district: '', neighborhood: '', street: '',
+  propertyType: 'APARTMENT', roomCount: '', areaM2: '', floor: '', totalFloors: '',
+  monthlyRent: '', depositAmount: '',
 };
+
+/* ── Searchable Picker Component ── */
+interface PickerModalProps {
+  visible: boolean;
+  onClose: () => void;
+  title: string;
+  data: string[];
+  onSelect: (value: string) => void;
+  selected?: string;
+}
+
+function PickerModal({ visible, onClose, title, data, onSelect, selected }: PickerModalProps) {
+  const [search, setSearch] = useState('');
+  const filtered = useMemo(() => {
+    if (!search) return data;
+    const lower = search.toLocaleLowerCase('tr-TR');
+    return data.filter((item) => item.toLocaleLowerCase('tr-TR').includes(lower));
+  }, [data, search]);
+
+  return (
+    <RNModal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={pickerStyles.overlay} onPress={onClose}>
+        <Pressable style={pickerStyles.container} onPress={() => {}}>
+          <View style={pickerStyles.handleBar} />
+          <Text style={pickerStyles.title}>{title}</Text>
+          <View style={pickerStyles.searchBox}>
+            <Ionicons name="search" size={18} color={colors.gray[400]} />
+            <TextInput
+              style={pickerStyles.searchInput}
+              placeholder="Ara..."
+              value={search}
+              onChangeText={setSearch}
+              autoCorrect={false}
+            />
+            {search ? (
+              <TouchableOpacity onPress={() => setSearch('')}>
+                <Ionicons name="close-circle" size={18} color={colors.gray[400]} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item}
+            style={{ maxHeight: 350 }}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[pickerStyles.item, item === selected && pickerStyles.itemSelected]}
+                onPress={() => { onSelect(item); setSearch(''); onClose(); }}
+              >
+                <Text style={[pickerStyles.itemText, item === selected && pickerStyles.itemTextSelected]}>
+                  {item}
+                </Text>
+                {item === selected && <Ionicons name="checkmark" size={20} color="#2563eb" />}
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+              <Text style={pickerStyles.empty}>Sonuc bulunamadi</Text>
+            }
+          />
+        </Pressable>
+      </Pressable>
+    </RNModal>
+  );
+}
+
+const pickerStyles = StyleSheet.create({
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end',
+  },
+  container: {
+    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    paddingHorizontal: 20, paddingBottom: Platform.OS === 'ios' ? 34 : 20, maxHeight: '70%',
+  },
+  handleBar: {
+    width: 40, height: 4, borderRadius: 2, backgroundColor: colors.gray[300],
+    alignSelf: 'center', marginTop: 12, marginBottom: 12,
+  },
+  title: {
+    fontSize: 18, fontWeight: '700', color: colors.gray[900], marginBottom: 12,
+  },
+  searchBox: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.gray[50],
+    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 8,
+    borderWidth: 1, borderColor: colors.gray[200],
+  },
+  searchInput: {
+    flex: 1, marginLeft: 8, fontSize: 15, color: colors.gray[900],
+  },
+  item: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 14, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: colors.gray[100],
+  },
+  itemSelected: { backgroundColor: '#eff6ff' },
+  itemText: { fontSize: 15, color: colors.gray[700] },
+  itemTextSelected: { color: '#2563eb', fontWeight: '600' },
+  empty: { textAlign: 'center', paddingVertical: 24, color: colors.gray[400], fontSize: 14 },
+});
 
 export default function PropertiesScreen() {
   const { tokens, user, refreshUser } = useAuth();
@@ -37,6 +138,14 @@ export default function PropertiesScreen() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+  const [showDistrictPicker, setShowDistrictPicker] = useState(false);
+
+  // Get districts for selected city
+  const availableDistricts = useMemo(() => {
+    if (!form.city) return [];
+    return DISTRICTS[form.city] || [];
+  }, [form.city]);
 
   const isLandlord = user?.roles.includes('LANDLORD');
 
@@ -72,7 +181,9 @@ export default function PropertiesScreen() {
       propertyType: form.propertyType,
       monthlyRent: Number(form.monthlyRent),
     };
-    if (form.roomCount) body.roomCount = Number(form.roomCount);
+    if (form.neighborhood) body.neighborhood = form.neighborhood;
+    if (form.street) body.street = form.street;
+    if (form.roomCount) body.roomCount = form.roomCount; // string: "3+1" format
     if (form.areaM2) body.areaM2 = Number(form.areaM2);
     if (form.floor) body.floor = Number(form.floor);
     if (form.totalFloors) body.totalFloors = Number(form.totalFloors);
@@ -97,6 +208,7 @@ export default function PropertiesScreen() {
   const startEdit = (p: Property) => {
     setForm({
       title: p.title, addressLine1: p.addressLine1, city: p.city, district: p.district,
+      neighborhood: (p as any).neighborhood || '', street: (p as any).street || '',
       propertyType: p.propertyType, roomCount: p.roomCount?.toString() || '',
       areaM2: p.areaM2?.toString() || '', floor: p.floor?.toString() || '',
       totalFloors: p.totalFloors?.toString() || '', monthlyRent: p.monthlyRent.toString(),
@@ -239,11 +351,44 @@ export default function PropertiesScreen() {
           {formError ? <ErrorMessage message={formError} /> : null}
 
           <Input label="Baslik *" value={form.title} onChangeText={(t) => setForm({ ...form, title: t })} placeholder="Orn: Kadikoy 2+1 Daire" />
-          <Input label="Adres" value={form.addressLine1} onChangeText={(t) => setForm({ ...form, addressLine1: t })} />
+
+          {/* City / District Pickers */}
           <View style={styles.row}>
-            <View style={{ flex: 1 }}><Input label="Sehir" value={form.city} onChangeText={(t) => setForm({ ...form, city: t })} /></View>
-            <View style={{ flex: 1 }}><Input label="Ilce" value={form.district} onChangeText={(t) => setForm({ ...form, district: t })} /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.pickLabel}>Il *</Text>
+              <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowCityPicker(true)}>
+                <Text style={[styles.pickerBtnText, !form.city && { color: colors.gray[400] }]}>
+                  {form.city || 'Il secin'}
+                </Text>
+                <Ionicons name="chevron-down" size={18} color={colors.gray[400]} />
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.pickLabel}>Ilce *</Text>
+              <TouchableOpacity
+                style={[styles.pickerBtn, !form.city && { opacity: 0.5 }]}
+                onPress={() => form.city && setShowDistrictPicker(true)}
+                disabled={!form.city}
+              >
+                <Text style={[styles.pickerBtnText, !form.district && { color: colors.gray[400] }]}>
+                  {form.district || 'Ilce secin'}
+                </Text>
+                <Ionicons name="chevron-down" size={18} color={colors.gray[400]} />
+              </TouchableOpacity>
+            </View>
           </View>
+
+          {/* Neighborhood & Street */}
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Input label="Mahalle" value={form.neighborhood} onChangeText={(t) => setForm({ ...form, neighborhood: t })} placeholder="Orn: Caferaga Mah." />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Input label="Cadde/Sokak" value={form.street} onChangeText={(t) => setForm({ ...form, street: t })} placeholder="Orn: Moda Cad." />
+            </View>
+          </View>
+
+          <Input label="Adres Detay" value={form.addressLine1} onChangeText={(t) => setForm({ ...form, addressLine1: t })} placeholder="Bina no, daire no vb." />
 
           {/* Property Type */}
           <Text style={styles.pickLabel}>Mulk Tipi</Text>
@@ -268,7 +413,7 @@ export default function PropertiesScreen() {
           </View>
 
           <View style={styles.row}>
-            <View style={{ flex: 1 }}><Input label="Oda" value={form.roomCount} onChangeText={(t) => setForm({ ...form, roomCount: t.replace(/\D/g, '') })} keyboardType="number-pad" /></View>
+            <View style={{ flex: 1 }}><Input label="Oda (orn: 3+1)" value={form.roomCount} onChangeText={(t) => setForm({ ...form, roomCount: t.replace(/[^0-9+]/g, '') })} placeholder="3+1" /></View>
             <View style={{ flex: 1 }}><Input label="m2" value={form.areaM2} onChangeText={(t) => setForm({ ...form, areaM2: t.replace(/\D/g, '') })} keyboardType="number-pad" /></View>
           </View>
           <View style={styles.row}>
@@ -290,6 +435,26 @@ export default function PropertiesScreen() {
         confirmVariant="danger"
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* City Picker */}
+      <PickerModal
+        visible={showCityPicker}
+        onClose={() => setShowCityPicker(false)}
+        title="Il Secin"
+        data={PROVINCES}
+        selected={form.city}
+        onSelect={(city) => setForm((prev) => ({ ...prev, city, district: '' }))}
+      />
+
+      {/* District Picker */}
+      <PickerModal
+        visible={showDistrictPicker}
+        onClose={() => setShowDistrictPicker(false)}
+        title="Ilce Secin"
+        data={availableDistricts}
+        selected={form.district}
+        onSelect={(district) => setForm((prev) => ({ ...prev, district }))}
       />
     </>
   );
@@ -459,6 +624,12 @@ const styles = StyleSheet.create({
   },
 
   // Form
+  pickerBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: colors.gray[50], borderRadius: 12, paddingHorizontal: 14, paddingVertical: 14,
+    borderWidth: 1.5, borderColor: colors.gray[200], marginBottom: 14,
+  },
+  pickerBtnText: { fontSize: 15, color: colors.gray[900], flex: 1 },
   pickLabel: { fontSize: 13, fontWeight: '600', color: colors.gray[500], marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   typeRow: { flexDirection: 'row', gap: 8, marginBottom: 20, flexWrap: 'wrap' },
   typePill: {

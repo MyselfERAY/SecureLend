@@ -163,6 +163,8 @@ model Property {
   addressLine2  String?        @map("address_line_2") @db.VarChar(300)
   city          String         @db.VarChar(100)
   district      String         @db.VarChar(100)
+  neighborhood  String?        @db.VarChar(200)
+  street        String?        @db.VarChar(300)
   postalCode    String?        @map("postal_code") @db.VarChar(10)
   propertyType  String         @map("property_type") @db.VarChar(50)
   roomCount     String?        @map("room_count") @db.VarChar(10)

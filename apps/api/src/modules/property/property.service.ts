@@ -90,6 +90,8 @@ export class PropertyService {
       addressLine2: p.addressLine2,
       city: p.city,
       district: p.district,
+      neighborhood: p.neighborhood,
+      street: p.street,
       propertyType: p.propertyType,
       roomCount: p.roomCount,
       areaM2: p.areaM2 ? Number(p.areaM2) : undefined,
