@@ -375,7 +375,7 @@ export default function ContractsListScreen() {
                         <Text style={styles.dateModalCancel}>Iptal</Text>
                       </TouchableOpacity>
                       <Text style={styles.dateModalTitle}>Baslangic Tarihi</Text>
-                      <TouchableOpacity onPress={() => setShowStartPicker(false)}>
+                      <TouchableOpacity onPress={() => { if (!startDate) setStartDate(new Date()); setShowStartPicker(false); }}>
                         <Text style={styles.dateModalDone}>Tamam</Text>
                       </TouchableOpacity>
                     </View>
@@ -400,7 +400,13 @@ export default function ContractsListScreen() {
                         <Text style={styles.dateModalCancel}>Iptal</Text>
                       </TouchableOpacity>
                       <Text style={styles.dateModalTitle}>Bitis Tarihi</Text>
-                      <TouchableOpacity onPress={() => setShowEndPicker(false)}>
+                      <TouchableOpacity onPress={() => {
+                        if (!endDate) {
+                          const defaultEnd = startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000);
+                          setEndDate(defaultEnd);
+                        }
+                        setShowEndPicker(false);
+                      }}>
                         <Text style={styles.dateModalDone}>Tamam</Text>
                       </TouchableOpacity>
                     </View>
@@ -514,7 +520,13 @@ export default function ContractsListScreen() {
             </TouchableOpacity>
           </View>
 
-          <Button title="Sozlesme Olustur" onPress={handleCreate} loading={submitting} disabled={!tenantResult || !selectedPropertyId} style={{ marginBottom: 16 }} />
+          <Button
+            title="Sozlesme Olustur"
+            onPress={handleCreate}
+            loading={submitting}
+            disabled={!tenantResult || !selectedPropertyId || !monthlyRent || !startDate || !endDate || !landlordIban || !/^TR\d{24}$/.test(landlordIban)}
+            style={{ marginBottom: 16 }}
+          />
         </ScrollView>
       </BottomSheet>
     </>
