@@ -212,6 +212,8 @@ export default function RegisterScreen() {
                         if (selected) setDateOfBirth(selected);
                       }}
                       locale="tr"
+                      themeVariant="light"
+                      style={{ height: 200 }}
                     />
                   </View>
                 </View>
