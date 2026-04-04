@@ -63,6 +63,14 @@ export default function ContractsListScreen() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Phase D: contract template fields
+  const [rentIncreaseType, setRentIncreaseType] = useState<'TUFE' | 'FIXED_RATE' | 'NONE'>('TUFE');
+  const [rentIncreaseRate, setRentIncreaseRate] = useState('');
+  const [furnitureIncluded, setFurnitureIncluded] = useState(false);
+  const [petsAllowed, setPetsAllowed] = useState(false);
+  const [sublettingAllowed, setSublettingAllowed] = useState(false);
+  const [noticePeriodDays, setNoticePeriodDays] = useState('30');
+
   const isLandlord = user?.roles.includes('LANDLORD');
 
   const formatDateDisplay = (d: Date) => {
@@ -119,6 +127,12 @@ export default function ContractsListScreen() {
     if (depositAmount) body.depositAmount = Number(depositAmount);
     if (terms) body.terms = terms;
     if (specialClauses) body.specialClauses = specialClauses;
+    body.rentIncreaseType = rentIncreaseType;
+    if (rentIncreaseType === 'FIXED_RATE' && rentIncreaseRate) body.rentIncreaseRate = Number(rentIncreaseRate);
+    body.furnitureIncluded = furnitureIncluded;
+    body.petsAllowed = petsAllowed;
+    body.sublettingAllowed = sublettingAllowed;
+    body.noticePeriodDays = Number(noticePeriodDays) || 30;
 
     const res = await api('/api/v1/contracts', { method: 'POST', body, token: tokens.accessToken });
     if (res.status === 'success') {
@@ -133,6 +147,8 @@ export default function ContractsListScreen() {
     setTenantPhone(''); setTenantResult(null); setSelectedPropertyId('');
     setMonthlyRent(''); setDepositAmount(''); setStartDate(null); setEndDate(null);
     setPaymentDay('1'); setLandlordIban(''); setTerms(''); setSpecialClauses('');
+    setRentIncreaseType('TUFE'); setRentIncreaseRate(''); setFurnitureIncluded(false);
+    setPetsAllowed(false); setSublettingAllowed(false); setNoticePeriodDays('30');
   };
 
   const selectProperty = (p: Property) => {
@@ -283,7 +299,7 @@ export default function ContractsListScreen() {
         onClose={() => { setShowForm(false); resetForm(); }}
         title="Yeni Sozlesme"
       >
-        <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 500 }}>
+        <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 600 }} keyboardShouldPersistTaps="handled">
           {formError ? <ErrorMessage message={formError} /> : null}
 
           {/* Tenant Search */}
@@ -370,6 +386,8 @@ export default function ContractsListScreen() {
                       minimumDate={new Date()}
                       onChange={(_, selected) => { if (selected) setStartDate(selected); }}
                       locale="tr"
+                      themeVariant="light"
+                      style={{ height: 200 }}
                     />
                   </View>
                 </View>
@@ -393,6 +411,8 @@ export default function ContractsListScreen() {
                       minimumDate={startDate || new Date()}
                       onChange={(_, selected) => { if (selected) setEndDate(selected); }}
                       locale="tr"
+                      themeVariant="light"
+                      style={{ height: 200 }}
                     />
                   </View>
                 </View>
@@ -439,6 +459,60 @@ export default function ContractsListScreen() {
 
           <Input label="Sozlesme Sartlari" value={terms} onChangeText={setTerms} multiline numberOfLines={3} />
           <Input label="Ozel Sartlar" value={specialClauses} onChangeText={setSpecialClauses} multiline numberOfLines={2} />
+
+          {/* Phase D: TBK Template Fields */}
+          <Text style={styles.pickLabel}>Kira Artis Tipi</Text>
+          <View style={styles.increaseRow}>
+            {([['TUFE', 'TUFE'], ['FIXED_RATE', 'Sabit Oran'], ['NONE', 'Artis Yok']] as const).map(([val, label]) => (
+              <TouchableOpacity
+                key={val}
+                style={[styles.increaseChip, rentIncreaseType === val && styles.increaseChipActive]}
+                onPress={() => setRentIncreaseType(val)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.increaseChipText, rentIncreaseType === val && styles.increaseChipTextActive]}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {rentIncreaseType === 'FIXED_RATE' && (
+            <Input
+              label="Yillik Artis Orani (%)"
+              value={rentIncreaseRate}
+              onChangeText={(t) => setRentIncreaseRate(t.replace(/[^\d.]/g, '').slice(0, 5))}
+              keyboardType="decimal-pad"
+              placeholder="ornek: 25"
+            />
+          )}
+
+          <Input
+            label="Ihbar Suresi (gun)"
+            value={noticePeriodDays}
+            onChangeText={(t) => setNoticePeriodDays(t.replace(/\D/g, '').slice(0, 3))}
+            keyboardType="number-pad"
+            placeholder="30"
+          />
+
+          <Text style={styles.pickLabel}>Ek Kosullar</Text>
+          <View style={styles.toggleSection}>
+            <TouchableOpacity style={styles.toggleRow} onPress={() => setFurnitureIncluded((p) => !p)} activeOpacity={0.7}>
+              <View style={[styles.toggleBox, furnitureIncluded && styles.toggleBoxChecked]}>
+                {furnitureIncluded && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+              </View>
+              <Text style={styles.toggleLabel}>Esyali kiralama</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.toggleRow} onPress={() => setPetsAllowed((p) => !p)} activeOpacity={0.7}>
+              <View style={[styles.toggleBox, petsAllowed && styles.toggleBoxChecked]}>
+                {petsAllowed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+              </View>
+              <Text style={styles.toggleLabel}>Evcil hayvana izin</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.toggleRow} onPress={() => setSublettingAllowed((p) => !p)} activeOpacity={0.7}>
+              <View style={[styles.toggleBox, sublettingAllowed && styles.toggleBoxChecked]}>
+                {sublettingAllowed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+              </View>
+              <Text style={styles.toggleLabel}>Alt kiralama izni</Text>
+            </TouchableOpacity>
+          </View>
 
           <Button title="Sozlesme Olustur" onPress={handleCreate} loading={submitting} disabled={!tenantResult || !selectedPropertyId} style={{ marginBottom: 16 }} />
         </ScrollView>
@@ -741,5 +815,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2563eb',
     fontWeight: '700',
+  },
+
+  // Phase D: Template fields
+  increaseRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+    flexWrap: 'wrap',
+  },
+  increaseChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: colors.gray[50],
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+  },
+  increaseChipActive: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#2563eb',
+  },
+  increaseChipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.gray[600],
+  },
+  increaseChipTextActive: {
+    color: '#1d4ed8',
+    fontWeight: '600',
+  },
+  toggleSection: {
+    backgroundColor: colors.gray[50],
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  toggleBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.gray[300],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  toggleBoxChecked: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  toggleLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.gray[700],
   },
 });
