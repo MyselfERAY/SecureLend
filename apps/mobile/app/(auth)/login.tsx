@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Switch,
   Dimensions,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
 import { Input } from '../../src/components/ui/Input';
@@ -37,16 +37,24 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const saved = await getSavedCredentials();
-      if (saved) {
-        setTckn(saved.tckn);
-        setPhone(saved.phone);
-        setRememberMe(true);
-      }
-    })();
-  }, []);
+  // Reload saved credentials every time this screen comes into focus
+  // (not just on mount — screen may persist after logout)
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const saved = await getSavedCredentials();
+        if (saved) {
+          setTckn(saved.tckn);
+          setPhone(saved.phone);
+          setRememberMe(true);
+        } else {
+          setTckn('');
+          setPhone('');
+          setRememberMe(false);
+        }
+      })();
+    }, []),
+  );
 
   const handleLogin = async () => {
     setError('');

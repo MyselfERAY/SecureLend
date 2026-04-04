@@ -5,7 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Pressable,
+  TouchableWithoutFeedback,
   Dimensions,
 } from 'react-native';
 import { colors } from '../../theme/colors';
@@ -22,13 +22,18 @@ interface BottomSheetProps {
 export function BottomSheet({ visible, onClose, title, children }: BottomSheetProps) {
   return (
     <RNModal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      <View style={styles.overlay}>
+        {/* Backdrop — tap to close */}
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+        {/* Sheet content — plain View so it never blocks scroll gestures */}
+        <View style={styles.sheet}>
           <View style={styles.handleBar} />
           {title && <Text style={styles.sheetTitle}>{title}</Text>}
           {children}
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </RNModal>
   );
 }
@@ -66,8 +71,11 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <RNModal visible={visible} transparent animationType="slide" onRequestClose={onCancel}>
-      <Pressable style={styles.overlay} onPress={onCancel}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={onCancel}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+        <View style={styles.sheet}>
           <View style={styles.handleBar} />
           <Text style={styles.sheetTitle}>{title}</Text>
           {message && <Text style={styles.message}>{message}</Text>}
@@ -86,8 +94,8 @@ export function ConfirmModal({
               </Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </RNModal>
   );
 }
@@ -97,6 +105,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(10,22,40,0.5)',
     justifyContent: 'flex-end',
+  },
+  backdrop: {
+    flex: 1,
   },
   sheet: {
     backgroundColor: colors.white,
