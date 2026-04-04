@@ -9,6 +9,7 @@ export interface User {
   phone: string;
   email: string | null;
   dateOfBirth: string | null;
+  address: string | null;
   roles: string[];
   kycStatus: string;
 }

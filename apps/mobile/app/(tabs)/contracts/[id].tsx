@@ -1,16 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Platform,
+  Alert, ActionSheetIOS,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, extractError } from '../../../src/lib/api';
 import { Button } from '../../../src/components/ui/Button';
 import { Badge, getStatusBadge } from '../../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../../src/components/ui/LoadingSpinner';
 import { ErrorMessage } from '../../../src/components/ui/ErrorMessage';
+import { SuccessMessage } from '../../../src/components/ui/ErrorMessage';
 import { colors } from '../../../src/theme/colors';
 import { ContractDetail, PaymentItem, KmhAccountOption } from '../../../src/types';
 
@@ -30,6 +33,8 @@ export default function ContractDetailScreen() {
   const [showTerminate, setShowTerminate] = useState(false);
   const [terminateReason, setTerminateReason] = useState('');
   const [terminating, setTerminating] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState('');
 
   const loadData = useCallback(async () => {
     if (!tokens || !id) return;
@@ -82,6 +87,82 @@ export default function ContractDetailScreen() {
     if (res.status === 'success') { await loadData(); setShowTerminate(false); }
     else { setError(extractError(res)); }
     setTerminating(false);
+  };
+
+  const isParty = isTenant || isLandlord;
+  const canUploadDocument =
+    isParty &&
+    (contract.status === 'ACTIVE' || contract.status === 'PENDING_SIGNATURES') &&
+    !contract.documentPhotoKey;
+
+  const pickDocumentPhoto = async (source: 'camera' | 'library') => {
+    let result: ImagePicker.ImagePickerResult;
+
+    if (source === 'camera') {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Izin Gerekli', 'Kamera izni verilmedi.');
+        return;
+      }
+      result = await ImagePicker.launchCameraAsync({
+        quality: 0.7,
+        base64: true,
+      });
+    } else {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert('Izin Gerekli', 'Galeri izni verilmedi.');
+        return;
+      }
+      result = await ImagePicker.launchImageLibraryAsync({
+        quality: 0.7,
+        base64: true,
+      });
+    }
+
+    if (!result.canceled && result.assets[0]?.base64) {
+      await uploadDocument(result.assets[0].base64);
+    }
+  };
+
+  const handleDocumentUpload = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Kamera', 'Galeriden Sec', 'Iptal'],
+          cancelButtonIndex: 2,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 0) pickDocumentPhoto('camera');
+          else if (buttonIndex === 1) pickDocumentPhoto('library');
+        },
+      );
+    } else {
+      Alert.alert('Belge Yukle', 'Kaynak secin', [
+        { text: 'Kamera', onPress: () => pickDocumentPhoto('camera') },
+        { text: 'Galeriden Sec', onPress: () => pickDocumentPhoto('library') },
+        { text: 'Iptal', style: 'cancel' },
+      ]);
+    }
+  };
+
+  const uploadDocument = async (photoBase64: string) => {
+    if (!tokens) return;
+    setUploading(true);
+    setError('');
+    setUploadSuccess('');
+    const res = await api(`/api/v1/contracts/${id}/upload-document`, {
+      method: 'POST',
+      body: { photoBase64 },
+      token: tokens.accessToken,
+    });
+    if (res.status === 'success') {
+      setUploadSuccess('Belge basariyla yuklendi!');
+      await loadData();
+    } else {
+      setError(extractError(res));
+    }
+    setUploading(false);
   };
 
   const sb = getStatusBadge(contract.status);
@@ -143,6 +224,76 @@ export default function ContractDetailScreen() {
             <Text style={styles.partyTckn}>{contract.tenant.tcknMasked}</Text>
           </View>
         </View>
+
+        {/* Contract Conditions (Phase D) */}
+        {(contract.rentIncreaseType || contract.noticePeriodDays != null || contract.furnitureIncluded != null || contract.petsAllowed != null || contract.sublettingAllowed != null || contract.documentPhotoKey) && (
+          <>
+            <Text style={styles.sectionTitle}>Sozlesme Kosullari</Text>
+            <View style={styles.sectionCard}>
+              {contract.rentIncreaseType && (
+                <View style={styles.conditionRow}>
+                  <Ionicons name="trending-up-outline" size={18} color={colors.gray[500]} />
+                  <Text style={styles.conditionLabel}>Kira Artisi</Text>
+                  <View style={styles.conditionPill}>
+                    <Text style={styles.conditionPillText}>
+                      {contract.rentIncreaseType === 'TUFE'
+                        ? 'TUFE Bazli'
+                        : contract.rentIncreaseType === 'FIXED_RATE'
+                          ? `Sabit %${contract.rentIncreaseRate ?? ''}`
+                          : contract.rentIncreaseType === 'NONE'
+                            ? 'Artis Yok'
+                            : contract.rentIncreaseType}
+                    </Text>
+                  </View>
+                </View>
+              )}
+              {contract.noticePeriodDays != null && (
+                <View style={[styles.conditionRow, styles.conditionBorder]}>
+                  <Ionicons name="time-outline" size={18} color={colors.gray[500]} />
+                  <Text style={styles.conditionLabel}>Ihbar Suresi</Text>
+                  <Text style={styles.conditionValue}>{contract.noticePeriodDays} gun</Text>
+                </View>
+              )}
+              {contract.furnitureIncluded != null && (
+                <View style={[styles.conditionRow, styles.conditionBorder]}>
+                  <Ionicons name={contract.furnitureIncluded ? 'checkmark-circle' : 'close-circle'} size={18} color={contract.furnitureIncluded ? '#10b981' : '#ef4444'} />
+                  <Text style={styles.conditionLabel}>Esyali</Text>
+                  <Text style={[styles.conditionValue, { color: contract.furnitureIncluded ? '#10b981' : '#ef4444' }]}>
+                    {contract.furnitureIncluded ? 'Evet' : 'Hayir'}
+                  </Text>
+                </View>
+              )}
+              {contract.petsAllowed != null && (
+                <View style={[styles.conditionRow, styles.conditionBorder]}>
+                  <Ionicons name={contract.petsAllowed ? 'checkmark-circle' : 'close-circle'} size={18} color={contract.petsAllowed ? '#10b981' : '#ef4444'} />
+                  <Text style={styles.conditionLabel}>Evcil Hayvan</Text>
+                  <Text style={[styles.conditionValue, { color: contract.petsAllowed ? '#10b981' : '#ef4444' }]}>
+                    {contract.petsAllowed ? 'Izinli' : 'Izinsiz'}
+                  </Text>
+                </View>
+              )}
+              {contract.sublettingAllowed != null && (
+                <View style={[styles.conditionRow, styles.conditionBorder]}>
+                  <Ionicons name={contract.sublettingAllowed ? 'checkmark-circle' : 'close-circle'} size={18} color={contract.sublettingAllowed ? '#10b981' : '#ef4444'} />
+                  <Text style={styles.conditionLabel}>Alt Kiralama</Text>
+                  <Text style={[styles.conditionValue, { color: contract.sublettingAllowed ? '#10b981' : '#ef4444' }]}>
+                    {contract.sublettingAllowed ? 'Izinli' : 'Izinsiz'}
+                  </Text>
+                </View>
+              )}
+              {contract.documentPhotoKey && (
+                <View style={[styles.conditionRow, styles.conditionBorder]}>
+                  <Ionicons name="document-attach-outline" size={18} color="#2563eb" />
+                  <Text style={styles.conditionLabel}>Belge</Text>
+                  <View style={styles.docBadge}>
+                    <Ionicons name="checkmark" size={12} color="#2563eb" />
+                    <Text style={styles.docBadgeText}>Belge yuklendi</Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          </>
+        )}
 
         {/* KMH Selection (Tenant only, pending signatures) */}
         {isTenant && contract.status === 'PENDING_SIGNATURES' && (
@@ -210,7 +361,33 @@ export default function ContractDetailScreen() {
           ))}
         </View>
 
-        {error ? <ErrorMessage message={error} onDismiss={() => setError('')} /> : null}
+        {error ? <View style={{ paddingHorizontal: 20 }}><ErrorMessage message={error} onDismiss={() => setError('')} /></View> : null}
+        {uploadSuccess ? <View style={{ paddingHorizontal: 20 }}><SuccessMessage message={uploadSuccess} onDismiss={() => setUploadSuccess('')} /></View> : null}
+
+        {/* Document Upload Button */}
+        {canUploadDocument && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={handleDocumentUpload}
+              activeOpacity={0.8}
+              disabled={uploading}
+            >
+              <View style={styles.uploadIconWrap}>
+                <Ionicons name="camera-outline" size={20} color="#2563eb" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.uploadTitle}>
+                  {uploading ? 'Yukleniyor...' : 'Belge Yukle'}
+                </Text>
+                <Text style={styles.uploadSubtitle}>
+                  Imzali sozlesme fotografini yukleyin
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Sign Warning */}
         {isTenant && contract.status === 'PENDING_SIGNATURES' && !mySignature && !kmhOk && (
@@ -448,6 +625,55 @@ const styles = StyleSheet.create({
     }),
   },
 
+  // Contract Conditions
+  conditionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  conditionBorder: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.gray[100],
+  },
+  conditionLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.gray[700],
+  },
+  conditionValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.gray[800],
+  },
+  conditionPill: {
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  conditionPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+  docBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  docBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+
   // KMH
   kmhItem: {
     flexDirection: 'row',
@@ -504,6 +730,43 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 12,
     paddingHorizontal: 20,
+  },
+
+  // Upload Button
+  uploadButton: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  uploadIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  uploadTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.gray[800],
+  },
+  uploadSubtitle: {
+    fontSize: 12,
+    color: colors.gray[400],
+    marginTop: 2,
   },
 
   // Fixed Sign Button

@@ -1,17 +1,16 @@
 import {
   IsString, IsUUID, IsNumber, IsInt, IsOptional,
-  IsPositive, Min, Max, MaxLength, Matches, Length,
+  IsPositive, Min, Max, MaxLength, Matches,
   IsEnum, IsBoolean,
 } from 'class-validator';
 import { RentIncreaseType } from '@prisma/client';
+import { IsTurkishIban } from '../../../common/validators/iban.validator';
 
 export class CreateContractDto {
   @IsUUID('4') propertyId!: string;
   @IsUUID('4') tenantId!: string;
 
-  @IsString({ message: 'Ev sahibi IBAN zorunludur' })
-  @Matches(/^TR\d{24}$/, { message: 'IBAN TR ile baslamali ve 26 karakter olmalidir' })
-  @Length(26, 26)
+  @IsTurkishIban({ message: 'Gecerli bir Turk IBAN giriniz (TR ile baslamali, 26 karakter, mod97 kontrolu)' })
   landlordIban!: string;
 
   @IsNumber() @IsPositive()

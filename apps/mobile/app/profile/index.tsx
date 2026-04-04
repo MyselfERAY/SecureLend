@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
-import { useAuth } from '../src/lib/auth-context';
-import { api, extractError } from '../src/lib/api';
-import { Card } from '../src/components/ui/Card';
-import { Button } from '../src/components/ui/Button';
-import { Input } from '../src/components/ui/Input';
-import { Badge } from '../src/components/ui/Badge';
-import { ErrorMessage } from '../src/components/ui/ErrorMessage';
-import { SuccessMessage } from '../src/components/ui/ErrorMessage';
-import { colors } from '../src/theme/colors';
+import { useAuth } from '../../src/lib/auth-context';
+import { api, extractError } from '../../src/lib/api';
+import { Card } from '../../src/components/ui/Card';
+import { Button } from '../../src/components/ui/Button';
+import { Input } from '../../src/components/ui/Input';
+import { Badge } from '../../src/components/ui/Badge';
+import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
+import { SuccessMessage } from '../../src/components/ui/ErrorMessage';
+import { colors } from '../../src/theme/colors';
 
 export default function ProfileScreen() {
   const { user, tokens, refreshUser, logout } = useAuth();

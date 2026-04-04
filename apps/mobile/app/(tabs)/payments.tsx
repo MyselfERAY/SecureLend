@@ -4,6 +4,7 @@ import {
   Image, ActionSheetIOS, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/lib/auth-context';
@@ -20,6 +21,7 @@ const DARK_NAVY = '#0a1628';
 
 export default function ProfileScreen() {
   const { user, tokens, refreshUser, logout } = useAuth();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -220,7 +222,7 @@ export default function ProfileScreen() {
               <SettingsRow icon="id-card-outline" label="TCKN" value={user?.maskedTckn || ''} />
               <SettingsRow icon="calendar-outline" label="Dogum Tarihi" value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'} />
               <SettingsRow icon="mail-outline" label="E-posta" value={user?.email || '-'} last />
-              <TouchableOpacity style={styles.editButton} onPress={() => setEditing(true)} activeOpacity={0.7}>
+              <TouchableOpacity style={styles.editButton} onPress={() => router.push('/profile/edit')} activeOpacity={0.7}>
                 <Ionicons name="create-outline" size={16} color="#2563eb" />
                 <Text style={styles.editButtonText}>Duzenle</Text>
               </TouchableOpacity>

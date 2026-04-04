@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Query, ParseIntPipe, DefaultValuePipe,
+  Controller, Get, Query, ParseIntPipe, DefaultValuePipe, Header,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
@@ -50,5 +50,12 @@ export class AdminController {
   async getCommissionReport() {
     const data = await this.adminService.getCommissionReport();
     return { status: 'success', data };
+  }
+
+  @Get('commissions/export')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="komisyon-raporu.csv"')
+  async exportCommissions(): Promise<string> {
+    return this.adminService.exportCommissionsAsCsv();
   }
 }

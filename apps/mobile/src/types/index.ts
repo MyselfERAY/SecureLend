@@ -39,6 +39,14 @@ export interface ContractDetail {
     status: string;
   } | null;
   tenantKmhAccounts?: KmhAccountOption[];
+  rentIncreaseType?: string;
+  rentIncreaseRate?: number;
+  furnitureIncluded?: boolean;
+  petsAllowed?: boolean;
+  sublettingAllowed?: boolean;
+  noticePeriodDays?: number;
+  documentPhotoUrl?: string;
+  documentPhotoKey?: string;
 }
 
 export interface KmhAccountOption {

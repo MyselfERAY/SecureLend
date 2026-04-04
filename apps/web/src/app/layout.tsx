@@ -71,6 +71,7 @@ export const metadata: Metadata = {
   },
   other: {
     'theme-color': '#1d4ed8',
+    'google-site-verification': '',
   },
 };
 
@@ -82,6 +83,7 @@ const jsonLd = {
   logo: 'https://kiraguvence.com/og-image.png',
   description:
     'Dijital kira odeme platformu. Kiraci, ev sahibi ve banka arasindaki sureci tek merkezde yonetir.',
+  foundingDate: '2024',
   contactPoint: {
     '@type': 'ContactPoint',
     email: 'info@kiraguvence.com',
@@ -92,6 +94,9 @@ const jsonLd = {
     '@type': 'PostalAddress',
     addressCountry: 'TR',
   },
+  sameAs: [
+    'https://kiraguvence.com',
+  ],
 };
 
 const webAppJsonLd = {

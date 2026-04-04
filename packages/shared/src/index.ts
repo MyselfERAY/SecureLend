@@ -2,6 +2,7 @@ export { validateTckn } from './validation/tckn';
 export { tcknSchema, createApplicationSchema } from './validation/schemas';
 export type { CreateApplicationInput } from './validation/schemas';
 export { maskTckn } from './utils/tckn-mask';
+export { validateTurkishIban } from './validators/iban';
 export type {
   JSendSuccess,
   JSendFail,

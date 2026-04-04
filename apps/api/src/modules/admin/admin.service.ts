@@ -1,21 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PaymentStatus, ContractStatus } from '@prisma/client';
+import { PaymentStatus, ContractStatus, KmhApplicationStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getOverviewStats() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
     const [
       totalUsers,
+      newUsersThisMonth,
       totalContracts,
       activeContracts,
       totalPayments,
       completedPayments,
       commissionAgg,
+      monthlyRentAgg,
+      kmhPending,
+      kmhApproved,
+      kmhRejected,
+      kmhAvgCreditScore,
     ] = await Promise.all([
       this.prisma.user.count(),
+      this.prisma.user.count({
+        where: { createdAt: { gte: startOfMonth } },
+      }),
       this.prisma.contract.count(),
       this.prisma.contract.count({ where: { status: ContractStatus.ACTIVE } }),
       this.prisma.paymentSchedule.count(),
@@ -24,10 +36,31 @@ export class AdminService {
         _sum: { commissionAmount: true, totalAmount: true, landlordAmount: true },
         _count: true,
       }),
+      this.prisma.contract.aggregate({
+        _sum: { monthlyRent: true },
+        where: { status: ContractStatus.ACTIVE },
+      }),
+      this.prisma.kmhApplication.count({
+        where: { status: KmhApplicationStatus.PENDING },
+      }),
+      this.prisma.kmhApplication.count({
+        where: { status: KmhApplicationStatus.APPROVED },
+      }),
+      this.prisma.kmhApplication.count({
+        where: { status: KmhApplicationStatus.REJECTED },
+      }),
+      this.prisma.kmhApplication.aggregate({
+        _avg: { creditScore: true },
+        where: {
+          status: KmhApplicationStatus.APPROVED,
+          creditScore: { not: null },
+        },
+      }),
     ]);
 
     return {
       totalUsers,
+      newUsersThisMonth,
       totalContracts,
       activeContracts,
       totalPayments,
@@ -36,6 +69,16 @@ export class AdminService {
       totalCommission: Number(commissionAgg._sum.commissionAmount || 0),
       totalLandlordPayouts: Number(commissionAgg._sum.landlordAmount || 0),
       commissionCount: commissionAgg._count,
+      totalMonthlyRentVolume: Number(monthlyRentAgg._sum.monthlyRent || 0),
+      kmhApplications: {
+        pending: kmhPending,
+        approved: kmhApproved,
+        rejected: kmhRejected,
+        total: kmhPending + kmhApproved + kmhRejected,
+      },
+      averageCreditScoreApprovedKmh: kmhAvgCreditScore._avg.creditScore
+        ? Math.round(kmhAvgCreditScore._avg.creditScore)
+        : null,
     };
   }
 
@@ -168,7 +211,7 @@ export class AdminService {
         paymentSchedule: { select: { periodLabel: true, dueDate: true } },
         contract: {
           select: {
-            property: { select: { title: true } },
+            property: { select: { id: true, title: true } },
             tenant: { select: { fullName: true } },
             landlord: { select: { fullName: true } },
           },
@@ -177,16 +220,81 @@ export class AdminService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Aylık bazda gruplama
-    const monthlyMap = new Map<string, { total: number; commission: number; count: number }>();
-    for (const c of commissions) {
-      const month = c.createdAt.toISOString().slice(0, 7);
-      const entry = monthlyMap.get(month) || { total: 0, commission: 0, count: 0 };
-      entry.total += Number(c.totalAmount);
-      entry.commission += Number(c.commissionAmount);
-      entry.count += 1;
-      monthlyMap.set(month, entry);
+    // Monthly breakdown (last 12 months)
+    const now = new Date();
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const monthlyMap = new Map<string, {
+      totalPayments: number; totalAmount: number;
+      totalCommission: number; landlordAmount: number;
+    }>();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toISOString().slice(0, 7);
+      monthlyMap.set(key, { totalPayments: 0, totalAmount: 0, totalCommission: 0, landlordAmount: 0 });
     }
+
+    // Weekly breakdown (last 4 weeks)
+    const weeklyMap = new Map<string, {
+      totalPayments: number; totalAmount: number;
+      totalCommission: number; landlordAmount: number;
+    }>();
+    for (let i = 0; i < 4; i++) {
+      const weekStart = new Date(now);
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay() - i * 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const key = weekStart.toISOString().split('T')[0];
+      weeklyMap.set(key, { totalPayments: 0, totalAmount: 0, totalCommission: 0, landlordAmount: 0 });
+    }
+
+    // Top properties by commission
+    const propertyMap = new Map<string, { propertyId: string; propertyTitle: string; totalCommission: number; totalPayments: number }>();
+
+    for (const c of commissions) {
+      const totalAmt = Number(c.totalAmount);
+      const commAmt = Number(c.commissionAmount);
+      const landlordAmt = Number(c.landlordAmount);
+
+      // Monthly
+      const month = c.createdAt.toISOString().slice(0, 7);
+      if (monthlyMap.has(month)) {
+        const entry = monthlyMap.get(month)!;
+        entry.totalPayments += 1;
+        entry.totalAmount += totalAmt;
+        entry.totalCommission += commAmt;
+        entry.landlordAmount += landlordAmt;
+      }
+
+      // Weekly
+      const createdDate = new Date(c.createdAt);
+      for (const [weekKey, weekEntry] of weeklyMap) {
+        const weekStart = new Date(weekKey);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        if (createdDate >= weekStart && createdDate < weekEnd) {
+          weekEntry.totalPayments += 1;
+          weekEntry.totalAmount += totalAmt;
+          weekEntry.totalCommission += commAmt;
+          weekEntry.landlordAmount += landlordAmt;
+          break;
+        }
+      }
+
+      // Property aggregation
+      const propId = c.contract.property.id;
+      const propEntry = propertyMap.get(propId) || {
+        propertyId: propId,
+        propertyTitle: c.contract.property.title,
+        totalCommission: 0,
+        totalPayments: 0,
+      };
+      propEntry.totalCommission += commAmt;
+      propEntry.totalPayments += 1;
+      propertyMap.set(propId, propEntry);
+    }
+
+    const topProperties = Array.from(propertyMap.values())
+      .sort((a, b) => b.totalCommission - a.totalCommission)
+      .slice(0, 10);
 
     return {
       records: commissions.map((c) => ({
@@ -201,10 +309,13 @@ export class AdminService {
         periodLabel: c.paymentSchedule.periodLabel,
         createdAt: c.createdAt.toISOString(),
       })),
-      monthly: Array.from(monthlyMap.entries()).map(([month, data]) => ({
-        month,
-        ...data,
-      })),
+      monthly: Array.from(monthlyMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, data]) => ({ month, ...data })),
+      weekly: Array.from(weeklyMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([weekStart, data]) => ({ weekStart, ...data })),
+      topProperties,
       totals: {
         totalRevenue: commissions.reduce((s, c) => s + Number(c.totalAmount), 0),
         totalCommission: commissions.reduce((s, c) => s + Number(c.commissionAmount), 0),
@@ -212,5 +323,36 @@ export class AdminService {
         count: commissions.length,
       },
     };
+  }
+
+  async exportCommissionsAsCsv(): Promise<string> {
+    const commissions = await this.prisma.commission.findMany({
+      include: {
+        paymentSchedule: { select: { periodLabel: true, dueDate: true } },
+        contract: {
+          select: {
+            id: true,
+            property: { select: { title: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const BOM = '\uFEFF';
+    const header = 'Tarih,Sozlesme ID,Mulk,Toplam Tutar,Komisyon Orani,Komisyon Tutari,Ev Sahibi Tutari';
+
+    const rows = commissions.map((c) => {
+      const date = c.createdAt.toISOString().split('T')[0];
+      const contractId = c.contractId;
+      const property = `"${c.contract.property.title.replace(/"/g, '""')}"`;
+      const totalAmount = Number(c.totalAmount).toFixed(2);
+      const rate = (Number(c.commissionRate) * 100).toFixed(2) + '%';
+      const commissionAmount = Number(c.commissionAmount).toFixed(2);
+      const landlordAmount = Number(c.landlordAmount).toFixed(2);
+      return `${date},${contractId},${property},${totalAmount},${rate},${commissionAmount},${landlordAmount}`;
+    });
+
+    return BOM + header + '\n' + rows.join('\n');
   }
 }
