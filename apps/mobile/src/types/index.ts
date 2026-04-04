@@ -155,3 +155,22 @@ export interface KycStatus {
   totalSteps: number;
   canComplete: boolean;
 }
+
+// Notification types
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  entityType?: string;
+  entityId?: string;
+  isRead: boolean;
+  readAt?: string | null;
+  createdAt: string;
+}
+
+export interface NotificationsResponse {
+  notifications: NotificationItem[];
+  total: number;
+  unreadCount: number;
+}

@@ -5,9 +5,10 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { ContractStatus, UserRole, BankAccountType, BankAccountStatus } from '@prisma/client';
+import { ContractStatus, UserRole, BankAccountType, BankAccountStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BankService } from '../bank/bank.service';
+import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class ContractService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bankService: BankService,
+    private readonly inAppNotificationService: InAppNotificationService,
   ) {}
 
   async create(landlordId: string, dto: CreateContractDto) {
@@ -76,6 +78,21 @@ export class ContractService {
     });
 
     this.logger.log(`Contract ${contract.id} created`);
+
+    // Notify tenant about new contract
+    try {
+      await this.inAppNotificationService.create(
+        dto.tenantId,
+        NotificationType.CONTRACT_CREATED,
+        'Yeni Sozlesme Olusturuldu',
+        'Sizin icin yeni bir kira sozlesmesi olusturuldu. Lutfen inceleyin ve imzalayin.',
+        'Contract',
+        contract.id,
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to create notification for contract ${contract.id}: ${err}`);
+    }
+
     return this.getContractDetail(contract.id);
   }
 
@@ -317,6 +334,34 @@ export class ContractService {
       return newStatus;
     });
 
+    // ─── IN-APP NOTIFICATIONS ───
+    try {
+      if (result === ContractStatus.ACTIVE) {
+        // Contract activated: notify both parties
+        await this.inAppNotificationService.createForMultipleUsers(
+          [contract.tenantId, contract.landlordId],
+          NotificationType.CONTRACT_ACTIVATED,
+          'Sozlesme Aktif',
+          'Kira sozlesmesi her iki tarafca imzalandi ve aktif hale geldi.',
+          'Contract',
+          contractId,
+        );
+      } else {
+        // Contract signed but not yet active: notify the other party
+        const otherPartyId = userId === contract.tenantId ? contract.landlordId : contract.tenantId;
+        await this.inAppNotificationService.create(
+          otherPartyId,
+          NotificationType.CONTRACT_SIGNED,
+          'Sozlesme Imzalandi',
+          'Kira sozlesmesi diger tarafca imzalandi. Lutfen siz de imzalayin.',
+          'Contract',
+          contractId,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to create notification for contract sign ${contractId}: ${err}`);
+    }
+
     // ─── BANKA BILDIRIMI (Sozlesme aktif olunca) ───
     if (result === ContractStatus.ACTIVE) {
       try {
@@ -377,6 +422,21 @@ export class ContractService {
         },
       });
     });
+
+    // Notify the other party about termination
+    try {
+      const otherPartyId = userId === contract.tenantId ? contract.landlordId : contract.tenantId;
+      await this.inAppNotificationService.create(
+        otherPartyId,
+        NotificationType.CONTRACT_TERMINATED,
+        'Sozlesme Feshedildi',
+        `Kira sozlesmesi feshedildi. Sebep: ${reason}`,
+        'Contract',
+        contractId,
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to create notification for contract termination ${contractId}: ${err}`);
+    }
 
     return this.getContractDetail(contractId);
   }

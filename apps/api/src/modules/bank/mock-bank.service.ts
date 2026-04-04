@@ -4,7 +4,9 @@ import {
 } from '@nestjs/common';
 import { BankAccountType, BankAccountStatus, KmhApplicationStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
+import { NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
 import {
   BankService,
   KmhApplicationResult,
@@ -24,7 +26,10 @@ interface CreditScoringResult {
 export class MockBankService extends BankService {
   private readonly logger = new Logger(MockBankService.name);
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly inAppNotificationService: InAppNotificationService,
+  ) {
     super();
   }
 
@@ -238,6 +243,31 @@ export class MockBankService extends BankService {
       `KMH application ${application.id}: ${isApproved ? 'APPROVED' : 'REJECTED'} ` +
       `(score: ${scoring.score}, income: ${dto.monthlyIncome}, rent: ${dto.estimatedRent}, limit: ${approvedLimit ?? 'N/A'})`,
     );
+
+    // Send in-app notification
+    try {
+      if (isApproved) {
+        await this.inAppNotificationService.create(
+          userId,
+          NotificationType.KMH_APPROVED,
+          'KMH Basvurunuz Onaylandi',
+          `KMH basvurunuz onaylandi. Onaylanan limit: ${approvedLimit?.toLocaleString('tr-TR')} TL.`,
+          'KmhApplication',
+          application.id,
+        );
+      } else {
+        await this.inAppNotificationService.create(
+          userId,
+          NotificationType.KMH_REJECTED,
+          'KMH Basvurunuz Reddedildi',
+          rejectionReason ?? 'Basvurunuz degerlendirme sonucunda reddedilmistir.',
+          'KmhApplication',
+          application.id,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to create in-app notification for KMH application ${application.id}: ${err}`);
+    }
 
     const scoreLabel = scoring.score >= 800 ? 'Cok Iyi' : scoring.score >= 700 ? 'Iyi' : scoring.score >= 600 ? 'Yeterli' : 'Yetersiz';
 
@@ -681,6 +711,20 @@ export class MockBankService extends BankService {
     });
 
     this.logger.log(`KMH onboarding completed: ${iban}, limit: ${creditLimit} TL`);
+
+    // Send in-app notification
+    try {
+      await this.inAppNotificationService.create(
+        userId,
+        NotificationType.KMH_ONBOARDING_COMPLETE,
+        'KMH Hesabiniz Acildi',
+        `KMH hesabiniz basariyla acildi. IBAN: ${iban}, Limit: ${creditLimit.toLocaleString('tr-TR')} TL.`,
+        'BankAccount',
+        account.id,
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to create in-app notification for onboarding ${kmhApplicationId}: ${err}`);
+    }
 
     return {
       accountId: account.id,

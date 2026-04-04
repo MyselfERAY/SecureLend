@@ -13,6 +13,7 @@ import { Badge, getStatusBadge } from '../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
 import { colors } from '../../src/theme/colors';
 import { ContractSummary, PaymentItem } from '../../src/types';
+import { useNotifications } from '../../src/hooks/useNotifications';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DARK_NAVY = '#0a1628';
@@ -27,6 +28,7 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const { unreadCount } = useNotifications();
 
   const loadData = useCallback(async () => {
     if (!tokens) return;
@@ -118,17 +120,33 @@ export default function DashboardScreen() {
             <View style={styles.logoDot} />
             <Text style={styles.logoText}>SecureLend</Text>
           </View>
-          <TouchableOpacity
-            style={styles.avatarBtn}
-            onPress={() => router.push('/(tabs)/payments')}
-            activeOpacity={0.7}
-          >
-            {profilePhoto ? (
-              <Image source={{ uri: profilePhoto }} style={styles.avatarImg} />
-            ) : (
-              <Text style={styles.avatarText}>{initials}</Text>
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.bellBtn}
+              onPress={() => router.push('/notifications')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="notifications-outline" size={22} color="#ffffff" />
+              {unreadCount > 0 && (
+                <View style={styles.bellBadge}>
+                  <Text style={styles.bellBadgeText}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.avatarBtn}
+              onPress={() => router.push('/(tabs)/payments')}
+              activeOpacity={0.7}
+            >
+              {profilePhoto ? (
+                <Image source={{ uri: profilePhoto }} style={styles.avatarImg} />
+              ) : (
+                <Text style={styles.avatarText}>{initials}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Text style={styles.heroGreeting}>Hos geldiniz, {firstName}</Text>
@@ -310,6 +328,38 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
     letterSpacing: -0.3,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  bellBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: DARK_NAVY,
+  },
+  bellBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#ffffff',
   },
   avatarBtn: {
     width: 40,

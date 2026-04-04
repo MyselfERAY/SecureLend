@@ -68,6 +68,7 @@ model User {
   applications      Application[]
   bankAccounts      BankAccount[]
   consents          Consent[]
+  notifications     Notification[]
   signatures        ContractSignature[]
   landlordContracts Contract[]          @relation("ContractLandlord")
   tenantContracts   Contract[]          @relation("ContractTenant")
@@ -473,4 +474,39 @@ model Consent {
 
   @@index([userId, type], map: "idx_consent_user_type")
   @@map("consents")
+}
+
+enum NotificationType {
+  KMH_APPROVED
+  KMH_REJECTED
+  KMH_ONBOARDING_COMPLETE
+  CONTRACT_CREATED
+  CONTRACT_SIGNED
+  CONTRACT_ACTIVATED
+  CONTRACT_TERMINATED
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  PAYMENT_COMPLETED
+  SYSTEM
+
+  @@map("notification_type")
+}
+
+model Notification {
+  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String           @map("user_id") @db.Uuid
+  type       NotificationType
+  title      String           @db.VarChar(200)
+  body       String           @db.VarChar(1000)
+  entityType String?          @map("entity_type") @db.VarChar(50)
+  entityId   String?          @map("entity_id") @db.Uuid
+  isRead     Boolean          @default(false) @map("is_read")
+  readAt     DateTime?        @map("read_at") @db.Timestamptz()
+  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz()
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_notification_user")
+  @@index([userId, isRead], map: "idx_notification_user_read")
+  @@index([createdAt], map: "idx_notification_created")
+  @@map("notifications")
 }

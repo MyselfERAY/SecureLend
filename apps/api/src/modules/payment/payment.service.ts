@@ -1,9 +1,10 @@
 import {
   Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BankService } from '../bank/bank.service';
+import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
 
 const COMMISSION_RATE = 0.01; // %1 platform komisyonu
 const PLATFORM_ACCOUNT_NUMBER = 'TR00000610000000000000001';
@@ -15,6 +16,7 @@ export class PaymentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly bankService: BankService,
+    private readonly inAppNotificationService: InAppNotificationService,
   ) {}
 
   async getScheduleByContract(userId: string, contractId: string) {
@@ -177,6 +179,20 @@ export class PaymentService {
     this.logger.log(
       `Payment ${paymentId} processed: ${totalAmount} TL (commission: ${commissionAmount} TL, landlord: ${landlordAmount} TL)`,
     );
+
+    // Notify both tenant and landlord about completed payment
+    try {
+      await this.inAppNotificationService.createForMultipleUsers(
+        [payment.contract.tenantId, payment.contract.landlordId],
+        NotificationType.PAYMENT_COMPLETED,
+        'Odeme Tamamlandi',
+        `${payment.periodLabel} donemi kira odemesi (${totalAmount.toLocaleString('tr-TR')} TL) basariyla tamamlandi.`,
+        'PaymentSchedule',
+        paymentId,
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to create notification for payment ${paymentId}: ${err}`);
+    }
 
     return {
       id: result.id,
