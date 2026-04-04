@@ -53,12 +53,16 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await auth.login(tckn, phone);
+      // Save/clear credentials BEFORE navigation to avoid race condition
       if (rememberMe) {
         await setSavedCredentials({ tckn, phone });
       } else {
         await clearSavedCredentials();
       }
-      router.push({ pathname: '/(auth)/verify-otp', params: { phone } });
+      router.push({
+        pathname: '/(auth)/verify-otp',
+        params: { phone, tckn, rememberMe: rememberMe ? '1' : '0' },
+      });
     } catch (e: any) {
       setError(e.message || 'Giris basarisiz');
     } finally {

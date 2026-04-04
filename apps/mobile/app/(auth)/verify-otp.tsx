@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
 import { OtpInput } from '../../src/components/OtpInput';
 import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
+import { setSavedCredentials, clearSavedCredentials } from '../../src/lib/storage';
 import { colors } from '../../src/theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -21,7 +22,11 @@ const CARD_OVERLAP = 24;
 const RESEND_COOLDOWN = 45;
 
 export default function VerifyOtpScreen() {
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const { phone, tckn, rememberMe } = useLocalSearchParams<{
+    phone: string;
+    tckn?: string;
+    rememberMe?: string;
+  }>();
   const router = useRouter();
   const auth = useAuth();
   const [error, setError] = useState('');
@@ -49,6 +54,12 @@ export default function VerifyOtpScreen() {
       setHasError(false);
       try {
         await auth.verifyOtp(phone, code);
+        // Double-ensure credentials are saved/cleared after successful OTP
+        if (rememberMe === '1' && tckn && phone) {
+          await setSavedCredentials({ tckn, phone });
+        } else if (rememberMe === '0') {
+          await clearSavedCredentials();
+        }
         router.replace('/(tabs)');
       } catch (e: any) {
         setError(e.message || 'OTP dogrulama basarisiz');

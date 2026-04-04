@@ -47,7 +47,7 @@ function InlinePicker({ title, data, onSelect, onBack, selected }: InlinePickerP
   }, [data, search]);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ minHeight: 450 }}>
       <View style={pickerStyles.headerRow}>
         <TouchableOpacity onPress={onBack} style={pickerStyles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.gray[700]} />
@@ -59,6 +59,7 @@ function InlinePicker({ title, data, onSelect, onBack, selected }: InlinePickerP
         <TextInput
           style={pickerStyles.searchInput}
           placeholder="Ara..."
+          placeholderTextColor={colors.gray[400]}
           value={search}
           onChangeText={setSearch}
           autoCorrect={false}
@@ -72,8 +73,9 @@ function InlinePicker({ title, data, onSelect, onBack, selected }: InlinePickerP
       <FlatList
         data={filtered}
         keyExtractor={(item) => item}
-        style={{ maxHeight: 380 }}
+        style={{ height: 360 }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[pickerStyles.item, item === selected && pickerStyles.itemSelected]}

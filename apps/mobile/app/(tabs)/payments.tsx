@@ -39,10 +39,14 @@ export default function ProfileScreen() {
       setFullName(user.fullName);
       setEmail(user.email || '');
     }
-    // Load saved profile photo
-    getProfilePhoto().then((uri) => {
-      if (uri) setProfilePhotoUri(uri);
-    });
+    // Load saved profile photo (per-user)
+    if (user?.id) {
+      getProfilePhoto(user.id).then((uri) => {
+        setProfilePhotoUri(uri);
+      });
+    } else {
+      setProfilePhotoUri(null);
+    }
   }, [user]);
 
   const pickImage = async (source: 'camera' | 'library') => {
@@ -75,7 +79,7 @@ export default function ProfileScreen() {
     if (!result.canceled && result.assets[0]) {
       const uri = result.assets[0].uri;
       setProfilePhotoUri(uri);
-      await setProfilePhoto(uri);
+      if (user?.id) await setProfilePhoto(user.id, uri);
     }
   };
 
@@ -94,7 +98,7 @@ export default function ProfileScreen() {
           else if (buttonIndex === 1) pickImage('library');
           else if (buttonIndex === 2 && profilePhotoUri) {
             setProfilePhotoUri(null);
-            await clearProfilePhoto();
+            if (user?.id) await clearProfilePhoto(user.id);
           }
         },
       );
@@ -108,7 +112,7 @@ export default function ProfileScreen() {
           ...(profilePhotoUri
             ? [{ text: 'Fotografi Kaldir', style: 'destructive' as const, onPress: async () => {
                 setProfilePhotoUri(null);
-                await clearProfilePhoto();
+                if (user?.id) await clearProfilePhoto(user.id);
               }}]
             : []),
           { text: 'Iptal', style: 'cancel' as const },

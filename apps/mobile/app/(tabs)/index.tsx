@@ -92,8 +92,12 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     loadData().finally(() => setLoading(false));
-    getProfilePhoto().then(setProfilePhoto);
-  }, [loadData]);
+    if (user?.id) {
+      getProfilePhoto(user.id).then(setProfilePhoto);
+    } else {
+      setProfilePhoto(null);
+    }
+  }, [loadData, user?.id]);
 
   const onRefresh = async () => {
     setRefreshing(true);

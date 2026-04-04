@@ -48,21 +48,24 @@ export async function clearSavedCredentials(): Promise<void> {
   await SecureStore.deleteItemAsync(CREDENTIALS_KEY);
 }
 
-// Profile Photo (stored as base64 URI locally)
-const PHOTO_KEY = 'securelend_profile_photo';
+// Profile Photo — stored per user to prevent cross-user leakage
+const PHOTO_KEY_PREFIX = 'securelend_profile_photo_';
 
-export async function getProfilePhoto(): Promise<string | null> {
+export async function getProfilePhoto(userId: string): Promise<string | null> {
+  if (!userId) return null;
   try {
-    return await SecureStore.getItemAsync(PHOTO_KEY);
+    return await SecureStore.getItemAsync(`${PHOTO_KEY_PREFIX}${userId}`);
   } catch {
     return null;
   }
 }
 
-export async function setProfilePhoto(uri: string): Promise<void> {
-  await SecureStore.setItemAsync(PHOTO_KEY, uri);
+export async function setProfilePhoto(userId: string, uri: string): Promise<void> {
+  if (!userId) return;
+  await SecureStore.setItemAsync(`${PHOTO_KEY_PREFIX}${userId}`, uri);
 }
 
-export async function clearProfilePhoto(): Promise<void> {
-  await SecureStore.deleteItemAsync(PHOTO_KEY);
+export async function clearProfilePhoto(userId: string): Promise<void> {
+  if (!userId) return;
+  await SecureStore.deleteItemAsync(`${PHOTO_KEY_PREFIX}${userId}`);
 }
