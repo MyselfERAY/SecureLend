@@ -5,6 +5,18 @@ import Link from 'next/link';
 import { useAuth } from '../../lib/auth-context';
 import { api } from '../../lib/api';
 
+interface DashboardData {
+  activeContracts: number;
+  totalContracts: number;
+  pendingPayments: number;
+  overduePayments: number;
+  monthlyIncome: number;
+  properties: number;
+  occupancyRate: number;
+  nextPaymentDate: string | null;
+  nextPaymentAmount: number | null;
+}
+
 interface ContractSummary {
   id: string;
   status: string;
@@ -30,6 +42,7 @@ export default function DashboardPage() {
   const { user, tokens } = useAuth();
   const [contracts, setContracts] = useState<ContractSummary[]>([]);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,9 +50,10 @@ export default function DashboardPage() {
 
     const load = async () => {
       try {
-        const [contractsRes, paymentsRes] = await Promise.all([
+        const [contractsRes, paymentsRes, dashRes] = await Promise.all([
           api<ContractSummary[]>('/api/v1/contracts', { token: tokens.accessToken }),
           api<PaymentItem[]>('/api/v1/payments/my', { token: tokens.accessToken }),
+          api<DashboardData>('/api/v1/users/dashboard', { token: tokens.accessToken }),
         ]);
 
         if (contractsRes.status === 'success' && contractsRes.data) {
@@ -48,8 +62,11 @@ export default function DashboardPage() {
         if (paymentsRes.status === 'success' && paymentsRes.data) {
           setPayments(paymentsRes.data);
         }
+        if (dashRes.status === 'success' && dashRes.data) {
+          setDashboardData(dashRes.data);
+        }
       } catch {
-        // Ignore
+        // Silently fail - individual sections handle empty state
       } finally {
         setLoading(false);
       }
@@ -59,85 +76,168 @@ export default function DashboardPage() {
   }, [tokens?.accessToken]);
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+          <span className="text-sm text-slate-400">Veriler yukleniyor...</span>
+        </div>
+      </div>
+    );
   }
 
+  const activeContracts = contracts.filter((c) => c.status === 'ACTIVE');
   const upcomingPayments = payments
     .filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE')
     .slice(0, 5);
 
-  const activeContracts = contracts.filter((c) => c.status === 'ACTIVE');
+  const isTenant = user?.roles.includes('TENANT');
+  const isLandlord = user?.roles.includes('LANDLORD');
+
+  // Compute stats from local data if dashboard endpoint doesn't return data
+  const stats = {
+    activeContracts: dashboardData?.activeContracts ?? activeContracts.length,
+    totalContracts: dashboardData?.totalContracts ?? contracts.length,
+    pendingPayments: dashboardData?.pendingPayments ?? payments.filter((p) => p.status === 'PENDING').length,
+    overduePayments: dashboardData?.overduePayments ?? payments.filter((p) => p.status === 'OVERDUE').length,
+    properties: dashboardData?.properties ?? 0,
+    monthlyIncome: dashboardData?.monthlyIncome ?? 0,
+  };
 
   return (
     <div className="space-y-8">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-white sm:text-3xl">
           Hos geldiniz, {user?.fullName}
         </h1>
-        <p className="text-gray-500 mt-1">
-          Roller: {user?.roles.length ? user.roles.join(', ') : 'Henuz rol atanmadi'}
+        <p className="mt-1 text-sm text-slate-400">
+          {user?.roles.length ? user.roles.map(r =>
+            r === 'TENANT' ? 'Kiraci' : r === 'LANDLORD' ? 'Ev Sahibi' : r === 'ADMIN' ? 'Yonetici' : r
+          ).join(' / ') : 'Henuz rol atanmadi'}
+          {' '}&middot; SecureLend Kontrol Paneli
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard title="Aktif Sozlesme" value={activeContracts.length} color="blue" />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Aktif Sozlesme"
+          value={stats.activeContracts}
+          icon={
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          }
+          color="blue"
+        />
         <StatCard
           title="Bekleyen Odeme"
-          value={upcomingPayments.length}
-          color={upcomingPayments.some((p) => p.status === 'OVERDUE') ? 'red' : 'yellow'}
+          value={stats.pendingPayments}
+          icon={
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          color="yellow"
         />
-        <StatCard title="Toplam Sozlesme" value={contracts.length} color="gray" />
         <StatCard
-          title="Roller"
-          value={user?.roles.length || 0}
-          color="green"
+          title="Geciken Odeme"
+          value={stats.overduePayments}
+          icon={
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          }
+          color="red"
         />
+        {isLandlord ? (
+          <StatCard
+            title="Mulk Sayisi"
+            value={stats.properties}
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            }
+            color="emerald"
+          />
+        ) : (
+          <StatCard
+            title="Toplam Sozlesme"
+            value={stats.totalContracts}
+            icon={
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            }
+            color="slate"
+          />
+        )}
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <QuickAction
           href="/dashboard/properties"
           title="Mulk Yonetimi"
           desc="Mulklerinizi ekleyin ve yonetin"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          }
         />
         <QuickAction
           href="/dashboard/contracts"
           title="Sozlesmeler"
           desc="Kira sozlesmelerinizi goruntuleyin"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          }
         />
         <QuickAction
           href="/dashboard/bank"
           title="Banka Hesaplari"
           desc="KMH hesabi acin ve yonetin"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          }
         />
       </div>
 
       {/* Active Contracts */}
       {activeContracts.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Aktif Sozlesmeler</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Aktif Sozlesmeler</h2>
+            <Link href="/dashboard/contracts" className="text-sm font-medium text-blue-400 hover:text-blue-300">
+              Tumunu Gor &rarr;
+            </Link>
+          </div>
           <div className="space-y-3">
-            {activeContracts.map((c) => (
+            {activeContracts.slice(0, 3).map((c) => (
               <Link
                 key={c.id}
                 href={`/dashboard/contracts/${c.id}`}
-                className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="block rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition hover:border-blue-500/30 hover:bg-[#112240]"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-medium text-gray-900">{c.propertyTitle}</div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      Kiraci: {c.tenantName} | Ev Sahibi: {c.landlordName}
+                    <div className="font-medium text-white">{c.propertyTitle}</div>
+                    <div className="mt-1 text-sm text-slate-400">
+                      {isTenant ? `Ev Sahibi: ${c.landlordName}` : `Kiraci: ${c.tenantName}`}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-blue-600">
+                    <div className="font-semibold text-blue-400">
                       {c.monthlyRent.toLocaleString('tr-TR')} TL/ay
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="mt-1 text-xs text-slate-500">
                       {c.startDate} - {c.endDate}
                     </div>
                   </div>
@@ -151,23 +251,28 @@ export default function DashboardPage() {
       {/* Upcoming Payments */}
       {upcomingPayments.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Yaklasan Odemeler</h2>
-          <div className="bg-white rounded-xl border border-gray-200 divide-y">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Yaklasan Odemeler</h2>
+            <Link href="/dashboard/payments" className="text-sm font-medium text-blue-400 hover:text-blue-300">
+              Tumunu Gor &rarr;
+            </Link>
+          </div>
+          <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
             {upcomingPayments.map((p) => (
-              <div key={p.id} className="p-4 flex justify-between items-center">
+              <div key={p.id} className="flex items-center justify-between p-4">
                 <div>
-                  <div className="font-medium text-gray-900">{p.propertyTitle}</div>
-                  <div className="text-sm text-gray-500">{p.periodLabel} - {p.dueDate}</div>
+                  <div className="font-medium text-white">{p.propertyTitle}</div>
+                  <div className="mt-0.5 text-sm text-slate-400">{p.periodLabel} &middot; Vade: {p.dueDate}</div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                     p.status === 'OVERDUE'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
+                      ? 'bg-red-500/20 text-red-400'
+                      : 'bg-yellow-500/20 text-yellow-400'
                   }`}>
                     {p.status === 'OVERDUE' ? 'Gecikti' : 'Bekliyor'}
                   </span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-white">
                     {p.amount.toLocaleString('tr-TR')} TL
                   </span>
                 </div>
@@ -177,43 +282,91 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Empty State */}
       {contracts.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <div className="text-gray-400 text-lg mb-2">Henuz sozlesmeniz yok</div>
-          <p className="text-gray-500 text-sm">
-            Ev sahibi iseniz mulk ekleyip sozlesme olusturabilirsiniz.
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
+            <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div className="text-lg font-medium text-slate-300">Henuz sozlesmeniz yok</div>
+          <p className="mt-2 text-sm text-slate-500">
+            {isLandlord
+              ? 'Mulk ekleyip sozlesme olusturabilirsiniz.'
+              : 'Ev sahibiniz sozlesme olusturdugunda burada gorunecektir.'}
           </p>
+          {isLandlord && (
+            <Link
+              href="/dashboard/properties"
+              className="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Mulk Ekle
+            </Link>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function StatCard({ title, value, color }: { title: string; value: number; color: string }) {
-  const colors: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-700',
-    yellow: 'bg-yellow-50 text-yellow-700',
-    red: 'bg-red-50 text-red-700',
-    green: 'bg-green-50 text-green-700',
-    gray: 'bg-gray-50 text-gray-700',
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: string;
+}) {
+  const colorMap: Record<string, { bg: string; icon: string; text: string }> = {
+    blue: { bg: 'bg-blue-500/10', icon: 'text-blue-400', text: 'text-blue-400' },
+    yellow: { bg: 'bg-yellow-500/10', icon: 'text-yellow-400', text: 'text-yellow-400' },
+    red: { bg: 'bg-red-500/10', icon: 'text-red-400', text: 'text-red-400' },
+    emerald: { bg: 'bg-emerald-500/10', icon: 'text-emerald-400', text: 'text-emerald-400' },
+    slate: { bg: 'bg-slate-500/10', icon: 'text-slate-400', text: 'text-slate-400' },
   };
 
+  const c = colorMap[color] || colorMap.slate;
+
   return (
-    <div className={`rounded-xl p-4 ${colors[color] || colors.gray}`}>
-      <div className="text-sm font-medium opacity-80">{title}</div>
-      <div className="text-3xl font-bold mt-1">{value}</div>
+    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-slate-400">{title}</span>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.bg}`}>
+          <span className={c.icon}>{icon}</span>
+        </div>
+      </div>
+      <div className={`mt-3 text-3xl font-bold ${c.text}`}>{value}</div>
     </div>
   );
 }
 
-function QuickAction({ href, title, desc }: { href: string; title: string; desc: string }) {
+function QuickAction({
+  href,
+  title,
+  desc,
+  icon,
+}: {
+  href: string;
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
-      className="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow"
+      className="group flex items-start gap-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition hover:border-blue-500/30 hover:bg-[#112240]"
     >
-      <div className="font-semibold text-gray-900">{title}</div>
-      <div className="text-sm text-gray-500 mt-1">{desc}</div>
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 transition group-hover:bg-blue-600/30">
+        {icon}
+      </div>
+      <div>
+        <div className="font-semibold text-white">{title}</div>
+        <div className="mt-0.5 text-sm text-slate-400">{desc}</div>
+      </div>
     </Link>
   );
 }

@@ -18,6 +18,7 @@ import { BankModule } from './modules/bank/bank.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ConsentModule } from './modules/consent/consent.module';
 import { InAppNotificationModule } from './modules/in-app-notification/in-app-notification.module';
+import { PushNotificationModule } from './modules/push-notification/push-notification.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -67,6 +68,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     AdminModule,
     ConsentModule,
     InAppNotificationModule,
+    PushNotificationModule,
     HealthModule,
   ],
   providers: [

@@ -7,18 +7,15 @@ import { api } from '../../../lib/api';
 export default function ProfilePage() {
   const { tokens, user, refreshUser } = useAuth();
 
-  // Edit profile
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
 
-  // Add role
   const [addingRole, setAddingRole] = useState(false);
   const [roleMsg, setRoleMsg] = useState('');
 
-  // KYC
   const [kycLoading, setKycLoading] = useState(false);
   const [kycMsg, setKycMsg] = useState('');
 
@@ -107,13 +104,17 @@ export default function ProfilePage() {
   };
 
   if (!user) {
-    return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+      </div>
+    );
   }
 
   const kycStatusLabel: Record<string, { text: string; cls: string }> = {
-    PENDING: { text: 'Bekliyor', cls: 'bg-yellow-100 text-yellow-700' },
-    VERIFIED: { text: 'Dogrulandi', cls: 'bg-green-100 text-green-700' },
-    REJECTED: { text: 'Reddedildi', cls: 'bg-red-100 text-red-700' },
+    PENDING: { text: 'Bekliyor', cls: 'bg-yellow-500/20 text-yellow-400' },
+    VERIFIED: { text: 'Dogrulandi', cls: 'bg-emerald-500/20 text-emerald-400' },
+    REJECTED: { text: 'Reddedildi', cls: 'bg-red-500/20 text-red-400' },
   };
 
   const roleLabel: Record<string, string> = {
@@ -122,18 +123,20 @@ export default function ProfilePage() {
     ADMIN: 'Yonetici',
   };
 
-  return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900">Profilim</h1>
+  const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
 
-      {/* Profile Info Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-lg font-semibold text-gray-800">Kisisel Bilgiler</h2>
+  return (
+    <div className="max-w-2xl space-y-6">
+      <h1 className="text-2xl font-bold text-white">Profilim</h1>
+
+      {/* Profile Info */}
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <div className="mb-6 flex items-start justify-between">
+          <h2 className="text-lg font-semibold text-white">Kisisel Bilgiler</h2>
           {!editing && (
             <button
               onClick={() => { setEditing(true); setSaveMsg(''); }}
-              className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+              className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-600/30"
             >
               Duzenle
             </button>
@@ -143,41 +146,23 @@ export default function ProfilePage() {
         {editing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">Ad Soyad</label>
+              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ornek@email.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">E-posta</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@email.com" className={inputCls} />
             </div>
             {saveMsg && (
-              <div className={`text-sm p-2 rounded ${saveMsg.includes('guncellendi') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              <div className={`rounded-lg p-2 text-sm ${saveMsg.includes('guncellendi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                 {saveMsg}
               </div>
             )}
             <div className="flex gap-3">
-              <button
-                onClick={handleSaveProfile}
-                disabled={saving}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
+              <button onClick={handleSaveProfile} disabled={saving} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
                 {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
-              <button
-                onClick={() => { setEditing(false); setFullName(user.fullName); setEmail(user.email || ''); }}
-                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-              >
+              <button onClick={() => { setEditing(false); setFullName(user.fullName); setEmail(user.email || ''); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
                 Iptal
               </button>
             </div>
@@ -189,93 +174,77 @@ export default function ProfilePage() {
             <InfoRow label="TCKN" value={user.maskedTckn} />
             <InfoRow label="E-posta" value={user.email || '-'} />
             {saveMsg && (
-              <div className="text-sm p-2 rounded bg-green-50 text-green-700">{saveMsg}</div>
+              <div className="rounded-lg bg-emerald-500/10 p-2 text-sm text-emerald-400">{saveMsg}</div>
             )}
           </div>
         )}
       </div>
 
-      {/* Roles Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Roller</h2>
+      {/* Roles */}
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <h2 className="mb-4 text-lg font-semibold text-white">Roller</h2>
 
         {user.roles.length > 0 ? (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="mb-4 flex flex-wrap gap-2">
             {user.roles.map((role) => (
-              <span
-                key={role}
-                className="px-3 py-1.5 text-sm font-medium bg-blue-100 text-blue-700 rounded-full"
-              >
+              <span key={role} className="rounded-full bg-blue-500/20 px-3 py-1.5 text-sm font-medium text-blue-400">
                 {roleLabel[role] || role}
               </span>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 mb-4">Henuz bir rolunuz yok. Asagidan rol ekleyebilirsiniz.</p>
+          <p className="mb-4 text-sm text-slate-400">Henuz bir rolunuz yok. Asagidan rol ekleyebilirsiniz.</p>
         )}
 
-        {/* Add role buttons */}
         <div className="flex gap-3">
           {!user.roles.includes('TENANT') && (
-            <button
-              onClick={() => handleAddRole('TENANT')}
-              disabled={addingRole}
-              className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
+            <button onClick={() => handleAddRole('TENANT')} disabled={addingRole} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50">
               {addingRole ? 'Ekleniyor...' : 'Kiraci Rolu Ekle'}
             </button>
           )}
           {!user.roles.includes('LANDLORD') && (
-            <button
-              onClick={() => handleAddRole('LANDLORD')}
-              disabled={addingRole}
-              className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-            >
+            <button onClick={() => handleAddRole('LANDLORD')} disabled={addingRole} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:opacity-50">
               {addingRole ? 'Ekleniyor...' : 'Ev Sahibi Rolu Ekle'}
             </button>
           )}
           {user.roles.includes('TENANT') && user.roles.includes('LANDLORD') && (
-            <span className="text-sm text-gray-500">Tum roller mevcut.</span>
+            <span className="text-sm text-slate-500">Tum roller mevcut.</span>
           )}
         </div>
 
         {roleMsg && (
-          <div className={`mt-3 text-sm p-2 rounded ${roleMsg.includes('eklendi') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          <div className={`mt-3 rounded-lg p-2 text-sm ${roleMsg.includes('eklendi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
             {roleMsg}
           </div>
         )}
       </div>
 
-      {/* KYC Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Kimlik Dogrulama (KYC)</h2>
-          <span className={`px-2 py-1 rounded text-xs font-medium ${kycStatusLabel[user.kycStatus]?.cls || 'bg-gray-100 text-gray-600'}`}>
+      {/* KYC */}
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Kimlik Dogrulama (KYC)</h2>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${kycStatusLabel[user.kycStatus]?.cls || 'bg-slate-500/20 text-slate-400'}`}>
             {kycStatusLabel[user.kycStatus]?.text || user.kycStatus}
           </span>
         </div>
 
         {user.kycStatus === 'PENDING' ? (
           <div>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="mb-3 text-sm text-slate-400">
               KYC dogrulamasini tamamlayarak tum ozelliklere erisim saglayabilirsiniz.
             </p>
-            <button
-              onClick={handleKyc}
-              disabled={kycLoading}
-              className="px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
-            >
+            <button onClick={handleKyc} disabled={kycLoading} className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-700 disabled:opacity-50">
               {kycLoading ? 'Dogrulaniyor...' : 'KYC Dogrulamasini Baslat'}
             </button>
           </div>
         ) : user.kycStatus === 'VERIFIED' ? (
-          <p className="text-sm text-green-600">Kimlik dogrulamaniz tamamlanmistir.</p>
+          <p className="text-sm text-emerald-400">Kimlik dogrulamaniz tamamlanmistir.</p>
         ) : (
-          <p className="text-sm text-red-600">Kimlik dogrulamaniz reddedilmistir. Destek ile iletisime gecin.</p>
+          <p className="text-sm text-red-400">Kimlik dogrulamaniz reddedilmistir. Destek ile iletisime gecin.</p>
         )}
 
         {kycMsg && (
-          <div className={`mt-3 text-sm p-2 rounded ${kycMsg.includes('tamamlandi') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          <div className={`mt-3 rounded-lg p-2 text-sm ${kycMsg.includes('tamamlandi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
             {kycMsg}
           </div>
         )}
@@ -286,9 +255,9 @@ export default function ProfilePage() {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{value}</span>
+    <div className="flex items-center justify-between border-b border-slate-700/30 py-2 last:border-0">
+      <span className="text-sm text-slate-400">{label}</span>
+      <span className="text-sm font-medium text-white">{value}</span>
     </div>
   );
 }

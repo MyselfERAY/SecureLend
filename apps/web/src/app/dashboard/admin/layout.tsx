@@ -16,8 +16,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading || !user?.roles.includes('ADMIN')) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="text-gray-500">Yukleniyor...</div>
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
       </div>
     );
   }

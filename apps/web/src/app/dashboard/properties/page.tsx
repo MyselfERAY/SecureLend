@@ -33,8 +33,6 @@ export default function PropertiesPage() {
   });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -49,11 +47,16 @@ export default function PropertiesPage() {
     try {
       const res = await api<Property[]>('/api/v1/properties/my', { token: tokens.accessToken });
       if (res.status === 'success' && res.data) setProperties(res.data);
-    } catch {}
+    } catch {
+      // ignore
+    }
     setLoading(false);
   };
 
-  useEffect(() => { loadProperties(); }, [tokens?.accessToken]);
+  useEffect(() => {
+    loadProperties();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens?.accessToken]);
 
   const openCreateForm = () => {
     setEditingId(null);
@@ -103,12 +106,10 @@ export default function PropertiesPage() {
 
       let res;
       if (editingId) {
-        // Update existing property
         res = await api(`/api/v1/properties/${editingId}`, {
           method: 'PATCH', body, token: tokens!.accessToken,
         });
       } else {
-        // Create new property
         res = await api('/api/v1/properties', {
           method: 'POST', body, token: tokens!.accessToken,
         });
@@ -147,127 +148,152 @@ export default function PropertiesPage() {
   };
 
   const statusLabel: Record<string, { text: string; cls: string }> = {
-    ACTIVE: { text: 'Aktif', cls: 'bg-green-100 text-green-700' },
-    RENTED: { text: 'Kirada', cls: 'bg-blue-100 text-blue-700' },
-    INACTIVE: { text: 'Pasif', cls: 'bg-gray-100 text-gray-700' },
+    ACTIVE: { text: 'Aktif', cls: 'bg-emerald-500/20 text-emerald-400' },
+    RENTED: { text: 'Kirada', cls: 'bg-blue-500/20 text-blue-400' },
+    INACTIVE: { text: 'Pasif', cls: 'bg-slate-500/20 text-slate-400' },
   };
 
   const propertyTypeLabel: Record<string, string> = {
     APARTMENT: 'Daire', HOUSE: 'Mustakil Ev', OFFICE: 'Ofis', SHOP: 'Dukkan',
   };
 
+  const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
+  const labelCls = 'mb-1.5 block text-sm font-medium text-slate-300';
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Mulklerim</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Mulklerim</h1>
         <button
           onClick={() => showForm ? (setShowForm(false), setEditingId(null)) : openCreateForm()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            showForm
+              ? 'border border-slate-600 text-slate-300 hover:bg-slate-700/50'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
         >
           {showForm ? 'Iptal' : 'Mulk Ekle'}
         </button>
       </div>
 
-      {/* Create / Edit Form */}
+      {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">
+        <form onSubmit={handleSubmit} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-white">
             {editingId ? 'Mulku Duzenle' : 'Yeni Mulk Ekle'}
           </h2>
           {formError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">{formError}</div>
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{formError}</div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Baslik" value={formData.title} onChange={(v) => setFormData({ ...formData, title: v })} required />
-            <Input label="Adres" value={formData.addressLine1} onChange={(v) => setFormData({ ...formData, addressLine1: v })} required />
-            <Input label="Sehir" value={formData.city} onChange={(v) => setFormData({ ...formData, city: v })} required />
-            <Input label="Ilce" value={formData.district} onChange={(v) => setFormData({ ...formData, district: v })} required />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tur</label>
-              <select
-                value={formData.propertyType}
-                onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              >
+              <label className={labelCls}>Baslik *</label>
+              <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className={inputCls} required />
+            </div>
+            <div>
+              <label className={labelCls}>Adres *</label>
+              <input type="text" value={formData.addressLine1} onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })} className={inputCls} required />
+            </div>
+            <div>
+              <label className={labelCls}>Sehir *</label>
+              <input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className={inputCls} required />
+            </div>
+            <div>
+              <label className={labelCls}>Ilce *</label>
+              <input type="text" value={formData.district} onChange={(e) => setFormData({ ...formData, district: e.target.value })} className={inputCls} required />
+            </div>
+            <div>
+              <label className={labelCls}>Tur</label>
+              <select value={formData.propertyType} onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })} className={inputCls}>
                 <option value="APARTMENT">Daire</option>
                 <option value="HOUSE">Mustakil Ev</option>
                 <option value="OFFICE">Ofis</option>
                 <option value="SHOP">Dukkan</option>
               </select>
             </div>
-            <Input label="Oda Sayisi" value={formData.roomCount} onChange={(v) => setFormData({ ...formData, roomCount: v })} />
-            <Input label="Alan (m2)" value={formData.areaM2} onChange={(v) => setFormData({ ...formData, areaM2: v })} type="number" />
-            <Input label="Kat" value={formData.floor} onChange={(v) => setFormData({ ...formData, floor: v })} type="number" />
-            <Input label="Toplam Kat" value={formData.totalFloors} onChange={(v) => setFormData({ ...formData, totalFloors: v })} type="number" />
-            <Input label="Aylik Kira (TL)" value={formData.monthlyRent} onChange={(v) => setFormData({ ...formData, monthlyRent: v })} type="number" required />
-            <Input label="Depozito (TL)" value={formData.depositAmount} onChange={(v) => setFormData({ ...formData, depositAmount: v })} type="number" />
+            <div>
+              <label className={labelCls}>Oda Sayisi</label>
+              <input type="text" value={formData.roomCount} onChange={(e) => setFormData({ ...formData, roomCount: e.target.value })} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Alan (m2)</label>
+              <input type="number" value={formData.areaM2} onChange={(e) => setFormData({ ...formData, areaM2: e.target.value })} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Kat</label>
+              <input type="number" value={formData.floor} onChange={(e) => setFormData({ ...formData, floor: e.target.value })} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Toplam Kat</label>
+              <input type="number" value={formData.totalFloors} onChange={(e) => setFormData({ ...formData, totalFloors: e.target.value })} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Aylik Kira (TL) *</label>
+              <input type="number" value={formData.monthlyRent} onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })} className={inputCls} required />
+            </div>
+            <div>
+              <label className={labelCls}>Depozito (TL)</label>
+              <input type="number" value={formData.depositAmount} onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })} className={inputCls} />
+            </div>
           </div>
           <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={submitting} className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
               {submitting ? 'Kaydediliyor...' : editingId ? 'Guncelle' : 'Kaydet'}
             </button>
-            <button
-              type="button"
-              onClick={() => { setShowForm(false); setEditingId(null); }}
-              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
-            >
+            <button type="button" onClick={() => { setShowForm(false); setEditingId(null); }} className="rounded-lg border border-slate-600 px-6 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
               Vazgec
             </button>
           </div>
         </form>
       )}
 
-      {/* Properties List */}
+      {/* List */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yukleniyor...</div>
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+        </div>
       ) : properties.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <div className="text-gray-400 text-lg">Henuz mulkunuz yok</div>
-          <p className="text-gray-500 text-sm mt-2">Mulk ekleyerek baslayabilirsiniz.</p>
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
+            <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <div className="text-lg font-medium text-slate-300">Henuz mulkunuz yok</div>
+          <p className="mt-2 text-sm text-slate-500">Mulk ekleyerek baslayabilirsiniz.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {properties.map((p) => (
-            <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-5">
-              <div className="flex justify-between items-start">
+            <div key={p.id} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+              <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{p.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{p.addressLine1}</p>
-                  <p className="text-sm text-gray-500">{p.district}, {p.city}</p>
+                  <h3 className="font-semibold text-white">{p.title}</h3>
+                  <p className="mt-1 text-sm text-slate-400">{p.addressLine1}</p>
+                  <p className="text-sm text-slate-500">{p.district}, {p.city}</p>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${statusLabel[p.status]?.cls || ''}`}>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusLabel[p.status]?.cls || 'bg-slate-500/20 text-slate-400'}`}>
                   {statusLabel[p.status]?.text || p.status}
                 </span>
               </div>
-              <div className="mt-3 flex gap-4 text-sm text-gray-600">
-                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+              <div className="mt-3 flex flex-wrap gap-2 text-sm">
+                <span className="rounded bg-slate-700/50 px-2 py-0.5 text-xs text-slate-300">
                   {propertyTypeLabel[p.propertyType] || p.propertyType}
                 </span>
-                {p.roomCount && <span>{p.roomCount}</span>}
-                {p.areaM2 && <span>{p.areaM2} m2</span>}
-                <span className="font-semibold text-blue-600">
+                {p.roomCount && <span className="text-slate-400">{p.roomCount}</span>}
+                {p.areaM2 && <span className="text-slate-400">{p.areaM2} m2</span>}
+                <span className="ml-auto font-semibold text-blue-400">
                   {p.monthlyRent.toLocaleString('tr-TR')} TL/ay
                 </span>
               </div>
 
-              {/* Action Buttons */}
               {p.status !== 'RENTED' && (
-                <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
-                  <button
-                    onClick={() => openEditForm(p)}
-                    className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
-                  >
+                <div className="mt-4 flex gap-2 border-t border-slate-700/30 pt-3">
+                  <button onClick={() => openEditForm(p)} className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-600/30">
                     Duzenle
                   </button>
                   {p.status === 'ACTIVE' && (
-                    <button
-                      onClick={() => setDeleteTarget(p)}
-                      className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition"
-                    >
+                    <button onClick={() => setDeleteTarget(p)} className="rounded-lg bg-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400 transition hover:bg-red-500/30">
                       Sil
                     </button>
                   )}
@@ -278,51 +304,28 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Mulku Sil</h3>
-            <p className="text-sm text-gray-600 mb-1">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-sm rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+            <h3 className="mb-2 text-lg font-semibold text-white">Mulku Sil</h3>
+            <p className="mb-1 text-sm text-slate-300">
               <strong>{deleteTarget.title}</strong> mulkunu silmek istediginize emin misiniz?
             </p>
-            <p className="text-xs text-red-500 mb-4">
+            <p className="mb-4 text-xs text-red-400">
               Bu islem mulku pasif yapacaktir. Aktif sozlesmesi olan mulkler silinemez.
             </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setDeleteTarget(null)} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700/50">
                 Vazgec
               </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
-              >
+              <button onClick={handleDelete} disabled={deleting} className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition hover:bg-red-700 disabled:opacity-50">
                 {deleting ? 'Siliniyor...' : 'Evet, Sil'}
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function Input({ label, value, onChange, required, type = 'text' }: {
-  label: string; value: string; onChange: (v: string) => void;
-  required?: boolean; type?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        type={type} value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-        required={required}
-      />
     </div>
   );
 }

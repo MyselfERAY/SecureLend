@@ -63,7 +63,6 @@ export default function BankPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('kmh');
   const [loading, setLoading] = useState(true);
 
-  // KMH state
   const [applications, setApplications] = useState<KmhApplication[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [formEmployment, setFormEmployment] = useState('');
@@ -75,7 +74,6 @@ export default function BankPage() {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
-  // Accounts state
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -85,7 +83,9 @@ export default function BankPage() {
     try {
       const res = await api<KmhApplication[]>('/api/v1/bank/kmh/my-applications', { token: tokens.accessToken });
       if (res.status === 'success' && res.data) setApplications(res.data);
-    } catch {}
+    } catch {
+      // ignore
+    }
   };
 
   const loadAccounts = async () => {
@@ -93,7 +93,9 @@ export default function BankPage() {
     try {
       const res = await api<BankAccount[]>('/api/v1/bank/accounts', { token: tokens.accessToken });
       if (res.status === 'success' && res.data) setAccounts(res.data);
-    } catch {}
+    } catch {
+      // ignore
+    }
   };
 
   const loadTransactions = async (accountId: string) => {
@@ -102,14 +104,16 @@ export default function BankPage() {
     try {
       const res = await api<Transaction[]>(`/api/v1/bank/accounts/${accountId}/transactions`, { token: tokens.accessToken });
       if (res.status === 'success' && res.data) setTransactions(res.data);
-    } catch {}
+    } catch {
+      // ignore
+    }
   };
 
   useEffect(() => {
     Promise.all([loadApplications(), loadAccounts()]).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokens?.accessToken]);
 
-  // KMH Basvurusu
   const handleApplyKmh = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(''); setFormSuccess('');
@@ -142,7 +146,6 @@ export default function BankPage() {
     finally { setSubmitting(false); }
   };
 
-  // Digital Onboarding Tamamla
   const handleOnboarding = async (applicationId: string) => {
     setFormError(''); setFormSuccess('');
     try {
@@ -159,26 +162,31 @@ export default function BankPage() {
     } catch (err: any) { setFormError(err.message); }
   };
 
-  // Active approved application (not yet onboarded)
   const pendingOnboarding = applications.find(
     (a) => a.status === 'APPROVED' && !a.onboardingCompleted,
   );
 
-  // Check if user can apply (no pending/approved-not-onboarded applications)
   const canApply = !applications.some(
     (a) => (a.status === 'PENDING') || (a.status === 'APPROVED' && !a.onboardingCompleted),
   );
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
+  const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
+  const labelCls = 'mb-1.5 block text-sm font-medium text-slate-300';
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Banka</h1>
-      </div>
+      <h1 className="text-2xl font-bold text-white">Banka</h1>
 
-      {/* Tab Navigation */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+      {/* Tabs */}
+      <div className="flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
         {[
           { key: 'kmh' as ActiveTab, label: 'KMH Basvurusu' },
           { key: 'accounts' as ActiveTab, label: 'Hesaplar & Islemler' },
@@ -186,8 +194,10 @@ export default function BankPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === tab.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === tab.key
+                ? 'bg-blue-600/20 text-blue-400'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             {tab.label}
@@ -197,64 +207,57 @@ export default function BankPage() {
 
       {/* Messages */}
       {formError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm flex justify-between items-center">
+        <div className="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
           <span>{formError}</span>
-          <button onClick={() => setFormError('')} className="text-red-500 hover:text-red-700 ml-2">✕</button>
+          <button onClick={() => setFormError('')} className="ml-2 font-bold text-red-400/60 hover:text-red-400">X</button>
         </div>
       )}
       {formSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700 text-sm flex justify-between items-center">
+        <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400">
           <span>{formSuccess}</span>
-          <button onClick={() => setFormSuccess('')} className="text-green-500 hover:text-green-700 ml-2">✕</button>
+          <button onClick={() => setFormSuccess('')} className="ml-2 font-bold text-emerald-400/60 hover:text-emerald-400">X</button>
         </div>
       )}
 
-      {/* ═══ KMH BASVURUSU TAB ═══ */}
+      {/* KMH Tab */}
       {activeTab === 'kmh' && (
         <>
-          {/* Onboarding bekleyen basvuru */}
           {pendingOnboarding && (
-            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
-              <h3 className="font-bold text-yellow-800 text-lg mb-2">Digital Onboarding Bekliyor</h3>
-              <p className="text-yellow-700 text-sm mb-3">
+            <div className="rounded-xl border-2 border-yellow-500/30 bg-yellow-500/10 p-6">
+              <h3 className="mb-2 text-lg font-bold text-yellow-400">Digital Onboarding Bekliyor</h3>
+              <p className="mb-3 text-sm text-yellow-300/80">
                 KMH basvurunuz onaylandi. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
                 Hesabinizi aktif hale getirmek icin digital onboarding isleminizi tamamlayin.
               </p>
-              <p className="text-xs text-yellow-600 mb-4">Referans: {pendingOnboarding.bankReferenceNo}</p>
+              <p className="mb-4 text-xs text-yellow-400/60">Referans: {pendingOnboarding.bankReferenceNo}</p>
               <button
                 onClick={() => handleOnboarding(pendingOnboarding.id)}
-                className="px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition-colors"
+                className="rounded-lg bg-yellow-600 px-6 py-3 font-semibold text-white transition hover:bg-yellow-700"
               >
                 Digital Onboarding Tamamla
               </button>
             </div>
           )}
 
-          {/* Basvuru Formu */}
           {canApply && !showForm && (
             <div className="flex justify-end">
-              <button
-                onClick={() => setShowForm(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
-              >
+              <button onClick={() => setShowForm(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
                 Yeni KMH Basvurusu
               </button>
             </div>
           )}
 
           {showForm && (
-            <form onSubmit={handleApplyKmh} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-              <h3 className="font-semibold text-gray-900 text-lg">KMH Basvurusu</h3>
-              <p className="text-sm text-gray-500">
+            <form onSubmit={handleApplyKmh} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-white">KMH Basvurusu</h3>
+              <p className="text-sm text-slate-400">
                 Kira Mevduat Hesabi (KMH) basvurusu icin asagidaki bilgileri doldurun.
-                Banka, kredi degerlendirmesi yaparak size bir limit belirleyecektir.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Calisma Durumu *</label>
-                  <select value={formEmployment} onChange={(e) => setFormEmployment(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                  <label className={labelCls}>Calisma Durumu *</label>
+                  <select value={formEmployment} onChange={(e) => setFormEmployment(e.target.value)} className={inputCls} required>
                     <option value="">Secin...</option>
                     <option value="EMPLOYED">Ucretli Calisan</option>
                     <option value="SELF_EMPLOYED">Serbest Meslek</option>
@@ -264,35 +267,26 @@ export default function BankPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Aylik Gelir (TL) *</label>
-                  <input type="number" value={formIncome} onChange={(e) => setFormIncome(e.target.value)}
-                    placeholder="ornegin: 30000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+                  <label className={labelCls}>Aylik Gelir (TL) *</label>
+                  <input type="number" value={formIncome} onChange={(e) => setFormIncome(e.target.value)} placeholder="ornegin: 30000" className={inputCls} required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Isveren Adi</label>
-                  <input type="text" value={formEmployer} onChange={(e) => setFormEmployer(e.target.value)}
-                    placeholder="Opsiyonel"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <label className={labelCls}>Isveren Adi</label>
+                  <input type="text" value={formEmployer} onChange={(e) => setFormEmployer(e.target.value)} placeholder="Opsiyonel" className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tahmini Kira Bedeli (TL) *</label>
-                  <input type="number" value={formRent} onChange={(e) => setFormRent(e.target.value)}
-                    placeholder="ornegin: 15000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+                  <label className={labelCls}>Tahmini Kira Bedeli (TL) *</label>
+                  <input type="number" value={formRent} onChange={(e) => setFormRent(e.target.value)} placeholder="ornegin: 15000" className={inputCls} required />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ikamet Adresi *</label>
-                  <input type="text" value={formAddress} onChange={(e) => setFormAddress(e.target.value)}
-                    placeholder="Tam adresinizi girin"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required />
+                  <label className={labelCls}>Ikamet Adresi *</label>
+                  <input type="text" value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="Tam adresinizi girin" className={inputCls} required />
                 </div>
               </div>
 
-              {/* Info box */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
-                <div className="font-medium mb-1">Onay Kriterleri</div>
-                <ul className="list-disc list-inside space-y-0.5 text-xs">
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-300">
+                <div className="mb-1 font-medium text-blue-400">Onay Kriterleri</div>
+                <ul className="list-inside list-disc space-y-0.5 text-xs text-blue-300/80">
                   <li>Aylik geliriniz tahmini kira bedelinin en az 2 kati olmalidir</li>
                   <li>Onaylanirsa limit: gelirinizin 3 kati (max 500.000 TL)</li>
                   <li>Onay sonrasi digital onboarding ile hesabiniz acilir</li>
@@ -300,69 +294,67 @@ export default function BankPage() {
               </div>
 
               <div className="flex gap-3">
-                <button type="submit" disabled={submitting}
-                  className="px-6 py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 disabled:opacity-50">
+                <button type="submit" disabled={submitting} className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
                   {submitting ? 'Basvuru yapiliyor...' : 'Basvur'}
                 </button>
-                <button type="button" onClick={() => setShowForm(false)}
-                  className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200">
+                <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-slate-600 px-6 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
                   Iptal
                 </button>
               </div>
             </form>
           )}
 
-          {/* Basvuru Gecmisi */}
+          {/* Application History */}
           {applications.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900">Basvuru Gecmisi</h3>
+              <h3 className="font-semibold text-white">Basvuru Gecmisi</h3>
               {applications.map((app) => (
-                <div key={app.id} className={`bg-white rounded-xl border-2 p-5 ${
-                  app.status === 'APPROVED' && app.onboardingCompleted ? 'border-green-300' :
-                  app.status === 'APPROVED' ? 'border-yellow-300' :
-                  app.status === 'REJECTED' ? 'border-red-200' : 'border-gray-200'
+                <div key={app.id} className={`rounded-xl border-2 p-5 ${
+                  app.status === 'APPROVED' && app.onboardingCompleted ? 'border-emerald-500/30 bg-[#0d1b2a]' :
+                  app.status === 'APPROVED' ? 'border-yellow-500/30 bg-[#0d1b2a]' :
+                  app.status === 'REJECTED' ? 'border-red-500/30 bg-[#0d1b2a]' : 'border-slate-700/50 bg-[#0d1b2a]'
                 }`}>
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          app.status === 'APPROVED' && app.onboardingCompleted ? 'bg-green-100 text-green-700' :
-                          app.status === 'APPROVED' ? 'bg-yellow-100 text-yellow-700' :
-                          app.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 text-gray-700'
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                          app.status === 'APPROVED' && app.onboardingCompleted ? 'bg-emerald-500/20 text-emerald-400' :
+                          app.status === 'APPROVED' ? 'bg-yellow-500/20 text-yellow-400' :
+                          app.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
+                          'bg-slate-500/20 text-slate-400'
                         }`}>
                           {app.status === 'APPROVED' && app.onboardingCompleted ? 'AKTIF' :
                            app.status === 'APPROVED' ? 'ONAY - Onboarding Bekliyor' :
                            app.status === 'REJECTED' ? 'REDDEDILDI' : 'BEKLEMEDE'}
                         </span>
                         {app.bankReferenceNo && (
-                          <span className="text-xs text-gray-400">Ref: {app.bankReferenceNo}</span>
+                          <span className="text-xs text-slate-500">Ref: {app.bankReferenceNo}</span>
                         )}
                       </div>
-                      <div className="text-sm text-gray-600 grid grid-cols-2 gap-x-6 gap-y-1 mt-2">
-                        <div><span className="text-gray-400">Calisma:</span> {employmentLabels[app.employmentStatus] || app.employmentStatus}</div>
-                        <div><span className="text-gray-400">Gelir:</span> {app.monthlyIncome.toLocaleString('tr-TR')} TL</div>
-                        <div><span className="text-gray-400">Tahmini Kira:</span> {app.estimatedRent.toLocaleString('tr-TR')} TL</div>
-                        {app.employerName && <div><span className="text-gray-400">Isveren:</span> {app.employerName}</div>}
+                      <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-400">
+                        <div><span className="text-slate-500">Calisma:</span> {employmentLabels[app.employmentStatus] || app.employmentStatus}</div>
+                        <div><span className="text-slate-500">Gelir:</span> {app.monthlyIncome.toLocaleString('tr-TR')} TL</div>
+                        <div><span className="text-slate-500">Tahmini Kira:</span> {app.estimatedRent.toLocaleString('tr-TR')} TL</div>
+                        {app.employerName && <div><span className="text-slate-500">Isveren:</span> {app.employerName}</div>}
                       </div>
                       {app.rejectionReason && (
-                        <div className="text-sm text-red-600 mt-1">Sebep: {app.rejectionReason}</div>
+                        <div className="mt-1 text-sm text-red-400">Sebep: {app.rejectionReason}</div>
                       )}
                     </div>
                     <div className="text-right">
                       {app.approvedLimit != null && (
                         <div>
-                          <div className="text-xs text-gray-500">Onaylanan Limit</div>
-                          <div className="text-xl font-bold text-green-600">{app.approvedLimit.toLocaleString('tr-TR')} TL</div>
+                          <div className="text-xs text-slate-500">Onaylanan Limit</div>
+                          <div className="text-xl font-bold text-emerald-400">{app.approvedLimit.toLocaleString('tr-TR')} TL</div>
                         </div>
                       )}
                       {app.bankAccount && (
                         <div className="mt-2">
-                          <div className="text-xs text-gray-500">KMH Hesap</div>
-                          <div className="text-xs font-mono text-blue-600">{app.bankAccount.accountNumber}</div>
+                          <div className="text-xs text-slate-500">KMH Hesap</div>
+                          <div className="font-mono text-xs text-blue-400">{app.bankAccount.accountNumber}</div>
                         </div>
                       )}
-                      <div className="text-xs text-gray-400 mt-2">{new Date(app.createdAt).toLocaleDateString('tr-TR')}</div>
+                      <div className="mt-2 text-xs text-slate-600">{new Date(app.createdAt).toLocaleDateString('tr-TR')}</div>
                     </div>
                   </div>
                 </div>
@@ -371,10 +363,14 @@ export default function BankPage() {
           )}
 
           {applications.length === 0 && !showForm && (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-              <div className="text-4xl mb-3">🏦</div>
-              <div className="text-gray-600 text-lg font-medium">Henuz KMH basvurunuz yok</div>
-              <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
+                <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <div className="text-lg font-medium text-slate-300">Henuz KMH basvurunuz yok</div>
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
                 Kira Mevduat Hesabi (KMH) ile sozlesme imzalayabilir ve kira odemelerinizi guvence altina alabilirsiniz.
               </p>
             </div>
@@ -382,39 +378,47 @@ export default function BankPage() {
         </>
       )}
 
-      {/* ═══ HESAPLAR & ISLEMLER TAB ═══ */}
+      {/* Accounts Tab */}
       {activeTab === 'accounts' && (
         <>
           {accounts.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-              <div className="text-4xl mb-3">💳</div>
-              <div className="text-gray-600 text-lg font-medium">Henuz banka hesabiniz yok</div>
-              <p className="text-gray-400 text-sm mt-2">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
+                <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <div className="text-lg font-medium text-slate-300">Henuz banka hesabiniz yok</div>
+              <p className="mt-2 text-sm text-slate-500">
                 KMH basvurusu yapip onboarding tamamladiktan sonra hesabiniz burada gorunecektir.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {accounts.map((acc) => (
-                <div key={acc.accountId}
-                  className={`bg-white rounded-xl border-2 p-5 cursor-pointer transition-all ${
-                    selectedAccount === acc.accountId ? 'border-blue-500 shadow-md' : 'border-gray-200 hover:border-gray-300'
+                <div
+                  key={acc.accountId}
+                  className={`cursor-pointer rounded-xl border-2 p-5 transition-all ${
+                    selectedAccount === acc.accountId
+                      ? 'border-blue-500/50 bg-[#112240]'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30'
                   }`}
-                  onClick={() => loadTransactions(acc.accountId)}>
-                  <div className="flex justify-between items-start">
+                  onClick={() => loadTransactions(acc.accountId)}
+                >
+                  <div className="flex items-start justify-between">
                     <div>
-                      {acc.propertyTitle && <div className="text-xs text-blue-600 font-medium mb-1">{acc.propertyTitle}</div>}
-                      <div className="text-sm text-gray-500 font-mono">{acc.accountNumber}</div>
-                      <div className="mt-2 text-2xl font-bold text-gray-900">
+                      {acc.propertyTitle && <div className="mb-1 text-xs font-medium text-blue-400">{acc.propertyTitle}</div>}
+                      <div className="font-mono text-sm text-slate-400">{acc.accountNumber}</div>
+                      <div className="mt-2 text-2xl font-bold text-white">
                         {acc.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} {acc.currency}
                       </div>
                     </div>
                     <div className="text-right">
                       {acc.creditLimit != null && (
                         <>
-                          <div className="text-xs text-gray-500">KMH Limiti</div>
-                          <div className="font-semibold text-blue-600">{acc.creditLimit.toLocaleString('tr-TR')} {acc.currency}</div>
-                          <div className="text-xs text-gray-400 mt-1">Kullanilabilir: {acc.availableBalance.toLocaleString('tr-TR')} {acc.currency}</div>
+                          <div className="text-xs text-slate-500">KMH Limiti</div>
+                          <div className="font-semibold text-blue-400">{acc.creditLimit.toLocaleString('tr-TR')} {acc.currency}</div>
+                          <div className="mt-1 text-xs text-slate-500">Kullanilabilir: {acc.availableBalance.toLocaleString('tr-TR')} {acc.currency}</div>
                         </>
                       )}
                     </div>
@@ -425,18 +429,18 @@ export default function BankPage() {
           )}
 
           {selectedAccount && transactions.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Hesap Hareketleri</h2>
-              <div className="divide-y">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+              <h2 className="mb-4 text-lg font-semibold text-white">Hesap Hareketleri</h2>
+              <div className="divide-y divide-slate-700/50">
                 {transactions.map((t) => (
-                  <div key={t.id} className="py-3 flex justify-between items-center">
+                  <div key={t.id} className="flex items-center justify-between py-3">
                     <div>
-                      <div className="font-medium text-gray-900">{t.description || 'Transfer'}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-medium text-white">{t.description || 'Transfer'}</div>
+                      <div className="text-xs text-slate-500">
                         Ref: {t.referenceNo.slice(0, 8)}... | {new Date(t.createdAt).toLocaleString('tr-TR')}
                       </div>
                     </div>
-                    <div className={`font-semibold ${t.direction === 'IN' ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`font-semibold ${t.direction === 'IN' ? 'text-emerald-400' : 'text-red-400'}`}>
                       {t.direction === 'IN' ? '+' : '-'}{t.amount.toLocaleString('tr-TR')} TL
                     </div>
                   </div>
@@ -446,8 +450,8 @@ export default function BankPage() {
           )}
 
           {selectedAccount && transactions.length === 0 && (
-            <div className="text-center py-8 bg-white rounded-xl border border-gray-200">
-              <div className="text-gray-400">Bu hesapta henuz islem yok</div>
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-8 text-center">
+              <div className="text-slate-500">Bu hesapta henuz islem yok</div>
             </div>
           )}
         </>

@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PushNotificationService } from '../push-notification/push-notification.service';
 
 @Injectable()
 export class InAppNotificationService {
   private readonly logger = new Logger(InAppNotificationService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pushNotificationService: PushNotificationService,
+  ) {}
 
   async create(
     userId: string,
@@ -20,6 +24,19 @@ export class InAppNotificationService {
       data: { userId, type, title, body, entityType, entityId },
     });
     this.logger.log(`Notification created: ${type} for user ${userId}`);
+
+    // Send push notification (non-blocking - failures don't affect in-app notification)
+    this.pushNotificationService
+      .sendPushNotification(userId, title, body, {
+        type,
+        entityType: entityType ?? undefined,
+        entityId: entityId ?? undefined,
+        notificationId: notification.id,
+      })
+      .catch((err: Error) => {
+        this.logger.warn(`Push notification failed for user ${userId}: ${err.message}`);
+      });
+
     return notification;
   }
 
@@ -41,6 +58,17 @@ export class InAppNotificationService {
     }));
     await this.prisma.notification.createMany({ data });
     this.logger.log(`Notification created: ${type} for ${userIds.length} users`);
+
+    // Send push notifications to all users (non-blocking)
+    this.pushNotificationService
+      .sendPushNotificationToMany(userIds, title, body, {
+        type,
+        entityType: entityType ?? undefined,
+        entityId: entityId ?? undefined,
+      })
+      .catch((err: Error) => {
+        this.logger.warn(`Batch push notification failed: ${err.message}`);
+      });
   }
 
   async getUserNotifications(userId: string, limit = 50, offset = 0) {

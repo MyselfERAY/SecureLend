@@ -15,7 +15,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.securelend.mobile",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "package": "com.securelend.mobile",
@@ -38,6 +41,13 @@
         {
           "photosPermission": "Profil fotografinizi secmek icin galeri erisimi gereklidir.",
           "cameraPermission": "Profil fotografinizi cekmek icin kamera erisimi gereklidir."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1e40af"
         }
       ]
     ]

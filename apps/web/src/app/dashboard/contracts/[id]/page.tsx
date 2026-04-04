@@ -45,6 +45,13 @@ interface PaymentItem {
   paidAt?: string;
 }
 
+const statusColors: Record<string, string> = {
+  PENDING_SIGNATURES: 'bg-yellow-500/20 text-yellow-400',
+  ACTIVE: 'bg-emerald-500/20 text-emerald-400',
+  TERMINATED: 'bg-red-500/20 text-red-400',
+  EXPIRED: 'bg-slate-500/20 text-slate-400',
+};
+
 export default function ContractDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -70,7 +77,6 @@ export default function ContractDetailPage() {
     ]).then(([cRes, pRes]) => {
       if (cRes.status === 'success' && cRes.data) {
         setContract(cRes.data);
-        // Auto-select first eligible KMH account
         const eligible = (cRes.data.tenantKmhAccounts ?? []).filter(
           (a: KmhAccountOption) => a.creditLimit >= cRes.data!.monthlyRent
         );
@@ -80,6 +86,7 @@ export default function ContractDetailPage() {
       }
       if (pRes.status === 'success' && pRes.data) setPayments(pRes.data);
     }).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokens?.accessToken, contractId]);
 
   const handleSign = async () => {
@@ -100,7 +107,6 @@ export default function ContractDetailPage() {
       });
       if (res.status === 'success' && res.data) {
         setContract(res.data);
-        // Reload payments if contract just became active
         if (res.data.status === 'ACTIVE') {
           const pRes = await api<PaymentItem[]>(`/api/v1/contracts/${contractId}/payments`, {
             token: tokens!.accessToken,
@@ -116,27 +122,6 @@ export default function ContractDetailPage() {
       setSigning(false);
     }
   };
-
-  if (loading) return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
-  if (!contract) return <div className="text-center py-12 text-gray-500">Sozlesme bulunamadi</div>;
-
-  const isTenant = contract.tenant.id === user?.id;
-  const mySignature = contract.signatures.find(
-    (s) => (s.role === 'TENANT' && contract.tenant.id === user?.id) ||
-           (s.role === 'LANDLORD' && contract.landlord.id === user?.id),
-  );
-
-  // KMH hesapları (limit yeterli olanlar)
-  const kmhAccounts = contract.tenantKmhAccounts ?? [];
-  const eligibleKmhAccounts = kmhAccounts.filter((a) => a.creditLimit >= contract.monthlyRent);
-
-  // Kiracı için KMH kontrolü: seçilen hesap uygun olmalı
-  const selectedKmh = kmhAccounts.find((a) => a.accountId === selectedKmhAccountId);
-  const kmhOk = !isTenant || (
-    selectedKmh != null && selectedKmh.creditLimit >= contract.monthlyRent
-  );
-  const canSign = contract.status === 'PENDING_SIGNATURES' && !mySignature && kmhOk;
-  const canTerminate = contract.status === 'ACTIVE';
 
   const handleTerminate = async () => {
     if (!terminateReason.trim()) { setError('Fesih sebebi giriniz'); return; }
@@ -160,33 +145,66 @@ export default function ContractDetailPage() {
     }
   };
 
-  const statusColors: Record<string, string> = {
-    PENDING_SIGNATURES: 'bg-yellow-100 text-yellow-800',
-    ACTIVE: 'bg-green-100 text-green-800',
-    TERMINATED: 'bg-red-100 text-red-800',
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+          <span className="text-sm text-slate-400">Yukleniyor...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!contract) {
+    return (
+      <div className="py-20 text-center">
+        <div className="text-lg font-medium text-slate-300">Sozlesme bulunamadi</div>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-blue-400 hover:text-blue-300">&larr; Geri Don</button>
+      </div>
+    );
+  }
+
+  const isTenant = contract.tenant.id === user?.id;
+  const mySignature = contract.signatures.find(
+    (s) => (s.role === 'TENANT' && contract.tenant.id === user?.id) ||
+           (s.role === 'LANDLORD' && contract.landlord.id === user?.id),
+  );
+
+  const kmhAccounts = contract.tenantKmhAccounts ?? [];
+  const eligibleKmhAccounts = kmhAccounts.filter((a) => a.creditLimit >= contract.monthlyRent);
+  const selectedKmh = kmhAccounts.find((a) => a.accountId === selectedKmhAccountId);
+  const kmhOk = !isTenant || (selectedKmh != null && selectedKmh.creditLimit >= contract.monthlyRent);
+  const canSign = contract.status === 'PENDING_SIGNATURES' && !mySignature && kmhOk;
+  const canTerminate = contract.status === 'ACTIVE';
+
+  const statusLabel: Record<string, string> = {
+    PENDING_SIGNATURES: 'Imza Bekliyor',
+    ACTIVE: 'Aktif',
+    TERMINATED: 'Feshedildi',
+    EXPIRED: 'Suresi Doldu',
+    DRAFT: 'Taslak',
   };
 
   return (
     <div className="space-y-6">
-      <button onClick={() => router.back()} className="text-sm text-blue-600 hover:text-blue-800">
+      <button onClick={() => router.back()} className="text-sm text-blue-400 hover:text-blue-300">
         &larr; Geri
       </button>
 
       {/* Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{contract.property.title}</h1>
-            <p className="text-sm text-gray-500 mt-1">{contract.property.addressLine1}, {contract.property.district}, {contract.property.city}</p>
+            <h1 className="text-xl font-bold text-white">{contract.property.title}</h1>
+            <p className="mt-1 text-sm text-slate-400">{contract.property.addressLine1}, {contract.property.district}, {contract.property.city}</p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[contract.status] || 'bg-gray-100 text-gray-700'}`}>
-            {contract.status === 'PENDING_SIGNATURES' ? 'Imza Bekliyor' :
-             contract.status === 'ACTIVE' ? 'Aktif' :
-             contract.status === 'TERMINATED' ? 'Feshedildi' : contract.status}
+          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${statusColors[contract.status] || 'bg-slate-500/20 text-slate-400'}`}>
+            {statusLabel[contract.status] || contract.status}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           <InfoField label="Aylik Kira" value={`${contract.monthlyRent.toLocaleString('tr-TR')} TL`} />
           {contract.depositAmount && <InfoField label="Depozito" value={`${contract.depositAmount.toLocaleString('tr-TR')} TL`} />}
           <InfoField label="Baslangic" value={contract.startDate} />
@@ -197,34 +215,32 @@ export default function ContractDetailPage() {
       </div>
 
       {/* Parties */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Ev Sahibi</h3>
-          <div className="font-semibold text-gray-900">{contract.landlord.fullName}</div>
-          <div className="text-sm text-gray-500">{contract.landlord.tcknMasked}</div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Ev Sahibi</h3>
+          <div className="font-semibold text-white">{contract.landlord.fullName}</div>
+          <div className="text-sm text-slate-500">{contract.landlord.tcknMasked}</div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Kiraci</h3>
-          <div className="font-semibold text-gray-900">{contract.tenant.fullName}</div>
-          <div className="text-sm text-gray-500">{contract.tenant.tcknMasked}</div>
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Kiraci</h3>
+          <div className="font-semibold text-white">{contract.tenant.fullName}</div>
+          <div className="text-sm text-slate-500">{contract.tenant.tcknMasked}</div>
         </div>
       </div>
 
-      {/* KMH Hesap Secimi - Kiracı için */}
+      {/* KMH Account Selection */}
       {isTenant && contract.status === 'PENDING_SIGNATURES' && (
         <div className={`rounded-xl border p-5 ${
           kmhAccounts.length === 0
-            ? 'bg-red-50 border-red-200'
+            ? 'border-red-500/30 bg-red-500/10'
             : eligibleKmhAccounts.length === 0
-              ? 'bg-orange-50 border-orange-200'
-              : 'bg-white border-gray-200'
+              ? 'border-yellow-500/30 bg-yellow-500/10'
+              : 'border-slate-700/50 bg-[#0d1b2a]'
         }`}>
-          <h3 className="text-sm font-semibold mb-3 text-gray-900">
-            KMH Hesabi Secimi
-          </h3>
+          <h3 className="text-sm font-semibold text-white mb-3">KMH Hesabi Secimi</h3>
 
           {kmhAccounts.length === 0 ? (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-red-400">
               Aktif KMH hesabiniz bulunamadi. Sozlesmeyi imzalayabilmek icin once Banka sayfasindan KMH basvurusu yapmaniz ve onay almaniz gerekiyor.
             </p>
           ) : (
@@ -236,12 +252,12 @@ export default function ContractDetailPage() {
                 return (
                   <label
                     key={acc.accountId}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-50'
+                        ? 'border-blue-500/50 bg-blue-500/10'
                         : isEligible && !isBound
-                          ? 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
-                          : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                          ? 'border-slate-700/50 hover:border-blue-500/30 hover:bg-blue-500/5'
+                          : 'border-slate-700/50 bg-slate-800/30 opacity-60 cursor-not-allowed'
                     }`}
                   >
                     <input
@@ -251,30 +267,28 @@ export default function ContractDetailPage() {
                       checked={isSelected}
                       disabled={!isEligible || !!isBound}
                       onChange={() => setSelectedKmhAccountId(acc.accountId)}
-                      className="text-blue-600"
+                      className="accent-blue-500"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 font-mono">
-                        {acc.accountNumber}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div className="text-sm font-medium font-mono text-white">{acc.accountNumber}</div>
+                      <div className="mt-0.5 text-xs text-slate-400">
                         Limit: {acc.creditLimit.toLocaleString('tr-TR')} TL
-                        {isBound && <span className="ml-2 text-orange-600">(Baska sozlesmeye bagli)</span>}
+                        {isBound && <span className="ml-2 text-yellow-400">(Baska sozlesmeye bagli)</span>}
                         {!isEligible && !isBound && (
-                          <span className="ml-2 text-red-500">
+                          <span className="ml-2 text-red-400">
                             (Yetersiz — Gereken: {contract.monthlyRent.toLocaleString('tr-TR')} TL)
                           </span>
                         )}
                       </div>
                     </div>
                     {isEligible && !isBound && (
-                      <span className="text-green-500 text-sm">&#10003;</span>
+                      <span className="text-sm text-emerald-400">&#10003;</span>
                     )}
                   </label>
                 );
               })}
               {eligibleKmhAccounts.length === 0 && (
-                <p className="text-sm text-orange-600 mt-2">
+                <p className="mt-2 text-sm text-yellow-400">
                   Hicbir KMH hesabinizin limiti kira bedelini ({contract.monthlyRent.toLocaleString('tr-TR')} TL) karsilamiyor.
                 </p>
               )}
@@ -284,39 +298,39 @@ export default function ContractDetailPage() {
       )}
 
       {/* Signatures */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Imzalar</h2>
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <h2 className="mb-4 text-lg font-semibold text-white">Imzalar</h2>
         <div className="space-y-3">
           {contract.signatures.length === 0 && (
-            <p className="text-gray-500 text-sm">Henuz imza yok</p>
+            <p className="text-sm text-slate-500">Henuz imza yok</p>
           )}
           {contract.signatures.map((s, i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
                 &#10003;
               </div>
               <div>
-                <div className="font-medium text-gray-900">{s.signedByName} ({s.role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiraci'})</div>
-                <div className="text-xs text-gray-500">{new Date(s.signedAt).toLocaleString('tr-TR')}</div>
+                <div className="font-medium text-white">{s.signedByName} ({s.role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiraci'})</div>
+                <div className="text-xs text-slate-500">{new Date(s.signedAt).toLocaleString('tr-TR')}</div>
               </div>
             </div>
           ))}
         </div>
 
-        {error && <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">{error}</div>}
+        {error && <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{error}</div>}
 
         {contract.status === 'PENDING_SIGNATURES' && !mySignature && (
           canSign ? (
             <button
               onClick={handleSign}
               disabled={signing}
-              className="mt-4 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50"
+              className="mt-4 rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
             >
               {signing ? 'Imzalaniyor...' : 'Sozlesmeyi Imzala'}
             </button>
           ) : isTenant && !kmhOk ? (
-            <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <p className="text-sm text-orange-700 font-medium">
+            <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+              <p className="text-sm font-medium text-yellow-400">
                 {kmhAccounts.length === 0
                   ? 'Sozlesmeyi imzalayabilmek icin aktif bir KMH hesabiniz olmalidir.'
                   : eligibleKmhAccounts.length === 0
@@ -324,7 +338,7 @@ export default function ContractDetailPage() {
                     : 'Lutfen yukaridaki listeden bir KMH hesabi secin.'}
               </p>
               {kmhAccounts.length === 0 && (
-                <p className="text-xs text-orange-500 mt-1">
+                <p className="mt-1 text-xs text-yellow-500/70">
                   Banka sayfasindan KMH basvurusu yapin ve dijital onboarding&apos;i tamamlayin.
                 </p>
               )}
@@ -335,34 +349,34 @@ export default function ContractDetailPage() {
         {canTerminate && !showTerminate && (
           <button
             onClick={() => setShowTerminate(true)}
-            className="mt-4 ml-3 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700"
+            className="mt-4 ml-3 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
           >
             Sozlesmeyi Feshet
           </button>
         )}
 
         {showTerminate && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
-            <div className="font-medium text-red-900">Sozlesme Fesih</div>
-            <p className="text-sm text-red-700">Bu islem geri alinamaz. Sozlesme feshedilecektir.</p>
+          <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 space-y-3">
+            <div className="font-medium text-red-400">Sozlesme Fesih</div>
+            <p className="text-sm text-red-400/80">Bu islem geri alinamaz. Sozlesme feshedilecektir.</p>
             <textarea
               value={terminateReason}
               onChange={(e) => setTerminateReason(e.target.value)}
               placeholder="Fesih sebebi..."
               rows={2}
-              className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none resize-none"
+              className="w-full rounded-lg border border-red-500/30 bg-[#0a1628] px-3 py-2 text-sm text-white outline-none resize-none placeholder:text-slate-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
             />
             <div className="flex gap-2">
               <button
                 onClick={handleTerminate}
                 disabled={terminating}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 disabled:opacity-50"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
               >
                 {terminating ? 'Feshediliyor...' : 'Feshet'}
               </button>
               <button
                 onClick={() => { setShowTerminate(false); setTerminateReason(''); }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300"
+                className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50"
               >
                 Iptal
               </button>
@@ -373,29 +387,29 @@ export default function ContractDetailPage() {
 
       {/* Payment Schedule */}
       {payments.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Odeme Takvimi</h2>
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+          <h2 className="mb-4 text-lg font-semibold text-white">Odeme Takvimi</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b">
-                  <th className="pb-2 font-medium">Donem</th>
-                  <th className="pb-2 font-medium">Vade</th>
-                  <th className="pb-2 font-medium text-right">Tutar</th>
-                  <th className="pb-2 font-medium text-right">Durum</th>
+                <tr className="border-b border-slate-700/50 text-left text-slate-400">
+                  <th className="pb-3 font-medium">Donem</th>
+                  <th className="pb-3 font-medium">Vade</th>
+                  <th className="pb-3 font-medium text-right">Tutar</th>
+                  <th className="pb-3 font-medium text-right">Durum</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-slate-700/50">
                 {payments.map((p) => (
                   <tr key={p.id}>
-                    <td className="py-2 font-medium text-gray-900">{p.periodLabel}</td>
-                    <td className="py-2 text-gray-600">{p.dueDate}</td>
-                    <td className="py-2 text-right font-semibold">{p.amount.toLocaleString('tr-TR')} TL</td>
-                    <td className="py-2 text-right">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        p.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                        p.status === 'OVERDUE' ? 'bg-red-100 text-red-700' :
-                        'bg-yellow-100 text-yellow-700'
+                    <td className="py-3 font-medium text-white">{p.periodLabel}</td>
+                    <td className="py-3 text-slate-400">{p.dueDate}</td>
+                    <td className="py-3 text-right font-semibold text-white">{p.amount.toLocaleString('tr-TR')} TL</td>
+                    <td className="py-3 text-right">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        p.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' :
+                        p.status === 'OVERDUE' ? 'bg-red-500/20 text-red-400' :
+                        'bg-yellow-500/20 text-yellow-400'
                       }`}>
                         {p.status === 'COMPLETED' ? 'Odendi' :
                          p.status === 'OVERDUE' ? 'Gecikti' : 'Bekliyor'}
@@ -415,8 +429,8 @@ export default function ContractDetailPage() {
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-xs text-gray-500">{label}</div>
-      <div className="font-semibold text-gray-900 mt-0.5">{value}</div>
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className="mt-0.5 font-semibold text-white">{value}</div>
     </div>
   );
 }
