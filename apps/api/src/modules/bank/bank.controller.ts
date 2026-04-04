@@ -42,6 +42,81 @@ export class BankController {
     return { status: 'success', data: result };
   }
 
+  // ─── Offer Accept ─────────────────────────
+
+  @Post('kmh/:applicationId/accept-offer')
+  @HttpCode(HttpStatus.OK)
+  async acceptOffer(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.acceptOffer(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  // ─── KYC Endpoints ────────────────────────
+
+  @Post('kmh/:applicationId/kyc/start')
+  @HttpCode(HttpStatus.OK)
+  async startKyc(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.startKyc(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  @Post('kmh/:applicationId/kyc/verify-id')
+  @HttpCode(HttpStatus.OK)
+  async verifyId(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.verifyId(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  @Post('kmh/:applicationId/kyc/verify-selfie')
+  @HttpCode(HttpStatus.OK)
+  async verifySelfie(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.verifySelfie(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  @Post('kmh/:applicationId/kyc/complete-video')
+  @HttpCode(HttpStatus.OK)
+  async completeVideo(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.completeVideoCall(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  @Post('kmh/:applicationId/kyc/sign-agreements')
+  @HttpCode(HttpStatus.OK)
+  async signAgreements(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.signAgreements(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  @Get('kmh/:applicationId/kyc/status')
+  async getKycStatus(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.getKycStatus(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
+  // ─── KMH Application Queries ───────────────
+
   @Get('kmh/my-applications')
   async getMyKmhApplications(@CurrentUser('id') userId: string) {
     const applications = await this.prisma.kmhApplication.findMany({
@@ -74,6 +149,13 @@ export class BankController {
         rejectionReason: app.rejectionReason,
         bankReferenceNo: app.bankReferenceNo,
         onboardingCompleted: app.onboardingCompleted,
+        creditScore: app.creditScore,
+        interestRate: app.interestRate ? Number(app.interestRate) : null,
+        monthlyInstallment: app.monthlyInstallment ? Number(app.monthlyInstallment) : null,
+        debtToIncomeRatio: app.debtToIncomeRatio ? Number(app.debtToIncomeRatio) : null,
+        offerAccepted: app.offerAccepted,
+        kycStatus: app.kycStatus,
+        existingCustomer: app.existingCustomer,
         bankAccount: app.bankAccount ? {
           id: app.bankAccount.id,
           accountNumber: app.bankAccount.accountNumber,
@@ -124,6 +206,15 @@ export class BankController {
         rejectionReason: app.rejectionReason,
         bankReferenceNo: app.bankReferenceNo,
         onboardingCompleted: app.onboardingCompleted,
+        creditScore: app.creditScore,
+        interestRate: app.interestRate ? Number(app.interestRate) : null,
+        monthlyInstallment: app.monthlyInstallment ? Number(app.monthlyInstallment) : null,
+        debtToIncomeRatio: app.debtToIncomeRatio ? Number(app.debtToIncomeRatio) : null,
+        offerAccepted: app.offerAccepted,
+        offerAcceptedAt: app.offerAcceptedAt?.toISOString() ?? null,
+        kycStatus: app.kycStatus,
+        existingCustomer: app.existingCustomer,
+        evaluationDetails: app.evaluationDetails,
         bankAccount: app.bankAccount ? {
           id: app.bankAccount.id,
           accountNumber: app.bankAccount.accountNumber,

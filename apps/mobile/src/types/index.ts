@@ -120,3 +120,38 @@ export interface Transaction {
   processedAt?: string;
   createdAt: string;
 }
+
+// KMH Evaluation
+export interface KmhEvaluationResult {
+  applicationId: string;
+  status: 'APPROVED' | 'REJECTED';
+  creditScore: number;
+  creditScoreLabel: string;
+  approvedLimit?: number;
+  interestRate?: number;
+  monthlyInstallment?: number;
+  debtToIncomeRatio?: number;
+  evaluationFactors: { name: string; impact: string; detail: string }[];
+  rejectionReason?: string;
+  bankReferenceNo?: string;
+  existingCustomer: boolean;
+}
+
+// KYC
+export interface KycStep {
+  key: string;
+  label: string;
+  description: string;
+  completed: boolean;
+  required: boolean;
+}
+
+export interface KycStatus {
+  applicationId: string;
+  kycStatus: string;
+  existingCustomer: boolean;
+  steps: KycStep[];
+  completedSteps: number;
+  totalSteps: number;
+  canComplete: boolean;
+}

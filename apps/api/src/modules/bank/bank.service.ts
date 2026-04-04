@@ -4,9 +4,16 @@ import { ApplyKmhDto } from './dto/apply-kmh.dto';
 export interface KmhApplicationResult {
   applicationId: string;
   status: 'APPROVED' | 'REJECTED';
+  creditScore: number;
+  creditScoreLabel: string;
   approvedLimit?: number;
+  interestRate?: number;
+  monthlyInstallment?: number;
+  debtToIncomeRatio: number;
+  evaluationFactors: { name: string; impact: string; detail: string }[];
   rejectionReason?: string;
   bankReferenceNo: string;
+  existingCustomer: boolean;
 }
 
 export interface OnboardingResult {
@@ -46,6 +53,15 @@ export abstract class BankService {
   abstract applyForKmh(userId: string, dto: ApplyKmhDto): Promise<KmhApplicationResult>;
   abstract completeOnboarding(kmhApplicationId: string, userId: string): Promise<OnboardingResult>;
   abstract notifyContractSigned(contractId: string, kmhAccountId?: string): Promise<ContractNotificationResult>;
+
+  // Offer & KYC flow
+  abstract acceptOffer(applicationId: string, userId: string): Promise<any>;
+  abstract startKyc(applicationId: string, userId: string): Promise<any>;
+  abstract verifyId(applicationId: string, userId: string): Promise<any>;
+  abstract verifySelfie(applicationId: string, userId: string): Promise<any>;
+  abstract completeVideoCall(applicationId: string, userId: string): Promise<any>;
+  abstract signAgreements(applicationId: string, userId: string): Promise<any>;
+  abstract getKycStatus(applicationId: string, userId: string): Promise<any>;
 
   // Account queries
   abstract getBalance(accountId: string): Promise<AccountBalance>;

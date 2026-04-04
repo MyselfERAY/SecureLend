@@ -15,12 +15,97 @@ import {
 } from './bank.service';
 import { ApplyKmhDto } from './dto/apply-kmh.dto';
 
+interface CreditScoringResult {
+  score: number;
+  factors: { name: string; impact: string; detail: string }[];
+}
+
 @Injectable()
 export class MockBankService extends BankService {
   private readonly logger = new Logger(MockBankService.name);
 
   constructor(private readonly prisma: PrismaService) {
     super();
+  }
+
+  // ─── Credit Scoring ───────────────────────────────
+
+  private calculateCreditScore(dto: ApplyKmhDto): CreditScoringResult {
+    let score = 500; // base score (range 0-1000 like KKB/Findeks)
+    const factors: { name: string; impact: string; detail: string }[] = [];
+
+    // Employment factor
+    if (dto.employmentStatus === 'EMPLOYED') {
+      score += 150;
+      factors.push({ name: 'Calisma Durumu', impact: 'pozitif', detail: 'Maasli calisan' });
+    } else if (dto.employmentStatus === 'SELF_EMPLOYED') {
+      score += 100;
+      factors.push({ name: 'Calisma Durumu', impact: 'pozitif', detail: 'Serbest meslek' });
+    } else if (dto.employmentStatus === 'RETIRED') {
+      score += 120;
+      factors.push({ name: 'Calisma Durumu', impact: 'pozitif', detail: 'Emekli - duzenli gelir' });
+    } else if (dto.employmentStatus === 'STUDENT') {
+      score -= 50;
+      factors.push({ name: 'Calisma Durumu', impact: 'negatif', detail: 'Ogrenci' });
+    } else {
+      score -= 100;
+      factors.push({ name: 'Calisma Durumu', impact: 'negatif', detail: 'Calismayan' });
+    }
+
+    // Income-to-rent ratio
+    const ratio = Number(dto.monthlyIncome) / Number(dto.estimatedRent);
+    if (ratio >= 4) {
+      score += 200;
+      factors.push({ name: 'Gelir/Kira Orani', impact: 'pozitif', detail: `${ratio.toFixed(1)}x - cok iyi` });
+    } else if (ratio >= 3) {
+      score += 150;
+      factors.push({ name: 'Gelir/Kira Orani', impact: 'pozitif', detail: `${ratio.toFixed(1)}x - iyi` });
+    } else if (ratio >= 2) {
+      score += 50;
+      factors.push({ name: 'Gelir/Kira Orani', impact: 'notr', detail: `${ratio.toFixed(1)}x - yeterli` });
+    } else {
+      score -= 100;
+      factors.push({ name: 'Gelir/Kira Orani', impact: 'negatif', detail: `${ratio.toFixed(1)}x - yetersiz` });
+    }
+
+    // DTI (debt-to-income)
+    const existingDebt = dto.existingDebtPayments || 0;
+    const dti = (existingDebt + Number(dto.estimatedRent)) / Number(dto.monthlyIncome);
+    if (dti <= 0.3) {
+      score += 100;
+      factors.push({ name: 'Borc/Gelir Orani', impact: 'pozitif', detail: `%${(dti * 100).toFixed(0)} - dusuk risk` });
+    } else if (dti <= 0.5) {
+      score += 30;
+      factors.push({ name: 'Borc/Gelir Orani', impact: 'notr', detail: `%${(dti * 100).toFixed(0)} - orta` });
+    } else {
+      score -= 80;
+      factors.push({ name: 'Borc/Gelir Orani', impact: 'negatif', detail: `%${(dti * 100).toFixed(0)} - yuksek risk` });
+    }
+
+    // Employer (named employer is better)
+    if (dto.employerName && dto.employerName.length > 3) {
+      score += 30;
+      factors.push({ name: 'Isveren Bilgisi', impact: 'pozitif', detail: 'Isveren bilgisi mevcut' });
+    }
+
+    // Clamp 0-1000
+    score = Math.max(0, Math.min(1000, score));
+
+    return { score, factors };
+  }
+
+  private determineInterestRate(score: number): number {
+    if (score >= 800) return 1.89;
+    if (score >= 700) return 2.29;
+    return 2.89;
+  }
+
+  private calculateMonthlyInstallment(limit: number, interestRate: number): number {
+    // Simple monthly installment calculation (12-month term assumed for display)
+    const monthlyRate = interestRate / 100;
+    const months = 12;
+    const installment = (limit * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+    return Math.round(installment * 100) / 100;
   }
 
   // ─── KMH Application ──────────────────────────────
@@ -38,14 +123,28 @@ export class MockBankService extends BankService {
       throw new BadRequestException('Zaten bekleyen veya onaylanmis bir KMH basvurunuz var');
     }
 
-    // Mock credit evaluation: income >= estimatedRent * 2 → approved
-    const isApproved = dto.monthlyIncome >= dto.estimatedRent * 2;
+    // Realistic credit scoring
+    const scoring = this.calculateCreditScore(dto);
+    const isApproved = scoring.score >= 600;
+
+    // Calculate DTI for storage
+    const existingDebt = dto.existingDebtPayments || 0;
+    const dti = (existingDebt + Number(dto.estimatedRent)) / Number(dto.monthlyIncome);
+    const dtiRounded = Math.round(dti * 10000) / 10000;
+
+    // Approval details
+    const scoreFactor = scoring.score / 1000;
     const approvedLimit = isApproved
-      ? Math.min(dto.monthlyIncome * 3, 500000) // max 500K TL
+      ? Math.round(Math.min(dto.monthlyIncome * 3, 500000) * scoreFactor)
       : undefined;
+    const interestRate = isApproved ? this.determineInterestRate(scoring.score) : undefined;
+    const monthlyInstallment = isApproved && approvedLimit
+      ? this.calculateMonthlyInstallment(approvedLimit, interestRate!)
+      : undefined;
+
     const rejectionReason = isApproved
       ? undefined
-      : 'Gelir seviyesi talep edilen kira bedeline gore yetersiz';
+      : `Kredi skoru yetersiz (${scoring.score}/1000). Minimum 600 puan gereklidir.`;
 
     const bankReferenceNo = `KMH-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
@@ -62,6 +161,16 @@ export class MockBankService extends BankService {
           approvedLimit,
           rejectionReason,
           bankReferenceNo,
+          creditScore: scoring.score,
+          debtToIncomeRatio: dtiRounded,
+          interestRate: interestRate ?? null,
+          monthlyInstallment: monthlyInstallment ?? null,
+          existingCustomer: dto.existingBankCustomer || false,
+          evaluationDetails: {
+            factors: scoring.factors,
+            evaluatedAt: new Date().toISOString(),
+            modelVersion: 'mock-v2',
+          },
         },
       });
 
@@ -76,6 +185,8 @@ export class MockBankService extends BankService {
             estimatedRent: dto.estimatedRent,
             monthlyIncome: dto.monthlyIncome,
             approvedLimit,
+            creditScore: scoring.score,
+            dti: dtiRounded,
           },
         },
       });
@@ -85,15 +196,340 @@ export class MockBankService extends BankService {
 
     this.logger.log(
       `KMH application ${application.id}: ${isApproved ? 'APPROVED' : 'REJECTED'} ` +
-      `(income: ${dto.monthlyIncome}, rent: ${dto.estimatedRent}, limit: ${approvedLimit ?? 'N/A'})`,
+      `(score: ${scoring.score}, income: ${dto.monthlyIncome}, rent: ${dto.estimatedRent}, limit: ${approvedLimit ?? 'N/A'})`,
     );
+
+    const scoreLabel = scoring.score >= 800 ? 'Cok Iyi' : scoring.score >= 700 ? 'Iyi' : scoring.score >= 600 ? 'Yeterli' : 'Yetersiz';
 
     return {
       applicationId: application.id,
       status: isApproved ? 'APPROVED' : 'REJECTED',
+      creditScore: scoring.score,
+      creditScoreLabel: scoreLabel,
       approvedLimit,
+      interestRate,
+      monthlyInstallment,
+      debtToIncomeRatio: dtiRounded,
+      evaluationFactors: scoring.factors,
       rejectionReason,
       bankReferenceNo,
+      existingCustomer: dto.existingBankCustomer || false,
+    };
+  }
+
+  // ─── Offer Accept/Reject ──────────────────────────
+
+  async acceptOffer(applicationId: string, userId: string): Promise<any> {
+    const app = await this.prisma.kmhApplication.findUnique({ where: { id: applicationId } });
+    if (!app) throw new NotFoundException('KMH basvurusu bulunamadi');
+    if (app.userId !== userId) throw new ForbiddenException('Bu basvuru size ait degil');
+    if (app.status !== KmhApplicationStatus.APPROVED) {
+      throw new BadRequestException('Sadece onaylanmis basvurularda teklif kabul edilebilir');
+    }
+    if (app.offerAccepted) {
+      throw new BadRequestException('Teklif zaten kabul edilmis');
+    }
+
+    const updated = await this.prisma.kmhApplication.update({
+      where: { id: applicationId },
+      data: {
+        offerAccepted: true,
+        offerAcceptedAt: new Date(),
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KMH_OFFER_ACCEPTED',
+        entityType: 'KmhApplication',
+        entityId: applicationId,
+        metadata: {
+          approvedLimit: updated.approvedLimit ? Number(updated.approvedLimit) : null,
+          interestRate: updated.interestRate ? Number(updated.interestRate) : null,
+        },
+      },
+    });
+
+    this.logger.log(`KMH offer accepted for application ${applicationId}`);
+
+    return {
+      applicationId,
+      offerAccepted: true,
+      offerAcceptedAt: updated.offerAcceptedAt?.toISOString(),
+      message: 'Teklif basariyla kabul edildi. Simdi KYC surecini baslatin.',
+    };
+  }
+
+  // ─── KYC Flow ─────────────────────────────────────
+
+  private async getApplicationForKyc(applicationId: string, userId: string) {
+    const app = await this.prisma.kmhApplication.findUnique({ where: { id: applicationId } });
+    if (!app) throw new NotFoundException('KMH basvurusu bulunamadi');
+    if (app.userId !== userId) throw new ForbiddenException('Bu basvuru size ait degil');
+    if (app.status !== KmhApplicationStatus.APPROVED) {
+      throw new BadRequestException('Sadece onaylanmis basvurularda KYC yapilabilir');
+    }
+    if (!app.offerAccepted) {
+      throw new BadRequestException('Once teklifi kabul etmelisiniz');
+    }
+    return app;
+  }
+
+  async startKyc(applicationId: string, userId: string): Promise<any> {
+    const app = await this.getApplicationForKyc(applicationId, userId);
+
+    if (app.kycStatus !== 'NOT_STARTED') {
+      throw new BadRequestException('KYC sureci zaten baslatilmis');
+    }
+
+    await this.prisma.kmhApplication.update({
+      where: { id: applicationId },
+      data: { kycStatus: 'IN_PROGRESS' },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KMH_KYC_STARTED',
+        entityType: 'KmhApplication',
+        entityId: applicationId,
+        metadata: {},
+      },
+    });
+
+    this.logger.log(`KYC started for application ${applicationId}`);
+
+    return {
+      applicationId,
+      kycStatus: 'IN_PROGRESS',
+      message: 'KYC sureci baslatildi. Ilk adim: Kimlik dogrulama.',
+      nextStep: 'id_verification',
+    };
+  }
+
+  async verifyId(applicationId: string, userId: string): Promise<any> {
+    const app = await this.getApplicationForKyc(applicationId, userId);
+
+    if (app.kycStatus === 'NOT_STARTED') {
+      throw new BadRequestException('Once KYC surecini baslatin');
+    }
+    if (app.kycIdVerified) {
+      throw new BadRequestException('Kimlik zaten dogrulanmis');
+    }
+
+    await this.prisma.kmhApplication.update({
+      where: { id: applicationId },
+      data: {
+        kycIdVerified: true,
+        kycStatus: 'ID_VERIFIED',
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KMH_KYC_ID_VERIFIED',
+        entityType: 'KmhApplication',
+        entityId: applicationId,
+        metadata: { method: 'NFC_MOCK' },
+      },
+    });
+
+    this.logger.log(`KYC ID verified for application ${applicationId}`);
+
+    return {
+      applicationId,
+      step: 'id_verification',
+      completed: true,
+      kycStatus: 'ID_VERIFIED',
+      message: 'Kimlik basariyla dogrulandi (NFC). Sonraki adim: Canlilik testi.',
+      nextStep: 'selfie',
+    };
+  }
+
+  async verifySelfie(applicationId: string, userId: string): Promise<any> {
+    const app = await this.getApplicationForKyc(applicationId, userId);
+
+    if (!app.kycIdVerified) {
+      throw new BadRequestException('Once kimlik dogrulamasi tamamlanmalidir');
+    }
+    if (app.kycSelfieVerified) {
+      throw new BadRequestException('Canlilik testi zaten tamamlanmis');
+    }
+
+    await this.prisma.kmhApplication.update({
+      where: { id: applicationId },
+      data: {
+        kycSelfieVerified: true,
+        kycStatus: 'SELFIE_VERIFIED',
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KMH_KYC_SELFIE_VERIFIED',
+        entityType: 'KmhApplication',
+        entityId: applicationId,
+        metadata: { method: 'LIVENESS_MOCK' },
+      },
+    });
+
+    this.logger.log(`KYC selfie verified for application ${applicationId}`);
+
+    const nextStep = app.existingCustomer ? 'agreements' : 'video_call';
+    return {
+      applicationId,
+      step: 'selfie',
+      completed: true,
+      kycStatus: 'SELFIE_VERIFIED',
+      message: 'Canlilik testi basarili. ' + (app.existingCustomer
+        ? 'Mevcut musteri olarak goruntulu gorusme atlanmistir. Sonraki adim: Sozlesme onaylari.'
+        : 'Sonraki adim: Goruntulu gorusme.'),
+      nextStep,
+    };
+  }
+
+  async completeVideoCall(applicationId: string, userId: string): Promise<any> {
+    const app = await this.getApplicationForKyc(applicationId, userId);
+
+    if (!app.kycSelfieVerified) {
+      throw new BadRequestException('Once canlilik testi tamamlanmalidir');
+    }
+    if (app.existingCustomer) {
+      throw new BadRequestException('Mevcut musteriler icin goruntulu gorusme gerekli degildir');
+    }
+    if (app.kycVideoCompleted) {
+      throw new BadRequestException('Goruntulu gorusme zaten tamamlanmis');
+    }
+
+    await this.prisma.kmhApplication.update({
+      where: { id: applicationId },
+      data: {
+        kycVideoCompleted: true,
+        kycStatus: 'VIDEO_COMPLETED',
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KMH_KYC_VIDEO_COMPLETED',
+        entityType: 'KmhApplication',
+        entityId: applicationId,
+        metadata: { method: 'VIDEO_CALL_MOCK', duration: '3m 42s' },
+      },
+    });
+
+    this.logger.log(`KYC video call completed for application ${applicationId}`);
+
+    return {
+      applicationId,
+      step: 'video_call',
+      completed: true,
+      kycStatus: 'VIDEO_COMPLETED',
+      message: 'Goruntulu gorusme basariyla tamamlandi. Sonraki adim: Sozlesme onaylari.',
+      nextStep: 'agreements',
+    };
+  }
+
+  async signAgreements(applicationId: string, userId: string): Promise<any> {
+    const app = await this.getApplicationForKyc(applicationId, userId);
+
+    if (!app.kycSelfieVerified) {
+      throw new BadRequestException('Once canlilik testi tamamlanmalidir');
+    }
+    if (!app.existingCustomer && !app.kycVideoCompleted) {
+      throw new BadRequestException('Once goruntulu gorusme tamamlanmalidir');
+    }
+    if (app.kycAgreementsSigned) {
+      throw new BadRequestException('Sozlesmeler zaten imzalanmis');
+    }
+
+    await this.prisma.kmhApplication.update({
+      where: { id: applicationId },
+      data: {
+        kycAgreementsSigned: true,
+        kycStatus: 'COMPLETED',
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'KMH_KYC_AGREEMENTS_SIGNED',
+        entityType: 'KmhApplication',
+        entityId: applicationId,
+        metadata: {
+          agreements: ['KMH Sozlesmesi', 'KVKK Aydinlatma Metni', 'Acik Riza Beyani', 'Odeme Hizmetleri Cerceve Sozlesmesi'],
+        },
+      },
+    });
+
+    this.logger.log(`KYC agreements signed for application ${applicationId}`);
+
+    return {
+      applicationId,
+      step: 'agreements',
+      completed: true,
+      kycStatus: 'COMPLETED',
+      message: 'Tum sozlesmeler onaylandi. KYC sureci tamamlandi. Artik onboarding tamamlanabilir.',
+      canComplete: true,
+    };
+  }
+
+  async getKycStatus(applicationId: string, userId: string): Promise<any> {
+    const app = await this.prisma.kmhApplication.findUnique({ where: { id: applicationId } });
+    if (!app) throw new NotFoundException('KMH basvurusu bulunamadi');
+    if (app.userId !== userId) throw new ForbiddenException('Bu basvuru size ait degil');
+
+    const isExisting = app.existingCustomer;
+
+    const steps = [
+      {
+        key: 'id_verification',
+        label: 'Kimlik Dogrulama',
+        description: 'NFC ile kimlik tarama',
+        completed: app.kycIdVerified,
+        required: true,
+      },
+      {
+        key: 'selfie',
+        label: 'Canlilik Testi',
+        description: 'Yuz tanima ve canlilik dogrulamasi',
+        completed: app.kycSelfieVerified,
+        required: true,
+      },
+      {
+        key: 'video_call',
+        label: 'Goruntulu Gorusme',
+        description: 'Banka yetkili ile goruntulu gorusme',
+        completed: app.kycVideoCompleted,
+        required: !isExisting,
+      },
+      {
+        key: 'agreements',
+        label: 'Sozlesme Onaylari',
+        description: 'KMH, KVKK ve diger sozlesmeler',
+        completed: app.kycAgreementsSigned,
+        required: true,
+      },
+    ];
+
+    const requiredSteps = steps.filter((s) => s.required);
+    const completedSteps = requiredSteps.filter((s) => s.completed).length;
+    const totalSteps = requiredSteps.length;
+    const canComplete = requiredSteps.every((s) => s.completed);
+
+    return {
+      applicationId,
+      kycStatus: app.kycStatus,
+      existingCustomer: isExisting,
+      steps,
+      completedSteps,
+      totalSteps,
+      canComplete,
     };
   }
 
@@ -112,9 +548,23 @@ export class MockBankService extends BankService {
     if (application.onboardingCompleted) {
       throw new BadRequestException('Onboarding zaten tamamlanmis');
     }
+    if (!application.offerAccepted) {
+      throw new BadRequestException('Once teklifi kabul etmelisiniz');
+    }
+
+    // Check all KYC steps are completed
+    const requiredKycDone = application.kycIdVerified
+      && application.kycSelfieVerified
+      && application.kycAgreementsSigned
+      && (application.existingCustomer || application.kycVideoCompleted);
+
+    if (!requiredKycDone) {
+      throw new BadRequestException('Tum KYC adimlari tamamlanmadan onboarding yapilamaz');
+    }
 
     const iban = this.generateMockIban();
     const creditLimit = Number(application.approvedLimit);
+    const appInterestRate = application.interestRate ? Number(application.interestRate) : 2.49;
 
     const account = await this.prisma.$transaction(async (tx) => {
       // Mark onboarding as completed
@@ -133,7 +583,7 @@ export class MockBankService extends BankService {
           status: BankAccountStatus.ACTIVE,
           balance: 0,
           creditLimit,
-          interestRate: 2.49,
+          interestRate: appInterestRate,
           openedAt: new Date(),
         },
       });
@@ -144,7 +594,7 @@ export class MockBankService extends BankService {
           action: 'KMH_ONBOARDING_COMPLETED',
           entityType: 'BankAccount',
           entityId: acc.id,
-          metadata: { iban, creditLimit, kmhApplicationId },
+          metadata: { iban, creditLimit, kmhApplicationId, interestRate: appInterestRate },
         },
       });
 

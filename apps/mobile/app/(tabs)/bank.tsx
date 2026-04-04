@@ -1,44 +1,36 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet,
+  View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Platform,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
-import { api, extractError } from '../../src/lib/api';
-import { Card } from '../../src/components/ui/Card';
+import { api } from '../../src/lib/api';
 import { Button } from '../../src/components/ui/Button';
-import { Input } from '../../src/components/ui/Input';
 import { Badge, getStatusBadge } from '../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
-import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
-import { SuccessMessage } from '../../src/components/ui/ErrorMessage';
 import { colors } from '../../src/theme/colors';
 import { KmhApplication, BankAccount, Transaction } from '../../src/types';
 
+const DARK_NAVY = '#0a1628';
+
 const employmentOptions = [
-  { value: 'EMPLOYED', label: 'Calisan' },
-  { value: 'SELF_EMPLOYED', label: 'Serbest Meslek' },
-  { value: 'RETIRED', label: 'Emekli' },
-  { value: 'STUDENT', label: 'Ogrenci' },
-  { value: 'UNEMPLOYED', label: 'Issiz' },
+  { value: 'EMPLOYED', label: 'Calisan', icon: 'briefcase' },
+  { value: 'SELF_EMPLOYED', label: 'Serbest Meslek', icon: 'person' },
+  { value: 'RETIRED', label: 'Emekli', icon: 'heart' },
+  { value: 'STUDENT', label: 'Ogrenci', icon: 'school' },
+  { value: 'UNEMPLOYED', label: 'Issiz', icon: 'search' },
 ];
 
 export default function BankScreen() {
   const { tokens } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<'kmh' | 'accounts'>('kmh');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   // KMH
   const [applications, setApplications] = useState<KmhApplication[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [employment, setEmployment] = useState('EMPLOYED');
-  const [income, setIncome] = useState('');
-  const [employer, setEmployer] = useState('');
-  const [address, setAddress] = useState('');
-  const [rent, setRent] = useState('');
-  const [formError, setFormError] = useState('');
-  const [formSuccess, setFormSuccess] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   // Accounts
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -60,30 +52,10 @@ export default function BankScreen() {
 
   const onRefresh = async () => { setRefreshing(true); await loadData(); setRefreshing(false); };
 
-  const handleApply = async () => {
-    if (!tokens || !income || !rent || !address) { setFormError('Zorunlu alanlari doldurun'); return; }
-    setFormError(''); setSubmitting(true);
-    const body: any = { employmentStatus: employment, monthlyIncome: Number(income), residentialAddress: address, estimatedRent: Number(rent) };
-    if (employer) body.employerName = employer;
-    const res = await api('/api/v1/bank/kmh/apply', { method: 'POST', body, token: tokens.accessToken });
-    if (res.status === 'success') {
-      setFormSuccess('KMH basvurunuz alindi!');
-      setShowForm(false);
-      setIncome(''); setEmployer(''); setAddress(''); setRent('');
-      await loadData();
-    } else { setFormError(extractError(res)); }
-    setSubmitting(false);
-  };
-
-  const handleOnboarding = async (appId: string) => {
-    if (!tokens) return;
-    const res = await api(`/api/v1/bank/kmh/${appId}/complete-onboarding`, { method: 'POST', token: tokens.accessToken });
-    if (res.status === 'success') { await loadData(); }
-  };
-
   const loadTransactions = async (accountId: string) => {
     if (!tokens) return;
-    setSelectedAccount(accountId);
+    setSelectedAccount(accountId === selectedAccount ? null : accountId);
+    if (accountId === selectedAccount) return;
     setTxLoading(true);
     const res = await api<Transaction[]>(`/api/v1/bank/accounts/${accountId}/transactions`, { token: tokens.accessToken });
     if (res.status === 'success' && res.data) setTransactions(res.data);
@@ -99,82 +71,137 @@ export default function BankScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />}
+      showsVerticalScrollIndicator={false}
     >
-      {/* Tab Switcher */}
-      <View style={styles.tabRow}>
-        <TouchableOpacity style={[styles.tab, tab === 'kmh' && styles.tabActive]} onPress={() => setTab('kmh')}>
-          <Text style={[styles.tabText, tab === 'kmh' && styles.tabTextActive]}>KMH Basvurusu</Text>
+      {/* Segmented Control */}
+      <View style={styles.segmentContainer}>
+        <TouchableOpacity
+          style={[styles.segment, tab === 'kmh' && styles.segmentActive]}
+          onPress={() => setTab('kmh')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.segmentText, tab === 'kmh' && styles.segmentTextActive]}>KMH Basvurulari</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, tab === 'accounts' && styles.tabActive]} onPress={() => setTab('accounts')}>
-          <Text style={[styles.tabText, tab === 'accounts' && styles.tabTextActive]}>Hesaplar</Text>
+        <TouchableOpacity
+          style={[styles.segment, tab === 'accounts' && styles.segmentActive]}
+          onPress={() => setTab('accounts')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.segmentText, tab === 'accounts' && styles.segmentTextActive]}>Hesaplarim</Text>
         </TouchableOpacity>
       </View>
 
       {tab === 'kmh' && (
         <>
-          {formSuccess ? <SuccessMessage message={formSuccess} onDismiss={() => setFormSuccess('')} /> : null}
-
           {/* Onboarding Alert */}
           {needsOnboarding && (
-            <Card style={{ marginBottom: 12, borderLeftWidth: 4, borderLeftColor: colors.yellow[500] }}>
-              <Text style={styles.alertTitle}>KMH Basvurunuz Onaylandi!</Text>
-              <Text style={styles.alertMeta}>Onaylanan Limit: ₺{needsOnboarding.approvedLimit?.toLocaleString('tr-TR')}</Text>
-              <Button title="Dijital Onboarding Tamamla" variant="success" size="sm" onPress={() => handleOnboarding(needsOnboarding.id)} style={{ marginTop: 10 }} />
-            </Card>
-          )}
-
-          {/* Apply Button */}
-          {canApply && (
-            <Button title={showForm ? 'Iptal' : '+ Yeni KMH Basvurusu'} variant={showForm ? 'secondary' : 'primary'} onPress={() => setShowForm(!showForm)} style={{ marginBottom: 12 }} />
-          )}
-
-          {/* Application Form */}
-          {showForm && (
-            <Card style={{ marginBottom: 16 }}>
-              <Text style={styles.formTitle}>KMH Basvuru Formu</Text>
-              {formError ? <ErrorMessage message={formError} /> : null}
-
-              <Text style={styles.pickLabel}>Istihdam Durumu</Text>
-              <View style={styles.typeRow}>
-                {employmentOptions.map((opt) => (
-                  <TouchableOpacity key={opt.value} style={[styles.typePill, employment === opt.value && styles.typePillActive]} onPress={() => setEmployment(opt.value)}>
-                    <Text style={[styles.typePillText, employment === opt.value && styles.typePillTextActive]}>{opt.label}</Text>
-                  </TouchableOpacity>
-                ))}
+            <View style={styles.onboardingCard}>
+              <View style={styles.onboardingHeader}>
+                <View style={styles.onboardingIconWrap}>
+                  <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+                </View>
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={styles.onboardingTitle}>KMH Basvurunuz Onaylandi!</Text>
+                  <Text style={styles.onboardingLimit}>
+                    Onaylanan Limit: {needsOnboarding.approvedLimit?.toLocaleString('tr-TR')} TL
+                  </Text>
+                </View>
               </View>
+              {/* Progress bar */}
+              <View style={styles.onboardingProgressTrack}>
+                <View style={[styles.onboardingProgressFill, { width: '25%' }]} />
+              </View>
+              <Text style={styles.onboardingProgressLabel}>Dijital onboarding devam ediyor</Text>
+              <Button
+                title="Devam Et"
+                variant="success"
+                size="sm"
+                onPress={() => router.push({ pathname: '/kmh/onboarding', params: { applicationId: needsOnboarding.id } })}
+                style={{ marginTop: 12 }}
+              />
+            </View>
+          )}
 
-              <Input label="Aylik Gelir (TL) *" value={income} onChangeText={(t) => setIncome(t.replace(/\D/g, ''))} keyboardType="number-pad" />
-              <Input label="Isveren Adi" value={employer} onChangeText={setEmployer} />
-              <Input label="Tahmini Aylik Kira (TL) *" value={rent} onChangeText={(t) => setRent(t.replace(/\D/g, ''))} keyboardType="number-pad" />
-              <Input label="Ikamet Adresi *" value={address} onChangeText={setAddress} />
-
-              <Card style={{ backgroundColor: colors.primary[50], borderColor: colors.primary[200], marginBottom: 12 }}>
-                <Text style={{ fontSize: 12, color: colors.primary[700] }}>Onay kriterleri: Gelir ≥ Kira x 2 | Limit = Gelir x 3 (max 500.000 TL)</Text>
-              </Card>
-
-              <Button title="Basvuru Gonder" onPress={handleApply} loading={submitting} />
-            </Card>
+          {/* Apply Button - navigates to dedicated flow */}
+          {canApply && (
+            <TouchableOpacity
+              style={styles.applyCard}
+              onPress={() => router.push('/kmh/apply')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.applyIcon}>
+                <Ionicons name="add-circle" size={24} color="#2563eb" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.applyTitle}>Yeni KMH Basvurusu</Text>
+                <Text style={styles.applySubtitle}>Kira guvence hesabi olusturun</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.gray[300]} />
+            </TouchableOpacity>
           )}
 
           {/* Application History */}
           <Text style={styles.sectionTitle}>Basvuru Gecmisi</Text>
           {applications.length === 0 ? (
-            <Card><Text style={styles.emptyText}>Henuz KMH basvurunuz yok.</Text></Card>
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <Ionicons name="card-outline" size={40} color={colors.gray[300]} />
+              </View>
+              <Text style={styles.emptyTitle}>Henuz KMH basvurunuz yok</Text>
+            </View>
           ) : (
-            applications.map((app) => (
-              <Card key={app.id} style={{ marginBottom: 10 }}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardDate}>{new Date(app.createdAt).toLocaleDateString('tr-TR')}</Text>
-                  <Badge {...getStatusBadge(app.status)} />
+            applications.map((app) => {
+              const isApprovedNotOnboarded = app.status === 'APPROVED' && !app.onboardingCompleted;
+              return (
+                <View key={app.id} style={styles.appCard}>
+                  <View style={styles.appHeader}>
+                    <Text style={styles.appDate}>{new Date(app.createdAt).toLocaleDateString('tr-TR')}</Text>
+                    <Badge {...getStatusBadge(app.status)} />
+                  </View>
+                  <View style={styles.appDetails}>
+                    <View style={styles.appDetailRow}>
+                      <Text style={styles.appDetailLabel}>Istihdam</Text>
+                      <Text style={styles.appDetailValue}>{employmentOptions.find((o) => o.value === app.employmentStatus)?.label}</Text>
+                    </View>
+                    <View style={styles.appDetailRow}>
+                      <Text style={styles.appDetailLabel}>Gelir</Text>
+                      <Text style={styles.appDetailValue}>{app.monthlyIncome.toLocaleString('tr-TR')} TL</Text>
+                    </View>
+                    <View style={styles.appDetailRow}>
+                      <Text style={styles.appDetailLabel}>Kira</Text>
+                      <Text style={styles.appDetailValue}>{app.estimatedRent.toLocaleString('tr-TR')} TL</Text>
+                    </View>
+                  </View>
+                  {app.approvedLimit && (
+                    <View style={styles.appLimitRow}>
+                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+                      <Text style={styles.appLimitText}>Onaylanan Limit: {app.approvedLimit.toLocaleString('tr-TR')} TL</Text>
+                    </View>
+                  )}
+                  {app.bankAccount && (
+                    <View style={styles.appAccountRow}>
+                      <Ionicons name="card" size={16} color="#2563eb" />
+                      <Text style={styles.appAccountText}>{app.bankAccount.accountNumber}</Text>
+                    </View>
+                  )}
+                  {app.rejectionReason && (
+                    <Text style={styles.rejectText}>{app.rejectionReason}</Text>
+                  )}
+                  {/* Onboarding progress for approved apps */}
+                  {isApprovedNotOnboarded && (
+                    <TouchableOpacity
+                      style={styles.continueBtn}
+                      onPress={() => router.push({ pathname: '/kmh/onboarding', params: { applicationId: app.id } })}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name="arrow-forward-circle" size={18} color="#2563eb" />
+                      <Text style={styles.continueBtnText}>Onboarding&apos;e Devam Et</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-                <Text style={styles.cardMeta}>Istihdam: {employmentOptions.find((o) => o.value === app.employmentStatus)?.label}</Text>
-                <Text style={styles.cardMeta}>Gelir: ₺{app.monthlyIncome.toLocaleString('tr-TR')} | Tahmini Kira: ₺{app.estimatedRent.toLocaleString('tr-TR')}</Text>
-                {app.approvedLimit && <Text style={styles.limitText}>Onaylanan Limit: ₺{app.approvedLimit.toLocaleString('tr-TR')}</Text>}
-                {app.bankAccount && <Text style={styles.accountText}>Hesap: {app.bankAccount.accountNumber}</Text>}
-                {app.rejectionReason && <Text style={styles.rejectText}>{app.rejectionReason}</Text>}
-              </Card>
-            ))
+              );
+            })
           )}
         </>
       )}
@@ -182,80 +209,343 @@ export default function BankScreen() {
       {tab === 'accounts' && (
         <>
           {accounts.length === 0 ? (
-            <Card><Text style={styles.emptyText}>Henuz banka hesabiniz yok.</Text></Card>
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <Ionicons name="wallet-outline" size={40} color={colors.gray[300]} />
+              </View>
+              <Text style={styles.emptyTitle}>Henuz banka hesabiniz yok</Text>
+              <Text style={styles.emptySubtitle}>KMH basvurusu yaparak hesap olusturun.</Text>
+            </View>
           ) : (
             accounts.map((acc) => (
-              <TouchableOpacity key={acc.accountId} onPress={() => loadTransactions(acc.accountId)}>
-                <Card style={selectedAccount === acc.accountId ? { marginBottom: 10, borderColor: colors.primary[500], borderWidth: 2 } : { marginBottom: 10 }}>
-                  <Text style={styles.accNumber}>{acc.accountNumber}</Text>
-                  <Text style={styles.accBalance}>₺{acc.balance.toLocaleString('tr-TR')}</Text>
-                  {acc.creditLimit != null && <Text style={styles.cardMeta}>Kredi Limiti: ₺{acc.creditLimit.toLocaleString('tr-TR')}</Text>}
-                  <Text style={styles.cardMeta}>Kullanilabilir: ₺{acc.availableBalance.toLocaleString('tr-TR')}</Text>
-                </Card>
-              </TouchableOpacity>
-            ))
-          )}
-
-          {/* Transactions */}
-          {selectedAccount && (
-            <>
-              <Text style={styles.sectionTitle}>Islemler</Text>
-              {txLoading ? <LoadingSpinner text="Islemler yukleniyor..." /> : (
-                transactions.length === 0 ? (
-                  <Card><Text style={styles.emptyText}>Islem bulunamadi.</Text></Card>
-                ) : (
-                  transactions.map((tx) => (
-                    <Card key={tx.id} style={{ marginBottom: 8 }}>
-                      <View style={styles.txRow}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.txDesc}>{tx.description}</Text>
-                          <Text style={styles.txDate}>{new Date(tx.createdAt).toLocaleString('tr-TR')}</Text>
-                        </View>
-                        <Text style={[styles.txAmount, { color: tx.direction === 'IN' ? colors.green[600] : colors.red[600] }]}>
-                          {tx.direction === 'IN' ? '+' : '-'}₺{tx.amount.toLocaleString('tr-TR')}
-                        </Text>
+              <View key={acc.accountId}>
+                <TouchableOpacity
+                  style={styles.accountCard}
+                  onPress={() => loadTransactions(acc.accountId)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.accountCardTop}>
+                    <View style={styles.accountCardIcon}>
+                      <Ionicons name="card" size={20} color="#ffffff" />
+                    </View>
+                    <View style={styles.accountCardTopRight}>
+                      <Text style={styles.accountNumber}>{acc.accountNumber}</Text>
+                      <Text style={styles.accountCurrency}>{acc.currency}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.accountBalances}>
+                    <View style={styles.accountBalanceItem}>
+                      <Text style={styles.accountBalanceLabel}>Bakiye</Text>
+                      <Text style={styles.accountBalance}>{acc.balance.toLocaleString('tr-TR')} TL</Text>
+                    </View>
+                    <View style={styles.accountBalanceItem}>
+                      <Text style={styles.accountBalanceLabel}>Kullanilabilir</Text>
+                      <Text style={styles.accountAvailable}>{acc.availableBalance.toLocaleString('tr-TR')} TL</Text>
+                    </View>
+                    {acc.creditLimit != null && (
+                      <View style={styles.accountBalanceItem}>
+                        <Text style={styles.accountBalanceLabel}>Limit</Text>
+                        <Text style={styles.accountLimit}>{acc.creditLimit.toLocaleString('tr-TR')} TL</Text>
                       </View>
-                    </Card>
-                  ))
-                )
-              )}
-            </>
+                    )}
+                  </View>
+                  <View style={styles.accountExpandRow}>
+                    <Text style={styles.accountExpandText}>
+                      {selectedAccount === acc.accountId ? 'Islemleri gizle' : 'Islemleri goster'}
+                    </Text>
+                    <Ionicons
+                      name={selectedAccount === acc.accountId ? 'chevron-up' : 'chevron-down'}
+                      size={16}
+                      color={colors.gray[400]}
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {/* Transactions */}
+                {selectedAccount === acc.accountId && (
+                  <View style={styles.txContainer}>
+                    {txLoading ? (
+                      <LoadingSpinner text="Islemler yukleniyor..." size="small" inline />
+                    ) : transactions.length === 0 ? (
+                      <Text style={styles.txEmpty}>Islem bulunamadi.</Text>
+                    ) : (
+                      transactions.map((tx) => (
+                        <View key={tx.id} style={styles.txRow}>
+                          <View style={[styles.txIcon, { backgroundColor: tx.direction === 'IN' ? '#ecfdf5' : '#fef2f2' }]}>
+                            <Ionicons
+                              name={tx.direction === 'IN' ? 'arrow-down' : 'arrow-up'}
+                              size={16}
+                              color={tx.direction === 'IN' ? '#10b981' : '#ef4444'}
+                            />
+                          </View>
+                          <View style={styles.txInfo}>
+                            <Text style={styles.txDesc} numberOfLines={1}>{tx.description}</Text>
+                            <Text style={styles.txDate}>{new Date(tx.createdAt).toLocaleString('tr-TR')}</Text>
+                          </View>
+                          <Text style={[styles.txAmount, { color: tx.direction === 'IN' ? '#10b981' : '#ef4444' }]}>
+                            {tx.direction === 'IN' ? '+' : '-'}{tx.amount.toLocaleString('tr-TR')} TL
+                          </Text>
+                        </View>
+                      ))
+                    )}
+                  </View>
+                )}
+              </View>
+            ))
           )}
         </>
       )}
+
+      <View style={{ height: 32 }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.gray[50] },
-  content: { padding: 16, paddingBottom: 32 },
-  tabRow: { flexDirection: 'row', backgroundColor: colors.gray[100], borderRadius: 10, padding: 4, marginBottom: 16 },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
-  tabActive: { backgroundColor: colors.white, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  tabText: { fontSize: 14, fontWeight: '600', color: colors.gray[500] },
-  tabTextActive: { color: colors.primary[600] },
-  formTitle: { fontSize: 18, fontWeight: '700', color: colors.gray[900], marginBottom: 16 },
-  pickLabel: { fontSize: 14, fontWeight: '600', color: colors.gray[700], marginBottom: 6 },
-  typeRow: { flexDirection: 'row', gap: 8, marginBottom: 16, flexWrap: 'wrap' },
-  typePill: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.gray[100], borderWidth: 1, borderColor: colors.gray[200] },
-  typePillActive: { backgroundColor: colors.primary[100], borderColor: colors.primary[500] },
-  typePillText: { fontSize: 13, fontWeight: '500', color: colors.gray[600] },
-  typePillTextActive: { color: colors.primary[700] },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.gray[800], marginBottom: 12, marginTop: 8 },
-  alertTitle: { fontSize: 15, fontWeight: '700', color: colors.yellow[800] },
-  alertMeta: { fontSize: 14, color: colors.yellow[700], marginTop: 4 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardDate: { fontSize: 13, fontWeight: '600', color: colors.gray[600] },
-  cardMeta: { fontSize: 13, color: colors.gray[500], marginTop: 4 },
-  limitText: { fontSize: 15, fontWeight: '700', color: colors.green[600], marginTop: 6 },
-  accountText: { fontSize: 13, fontWeight: '500', color: colors.primary[600], marginTop: 4, fontFamily: 'monospace' },
-  rejectText: { fontSize: 13, color: colors.red[600], marginTop: 4 },
-  accNumber: { fontSize: 14, fontWeight: '600', color: colors.gray[700], fontFamily: 'monospace' },
-  accBalance: { fontSize: 26, fontWeight: '800', color: colors.gray[900], marginTop: 4 },
-  txRow: { flexDirection: 'row', alignItems: 'center' },
-  txDesc: { fontSize: 14, fontWeight: '500', color: colors.gray[800] },
+  container: { flex: 1, backgroundColor: '#f1f5f9' },
+  content: { padding: 20, paddingBottom: 32 },
+
+  // Segmented Control
+  segmentContainer: {
+    flexDirection: 'row',
+    backgroundColor: colors.gray[100],
+    borderRadius: 14,
+    padding: 3,
+    marginBottom: 20,
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  segmentActive: {
+    backgroundColor: colors.white,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  segmentText: { fontSize: 14, fontWeight: '600', color: colors.gray[500] },
+  segmentTextActive: { color: '#2563eb' },
+
+  // Onboarding Card
+  onboardingCard: {
+    backgroundColor: '#ecfdf5',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  onboardingHeader: { flexDirection: 'row', alignItems: 'center' },
+  onboardingIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#d1fae5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  onboardingTitle: { fontSize: 15, fontWeight: '700', color: '#059669' },
+  onboardingLimit: { fontSize: 14, color: '#059669', marginTop: 2, fontWeight: '500' },
+  onboardingProgressTrack: {
+    height: 4,
+    backgroundColor: '#d1fae5',
+    borderRadius: 2,
+    marginTop: 14,
+  },
+  onboardingProgressFill: {
+    height: 4,
+    backgroundColor: '#10b981',
+    borderRadius: 2,
+  },
+  onboardingProgressLabel: {
+    fontSize: 12,
+    color: '#059669',
+    fontWeight: '500',
+    marginTop: 6,
+  },
+
+  // Apply Card
+  applyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  applyIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  applyTitle: { fontSize: 15, fontWeight: '700', color: colors.gray[900] },
+  applySubtitle: { fontSize: 13, color: colors.gray[500], marginTop: 2, fontWeight: '500' },
+
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.gray[900], marginBottom: 14 },
+
+  // Application Cards
+  appCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  appHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  appDate: { fontSize: 13, fontWeight: '600', color: colors.gray[600] },
+  appDetails: { gap: 8, marginBottom: 8 },
+  appDetailRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  appDetailLabel: { fontSize: 13, color: colors.gray[400], fontWeight: '500' },
+  appDetailValue: { fontSize: 13, fontWeight: '600', color: colors.gray[700] },
+  appLimitRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.gray[100] },
+  appLimitText: { fontSize: 14, fontWeight: '700', color: '#059669' },
+  appAccountRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  appAccountText: { fontSize: 13, fontWeight: '500', color: '#2563eb', fontFamily: 'monospace' },
+  rejectText: { fontSize: 13, color: '#ef4444', marginTop: 8 },
+
+  // Continue button for onboarding
+  continueBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.gray[100],
+  },
+  continueBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+
+  // Account Cards (Bank Card Style)
+  accountCard: {
+    backgroundColor: DARK_NAVY,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 12,
+  },
+  accountCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  accountCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  accountCardTopRight: {},
+  accountNumber: { fontSize: 14, fontWeight: '600', fontFamily: 'monospace', color: '#ffffff' },
+  accountCurrency: { fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 },
+  accountBalances: { flexDirection: 'row', gap: 16 },
+  accountBalanceItem: { flex: 1 },
+  accountBalanceLabel: { fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: 0.3 },
+  accountBalance: { fontSize: 18, fontWeight: '800', color: '#ffffff', marginTop: 4 },
+  accountAvailable: { fontSize: 16, fontWeight: '700', color: '#10b981', marginTop: 4 },
+  accountLimit: { fontSize: 16, fontWeight: '700', color: 'rgba(255,255,255,0.7)', marginTop: 4 },
+  accountExpandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  accountExpandText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.5)',
+  },
+
+  // Transactions
+  txContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    marginTop: -4,
+    marginBottom: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  txEmpty: { padding: 16, fontSize: 14, color: colors.gray[400], textAlign: 'center' },
+  txRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.gray[100],
+  },
+  txIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  txInfo: { flex: 1 },
+  txDesc: { fontSize: 15, fontWeight: '500', color: colors.gray[800] },
   txDate: { fontSize: 12, color: colors.gray[400], marginTop: 2 },
-  txAmount: { fontSize: 16, fontWeight: '700' },
-  emptyText: { fontSize: 14, color: colors.gray[500], textAlign: 'center', padding: 16 },
+  txAmount: { fontSize: 15, fontWeight: '700' },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 32,
+  },
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.gray[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.gray[600], marginBottom: 6 },
+  emptySubtitle: { fontSize: 15, color: colors.gray[500], textAlign: 'center' },
 });

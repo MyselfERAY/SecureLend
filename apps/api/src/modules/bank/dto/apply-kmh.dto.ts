@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString, Min, MaxLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min, MaxLength } from 'class-validator';
 
 export enum EmploymentStatusDto {
   EMPLOYED = 'EMPLOYED',
@@ -28,4 +28,16 @@ export class ApplyKmhDto {
   @IsNumber({}, { message: 'Tahmini kira bedeli sayi olmalidir' })
   @Min(1, { message: 'Tahmini kira bedeli en az 1 TL olmalidir' })
   estimatedRent!: number;
+
+  @IsOptional()
+  @IsNumber()
+  dateOfBirth?: number; // timestamp - for age-based scoring
+
+  @IsOptional()
+  @IsNumber()
+  existingDebtPayments?: number; // monthly debt payments for DTI calculation
+
+  @IsOptional()
+  @IsBoolean()
+  existingBankCustomer?: boolean; // skip extended KYC if true
 }
