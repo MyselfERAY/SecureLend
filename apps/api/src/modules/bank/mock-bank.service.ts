@@ -30,9 +30,47 @@ export class MockBankService extends BankService {
 
   // ─── Credit Scoring ───────────────────────────────
 
-  private calculateCreditScore(dto: ApplyKmhDto): CreditScoringResult {
+  /**
+   * Simulate KKB (Kredi Kayit Burosu) query — in production this calls the real KKB API.
+   * Returns existing monthly debt payments for the user.
+   */
+  private simulateKkbQuery(userId: string): { existingDebtPayments: number; kkbScore: number } {
+    // Mock: generate a deterministic but varied result based on userId hash
+    const hash = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const existingDebtPayments = (hash % 5) * 500; // 0, 500, 1000, 1500, or 2000 TL
+    const kkbScore = 400 + (hash % 6) * 100; // 400-900 range
+    this.logger.log(`KKB query for user ${userId}: debt=${existingDebtPayments} TL, kkbScore=${kkbScore}`);
+    return { existingDebtPayments, kkbScore };
+  }
+
+  /**
+   * Check if user is an existing bank customer — in production this queries the core banking system via TCKN.
+   */
+  private async checkExistingCustomer(userId: string): Promise<boolean> {
+    // Check if user already has any bank account with us
+    const existingAccount = await this.prisma.bankAccount.findFirst({
+      where: { userId, status: { not: BankAccountStatus.CLOSED } },
+    });
+    const isExisting = !!existingAccount;
+    this.logger.log(`Existing customer check for user ${userId}: ${isExisting}`);
+    return isExisting;
+  }
+
+  private calculateCreditScore(dto: ApplyKmhDto, kkbData: { existingDebtPayments: number; kkbScore: number }): CreditScoringResult {
     let score = 500; // base score (range 0-1000 like KKB/Findeks)
     const factors: { name: string; impact: string; detail: string }[] = [];
+
+    // KKB score factor (from bureau query)
+    if (kkbData.kkbScore >= 700) {
+      score += 120;
+      factors.push({ name: 'KKB Skoru', impact: 'pozitif', detail: `${kkbData.kkbScore} - iyi kredi gecmisi` });
+    } else if (kkbData.kkbScore >= 500) {
+      score += 40;
+      factors.push({ name: 'KKB Skoru', impact: 'notr', detail: `${kkbData.kkbScore} - orta kredi gecmisi` });
+    } else {
+      score -= 60;
+      factors.push({ name: 'KKB Skoru', impact: 'negatif', detail: `${kkbData.kkbScore} - dusuk kredi gecmisi` });
+    }
 
     // Employment factor
     if (dto.employmentStatus === 'EMPLOYED') {
@@ -68,9 +106,8 @@ export class MockBankService extends BankService {
       factors.push({ name: 'Gelir/Kira Orani', impact: 'negatif', detail: `${ratio.toFixed(1)}x - yetersiz` });
     }
 
-    // DTI (debt-to-income)
-    const existingDebt = dto.existingDebtPayments || 0;
-    const dti = (existingDebt + Number(dto.estimatedRent)) / Number(dto.monthlyIncome);
+    // DTI (debt-to-income) — using KKB data, not user-provided
+    const dti = (kkbData.existingDebtPayments + Number(dto.estimatedRent)) / Number(dto.monthlyIncome);
     if (dti <= 0.3) {
       score += 100;
       factors.push({ name: 'Borc/Gelir Orani', impact: 'pozitif', detail: `%${(dti * 100).toFixed(0)} - dusuk risk` });
@@ -123,13 +160,16 @@ export class MockBankService extends BankService {
       throw new BadRequestException('Zaten bekleyen veya onaylanmis bir KMH basvurunuz var');
     }
 
-    // Realistic credit scoring
-    const scoring = this.calculateCreditScore(dto);
+    // Bank-side queries (KKB + existing customer check)
+    const kkbData = this.simulateKkbQuery(userId);
+    const isExistingCustomer = await this.checkExistingCustomer(userId);
+
+    // Realistic credit scoring using bank-queried data
+    const scoring = this.calculateCreditScore(dto, kkbData);
     const isApproved = scoring.score >= 600;
 
-    // Calculate DTI for storage
-    const existingDebt = dto.existingDebtPayments || 0;
-    const dti = (existingDebt + Number(dto.estimatedRent)) / Number(dto.monthlyIncome);
+    // Calculate DTI using KKB data
+    const dti = (kkbData.existingDebtPayments + Number(dto.estimatedRent)) / Number(dto.monthlyIncome);
     const dtiRounded = Math.round(dti * 10000) / 10000;
 
     // Approval details
@@ -165,7 +205,7 @@ export class MockBankService extends BankService {
           debtToIncomeRatio: dtiRounded,
           interestRate: interestRate ?? null,
           monthlyInstallment: monthlyInstallment ?? null,
-          existingCustomer: dto.existingBankCustomer || false,
+          existingCustomer: isExistingCustomer,
           evaluationDetails: {
             factors: scoring.factors,
             evaluatedAt: new Date().toISOString(),
@@ -213,7 +253,7 @@ export class MockBankService extends BankService {
       evaluationFactors: scoring.factors,
       rejectionReason,
       bankReferenceNo,
-      existingCustomer: dto.existingBankCustomer || false,
+      existingCustomer: isExistingCustomer,
     };
   }
 

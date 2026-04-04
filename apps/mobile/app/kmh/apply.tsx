@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Switch,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
   KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -31,10 +31,8 @@ export default function KmhApplyScreen() {
   const [employment, setEmployment] = useState('EMPLOYED');
   const [income, setIncome] = useState('');
   const [employer, setEmployer] = useState('');
-  const [debt, setDebt] = useState('');
   const [rent, setRent] = useState('');
   const [address, setAddress] = useState('');
-  const [existingCustomer, setExistingCustomer] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,10 +51,8 @@ export default function KmhApplyScreen() {
         monthlyIncome: Number(income),
         residentialAddress: address,
         estimatedRent: Number(rent),
-        existingCustomer,
       };
       if (employer) body.employerName = employer;
-      if (debt) body.existingDebtPayments = Number(debt);
 
       const res = await api<{ id: string }>('/api/v1/bank/kmh/apply', {
         method: 'POST',
@@ -159,16 +155,6 @@ export default function KmhApplyScreen() {
             />
           )}
 
-          {/* Debt Payments */}
-          <Input
-            label="Mevcut Aylik Borc Odemeleri"
-            value={debt}
-            onChangeText={(t) => setDebt(t.replace(/\D/g, ''))}
-            keyboardType="number-pad"
-            placeholder="0"
-            prefix="TL"
-          />
-
           {/* Estimated Rent */}
           <Input
             label="Tahmini Aylik Kira *"
@@ -189,22 +175,6 @@ export default function KmhApplyScreen() {
             numberOfLines={3}
             style={{ height: 80, textAlignVertical: 'top', paddingTop: 14 }}
           />
-
-          {/* Existing customer toggle */}
-          <View style={styles.toggleRow}>
-            <View style={styles.toggleInfo}>
-              <Text style={styles.toggleLabel}>Bu bankanin mevcut musterisi misiniz?</Text>
-              <Text style={styles.toggleHint}>
-                Mevcut musteriler icin goruntusu gorusme atlanabilir
-              </Text>
-            </View>
-            <Switch
-              value={existingCustomer}
-              onValueChange={setExistingCustomer}
-              trackColor={{ false: colors.gray[200], true: '#93c5fd' }}
-              thumbColor={existingCustomer ? '#2563eb' : colors.gray[50]}
-            />
-          </View>
 
           {/* Info Box */}
           <View style={styles.infoBox}>
@@ -324,37 +294,6 @@ const styles = StyleSheet.create({
   pillTextActive: {
     color: '#1d4ed8',
     fontWeight: '600',
-  },
-
-  // Toggle
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0a1628',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-      },
-      android: { elevation: 2 },
-    }),
-  },
-  toggleInfo: { flex: 1, marginRight: 12 },
-  toggleLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.gray[800],
-  },
-  toggleHint: {
-    fontSize: 12,
-    color: colors.gray[400],
-    marginTop: 4,
-    lineHeight: 17,
   },
 
   // Info
