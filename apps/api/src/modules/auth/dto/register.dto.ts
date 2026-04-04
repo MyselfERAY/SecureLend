@@ -1,4 +1,26 @@
-import { IsString, IsDateString, Length, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsArray,
+  IsEnum,
+  MaxLength,
+  MinLength,
+  Length,
+  Matches,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ConsentType } from '@prisma/client';
+
+export class ConsentItemDto {
+  @IsEnum(ConsentType, { message: 'Gecerli bir onay tipi secin' })
+  type!: ConsentType;
+
+  @IsString()
+  @MaxLength(10, { message: 'Versiyon en fazla 10 karakter olmali' })
+  version!: string;
+}
 
 export class RegisterDto {
   @IsString()
@@ -17,4 +39,10 @@ export class RegisterDto {
 
   @IsDateString({}, { message: 'Gecerli bir dogum tarihi girin (YYYY-MM-DD)' })
   dateOfBirth!: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ConsentItemDto)
+  consents?: ConsentItemDto[];
 }

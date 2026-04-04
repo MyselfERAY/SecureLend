@@ -13,12 +13,17 @@ export interface User {
   kycStatus: string;
 }
 
+export interface ConsentRecord {
+  type: string;
+  version: string;
+}
+
 interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
   isLoading: boolean;
   login: (tckn: string, phone: string) => Promise<{ userId: string; phone: string }>;
-  register: (tckn: string, phone: string, fullName: string, dateOfBirth: string) => Promise<{ userId: string }>;
+  register: (tckn: string, phone: string, fullName: string, dateOfBirth: string, consents?: ConsentRecord[]) => Promise<{ userId: string }>;
   verifyOtp: (phone: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -113,10 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     throw new Error((res as any).data?.message || res.message || 'Giris basarisiz');
   }, []);
 
-  const register = useCallback(async (tckn: string, phone: string, fullName: string, dateOfBirth: string) => {
+  const register = useCallback(async (tckn: string, phone: string, fullName: string, dateOfBirth: string, consents?: ConsentRecord[]) => {
+    const body: Record<string, unknown> = { tckn, phone, fullName, dateOfBirth };
+    if (consents && consents.length > 0) {
+      body.consents = consents;
+    }
     const res = await api<{ userId: string }>('/api/v1/auth/register', {
       method: 'POST',
-      body: { tckn, phone, fullName, dateOfBirth },
+      body,
     });
     if (res.status === 'success' && res.data) {
       return res.data;

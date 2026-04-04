@@ -10,3 +10,11 @@ export type {
 } from './types/api-response';
 export { ApplicationStatus } from './types/application';
 export type { ApplicationResult } from './types/application';
+export {
+  KVKK_VERSION,
+  KVKK_AYDINLATMA_METNI,
+  KVKK_ACIK_RIZA_METNI,
+  KVKK_ACIK_RIZA_KMH_METNI,
+  GIZLILIK_POLITIKASI,
+  KULLANIM_KOSULLARI,
+} from './legal/kvkk-texts';

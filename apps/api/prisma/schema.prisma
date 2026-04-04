@@ -67,6 +67,7 @@ model User {
   updatedAt         DateTime            @updatedAt @map("updated_at")
   applications      Application[]
   bankAccounts      BankAccount[]
+  consents          Consent[]
   signatures        ContractSignature[]
   landlordContracts Contract[]          @relation("ContractLandlord")
   tenantContracts   Contract[]          @relation("ContractTenant")
@@ -448,4 +449,28 @@ enum KmhApplicationStatus {
   REJECTED
 
   @@map("kmh_application_status")
+}
+
+enum ConsentType {
+  KVKK_AYDINLATMA
+  KVKK_ACIK_RIZA
+  KVKK_ACIK_RIZA_KMH
+  TERMS_OF_SERVICE
+
+  @@map("consent_type")
+}
+
+model Consent {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String      @map("user_id") @db.Uuid
+  type       ConsentType
+  version    String      @db.VarChar(10)
+  accepted   Boolean     @default(true)
+  ipAddress  String?     @map("ip_address") @db.VarChar(45)
+  userAgent  String?     @map("user_agent") @db.VarChar(500)
+  acceptedAt DateTime    @default(now()) @map("accepted_at") @db.Timestamptz()
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type], map: "idx_consent_user_type")
+  @@map("consents")
 }

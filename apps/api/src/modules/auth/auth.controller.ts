@@ -32,12 +32,15 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<JSendSuccess<{ userId: string; maskedTckn: string; phone: string }>> {
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
+    const userAgent = (req.headers['user-agent'] as string) || 'unknown';
     const result = await this.authService.register(
       dto.tckn,
       dto.phone,
       dto.fullName,
       dto.dateOfBirth,
       ipAddress,
+      dto.consents,
+      userAgent,
     );
     return { status: 'success', data: result };
   }

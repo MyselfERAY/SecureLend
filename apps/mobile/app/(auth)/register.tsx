@@ -34,6 +34,8 @@ export default function RegisterScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [consentAydinlatma, setConsentAydinlatma] = useState(false);
+  const [consentAcikRiza, setConsentAcikRiza] = useState(false);
 
   const formatDate = (date: Date) => {
     const d = date.getDate().toString().padStart(2, '0');
@@ -57,7 +59,10 @@ export default function RegisterScreen() {
     }
     setLoading(true);
     try {
-      await auth.register(tckn, phone, fullName, toIsoDate(dateOfBirth));
+      await auth.register(tckn, phone, fullName, toIsoDate(dateOfBirth), [
+        { type: 'KVKK_AYDINLATMA', version: '1.0' },
+        { type: 'KVKK_ACIK_RIZA', version: '1.0' },
+      ]);
       router.push({ pathname: '/(auth)/verify-otp', params: { phone } });
     } catch (e: any) {
       setError(e.message || 'Kayit basarisiz');
@@ -66,7 +71,7 @@ export default function RegisterScreen() {
     }
   };
 
-  const isValid = fullName.length >= 3 && tckn.length === 11 && phone.length === 10 && dateOfBirth !== null;
+  const isValid = fullName.length >= 3 && tckn.length === 11 && phone.length === 10 && dateOfBirth !== null && consentAydinlatma && consentAcikRiza;
 
   return (
     <View style={styles.root}>
@@ -204,6 +209,53 @@ export default function RegisterScreen() {
                 />
               )
             )}
+
+            {/* KVKK Consent Checkboxes */}
+            <View style={styles.consentSection}>
+              <TouchableOpacity
+                style={styles.consentRow}
+                onPress={() => setConsentAydinlatma((p) => !p)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, consentAydinlatma && styles.checkboxChecked]}>
+                  {consentAydinlatma && (
+                    <Ionicons name="checkmark" size={14} color="#ffffff" />
+                  )}
+                </View>
+                <Text style={styles.consentText}>
+                  Aydinlatma Metnini okudum ve anladim
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/kvkk/aydinlatma-metni')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.consentLink}>Oku</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.consentRow}
+                onPress={() => setConsentAcikRiza((p) => !p)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, consentAcikRiza && styles.checkboxChecked]}>
+                  {consentAcikRiza && (
+                    <Ionicons name="checkmark" size={14} color="#ffffff" />
+                  )}
+                </View>
+                <Text style={styles.consentText}>
+                  Kisisel verilerimin islenmesine acik riza veriyorum
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/kvkk/gizlilik-politikasi')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.consentLink}>Detay</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
 
             <Button
               title="Kayit Ol"
@@ -377,6 +429,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2563eb',
     fontWeight: '700' as const,
+  },
+  consentSection: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  consentRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: colors.gray[50],
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.gray[300],
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  consentText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500' as const,
+    color: colors.gray[700],
+    lineHeight: 18,
+  },
+  consentLink: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: '#2563eb',
+    marginLeft: 8,
   },
   submitButton: {
     marginTop: 8,

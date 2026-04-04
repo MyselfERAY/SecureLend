@@ -35,12 +35,17 @@ export default function KmhApplyScreen() {
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [consentFinancial, setConsentFinancial] = useState(false);
 
   const showEmployer = employment === 'EMPLOYED' || employment === 'SELF_EMPLOYED';
 
   const handleSubmit = async () => {
     if (!tokens || !income || !rent || !address) {
       setError('Zorunlu alanlari doldurun');
+      return;
+    }
+    if (!consentFinancial) {
+      setError('Finansal veri isleme onayi zorunludur');
       return;
     }
     setError('');
@@ -53,6 +58,13 @@ export default function KmhApplyScreen() {
         estimatedRent: Number(rent),
       };
       if (employer) body.employerName = employer;
+
+      // Record KVKK consent for financial data processing
+      await api('/api/v1/consents', {
+        method: 'POST',
+        body: { type: 'KVKK_ACIK_RIZA_KMH', version: '1.0' },
+        token: tokens.accessToken,
+      });
 
       const res = await api<{ applicationId: string }>('/api/v1/bank/kmh/apply', {
         method: 'POST',
@@ -185,11 +197,28 @@ export default function KmhApplyScreen() {
             </Text>
           </View>
 
+          {/* KVKK Consent */}
+          <TouchableOpacity
+            style={styles.consentRow}
+            onPress={() => setConsentFinancial((p) => !p)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, consentFinancial && styles.checkboxChecked]}>
+              {consentFinancial && (
+                <Ionicons name="checkmark" size={14} color="#ffffff" />
+              )}
+            </View>
+            <Text style={styles.consentText}>
+              KMH basvurusu icin finansal verilerimin islenmesine acik riza veriyorum
+            </Text>
+          </TouchableOpacity>
+
           {/* Submit */}
           <Button
             title="Basvuruyu Gonder"
             onPress={handleSubmit}
             loading={submitting}
+            disabled={!consentFinancial}
             size="lg"
             style={{ marginBottom: 32 }}
           />
@@ -298,6 +327,39 @@ const styles = StyleSheet.create({
   pillTextActive: {
     color: '#1d4ed8',
     fontWeight: '600',
+  },
+
+  // Consent
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.gray[50],
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: colors.gray[300],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  consentText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.gray[700],
+    lineHeight: 18,
   },
 
   // Info

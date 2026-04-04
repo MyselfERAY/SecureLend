@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { IdentityVerificationService } from '../identity-verification/identity-verification.service';
 import { SmsService } from '../notification/sms.service';
+import { ConsentType } from '@prisma/client';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { AuthTokens } from './interfaces/auth-tokens.interface';
 
@@ -38,6 +39,8 @@ export class AuthService {
     fullName: string,
     dateOfBirth: string,
     ipAddress: string,
+    consents?: { type: ConsentType; version: string }[],
+    userAgent?: string,
   ) {
     if (!validateTckn(tckn)) {
       throw new BadRequestException('Gecersiz TCKN');
@@ -83,6 +86,22 @@ export class AuthService {
           ipAddress,
         },
       });
+
+      // Record KVKK consents if provided
+      if (consents && consents.length > 0) {
+        for (const consent of consents) {
+          await tx.consent.create({
+            data: {
+              userId: u.id,
+              type: consent.type,
+              version: consent.version,
+              accepted: true,
+              ipAddress,
+              userAgent,
+            },
+          });
+        }
+      }
 
       return u;
     });
