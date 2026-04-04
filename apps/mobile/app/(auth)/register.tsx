@@ -10,16 +10,18 @@ import {
   TouchableOpacity,
   Dimensions,
   Modal,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Link, useRouter, useFocusEffect } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
 import { Input } from '../../src/components/ui/Input';
 import { Button } from '../../src/components/ui/Button';
 import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
 import { colors } from '../../src/theme/colors';
-import { hasConsentScrolled } from '../../src/lib/consent-store';
+import { KVKK_AYDINLATMA_METNI, KVKK_ACIK_RIZA_METNI } from '@securelend/shared/src/legal/kvkk-texts';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HEADER_HEIGHT = 280;
@@ -37,18 +39,25 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [consentAydinlatma, setConsentAydinlatma] = useState(false);
   const [consentAcikRiza, setConsentAcikRiza] = useState(false);
+  const [consentModal, setConsentModal] = useState<'aydinlatma' | 'acik_riza' | null>(null);
+  const [consentScrolledToBottom, setConsentScrolledToBottom] = useState(false);
 
-  // Auto-check consents when returning from legal screens
-  useFocusEffect(
-    useCallback(() => {
-      if (hasConsentScrolled('aydinlatma')) {
-        setConsentAydinlatma(true);
-      }
-      if (hasConsentScrolled('acik_riza')) {
-        setConsentAcikRiza(true);
-      }
-    }, [])
-  );
+  const handleConsentScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+    const isBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 40;
+    if (isBottom) setConsentScrolledToBottom(true);
+  };
+
+  const openConsentModal = (type: 'aydinlatma' | 'acik_riza') => {
+    setConsentScrolledToBottom(false);
+    setConsentModal(type);
+  };
+
+  const approveConsent = () => {
+    if (consentModal === 'aydinlatma') setConsentAydinlatma(true);
+    if (consentModal === 'acik_riza') setConsentAcikRiza(true);
+    setConsentModal(null);
+  };
 
   const formatDate = (date: Date) => {
     const d = date.getDate().toString().padStart(2, '0');
@@ -228,10 +237,10 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 style={styles.consentRow}
                 onPress={() => {
-                  if (hasConsentScrolled('aydinlatma')) {
-                    setConsentAydinlatma((p) => !p);
+                  if (consentAydinlatma) {
+                    setConsentAydinlatma(false);
                   } else {
-                    router.push('/kvkk/aydinlatma-metni');
+                    openConsentModal('aydinlatma');
                   }
                 }}
                 activeOpacity={0.7}
@@ -245,7 +254,7 @@ export default function RegisterScreen() {
                   Aydinlatma Metnini okudum ve anladim
                 </Text>
                 <TouchableOpacity
-                  onPress={() => router.push('/kvkk/aydinlatma-metni')}
+                  onPress={() => openConsentModal('aydinlatma')}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   activeOpacity={0.7}
                 >
@@ -256,10 +265,10 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 style={styles.consentRow}
                 onPress={() => {
-                  if (hasConsentScrolled('acik_riza')) {
-                    setConsentAcikRiza((p) => !p);
+                  if (consentAcikRiza) {
+                    setConsentAcikRiza(false);
                   } else {
-                    router.push('/kvkk/gizlilik-politikasi');
+                    openConsentModal('acik_riza');
                   }
                 }}
                 activeOpacity={0.7}
@@ -273,7 +282,7 @@ export default function RegisterScreen() {
                   Kisisel verilerimin islenmesine acik riza veriyorum
                 </Text>
                 <TouchableOpacity
-                  onPress={() => router.push('/kvkk/gizlilik-politikasi')}
+                  onPress={() => openConsentModal('acik_riza')}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   activeOpacity={0.7}
                 >
@@ -281,6 +290,47 @@ export default function RegisterScreen() {
                 </TouchableOpacity>
               </TouchableOpacity>
             </View>
+
+            {/* Consent Text Modal */}
+            <Modal visible={consentModal !== null} animationType="slide" presentationStyle="fullScreen">
+              <View style={styles.consentModalContainer}>
+                <View style={styles.consentModalHeader}>
+                  <Text style={styles.consentModalTitle}>
+                    {consentModal === 'aydinlatma' ? 'Aydinlatma Metni' : 'Acik Riza Metni'}
+                  </Text>
+                  <TouchableOpacity onPress={() => setConsentModal(null)}>
+                    <Ionicons name="close" size={24} color={colors.gray[600]} />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView
+                  style={styles.consentModalScroll}
+                  onScroll={handleConsentScroll}
+                  scrollEventThrottle={16}
+                >
+                  <Text style={styles.consentModalText}>
+                    {consentModal === 'aydinlatma' ? KVKK_AYDINLATMA_METNI : KVKK_ACIK_RIZA_METNI}
+                  </Text>
+                </ScrollView>
+                <View style={styles.consentModalFooter}>
+                  <TouchableOpacity
+                    style={[
+                      styles.consentModalButton,
+                      !consentScrolledToBottom && styles.consentModalButtonDisabled,
+                    ]}
+                    onPress={approveConsent}
+                    disabled={!consentScrolledToBottom}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[
+                      styles.consentModalButtonText,
+                      !consentScrolledToBottom && styles.consentModalButtonTextDisabled,
+                    ]}>
+                      {consentScrolledToBottom ? 'Okudum ve Onayliyorum' : 'Sonuna kadar okuyun...'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
 
             <Button
               title="Kayit Ol"
@@ -499,6 +549,60 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 8,
     borderRadius: 16,
+  },
+  consentModalContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  consentModalHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[200],
+  },
+  consentModalTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: colors.brand.dark,
+  },
+  consentModalScroll: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  consentModalText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: colors.gray[700],
+    paddingBottom: 40,
+  },
+  consentModalFooter: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[200],
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+  },
+  consentModalButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center' as const,
+  },
+  consentModalButtonDisabled: {
+    backgroundColor: colors.gray[200],
+  },
+  consentModalButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: colors.white,
+  },
+  consentModalButtonTextDisabled: {
+    color: colors.gray[400],
   },
   linkRow: {
     flexDirection: 'row',
