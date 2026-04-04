@@ -54,14 +54,14 @@ export default function KmhApplyScreen() {
       };
       if (employer) body.employerName = employer;
 
-      const res = await api<{ id: string }>('/api/v1/bank/kmh/apply', {
+      const res = await api<{ applicationId: string }>('/api/v1/bank/kmh/apply', {
         method: 'POST',
         body,
         token: tokens.accessToken,
       });
 
       if (res.status === 'success' && res.data) {
-        router.replace({ pathname: '/kmh/result', params: { applicationId: res.data.id } });
+        router.replace({ pathname: '/kmh/result', params: { applicationId: res.data.applicationId } });
       } else {
         setError(extractError(res));
       }

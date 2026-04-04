@@ -47,11 +47,31 @@ export default function KmhResultScreen() {
 
   useEffect(() => {
     if (!tokens || !applicationId) return;
-    api<KmhEvaluationResult>(`/api/v1/bank/kmh/${applicationId}`, {
+    // GET endpoint returns DB shape — map to KmhEvaluationResult
+    api<any>(`/api/v1/bank/kmh/${applicationId}`, {
       token: tokens.accessToken,
     }).then((res) => {
       if (res.status === 'success' && res.data) {
-        setResult(res.data);
+        const d = res.data;
+        const score = d.creditScore ?? 0;
+        const scoreLabel = score >= 800 ? 'Cok Iyi' : score >= 700 ? 'Iyi' : score >= 600 ? 'Yeterli' : 'Dusuk';
+        // evaluationDetails is a JSONB field with { factors, ... }
+        const factors = d.evaluationDetails?.factors ?? d.evaluationFactors ?? [];
+
+        setResult({
+          applicationId: d.id ?? applicationId,
+          status: d.status,
+          creditScore: score,
+          creditScoreLabel: d.creditScoreLabel ?? scoreLabel,
+          approvedLimit: d.approvedLimit ?? undefined,
+          interestRate: d.interestRate ?? undefined,
+          monthlyInstallment: d.monthlyInstallment ?? undefined,
+          debtToIncomeRatio: d.debtToIncomeRatio ?? undefined,
+          evaluationFactors: factors,
+          rejectionReason: d.rejectionReason ?? undefined,
+          bankReferenceNo: d.bankReferenceNo ?? undefined,
+          existingCustomer: d.existingCustomer ?? false,
+        });
       } else {
         setError(extractError(res));
       }
