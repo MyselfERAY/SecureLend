@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,14 @@ import {
   Modal,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
 import { Input } from '../../src/components/ui/Input';
 import { Button } from '../../src/components/ui/Button';
 import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
 import { colors } from '../../src/theme/colors';
+import { hasConsentScrolled } from '../../src/lib/consent-store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HEADER_HEIGHT = 280;
@@ -36,6 +37,18 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [consentAydinlatma, setConsentAydinlatma] = useState(false);
   const [consentAcikRiza, setConsentAcikRiza] = useState(false);
+
+  // Auto-check consents when returning from legal screens
+  useFocusEffect(
+    useCallback(() => {
+      if (hasConsentScrolled('aydinlatma')) {
+        setConsentAydinlatma(true);
+      }
+      if (hasConsentScrolled('acik_riza')) {
+        setConsentAcikRiza(true);
+      }
+    }, [])
+  );
 
   const formatDate = (date: Date) => {
     const d = date.getDate().toString().padStart(2, '0');
@@ -214,7 +227,13 @@ export default function RegisterScreen() {
             <View style={styles.consentSection}>
               <TouchableOpacity
                 style={styles.consentRow}
-                onPress={() => setConsentAydinlatma((p) => !p)}
+                onPress={() => {
+                  if (hasConsentScrolled('aydinlatma')) {
+                    setConsentAydinlatma((p) => !p);
+                  } else {
+                    router.push('/kvkk/aydinlatma-metni');
+                  }
+                }}
                 activeOpacity={0.7}
               >
                 <View style={[styles.checkbox, consentAydinlatma && styles.checkboxChecked]}>
@@ -236,7 +255,13 @@ export default function RegisterScreen() {
 
               <TouchableOpacity
                 style={styles.consentRow}
-                onPress={() => setConsentAcikRiza((p) => !p)}
+                onPress={() => {
+                  if (hasConsentScrolled('acik_riza')) {
+                    setConsentAcikRiza((p) => !p);
+                  } else {
+                    router.push('/kvkk/gizlilik-politikasi');
+                  }
+                }}
                 activeOpacity={0.7}
               >
                 <View style={[styles.checkbox, consentAcikRiza && styles.checkboxChecked]}>

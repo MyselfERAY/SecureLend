@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
   KeyboardAvoidingView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/lib/auth-context';
@@ -12,6 +12,7 @@ import { Button } from '../../src/components/ui/Button';
 import { Input } from '../../src/components/ui/Input';
 import { ErrorMessage } from '../../src/components/ui/ErrorMessage';
 import { colors } from '../../src/theme/colors';
+import { hasConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
@@ -36,6 +37,15 @@ export default function KmhApplyScreen() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [consentFinancial, setConsentFinancial] = useState(false);
+
+  // Auto-check consent when returning from KMH financial consent screen
+  useFocusEffect(
+    useCallback(() => {
+      if (hasConsentScrolled('kmh_finansal')) {
+        setConsentFinancial(true);
+      }
+    }, [])
+  );
 
   const showEmployer = employment === 'EMPLOYED' || employment === 'SELF_EMPLOYED';
 
@@ -200,7 +210,13 @@ export default function KmhApplyScreen() {
           {/* KVKK Consent */}
           <TouchableOpacity
             style={styles.consentRow}
-            onPress={() => setConsentFinancial((p) => !p)}
+            onPress={() => {
+              if (hasConsentScrolled('kmh_finansal')) {
+                setConsentFinancial((p) => !p);
+              } else {
+                router.push('/kvkk/kmh-acik-riza');
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={[styles.checkbox, consentFinancial && styles.checkboxChecked]}>
@@ -211,6 +227,13 @@ export default function KmhApplyScreen() {
             <Text style={styles.consentText}>
               KMH basvurusu icin finansal verilerimin islenmesine acik riza veriyorum
             </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/kvkk/kmh-acik-riza')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.consentLink}>Oku</Text>
+            </TouchableOpacity>
           </TouchableOpacity>
 
           {/* Submit */}
@@ -360,6 +383,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: colors.gray[700],
     lineHeight: 18,
+  },
+  consentLink: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#2563eb',
+    marginLeft: 8,
   },
 
   // Info

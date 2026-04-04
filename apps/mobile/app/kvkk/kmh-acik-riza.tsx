@@ -17,112 +17,87 @@ import { markConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
-const GIZLILIK_POLITIKASI = `GIZLILIK POLITIKASI
+const KMH_ACIK_RIZA_METNI = `KIRA MEVDUAT HESABI (KMH) FINANSAL VERILERIN ISLENMESINE ILISKIN ACIK RIZA METNI
 
 Son Guncelleme: 01.04.2026
 
-SecureLend Teknoloji A.S. ("SecureLend") olarak kullanicilarimizin gizliligine onem veriyoruz. Bu politika, platformumuz uzerinden toplanan kisisel verilerin nasil kullanildigini, paylasildigini ve korundugrunu aciklamaktadir.
+VERI SORUMLUSU
 
-TOPLANAN BILGILER
-
-Hesap Olusturma Sirasinda:
-- Ad soyad
-- T.C. Kimlik Numarasi (TCKN)
-- Telefon numarasi
-- Dogum tarihi
-
-KMH Basvurusu Sirasinda:
-- Istihdam durumu ve isveren bilgisi
-- Aylik gelir bilgisi
-- Ikamet adresi
-- Tahmini kira tutari
-
-Platform Kullanimi Sirasinda:
-- Odeme islem bilgileri
-- Sozlesme detaylari
-- Cihaz ve tarayici bilgileri
-- IP adresi ve erisim loglarit
-- Konum bilgileri (izin verildiginde)
-
-KULLANIMI
-
-Toplanan bilgileriniz asagidaki amaclarla kullanilmaktadir:
-
-1. Hesap Yonetimi: Kullanici hesabinizin olusturulmasi, dogrulanmasi ve yonetimi
-2. Hizmet Sunumu: KMH basvurusu, kira odeme islemleri ve sozlesme yonetimi
-3. Kimlik Dogrulama: KYC surecleri ve MASAK uyumlulugu
-4. Guvenlik: Dolandiricilik tespiti, yetkisiz erisim onleme
-5. Iletisim: Islem bildirimleri, odeme hatirlatalari, hizmet guncellemeleri
-6. Yasal Uyumluluk: BDDK, MASAK ve diger duzenlayici kurumlarin gerekliliklerinin karsilanmasi
-7. Hizmet Iyilestirme: Kullanici deneyiminin analizi ve platform gelistirme
-
-PAYLASILMASI
-
-Kisisel verileriniz asagidaki durumlarda ucuncu taraflarla paylasilabilir:
-
-Banka ve Finans Kuruluslari: KMH hesap islemleri ve odeme sureclerinin yurutulmesi icin
-Odeme Altyapi Saglayicilari: Kira odeme islemlerinin gerceklestirilmesi icin
-Bulut Hizmet Saglayicilari: Verilerin guvenli bir sekilde saklanmasi icin
-Yetkili Kamu Kurumlari: Yasal zorunluluklar geregi (BDDK, MASAK, mahkeme kararlari)
-Hukuk Musavirleri: Hukuki sureclerin yurutulmesi icin
-
-Verileriniz, ticari amaclarla ucuncu taraflara satilmaz veya kiralanmaz.
-
-GUVENLIK
-
-Kisisel verilerinizin guvenligini saglamak icin asagidaki onlemleri almaktayiz:
-
-- SSL/TLS sifreleme ile veri iletimi
-- Veritabaninda sifrelenmis saklama (TCKN hashleme dahil)
-- Erisim kontrolleri ve yetkilendirme mekanizmalari
-- Duzenli guvenlik denetimleri ve penetrasyon testleri
-- Calisanlara yonelik bilgi guvenligi egitimleri
-- OWASP standartlarina uygun uygulama guvenligi
-- JWT tabanli kimlik dogrulama ve oturum yonetimi
-- Rate limiting ve DDoS korumasi
-
-CEREZLER VE IZLEME
-
-Mobil uygulamamizda:
-- Oturum yonetimi icin guvenli token saklama kullanilmaktadir
-- Analitik amacli anonim kullanim verileri toplanabilir
-- Ucuncu taraf izleme araclari kullanilmamaktadir
-
-COCUKLARIN GIZLILIGI
-
-Platformumuz 18 yasindan kucuk bireylere yonelik degildir. Bilerek 18 yasindan kucuk bireylerden kisisel veri toplamamaktayiz.
-
-HAKLARINIZ
-
-6698 sayili KVKK kapsaminda asagidaki haklara sahipsiniz:
-
-1. Kisisel verilerinizin islenip islenmedigini ogrenme
-2. Islenmisse bilgi talep etme
-3. Islenme amacini ve amacina uygun kullanilip kullanilmadigini ogrenme
-4. Aktarildigi ucuncu kisileri bilme
-5. Eksik veya yanlis islenmesi halinde duzeltilmesini isteme
-6. Silinmesini veya yok edilmesini isteme
-7. Aktarildigi ucuncu kisilere bildirilmesini isteme
-8. Otomatik analiz sonucu aleyhinize bir sonuca itiraz etme
-9. Kanuna aykiri isleme nedeniyle zararin giderilmesini talep etme
-
-HESAP SILME
-
-Hesabinizi ve iliskili verilerinizi silmek istemeniz durumunda info@kiraguvence.com adresine basvurabilirsiniz. Yasal saklama yukumluluklerine tabi veriler haric, tum verileriniz 30 gun icinde silinir.
-
-POLITIKA GUNCELLEMELERI
-
-Bu gizlilik politikasi zaman zaman guncellenebilir. Onemli degisiklikler yapildiginda uygulama icinden ve/veya e-posta yoluyla bilgilendirilirsiniz.
-
-ILETISIM
-
-Gizlilik ile ilgili sorulariniz icin:
+SecureLend Teknoloji A.S. ("SecureLend" veya "Sirket")
+Adres: Istanbul, Turkiye
 E-posta: info@kiraguvence.com
-Web: https://kiraguvence.com
+
+ACIK RIZA BEYANI
+
+6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kira Mevduat Hesabi (KMH) basvurumun degerlendirilmesi ve hesap islemlerimin yurutulmesi amaciyla asagidaki finansal ve kisisel verilerimin islenmesine acik rizamla onay veriyorum:
+
+ISLENEN FINANSAL VERILER
+
+KMH basvuru ve degerlendirme surecinde asagidaki verilerim islenmektedir:
+
+1. Gelir Bilgileri: Aylik net gelir, gelir belgesi bilgileri
+2. Istihdam Bilgileri: Calisma durumu, isveren adi, is baslangic tarihi
+3. Kira Bilgileri: Mevcut/tahmini kira tutari, kira sozlesme bilgileri
+4. Adres Bilgileri: Ikamet adresi, kiralanacak tasinmaz adresi
+5. Banka Hesap Bilgileri: IBAN, hesap hareketleri, bakiye bilgileri
+6. Kredi Skorlama Verileri: Kredi gecmisi, risk degerlendirmesi sonuclari
+7. KMH Hesap Bilgileri: Hesap numarasi, bakiye, faiz oranlari, vade bilgileri
+
+ISLENME AMACLARI
+
+Finansal verilerim asagidaki amaclarla islenmektedir:
+
+1. KMH basvuru uygunlugumun degerlendirilmesi
+2. Kredi risk analizi ve skorlama yapilmasi
+3. KMH hesap limitinin belirlenmesi (Gelir x 3, maksimum 500.000 TL)
+4. Gelir-kira orani kontrolu (Gelir >= Kira x 2)
+5. KMH hesabinin acilmasi ve yonetilmesi
+6. Kira odeme islemlerinin gerceklestirilmesi
+7. Yasal raporlama yukumluluklerinin yerine getirilmesi (BDDK, MASAK)
+8. Dolandiricilik ve usulsuzluk onleme
+
+VERILERIN AKTARILDIGI TARAFLAR
+
+Finansal verilerim asagidaki taraflarla paylasilabilir:
+
+- Anlasmali bankalar ve finansal kuruluslar (KMH hesap islemleri icin)
+- Kredi kayit burosu (KKB) ve risk merkezi
+- Bankalar arasi kart merkezi (BKM)
+- BDDK ve MASAK (yasal zorunluluklar geregi)
+- Bagimsiz denetim ve hukuk musavirlik firmalari
+
+SAKLAMA SURESI
+
+Finansal verilerim asagidaki surelerle saklanacaktir:
+
+- KMH hesap bilgileri: Hesap kapanisina kadar + 10 yil
+- Basvuru degerlendirme verileri: 5 yil
+- Odeme islem kayitlari: 10 yil (TTK ve vergi mevzuati)
+- Risk degerlendirme sonuclari: 5 yil
+
+HAKLARIM
+
+KVKK'nin 11. maddesi kapsaminda:
+- Verilerimin islenip islenmedigini ogrenmek
+- Islenen verilerim hakkinda bilgi talep etmek
+- Islenme amacini ve amaca uygunlugu sorgulamak
+- Eksik veya yanlis islenmesi halinde duzeltme talep etmek
+- Isleme sartlari ortadan kalktginda silinmesini talep etmek
+- Otomatik analiz sonucu aleyhime bir sonuca itiraz etmek
+
+haklarima sahibim.
+
+RIZANIN GERI ALINMASI
+
+Acik rizami her zaman info@kiraguvence.com adresine yazili bildirimde bulunarak geri alabilirim. Rizanin geri alinmasi, geri alma oncesinde yapilan islemlerin hukuka uygunlugunu etkilemez. Rizanin geri alinmasi durumunda aktif KMH hesabimin kapatilmasi soz konusu olabilir.
+
+ONAY
+
+Yukaridaki bilgilendirmeyi okudum ve anlaldim. Finansal verilerimin belirtilen amaclar dogrultusunda islenmesine, yukaridaki taraflarla paylasilmasina ve belirtilen surelerle saklanmasina acik rizamla onay veriyorum.
 
 SecureLend Teknoloji A.S.`;
 
-export default function GizlilikPolitikasiScreen() {
+export default function KmhAcikRizaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
@@ -136,7 +111,7 @@ export default function GizlilikPolitikasiScreen() {
   };
 
   const handleApprove = () => {
-    markConsentScrolled('acik_riza');
+    markConsentScrolled('kmh_finansal');
     router.back();
   };
 
@@ -154,11 +129,11 @@ export default function GizlilikPolitikasiScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Gizlilik Politikasi</Text>
-            <Text style={styles.headerSubtitle}>Veri koruma ve gizlilik</Text>
+            <Text style={styles.headerTitle}>KMH Acik Riza</Text>
+            <Text style={styles.headerSubtitle}>Finansal veri isleme onay</Text>
           </View>
           <View style={styles.iconWrap}>
-            <Ionicons name="lock-closed" size={22} color="#93c5fd" />
+            <Ionicons name="document-text" size={22} color="#93c5fd" />
           </View>
         </View>
       </View>
@@ -171,7 +146,7 @@ export default function GizlilikPolitikasiScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <Text style={styles.bodyText}>{GIZLILIK_POLITIKASI}</Text>
+        <Text style={styles.bodyText}>{KMH_ACIK_RIZA_METNI}</Text>
         <View style={{ height: 40 }} />
       </ScrollView>
 

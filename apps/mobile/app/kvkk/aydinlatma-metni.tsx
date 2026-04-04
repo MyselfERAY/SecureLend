@@ -1,9 +1,19 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme/colors';
+import { markConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
@@ -99,6 +109,20 @@ SecureLend Teknoloji A.S.`;
 export default function AydinlatmaMetniScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const paddingToBottom = 40;
+    if (contentOffset.y + layoutMeasurement.height >= contentSize.height - paddingToBottom) {
+      setScrolledToBottom(true);
+    }
+  };
+
+  const handleApprove = () => {
+    markConsentScrolled('aydinlatma');
+    router.back();
+  };
 
   return (
     <View style={styles.container}>
@@ -127,11 +151,40 @@ export default function AydinlatmaMetniScreen() {
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         <Text style={styles.bodyText}>{AYDINLATMA_METNI}</Text>
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Sticky Bottom Bar */}
+      <View
+        style={[
+          styles.bottomBar,
+          { paddingBottom: Math.max(insets.bottom, 16) },
+        ]}
+      >
+        <TouchableOpacity
+          style={[
+            styles.approveButton,
+            !scrolledToBottom && styles.approveButtonDisabled,
+          ]}
+          onPress={handleApprove}
+          disabled={!scrolledToBottom}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.approveButtonText,
+              !scrolledToBottom && styles.approveButtonTextDisabled,
+            ]}
+          >
+            {scrolledToBottom ? 'Okudum ve Onayliyorum' : 'Sona kadar okuyun'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -194,5 +247,38 @@ const styles = StyleSheet.create({
       },
       android: { elevation: 3 },
     }),
+  },
+
+  bottomBar: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+      },
+      android: { elevation: 8 },
+    }),
+  },
+  approveButton: {
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#2563eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  approveButtonDisabled: {
+    backgroundColor: '#d1d5db',
+  },
+  approveButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  approveButtonTextDisabled: {
+    color: '#9ca3af',
   },
 });
