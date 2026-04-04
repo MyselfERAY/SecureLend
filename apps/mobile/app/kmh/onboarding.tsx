@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
-  ActivityIndicator, Animated,
+  ActivityIndicator, Animated, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -84,6 +84,7 @@ export default function KmhOnboardingScreen() {
   const [showAgreements, setShowAgreements] = useState(false);
   const [agreementChecks, setAgreementChecks] = useState({ kmh: false, kvkk: false, genel: false });
   const [completing, setCompleting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState('');
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -99,39 +100,60 @@ export default function KmhOnboardingScreen() {
     return () => pulse.stop();
   }, [pulseAnim]);
 
-  const loadKycStatus = async () => {
+  const ensureOfferAcceptedAndKycStarted = async () => {
     if (!tokens || !applicationId) return;
-    const res = await api<KycStatus>(`/api/v1/bank/kmh/${applicationId}`, {
+
+    // First check application status
+    const appRes = await api<any>(`/api/v1/bank/kmh/${applicationId}`, {
       token: tokens.accessToken,
     });
-    if (res.status === 'success' && res.data) {
-      // Build KYC status from application data or mock it for demo
-      const data = res.data as any;
-      const kycData: KycStatus = {
-        applicationId: applicationId,
-        kycStatus: data.kycStatus || 'IN_PROGRESS',
-        existingCustomer: data.existingCustomer ?? false,
-        steps: data.steps || buildDefaultSteps(data.existingCustomer ?? false),
-        completedSteps: data.completedSteps ?? 0,
-        totalSteps: data.totalSteps ?? 4,
-        canComplete: data.canComplete ?? false,
-      };
-      setKycStatus(kycData);
+    if (appRes.status !== 'success' || !appRes.data) return;
+    const appData = appRes.data;
+
+    // Auto-accept offer if not yet accepted
+    if (!appData.offerAccepted) {
+      await api(`/api/v1/bank/kmh/${applicationId}/accept-offer`, {
+        method: 'POST',
+        token: tokens.accessToken,
+      });
+    }
+
+    // Start KYC if not yet started
+    if (!appData.kycStatus || appData.kycStatus === 'NOT_STARTED') {
+      await api(`/api/v1/bank/kmh/${applicationId}/kyc/start`, {
+        method: 'POST',
+        token: tokens.accessToken,
+      });
     }
   };
 
-  const buildDefaultSteps = (isExistingCustomer: boolean): KycStep[] => {
-    return STEP_CONFIGS.map((config) => ({
-      key: config.key,
-      label: config.label,
-      description: config.description,
-      completed: false,
-      required: config.key === 'video_call' ? !isExistingCustomer : true,
-    }));
+  const loadKycStatus = async () => {
+    if (!tokens || !applicationId) return;
+    const res = await api<KycStatus>(`/api/v1/bank/kmh/${applicationId}/kyc/status`, {
+      token: tokens.accessToken,
+    });
+    if (res.status === 'success' && res.data) {
+      // Map backend step keys to our STEP_CONFIGS keys
+      const data = res.data;
+      const mappedSteps: KycStep[] = (data.steps || []).map((s: any) => {
+        const keyMap: Record<string, string> = {
+          id_verification: 'identity_verification',
+          selfie: 'liveness_check',
+          video_call: 'video_call',
+          agreements: 'agreements',
+        };
+        return { ...s, key: keyMap[s.key] || s.key };
+      });
+      setKycStatus({ ...data, steps: mappedSteps });
+    }
   };
 
   useEffect(() => {
-    loadKycStatus().finally(() => setLoading(false));
+    (async () => {
+      await ensureOfferAcceptedAndKycStarted();
+      await loadKycStatus();
+      setLoading(false);
+    })();
   }, [tokens, applicationId]);
 
   const getStepStatus = (step: KycStep): 'completed' | 'current' | 'pending' | 'skipped' => {
@@ -168,8 +190,8 @@ export default function KmhOnboardingScreen() {
       const apiPath = stepKey === 'identity_verification'
         ? `/api/v1/bank/kmh/${applicationId}/kyc/verify-id`
         : stepKey === 'liveness_check'
-        ? `/api/v1/bank/kmh/${applicationId}/kyc/liveness`
-        : `/api/v1/bank/kmh/${applicationId}/kyc/video-call`;
+        ? `/api/v1/bank/kmh/${applicationId}/kyc/verify-selfie`
+        : `/api/v1/bank/kmh/${applicationId}/kyc/complete-video`;
 
       await api(apiPath, { method: 'POST', token: tokens.accessToken });
     }
@@ -204,7 +226,7 @@ export default function KmhOnboardingScreen() {
     setProcessingState('processing');
 
     if (tokens && applicationId) {
-      await api(`/api/v1/bank/kmh/${applicationId}/kyc/agreements`, {
+      await api(`/api/v1/bank/kmh/${applicationId}/kyc/sign-agreements`, {
         method: 'POST',
         token: tokens.accessToken,
       });
@@ -252,6 +274,38 @@ export default function KmhOnboardingScreen() {
       setError('Bir hata olustu');
     }
     setCompleting(false);
+  };
+
+  const handleCancel = () => {
+    Alert.alert(
+      'Basvuruyu Iptal Et',
+      'Bu basvuruyu iptal etmek istediginizden emin misiniz? Bu islem geri alinamaz.',
+      [
+        { text: 'Hayir', style: 'cancel' },
+        {
+          text: 'Evet, Iptal Et',
+          style: 'destructive',
+          onPress: async () => {
+            if (!tokens || !applicationId) return;
+            setCancelling(true);
+            try {
+              const res = await api(`/api/v1/bank/kmh/${applicationId}/cancel`, {
+                method: 'POST',
+                token: tokens.accessToken,
+              });
+              if (res.status === 'success') {
+                router.replace('/(tabs)/bank');
+              } else {
+                setError(extractError(res));
+              }
+            } catch {
+              setError('Iptal islemi basarisiz');
+            }
+            setCancelling(false);
+          },
+        },
+      ],
+    );
   };
 
   if (loading) return <LoadingSpinner text="KYC durumu yukleniyor..." />;
@@ -514,6 +568,23 @@ export default function KmhOnboardingScreen() {
             style={{ marginTop: 16 }}
           />
         )}
+
+        {/* Cancel Button */}
+        <TouchableOpacity
+          style={styles.cancelBtn}
+          onPress={handleCancel}
+          disabled={cancelling}
+          activeOpacity={0.7}
+        >
+          {cancelling ? (
+            <ActivityIndicator size="small" color="#ef4444" />
+          ) : (
+            <>
+              <Ionicons name="close-circle-outline" size={18} color="#ef4444" />
+              <Text style={styles.cancelBtnText}>Basvuruyu Iptal Et</Text>
+            </>
+          )}
+        </TouchableOpacity>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -795,6 +866,21 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: colors.gray[800],
     lineHeight: 20,
+  },
+
+  // Cancel
+  cancelBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    marginTop: 16,
+    gap: 8,
+  },
+  cancelBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#ef4444',
   },
 
   // Error

@@ -573,6 +573,45 @@ export class MockBankService extends BankService {
     };
   }
 
+  // ─── Cancel Application ────────────────────────────
+
+  async cancelApplication(applicationId: string, userId: string): Promise<any> {
+    const app = await this.prisma.kmhApplication.findUnique({ where: { id: applicationId } });
+    if (!app) throw new NotFoundException('KMH basvurusu bulunamadi');
+    if (app.userId !== userId) throw new ForbiddenException('Bu basvuru size ait degil');
+
+    if (app.onboardingCompleted) {
+      throw new BadRequestException('Tamamlanmis basvurular iptal edilemez');
+    }
+    if (app.status === KmhApplicationStatus.REJECTED) {
+      throw new BadRequestException('Reddedilmis basvurular zaten iptal durumundadir');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.kmhApplication.update({
+        where: { id: applicationId },
+        data: { status: KmhApplicationStatus.REJECTED, rejectionReason: 'Kullanici tarafindan iptal edildi' },
+      });
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'KMH_APPLICATION_CANCELLED',
+          entityType: 'KmhApplication',
+          entityId: applicationId,
+          metadata: { previousStatus: app.status },
+        },
+      });
+    });
+
+    this.logger.log(`KMH application ${applicationId} cancelled by user`);
+
+    return {
+      applicationId,
+      status: 'CANCELLED',
+      message: 'Basvurunuz basariyla iptal edildi.',
+    };
+  }
+
   // ─── Digital Onboarding ────────────────────────────
 
   async completeOnboarding(kmhApplicationId: string, userId: string): Promise<OnboardingResult> {

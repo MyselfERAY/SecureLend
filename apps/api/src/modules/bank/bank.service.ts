@@ -62,6 +62,7 @@ export abstract class BankService {
   abstract completeVideoCall(applicationId: string, userId: string): Promise<any>;
   abstract signAgreements(applicationId: string, userId: string): Promise<any>;
   abstract getKycStatus(applicationId: string, userId: string): Promise<any>;
+  abstract cancelApplication(applicationId: string, userId: string): Promise<any>;
 
   // Account queries
   abstract getBalance(accountId: string): Promise<AccountBalance>;

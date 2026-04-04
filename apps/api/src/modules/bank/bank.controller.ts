@@ -106,6 +106,16 @@ export class BankController {
     return { status: 'success', data: result };
   }
 
+  @Post('kmh/:applicationId/cancel')
+  @HttpCode(HttpStatus.OK)
+  async cancelApplication(
+    @CurrentUser('id') userId: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    const result = await this.bankService.cancelApplication(applicationId, userId);
+    return { status: 'success', data: result };
+  }
+
   @Get('kmh/:applicationId/kyc/status')
   async getKycStatus(
     @CurrentUser('id') userId: string,
