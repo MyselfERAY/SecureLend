@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Platform,
+  Modal,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/lib/auth-context';
@@ -50,8 +52,10 @@ export default function ContractsListScreen() {
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
   const [monthlyRent, setMonthlyRent] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
   const [paymentDay, setPaymentDay] = useState('1');
   const [landlordIban, setLandlordIban] = useState('');
   const [terms, setTerms] = useState('');
@@ -60,6 +64,13 @@ export default function ContractsListScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const isLandlord = user?.roles.includes('LANDLORD');
+
+  const formatDateDisplay = (d: Date) => {
+    return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+  };
+  const toIsoDate = (d: Date) => {
+    return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+  };
 
   const loadContracts = useCallback(async () => {
     if (!tokens) return;
@@ -100,8 +111,8 @@ export default function ContractsListScreen() {
       propertyId: selectedPropertyId,
       tenantId: tenantResult.id,
       monthlyRent: Number(monthlyRent),
-      startDate,
-      endDate,
+      startDate: toIsoDate(startDate),
+      endDate: toIsoDate(endDate),
       paymentDayOfMonth: Number(paymentDay),
       landlordIban,
     };
@@ -120,7 +131,7 @@ export default function ContractsListScreen() {
 
   const resetForm = () => {
     setTenantPhone(''); setTenantResult(null); setSelectedPropertyId('');
-    setMonthlyRent(''); setDepositAmount(''); setStartDate(''); setEndDate('');
+    setMonthlyRent(''); setDepositAmount(''); setStartDate(null); setEndDate(null);
     setPaymentDay('1'); setLandlordIban(''); setTerms(''); setSpecialClauses('');
   };
 
@@ -317,9 +328,98 @@ export default function ContractsListScreen() {
 
           {/* Dates */}
           <View style={styles.formRow}>
-            <View style={{ flex: 1 }}><Input label="Baslangic *" placeholder="YYYY-MM-DD" value={startDate} onChangeText={setStartDate} /></View>
-            <View style={{ flex: 1 }}><Input label="Bitis *" placeholder="YYYY-MM-DD" value={endDate} onChangeText={setEndDate} /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.pickLabel}>Baslangic *</Text>
+              <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowStartPicker(true)} activeOpacity={0.7}>
+                <Ionicons name="calendar-outline" size={18} color={startDate ? colors.brand.dark : colors.gray[400]} />
+                <Text style={[styles.datePickerText, !startDate && styles.datePickerPlaceholder]}>
+                  {startDate ? formatDateDisplay(startDate) : 'Tarih sec'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.pickLabel}>Bitis *</Text>
+              <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowEndPicker(true)} activeOpacity={0.7}>
+                <Ionicons name="calendar-outline" size={18} color={endDate ? colors.brand.dark : colors.gray[400]} />
+                <Text style={[styles.datePickerText, !endDate && styles.datePickerPlaceholder]}>
+                  {endDate ? formatDateDisplay(endDate) : 'Tarih sec'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
+
+          {/* Date Pickers */}
+          {Platform.OS === 'ios' ? (
+            <>
+              <Modal visible={showStartPicker} transparent animationType="slide">
+                <View style={styles.dateModalOverlay}>
+                  <View style={styles.dateModalContent}>
+                    <View style={styles.dateModalHeader}>
+                      <TouchableOpacity onPress={() => setShowStartPicker(false)}>
+                        <Text style={styles.dateModalCancel}>Iptal</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.dateModalTitle}>Baslangic Tarihi</Text>
+                      <TouchableOpacity onPress={() => setShowStartPicker(false)}>
+                        <Text style={styles.dateModalDone}>Tamam</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={startDate || new Date()}
+                      mode="date"
+                      display="spinner"
+                      minimumDate={new Date()}
+                      onChange={(_, selected) => { if (selected) setStartDate(selected); }}
+                      locale="tr"
+                    />
+                  </View>
+                </View>
+              </Modal>
+              <Modal visible={showEndPicker} transparent animationType="slide">
+                <View style={styles.dateModalOverlay}>
+                  <View style={styles.dateModalContent}>
+                    <View style={styles.dateModalHeader}>
+                      <TouchableOpacity onPress={() => setShowEndPicker(false)}>
+                        <Text style={styles.dateModalCancel}>Iptal</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.dateModalTitle}>Bitis Tarihi</Text>
+                      <TouchableOpacity onPress={() => setShowEndPicker(false)}>
+                        <Text style={styles.dateModalDone}>Tamam</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={endDate || (startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000))}
+                      mode="date"
+                      display="spinner"
+                      minimumDate={startDate || new Date()}
+                      onChange={(_, selected) => { if (selected) setEndDate(selected); }}
+                      locale="tr"
+                    />
+                  </View>
+                </View>
+              </Modal>
+            </>
+          ) : (
+            <>
+              {showStartPicker && (
+                <DateTimePicker
+                  value={startDate || new Date()}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  onChange={(_, selected) => { setShowStartPicker(false); if (selected) setStartDate(selected); }}
+                />
+              )}
+              {showEndPicker && (
+                <DateTimePicker
+                  value={endDate || (startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000))}
+                  mode="date"
+                  display="default"
+                  minimumDate={startDate || new Date()}
+                  onChange={(_, selected) => { setShowEndPicker(false); if (selected) setEndDate(selected); }}
+                />
+              )}
+            </>
+          )}
 
           <View style={styles.formRow}>
             <View style={{ flex: 1 }}><Input label="Kira (TL) *" value={monthlyRent} onChangeText={(t) => setMonthlyRent(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
@@ -585,4 +685,61 @@ const styles = StyleSheet.create({
   propPillActive: { backgroundColor: '#eff6ff', borderColor: '#2563eb' },
   propPillTitle: { fontSize: 14, fontWeight: '600', color: colors.gray[700] },
   propPillRent: { fontSize: 12, color: colors.gray[500] },
+
+  // Date Picker
+  datePickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    backgroundColor: colors.gray[50],
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderColor: colors.gray[200],
+    marginBottom: 16,
+    gap: 8,
+  },
+  datePickerText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.brand?.dark || '#0a1628',
+  },
+  datePickerPlaceholder: {
+    color: colors.gray[400],
+  },
+  dateModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  dateModalContent: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 34,
+  },
+  dateModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  dateModalCancel: {
+    fontSize: 16,
+    color: colors.gray[400],
+    fontWeight: '500',
+  },
+  dateModalTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.brand?.dark || '#0a1628',
+  },
+  dateModalDone: {
+    fontSize: 16,
+    color: '#2563eb',
+    fontWeight: '700',
+  },
 });

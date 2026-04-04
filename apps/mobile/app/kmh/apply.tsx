@@ -101,14 +101,15 @@ export default function KmhApplyScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <ScrollView
           style={styles.scrollArea}
           contentContainerStyle={styles.formContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         >
           {error ? <ErrorMessage message={error} onDismiss={() => setError('')} /> : null}
 
@@ -192,6 +193,9 @@ export default function KmhApplyScreen() {
             size="lg"
             style={{ marginBottom: 32 }}
           />
+
+          {/* Extra space for keyboard */}
+          <View style={{ height: 120 }} />
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
