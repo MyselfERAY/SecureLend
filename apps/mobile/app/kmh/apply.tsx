@@ -281,7 +281,7 @@ export default function KmhApplyScreen() {
               <Text style={styles.consentBodyText}>
 {`KMH BASVURUSU ACIK RIZA BEYANI
 
-6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, SecureLend Teknoloji A.S. ("Sirket") tarafindan hazirlanan Aydinlatma Metnini okudum ve anladim.
+6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kira Guvence Teknoloji A.S. ("Sirket") tarafindan hazirlanan Aydinlatma Metnini okudum ve anladim.
 
 KMH (Kira Mevduat Hesabi) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
 
@@ -343,7 +343,7 @@ Bu rizami her zaman geri alma hakkima sahip oldugumu biliyorum. Ancak rizamin ge
 
 Yukaridaki hususlari okudum, anladim ve kabul ediyorum.
 
-SecureLend Teknoloji A.S.
+Kira Guvence Teknoloji A.S.
 info@kiraguvence.com`}
               </Text>
             </View>

@@ -23,7 +23,7 @@ Son Guncelleme: 01.04.2026
 
 VERI SORUMLUSU
 
-SecureLend Teknoloji A.S. ("SecureLend" veya "Sirket")
+Kira Guvence Teknoloji A.S. ("Kira Guvence" veya "Sirket")
 Adres: Istanbul, Turkiye
 E-posta: info@kiraguvence.com
 
@@ -95,7 +95,7 @@ ONAY
 
 Yukaridaki bilgilendirmeyi okudum ve anlaldim. Finansal verilerimin belirtilen amaclar dogrultusunda islenmesine, yukaridaki taraflarla paylasilmasina ve belirtilen surelerle saklanmasina acik rizamla onay veriyorum.
 
-SecureLend Teknoloji A.S.`;
+Kira Guvence Teknoloji A.S.`;
 
 export default function KmhAcikRizaScreen() {
   const router = useRouter();

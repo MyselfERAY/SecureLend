@@ -235,7 +235,7 @@ export default function DashboardScreen() {
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <View style={styles.logoDot} />
-            <Text style={styles.logoText}>SecureLend</Text>
+            <Text style={styles.logoText}>Kira Guvence</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity

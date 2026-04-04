@@ -156,7 +156,7 @@ export default function DashboardLayout({
             </svg>
           </div>
           <Link href="/dashboard" className="text-lg font-extrabold tracking-tight text-white" onClick={() => setSidebarOpen(false)}>
-            SecureLend
+            Kira Guvence
           </Link>
         </div>
 

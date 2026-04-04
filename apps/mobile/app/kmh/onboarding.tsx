@@ -369,15 +369,15 @@ Tarih: [Basvuru tarihi]
 
 TARAFLAR
 
-Banka: SecureLend Anlasmali Banka A.S.
+Banka: Kira Guvence Anlasmali Banka A.S.
 Musteri: [Kullanici bilgileri]
-Platform: SecureLend Teknoloji A.S.
+Platform: Kira Guvence Teknoloji A.S.
 
 MADDE 1 - TANIMLAR
 
 1.1. KMH (Kira Mevduat Hesabi): Kiracinin kira guvencesi olarak kullanilmak uzere acilan ozel mevduat hesabidir.
 1.2. Kredi Limiti: Musterinin gelir durumu, kredi gecmisi ve diger kriterlere gore belirlenen azami kredi kullanim tutaridir.
-1.3. Platform: SecureLend Teknoloji A.S. tarafindan isletilen kiraguvence.com web sitesi ve SecureLend mobil uygulamasidir.
+1.3. Platform: Kira Guvence Teknoloji A.S. tarafindan isletilen kiraguvence.com web sitesi ve Kira Guvence mobil uygulamasidir.
 
 MADDE 2 - HESAP ACILISI VE KULLANIM KOSULLARI
 
@@ -425,19 +425,19 @@ MADDE 8 - GENEL HUKUMLER
 8.2. Uyusmazliklarda Istanbul Mahkemeleri ve Icra Daireleri yetkilidir.
 8.3. Bu sozlesme 3 (uc) nusaha olarak duzenlenmisstir.
 
-SecureLend Anlasmali Banka A.S.
-SecureLend Teknoloji A.S.`,
+Kira Guvence Anlasmali Banka A.S.
+Kira Guvence Teknoloji A.S.`,
     },
     kvkk: {
       title: 'KVKK Aydinlatma',
       subtitle: 'Kisisel verilerin korunmasi',
       body: `KISISEL VERILERIN ISLENMESINE ILISKIN AYDINLATMA METNI
 
-SecureLend Teknoloji A.S. ("Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri bilgilendirmek istiyoruz.
+Kira Guvence Teknoloji A.S. ("Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri bilgilendirmek istiyoruz.
 
 1. VERI SORUMLUSU
 
-SecureLend Teknoloji A.S.
+Kira Guvence Teknoloji A.S.
 Adres: Istanbul, Turkiye
 Web: https://kiraguvence.com
 E-posta: info@kiraguvence.com
@@ -495,7 +495,7 @@ i) Kanuna aykiri isleme nedeniyle zararin giderilmesini talep etme
 
 Haklarinizi kullanmak icin info@kiraguvence.com adresine basvurabilirsiniz.
 
-SecureLend Teknoloji A.S.`,
+Kira Guvence Teknoloji A.S.`,
     },
     genel: {
       title: 'Kullanim Kosullari',
@@ -504,13 +504,13 @@ SecureLend Teknoloji A.S.`,
 
 Son guncelleme: Nisan 2026
 
-SecureLend Teknoloji A.S. ("SecureLend") tarafindan isletilen kiraguvence.com web sitesi ve SecureLend mobil uygulamasini ("Platform") kullanarak asagidaki kosullari kabul etmis sayilirsiniz.
+Kira Guvence Teknoloji A.S. ("Kira Guvence") tarafindan isletilen kiraguvence.com web sitesi ve Kira Guvence mobil uygulamasini ("Platform") kullanarak asagidaki kosullari kabul etmis sayilirsiniz.
 
 MADDE 1 - HIZMET TANIMI
 
-1.1. SecureLend, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir platformdur.
+1.1. Kira Guvence, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir platformdur.
 1.2. Platform, Kira Mevduat Hesabi (KMH) basvurusu, kira sozlesmesi yonetimi ve odeme takibi hizmetleri sunar.
-1.3. SecureLend bir banka veya finansal kurulus degildir. Kredi kararlari ve hesap yonetimi tamamen anlasmali bankalar tarafindan yurutulur.
+1.3. Kira Guvence bir banka veya finansal kurulus degildir. Kredi kararlari ve hesap yonetimi tamamen anlasmali bankalar tarafindan yurutulur.
 
 MADDE 2 - UYGUNLUK KOSULLARI
 
@@ -547,18 +547,18 @@ MADDE 5 - KOMISYON VE UCRETLER
 
 MADDE 6 - SORUMLULUK SINIRI
 
-6.1. SecureLend, banka tarafindan verilen kredi kararlari, faiz oranlari ve hesap yonetimi konularinda sorumluluk kabul etmez.
-6.2. Platform kesintileri, teknik arizalar veya ucuncu taraf hizmet saglayici kaynakli sorunlardan dolayi dogrudan veya dolayli zararladan SecureLend sorumlu tutulamaz.
-6.3. SecureLend'in toplam sorumlulugu, kullanicinin son 12 ayda platform'a odedigi toplam komisyon tutari ile sinirlidir.
+6.1. Kira Guvence, banka tarafindan verilen kredi kararlari, faiz oranlari ve hesap yonetimi konularinda sorumluluk kabul etmez.
+6.2. Platform kesintileri, teknik arizalar veya ucuncu taraf hizmet saglayici kaynakli sorunlardan dolayi dogrudan veya dolayli zararladan Kira Guvence sorumlu tutulamaz.
+6.3. Kira Guvence'in toplam sorumlulugu, kullanicinin son 12 ayda platform'a odedigi toplam komisyon tutari ile sinirlidir.
 
 MADDE 7 - FIKRI MULKIYET
 
-7.1. Platform uzerindeki tum icerik, tasarim, logo, yazilim ve algoritmalar SecureLend'e aittir.
+7.1. Platform uzerindeki tum icerik, tasarim, logo, yazilim ve algoritmalar Kira Guvence'e aittir.
 7.2. Kullanicilar, platform icerigini kopyalayamaz, dagitamaz veya ticari amacla kullanamazlar.
 
 MADDE 8 - SOZLESME DEGISIKLIKLERI
 
-8.1. SecureLend, bu kosullari degistirme hakkini sakli tutar.
+8.1. Kira Guvence, bu kosullari degistirme hakkini sakli tutar.
 8.2. Onemli degisiklikler en az 30 gun oncesinden uygulama ici bildirim ile duyurulur.
 8.3. Degisikliklerin yururluge girmesinden sonra Platform'un kullanilmaya devam edilmesi, degisikliklerin kabul edilmesi anlamina gelir.
 
@@ -566,7 +566,7 @@ MADDE 9 - FESIH
 
 9.1. Kullanici, hesabini her zaman kapatarak bu sozlesmeyi feshedebilir.
 9.2. Aktif KMH kredi borcu bulunan hesaplar, borc tamamen odenmeden kapatilamaz.
-9.3. SecureLend, kosullarin ihlali halinde hesabi askiya alma veya kapatma hakkina sahiptir.
+9.3. Kira Guvence, kosullarin ihlali halinde hesabi askiya alma veya kapatma hakkina sahiptir.
 
 MADDE 10 - UYGULANACAK HUKUK VE UYUSMAZLIK
 
@@ -578,7 +578,7 @@ ILETISIM
 E-posta: info@kiraguvence.com
 Web: https://kiraguvence.com
 
-SecureLend Teknoloji A.S.`,
+Kira Guvence Teknoloji A.S.`,
     },
   };
 

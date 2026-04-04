@@ -35,7 +35,7 @@ export async function registerForPushNotifications(
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'Varsayilan',
-      description: 'SecureLend bildirimleri',
+      description: 'Kira Guvence bildirimleri',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#1e40af',

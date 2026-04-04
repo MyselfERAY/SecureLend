@@ -21,7 +21,7 @@ const GIZLILIK_POLITIKASI = `GIZLILIK POLITIKASI
 
 Son Guncelleme: 01.04.2026
 
-SecureLend Teknoloji A.S. ("SecureLend") olarak kullanicilarimizin gizliligine onem veriyoruz. Bu politika, platformumuz uzerinden toplanan kisisel verilerin nasil kullanildigini, paylasildigini ve korundugrunu aciklamaktadir.
+Kira Guvence Teknoloji A.S. ("Kira Guvence") olarak kullanicilarimizin gizliligine onem veriyoruz. Bu politika, platformumuz uzerinden toplanan kisisel verilerin nasil kullanildigini, paylasildigini ve korundugrunu aciklamaktadir.
 
 TOPLANAN BILGILER
 
@@ -120,7 +120,7 @@ Gizlilik ile ilgili sorulariniz icin:
 E-posta: info@kiraguvence.com
 Web: https://kiraguvence.com
 
-SecureLend Teknoloji A.S.`;
+Kira Guvence Teknoloji A.S.`;
 
 export default function GizlilikPolitikasiScreen() {
   const router = useRouter();

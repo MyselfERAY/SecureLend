@@ -115,7 +115,7 @@ export default function DashboardPage() {
           {user?.roles.length ? user.roles.map(r =>
             r === 'TENANT' ? 'Kiraci' : r === 'LANDLORD' ? 'Ev Sahibi' : r === 'ADMIN' ? 'Yonetici' : r
           ).join(' / ') : 'Henuz rol atanmadi'}
-          {' '}&middot; SecureLend Kontrol Paneli
+          {' '}&middot; Kira Guvence Kontrol Paneli
         </p>
       </div>
 

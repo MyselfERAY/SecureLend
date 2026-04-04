@@ -68,13 +68,13 @@ export default function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
-                SecureLend Platform
+                Kira Guvence Platform
               </span>
               <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-                SecureLend - Dijital Kira Odeme Platformu
+                Kira Guvence - Dijital Kira Odeme Platformu
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                SecureLend; kiraci, ev sahibi ve banka arasindaki sureci tek merkezde yonetir. Sozlesme,
+                Kira Guvence; kiraci, ev sahibi ve banka arasindaki sureci tek merkezde yonetir. Sozlesme,
                 odeme ve uygunluk adimlari fintech seviyesinde kontrol edilebilir hale gelir.
               </p>
 
@@ -94,7 +94,7 @@ export default function HomePage() {
               </div>
               
               <p className="mt-4 text-sm text-slate-600">
-                SecureLend ile kiranizi guvenle odeyin.
+                Kira Guvence ile kiranizi guvenle odeyin.
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export default function HomePage() {
           <div className="text-center">
             <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Müşteri Yorumları</h2>
             <p className="mt-4 text-lg text-slate-600">
-              SecureLend kullanıcılarımızın deneyimlerini keşfedin
+              Kira Guvence kullanıcılarımızın deneyimlerini keşfedin
             </p>
           </div>
           

@@ -4,9 +4,9 @@ import KpsVerification from '@/components/kps-verification';
 export const metadata: Metadata = {
   title: 'KPS Kimlik Dogrulama',
   description:
-    'KPS (Kimlik Paylasim Sistemi) uzerinden TCKN bazli kimlik dogrulama. SecureLend platformunda guvenli kimlik dogrulama islemi yapin.',
+    'KPS (Kimlik Paylasim Sistemi) uzerinden TCKN bazli kimlik dogrulama. Kira Guvence platformunda guvenli kimlik dogrulama islemi yapin.',
   openGraph: {
-    title: 'KPS Kimlik Dogrulama | SecureLend',
+    title: 'KPS Kimlik Dogrulama | Kira Guvence',
     description: 'TCKN bazli kimlik dogrulama sistemi ile kimliginizi guvenle dogrulayin.',
   },
 };

@@ -118,7 +118,7 @@ export default function LoginScreen() {
               <View style={styles.shieldIcon}>
                 <Ionicons name="shield-checkmark" size={44} color={colors.white} />
               </View>
-              <Text style={styles.brandName}>SecureLend</Text>
+              <Text style={styles.brandName}>Kira Guvence</Text>
               <Text style={styles.brandTagline}>Guvenli Kira Yonetimi</Text>
             </View>
           </View>

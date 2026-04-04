@@ -133,7 +133,7 @@ export default function RegisterScreen() {
               <View style={styles.iconWrapper}>
                 <Ionicons name="person-add" size={44} color={colors.white} />
               </View>
-              <Text style={styles.brandName}>SecureLend</Text>
+              <Text style={styles.brandName}>Kira Guvence</Text>
               <Text style={styles.brandTagline}>Yeni hesap olusturun</Text>
             </View>
           </View>

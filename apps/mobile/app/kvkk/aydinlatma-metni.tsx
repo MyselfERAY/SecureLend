@@ -23,7 +23,7 @@ Son Guncelleme: 01.04.2026
 
 VERI SORUMLUSU
 
-SecureLend Teknoloji A.S. ("SecureLend" veya "Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri aydinlatmak istiyoruz.
+Kira Guvence Teknoloji A.S. ("Kira Guvence" veya "Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri aydinlatmak istiyoruz.
 
 Adres: Istanbul, Turkiye
 E-posta: info@kiraguvence.com
@@ -104,7 +104,7 @@ i) Kisisel verilerin kanuna aykiri olarak islenmesi sebebiyle zarara ugramaniz h
 
 Haklarinizi kullanmak icin info@kiraguvence.com adresine yazili olarak basvurabilirsiniz.
 
-SecureLend Teknoloji A.S.`;
+Kira Guvence Teknoloji A.S.`;
 
 export default function AydinlatmaMetniScreen() {
   const router = useRouter();
