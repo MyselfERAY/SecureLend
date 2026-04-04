@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Platform,
-  Modal as RNModal, FlatList, TextInput, Pressable,
+  FlatList, TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/lib/auth-context';
@@ -29,17 +29,16 @@ const initialForm = {
   monthlyRent: '', depositAmount: '',
 };
 
-/* ── Searchable Picker Component ── */
-interface PickerModalProps {
-  visible: boolean;
-  onClose: () => void;
+/* ── Inline Picker View (renders inside BottomSheet, not a separate Modal) ── */
+interface InlinePickerProps {
   title: string;
   data: string[];
   onSelect: (value: string) => void;
+  onBack: () => void;
   selected?: string;
 }
 
-function PickerModal({ visible, onClose, title, data, onSelect, selected }: PickerModalProps) {
+function InlinePicker({ title, data, onSelect, onBack, selected }: InlinePickerProps) {
   const [search, setSearch] = useState('');
   const filtered = useMemo(() => {
     if (!search) return data;
@@ -48,66 +47,62 @@ function PickerModal({ visible, onClose, title, data, onSelect, selected }: Pick
   }, [data, search]);
 
   return (
-    <RNModal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={pickerStyles.overlay} onPress={onClose}>
-        <Pressable style={pickerStyles.container} onPress={() => {}}>
-          <View style={pickerStyles.handleBar} />
-          <Text style={pickerStyles.title}>{title}</Text>
-          <View style={pickerStyles.searchBox}>
-            <Ionicons name="search" size={18} color={colors.gray[400]} />
-            <TextInput
-              style={pickerStyles.searchInput}
-              placeholder="Ara..."
-              value={search}
-              onChangeText={setSearch}
-              autoCorrect={false}
-            />
-            {search ? (
-              <TouchableOpacity onPress={() => setSearch('')}>
-                <Ionicons name="close-circle" size={18} color={colors.gray[400]} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item}
-            style={{ maxHeight: 350 }}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[pickerStyles.item, item === selected && pickerStyles.itemSelected]}
-                onPress={() => { onSelect(item); setSearch(''); onClose(); }}
-              >
-                <Text style={[pickerStyles.itemText, item === selected && pickerStyles.itemTextSelected]}>
-                  {item}
-                </Text>
-                {item === selected && <Ionicons name="checkmark" size={20} color="#2563eb" />}
-              </TouchableOpacity>
-            )}
-            ListEmptyComponent={
-              <Text style={pickerStyles.empty}>Sonuc bulunamadi</Text>
-            }
-          />
-        </Pressable>
-      </Pressable>
-    </RNModal>
+    <View style={{ flex: 1 }}>
+      <View style={pickerStyles.headerRow}>
+        <TouchableOpacity onPress={onBack} style={pickerStyles.backBtn}>
+          <Ionicons name="arrow-back" size={22} color={colors.gray[700]} />
+        </TouchableOpacity>
+        <Text style={pickerStyles.title}>{title}</Text>
+      </View>
+      <View style={pickerStyles.searchBox}>
+        <Ionicons name="search" size={18} color={colors.gray[400]} />
+        <TextInput
+          style={pickerStyles.searchInput}
+          placeholder="Ara..."
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+        />
+        {search ? (
+          <TouchableOpacity onPress={() => setSearch('')}>
+            <Ionicons name="close-circle" size={18} color={colors.gray[400]} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      <FlatList
+        data={filtered}
+        keyExtractor={(item) => item}
+        style={{ maxHeight: 380 }}
+        keyboardShouldPersistTaps="handled"
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[pickerStyles.item, item === selected && pickerStyles.itemSelected]}
+            onPress={() => { onSelect(item); }}
+          >
+            <Text style={[pickerStyles.itemText, item === selected && pickerStyles.itemTextSelected]}>
+              {item}
+            </Text>
+            {item === selected && <Ionicons name="checkmark" size={20} color="#2563eb" />}
+          </TouchableOpacity>
+        )}
+        ListEmptyComponent={
+          <Text style={pickerStyles.empty}>Sonuc bulunamadi</Text>
+        }
+      />
+    </View>
   );
 }
 
 const pickerStyles = StyleSheet.create({
-  overlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end',
+  headerRow: {
+    flexDirection: 'row', alignItems: 'center', marginBottom: 12,
   },
-  container: {
-    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingHorizontal: 20, paddingBottom: Platform.OS === 'ios' ? 34 : 20, maxHeight: '70%',
-  },
-  handleBar: {
-    width: 40, height: 4, borderRadius: 2, backgroundColor: colors.gray[300],
-    alignSelf: 'center', marginTop: 12, marginBottom: 12,
+  backBtn: {
+    width: 36, height: 36, borderRadius: 18, backgroundColor: colors.gray[100],
+    alignItems: 'center', justifyContent: 'center', marginRight: 10,
   },
   title: {
-    fontSize: 18, fontWeight: '700', color: colors.gray[900], marginBottom: 12,
+    fontSize: 18, fontWeight: '700', color: colors.gray[900],
   },
   searchBox: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: colors.gray[50],
@@ -138,8 +133,8 @@ export default function PropertiesScreen() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
-  const [showCityPicker, setShowCityPicker] = useState(false);
-  const [showDistrictPicker, setShowDistrictPicker] = useState(false);
+  // 'form' | 'city' | 'district' — controls what BottomSheet shows
+  const [pickerView, setPickerView] = useState<'form' | 'city' | 'district'>('form');
 
   // Get districts for selected city
   const availableDistricts = useMemo(() => {
@@ -344,9 +339,26 @@ export default function PropertiesScreen() {
       {/* Add/Edit Form - Bottom Sheet */}
       <BottomSheet
         visible={showForm}
-        onClose={() => { setShowForm(false); setEditingId(null); setForm(initialForm); }}
-        title={editingId ? 'Mulku Duzenle' : 'Yeni Mulk'}
+        onClose={() => { setShowForm(false); setEditingId(null); setForm(initialForm); setPickerView('form'); }}
+        title={pickerView === 'form' ? (editingId ? 'Mulku Duzenle' : 'Yeni Mulk') : undefined}
       >
+        {pickerView === 'city' ? (
+          <InlinePicker
+            title="Il Secin"
+            data={PROVINCES}
+            selected={form.city}
+            onSelect={(city) => { setForm((prev) => ({ ...prev, city, district: '' })); setPickerView('form'); }}
+            onBack={() => setPickerView('form')}
+          />
+        ) : pickerView === 'district' ? (
+          <InlinePicker
+            title="Ilce Secin"
+            data={availableDistricts}
+            selected={form.district}
+            onSelect={(district) => { setForm((prev) => ({ ...prev, district })); setPickerView('form'); }}
+            onBack={() => setPickerView('form')}
+          />
+        ) : (
         <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 480 }}>
           {formError ? <ErrorMessage message={formError} /> : null}
 
@@ -356,7 +368,7 @@ export default function PropertiesScreen() {
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.pickLabel}>Il *</Text>
-              <TouchableOpacity style={styles.pickerBtn} onPress={() => setShowCityPicker(true)}>
+              <TouchableOpacity style={styles.pickerBtn} onPress={() => setPickerView('city')}>
                 <Text style={[styles.pickerBtnText, !form.city && { color: colors.gray[400] }]}>
                   {form.city || 'Il secin'}
                 </Text>
@@ -367,7 +379,7 @@ export default function PropertiesScreen() {
               <Text style={styles.pickLabel}>Ilce *</Text>
               <TouchableOpacity
                 style={[styles.pickerBtn, !form.city && { opacity: 0.5 }]}
-                onPress={() => form.city && setShowDistrictPicker(true)}
+                onPress={() => form.city && setPickerView('district')}
                 disabled={!form.city}
               >
                 <Text style={[styles.pickerBtnText, !form.district && { color: colors.gray[400] }]}>
@@ -425,6 +437,7 @@ export default function PropertiesScreen() {
 
           <Button title={editingId ? 'Guncelle' : 'Kaydet'} onPress={handleSubmit} loading={submitting} style={{ marginBottom: 16 }} />
         </ScrollView>
+        )}
       </BottomSheet>
 
       <ConfirmModal
@@ -437,25 +450,6 @@ export default function PropertiesScreen() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      {/* City Picker */}
-      <PickerModal
-        visible={showCityPicker}
-        onClose={() => setShowCityPicker(false)}
-        title="Il Secin"
-        data={PROVINCES}
-        selected={form.city}
-        onSelect={(city) => setForm((prev) => ({ ...prev, city, district: '' }))}
-      />
-
-      {/* District Picker */}
-      <PickerModal
-        visible={showDistrictPicker}
-        onClose={() => setShowDistrictPicker(false)}
-        title="Ilce Secin"
-        data={availableDistricts}
-        selected={form.district}
-        onSelect={(district) => setForm((prev) => ({ ...prev, district }))}
-      />
     </>
   );
 }
