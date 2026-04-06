@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [tckn, setTckn] = useState('');
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +21,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(tckn, phone, fullName);
+      await register(tckn, phone, fullName, dateOfBirth);
       sessionStorage.setItem('otp_phone', phone);
       router.push('/auth/verify-otp');
     } catch (err: any) {
@@ -101,9 +102,21 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">Dogum Tarihi</label>
+              <input
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+                required
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={loading || tckn.length !== 11 || phone.length !== 10 || fullName.length < 3}
+              disabled={loading || tckn.length !== 11 || phone.length !== 10 || fullName.length < 3 || !dateOfBirth}
               className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Kayit yapiliyor...' : 'Kaydi Tamamla'}
