@@ -537,6 +537,42 @@ model Notification {
   @@map("notifications")
 }
 
+// ─── Articles / Rehber ─────────────────────────────────────────
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+
+  @@map("article_status")
+}
+
+enum ArticleAudience {
+  TENANT
+  LANDLORD
+  BOTH
+
+  @@map("article_audience")
+}
+
+model Article {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String          @db.VarChar(300)
+  slug        String          @unique @db.VarChar(300)
+  summary     String          @db.VarChar(500)
+  content     String
+  category    String          @db.VarChar(100)
+  audience    ArticleAudience @default(BOTH)
+  status      ArticleStatus   @default(DRAFT)
+  publishedAt DateTime?       @map("published_at") @db.Timestamptz()
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@index([status, publishedAt], map: "idx_article_status_published")
+  @@index([slug], map: "idx_article_slug")
+  @@index([audience], map: "idx_article_audience")
+  @@map("articles")
+}
+
 // ─── Chat System ───────────────────────────────────────────────
 
 enum ChatRoomType {

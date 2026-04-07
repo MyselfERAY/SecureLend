@@ -20,6 +20,7 @@ import { ConsentModule } from './modules/consent/consent.module';
 import { InAppNotificationModule } from './modules/in-app-notification/in-app-notification.module';
 import { PushNotificationModule } from './modules/push-notification/push-notification.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ArticleModule } from './modules/article/article.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -71,6 +72,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     InAppNotificationModule,
     PushNotificationModule,
     ChatModule,
+    ArticleModule,
     HealthModule,
   ],
   providers: [

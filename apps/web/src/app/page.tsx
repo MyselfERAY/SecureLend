@@ -44,10 +44,21 @@ const testimonials = [
   }
 ];
 
+interface LatestArticle {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  category: string;
+  audience: 'TENANT' | 'LANDLORD' | 'BOTH';
+  publishedAt: string;
+}
+
 export default function HomePage() {
   const { tokens, isLoading } = useAuth();
   const router = useRouter();
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [latestArticles, setLatestArticles] = useState<LatestArticle[]>([]);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`)
@@ -60,6 +71,13 @@ export default function HomePage() {
       router.replace('/dashboard');
     }
   }, [isLoading, tokens, router]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/articles/latest?limit=3`)
+      .then((r) => r.json())
+      .then((d) => { if (d.status === 'success') setLatestArticles(d.data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
@@ -135,6 +153,35 @@ export default function HomePage() {
             <FeatureCard key={feature.title} {...feature} />
           ))}
         </section>
+
+        {latestArticles.length > 0 && (
+          <section className="mt-12">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Rehber</p>
+                <h2 className="mt-1 text-2xl font-extrabold text-slate-900">Son Yazılar</h2>
+              </div>
+              <Link href="/rehber" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
+                Tümünü gör →
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {latestArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  href={`/rehber/${article.slug}`}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-blue-200"
+                >
+                  <p className="text-xs font-medium text-slate-400">{article.category}</p>
+                  <h3 className="mt-2 text-sm font-bold text-slate-900 leading-snug group-hover:text-blue-700 transition line-clamp-2">
+                    {article.title}
+                  </h3>
+                  <p className="mt-2 text-xs text-slate-500 line-clamp-2">{article.summary}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mt-12">
           <div className="text-center">
