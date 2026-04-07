@@ -39,6 +39,12 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl">
+        <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Ana Sayfa
+        </Link>
+      </div>
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
         <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white sm:p-10">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Secure Access</p>
