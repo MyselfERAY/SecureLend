@@ -55,6 +55,12 @@ export class ArticleService {
     });
   }
 
+  async findAll() {
+    return this.prisma.article.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async create(dto: CreateArticleDto) {
     const existing = await this.prisma.article.findUnique({ where: { slug: dto.slug } });
     if (existing) {

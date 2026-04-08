@@ -30,6 +30,13 @@ export class ArticleController {
     return { status: 'success', data: articles };
   }
 
+  @Roles(UserRole.ADMIN)
+  @Get('admin/all')
+  async findAllAdmin() {
+    const articles = await this.articleService.findAll();
+    return { status: 'success', data: articles };
+  }
+
   @Public()
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
