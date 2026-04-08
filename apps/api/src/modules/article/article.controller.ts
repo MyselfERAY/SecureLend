@@ -23,18 +23,18 @@ export class ArticleController {
     return { status: 'success', data: articles };
   }
 
-  @Public()
-  @Get(':slug')
-  async findOne(@Param('slug') slug: string) {
-    const article = await this.articleService.findBySlug(slug);
-    return { status: 'success', data: article };
-  }
-
   @Roles(UserRole.ADMIN)
   @Get('admin/drafts')
   async findDrafts() {
     const articles = await this.articleService.findAllDrafts();
     return { status: 'success', data: articles };
+  }
+
+  @Public()
+  @Get(':slug')
+  async findOne(@Param('slug') slug: string) {
+    const article = await this.articleService.findBySlug(slug);
+    return { status: 'success', data: article };
   }
 
   @Roles(UserRole.ADMIN)
