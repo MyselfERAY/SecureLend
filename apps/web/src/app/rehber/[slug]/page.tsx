@@ -15,7 +15,7 @@ interface Article {
 async function getArticle(slug: string): Promise<Article | null> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/articles/${slug}`, {
-      next: { revalidate: 300 },
+      next: { revalidate: 60 },
     });
     const json = await res.json();
     return json.status === 'success' ? json.data : null;
