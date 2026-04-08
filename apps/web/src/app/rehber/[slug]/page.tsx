@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Logo from '../../../components/logo';
 
 interface Article {
   id: string;
@@ -57,10 +58,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         {/* Back */}
-        <Link href="/rehber" className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
-          Rehber
-        </Link>
+        <div className="mb-8 flex items-center justify-between">
+          <Logo />
+          <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            Tüm Yazılar
+          </Link>
+        </div>
 
         {/* Header */}
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
