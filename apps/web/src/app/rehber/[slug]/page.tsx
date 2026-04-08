@@ -36,8 +36,9 @@ const audienceColor: Record<string, string> = {
   BOTH: 'bg-slate-100 text-slate-600',
 };
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const article = await getArticle(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const article = await getArticle(slug);
   if (!article) return { title: 'Makale Bulunamadı' };
   return {
     title: `${article.title} | Kira Güvence Rehber`,
@@ -45,8 +46,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
-  const article = await getArticle(params.slug);
+export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const article = await getArticle(slug);
   if (!article) notFound();
 
   const paragraphs = article.content.split('\n\n').filter(Boolean);
