@@ -15,6 +15,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getClass(),
     ]);
     if (isPublic) return true;
+
+    const serviceKey = process.env.SERVICE_API_KEY;
+    if (serviceKey) {
+      const request = context.switchToHttp().getRequest();
+      const provided = request.headers['x-api-key'];
+      if (provided && provided === serviceKey) {
+        request.user = { id: 'service', roles: ['ADMIN'] };
+        return true;
+      }
+    }
+
     return super.canActivate(context);
   }
 }

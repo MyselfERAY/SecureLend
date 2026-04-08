@@ -37,7 +37,7 @@ async function bootstrap() {
     origin: corsOrigins,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
   });
   logger.log(`CORS origins: ${corsOrigins.map(o => o.toString()).join(', ')}`);
 
