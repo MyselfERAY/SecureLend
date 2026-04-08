@@ -19,9 +19,10 @@ interface CommissionRecord {
 
 interface MonthlyData {
   month: string;
-  total: number;
-  commission: number;
-  count: number;
+  totalAmount: number;
+  totalCommission: number;
+  totalPayments: number;
+  landlordAmount: number;
 }
 
 interface CommissionTotals {
@@ -96,9 +97,9 @@ export default function AdminCommissionsPage() {
                 {report.monthly.map((m) => (
                   <tr key={m.month} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-900">{m.month}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{m.count}</td>
-                    <td className="px-4 py-3 text-right text-gray-900">{m.total.toLocaleString('tr-TR')} TL</td>
-                    <td className="px-4 py-3 text-right font-medium text-yellow-700">{m.commission.toLocaleString('tr-TR')} TL</td>
+                    <td className="px-4 py-3 text-right text-gray-600">{m.totalPayments}</td>
+                    <td className="px-4 py-3 text-right text-gray-900">{m.totalAmount.toLocaleString('tr-TR')} TL</td>
+                    <td className="px-4 py-3 text-right font-medium text-yellow-700">{m.totalCommission.toLocaleString('tr-TR')} TL</td>
                   </tr>
                 ))}
               </tbody>
