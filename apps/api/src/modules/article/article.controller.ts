@@ -5,7 +5,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
-@Controller('articles')
+@Controller('api/v1/articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
