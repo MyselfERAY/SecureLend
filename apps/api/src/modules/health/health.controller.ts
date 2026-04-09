@@ -30,13 +30,13 @@ export class HealthController {
   @Roles(UserRole.ADMIN)
   async runMigration() {
     const statements = [
-      `CREATE TYPE IF NOT EXISTS "agent_type" AS ENUM ('PO', 'MARKETING', 'DEV')`,
-      `CREATE TYPE IF NOT EXISTS "agent_run_status" AS ENUM ('RUNNING', 'COMPLETED', 'FAILED')`,
-      `CREATE TYPE IF NOT EXISTS "po_item_category" AS ENUM ('UX_IMPROVEMENT', 'COMPETITOR_ANALYSIS', 'REGULATION_COMPLIANCE', 'FEATURE_SUGGESTION', 'BUG_REPORT', 'METRIC_SUMMARY')`,
-      `CREATE TYPE IF NOT EXISTS "po_item_status" AS ENUM ('ACTIVE', 'MOVED_TO_DEV', 'DISMISSED')`,
-      `CREATE TYPE IF NOT EXISTS "marketing_report_type" AS ENUM ('DAILY_STRATEGY', 'MARKET_ANALYSIS', 'RESEARCH', 'BUSINESS_DEVELOPMENT')`,
-      `CREATE TYPE IF NOT EXISTS "marketing_task_status" AS ENUM ('TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')`,
-      `CREATE TYPE IF NOT EXISTS "research_request_status" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED')`,
+      `DO $$ BEGIN CREATE TYPE "agent_type" AS ENUM ('PO', 'MARKETING', 'DEV'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+      `DO $$ BEGIN CREATE TYPE "agent_run_status" AS ENUM ('RUNNING', 'COMPLETED', 'FAILED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+      `DO $$ BEGIN CREATE TYPE "po_item_category" AS ENUM ('UX_IMPROVEMENT', 'COMPETITOR_ANALYSIS', 'REGULATION_COMPLIANCE', 'FEATURE_SUGGESTION', 'BUG_REPORT', 'METRIC_SUMMARY'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+      `DO $$ BEGIN CREATE TYPE "po_item_status" AS ENUM ('ACTIVE', 'MOVED_TO_DEV', 'DISMISSED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+      `DO $$ BEGIN CREATE TYPE "marketing_report_type" AS ENUM ('DAILY_STRATEGY', 'MARKET_ANALYSIS', 'RESEARCH', 'BUSINESS_DEVELOPMENT'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+      `DO $$ BEGIN CREATE TYPE "marketing_task_status" AS ENUM ('TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+      `DO $$ BEGIN CREATE TYPE "research_request_status" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
     ];
 
     const tables = [
