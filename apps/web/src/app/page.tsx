@@ -473,6 +473,9 @@ export default function HomePage() {
             <p className="text-xs text-slate-500">
               © {new Date().getFullYear()} Kira Güvence. Tüm hakları saklıdır.
             </p>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-950 px-3 py-1 text-xs font-medium text-blue-300 ring-1 ring-inset ring-blue-800">
+              Powered by SecureLend Tech
+            </span>
             <p className="text-xs text-slate-500">
               Bu platform 6698 sayılı KVKK kapsamında kişisel verileri korumaktadır.
             </p>
