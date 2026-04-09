@@ -603,10 +603,190 @@ model DevSuggestion {
   prLink      String?            @map("pr_link") @db.VarChar(500)
   createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  poItems     PoItem[]
 
   @@index([status], map: "idx_dev_suggestion_status")
   @@index([priority], map: "idx_dev_suggestion_priority")
   @@map("dev_suggestions")
+}
+
+// ─── Agent Runs ───────────────────────────────────────────────
+
+enum AgentType {
+  PO
+  MARKETING
+  DEV
+
+  @@map("agent_type")
+}
+
+enum AgentRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+
+  @@map("agent_run_status")
+}
+
+model AgentRun {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentType       AgentType      @map("agent_type")
+  status          AgentRunStatus @default(RUNNING)
+  startedAt       DateTime       @default(now()) @map("started_at") @db.Timestamptz()
+  completedAt     DateTime?      @map("completed_at") @db.Timestamptz()
+  tokenUsage      Int?           @map("token_usage")
+  errorMessage    String?        @map("error_message")
+  summary         String?
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  poReports       PoReport[]
+  marketingReports MarketingReport[]
+
+  @@index([agentType], map: "idx_agent_run_type")
+  @@index([status], map: "idx_agent_run_status")
+  @@index([startedAt], map: "idx_agent_run_started")
+  @@map("agent_runs")
+}
+
+// ─── PO Agent ─────────────────────────────────────────────────
+
+enum PoItemCategory {
+  UX_IMPROVEMENT
+  COMPETITOR_ANALYSIS
+  REGULATION_COMPLIANCE
+  FEATURE_SUGGESTION
+  BUG_REPORT
+  METRIC_SUMMARY
+
+  @@map("po_item_category")
+}
+
+enum PoItemStatus {
+  ACTIVE
+  MOVED_TO_DEV
+  DISMISSED
+
+  @@map("po_item_status")
+}
+
+model PoReport {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reportDate      DateTime  @unique @map("report_date") @db.Date
+  summary         String
+  metricsSnapshot Json?     @map("metrics_snapshot")
+  agentRunId      String?   @map("agent_run_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  agentRun        AgentRun? @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
+  items           PoItem[]
+
+  @@index([agentRunId], map: "idx_po_report_agent_run")
+  @@map("po_reports")
+}
+
+model PoItem {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  poReportId      String?           @map("po_report_id") @db.Uuid
+  category        PoItemCategory
+  title           String            @db.VarChar(300)
+  description     String
+  priority        SuggestionPriority @default(MEDIUM)
+  status          PoItemStatus      @default(ACTIVE)
+  isDevTask       Boolean           @default(false) @map("is_dev_task")
+  devSuggestionId String?           @map("dev_suggestion_id") @db.Uuid
+  createdByAdmin  Boolean           @default(false) @map("created_by_admin")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  poReport        PoReport?         @relation(fields: [poReportId], references: [id], onDelete: SetNull)
+  devSuggestion   DevSuggestion?    @relation(fields: [devSuggestionId], references: [id], onDelete: SetNull)
+
+  @@index([poReportId], map: "idx_po_item_report")
+  @@index([category], map: "idx_po_item_category")
+  @@index([status], map: "idx_po_item_status")
+  @@index([devSuggestionId], map: "idx_po_item_dev_suggestion")
+  @@map("po_items")
+}
+
+// ─── Marketing Agent ──────────────────────────────────────────
+
+enum MarketingReportType {
+  DAILY_STRATEGY
+  MARKET_ANALYSIS
+  RESEARCH
+  BUSINESS_DEVELOPMENT
+
+  @@map("marketing_report_type")
+}
+
+enum MarketingTaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@map("marketing_task_status")
+}
+
+enum ResearchRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+
+  @@map("research_request_status")
+}
+
+model MarketingReport {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type        MarketingReportType
+  title       String              @db.VarChar(300)
+  content     String
+  reportDate  DateTime            @map("report_date") @db.Date
+  agentRunId  String?             @map("agent_run_id") @db.Uuid
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  agentRun    AgentRun?           @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
+  tasks       MarketingTask[]
+  researchRequests ResearchRequest[]
+
+  @@index([type], map: "idx_marketing_report_type")
+  @@index([reportDate], map: "idx_marketing_report_date")
+  @@index([agentRunId], map: "idx_marketing_report_agent_run")
+  @@map("marketing_reports")
+}
+
+model MarketingTask {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marketingReportId String?             @map("marketing_report_id") @db.Uuid
+  source            String              @default("MARKETING") @db.VarChar(50)
+  title             String              @db.VarChar(300)
+  description       String
+  responsible       String?             @db.VarChar(200)
+  targetDate        DateTime?           @map("target_date") @db.Date
+  status            MarketingTaskStatus @default(TODO)
+  completedAt       DateTime?           @map("completed_at") @db.Timestamptz()
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+  marketingReport   MarketingReport?    @relation(fields: [marketingReportId], references: [id], onDelete: SetNull)
+
+  @@index([marketingReportId], map: "idx_marketing_task_report")
+  @@index([status], map: "idx_marketing_task_status")
+  @@index([targetDate], map: "idx_marketing_task_target_date")
+  @@index([responsible], map: "idx_marketing_task_responsible")
+  @@map("marketing_tasks")
+}
+
+model ResearchRequest {
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  topic           String                @db.VarChar(500)
+  details         String?
+  status          ResearchRequestStatus @default(PENDING)
+  resultReportId  String?               @map("result_report_id") @db.Uuid
+  requestedAt     DateTime              @default(now()) @map("requested_at") @db.Timestamptz()
+  completedAt     DateTime?             @map("completed_at") @db.Timestamptz()
+  resultReport    MarketingReport?      @relation(fields: [resultReportId], references: [id], onDelete: SetNull)
+
+  @@index([status], map: "idx_research_request_status")
+  @@map("research_requests")
 }
 
 // ─── Chat System ───────────────────────────────────────────────
