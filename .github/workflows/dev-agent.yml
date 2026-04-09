@@ -5,27 +5,45 @@ on:
     - cron: '*/30 * * * *'   # Every 30 minutes
   workflow_dispatch:          # Manual trigger from GitHub UI
 
+env:
+  API_BASE: https://securelend-production.up.railway.app
+  WEB_URL: https://kiraguvence.com
+  MAX_RETRIES: "3"
+  MAX_FILES: "10"
+  MAX_LINES: "500"
+  DEPLOY_WAIT: "150"
+
 jobs:
   dev-agent:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # ── Step 1: Check for PENDING suggestions ──
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@8.15.4 --activate
+
+      # ══════════════════════════════════════════
+      # STEP 1: Check for PENDING suggestions
+      # ══════════════════════════════════════════
       - name: Check for PENDING suggestions
         id: check
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
-          RESPONSE=$(curl -s -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+          RESPONSE=$(curl -s -H "x-api-key: $SERVICE_API_KEY" \
             -H 'Accept: application/json' \
-            'https://securelend-production.up.railway.app/api/v1/suggestions?status=PENDING')
+            "$API_BASE/api/v1/suggestions?status=PENDING")
 
           echo "$RESPONSE" | jq .
 
@@ -35,98 +53,367 @@ jobs:
           if [ "$COUNT" = "0" ] || [ "$COUNT" = "null" ]; then
             echo "has_pending=false" >> $GITHUB_OUTPUT
             echo "::notice::No pending suggestions found."
-          else
-            echo "has_pending=true" >> $GITHUB_OUTPUT
-
-            # Pick highest priority (CRITICAL=0, HIGH=1, MEDIUM=2, LOW=3), then oldest
-            SUGGESTION=$(echo "$RESPONSE" | jq -r '
-              .data | sort_by(
-                (if .priority == "CRITICAL" then 0
-                 elif .priority == "HIGH" then 1
-                 elif .priority == "MEDIUM" then 2
-                 else 3 end),
-                .createdAt
-              ) | .[0]')
-
-            SID=$(echo "$SUGGESTION" | jq -r '.id')
-            STITLE=$(echo "$SUGGESTION" | jq -r '.title')
-            SPRIORITY=$(echo "$SUGGESTION" | jq -r '.priority')
-            SDESC=$(echo "$SUGGESTION" | jq -r '.description')
-
-            echo "sid=$SID" >> $GITHUB_OUTPUT
-            echo "stitle=$STITLE" >> $GITHUB_OUTPUT
-            echo "spriority=$SPRIORITY" >> $GITHUB_OUTPUT
-
-            # Save description to file (may contain special chars)
-            echo "$SDESC" > /tmp/suggestion_desc.txt
-
-            echo "::notice::Picking up: [$SPRIORITY] $STITLE ($SID)"
+            exit 0
           fi
 
-      # ── Step 2: Mark IN_PROGRESS ──
+          echo "has_pending=true" >> $GITHUB_OUTPUT
+
+          # Pick highest priority, then oldest
+          SUGGESTION=$(echo "$RESPONSE" | jq -r '
+            .data | sort_by(
+              (if .priority == "CRITICAL" then 0
+               elif .priority == "HIGH" then 1
+               elif .priority == "MEDIUM" then 2
+               else 3 end),
+              .createdAt
+            ) | .[0]')
+
+          SID=$(echo "$SUGGESTION" | jq -r '.id')
+          STITLE=$(echo "$SUGGESTION" | jq -r '.title')
+          SPRIORITY=$(echo "$SUGGESTION" | jq -r '.priority')
+          SDESC=$(echo "$SUGGESTION" | jq -r '.description')
+
+          echo "sid=$SID" >> $GITHUB_OUTPUT
+          echo "spriority=$SPRIORITY" >> $GITHUB_OUTPUT
+
+          # Save to files (safe for special chars)
+          echo "$STITLE" > /tmp/suggestion_title.txt
+          echo "$SDESC" > /tmp/suggestion_desc.txt
+
+          echo "::notice::Picking up: [$SPRIORITY] $STITLE ($SID)"
+
+      # ══════════════════════════════════════════
+      # STEP 2: Mark IN_PROGRESS
+      # ══════════════════════════════════════════
       - name: Mark suggestion IN_PROGRESS
         if: steps.check.outputs.has_pending == 'true'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
           curl -s -X PATCH \
-            -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+            -H "x-api-key: $SERVICE_API_KEY" \
             -H 'Content-Type: application/json' \
-            -H 'Accept: application/json' \
-            -d '{"status":"IN_PROGRESS","agentNotes":"GitHub Actions dev agent picked up the task."}' \
-            "https://securelend-production.up.railway.app/api/v1/suggestions/${{ steps.check.outputs.sid }}"
+            -d '{"status":"IN_PROGRESS","agentNotes":"Agent picked up the task."}' \
+            "$API_BASE/api/v1/suggestions/${{ steps.check.outputs.sid }}"
 
-      # ── Step 3: Install Claude Code CLI ──
-      - name: Install Claude Code
+      # ══════════════════════════════════════════
+      # STEP 3: Install tools
+      # ══════════════════════════════════════════
+      - name: Install Claude Code CLI
         if: steps.check.outputs.has_pending == 'true'
         run: npm install -g @anthropic-ai/claude-code
 
-      # ── Step 4: Build prompt and run Claude ──
-      - name: Run Claude Code
+      # ══════════════════════════════════════════
+      # STEP 4: Implement + Build Check + Retry
+      # ══════════════════════════════════════════
+      - name: Implement with retry loop
+        id: implement
         if: steps.check.outputs.has_pending == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          SID: ${{ steps.check.outputs.sid }}
+          SPRIORITY: ${{ steps.check.outputs.spriority }}
         run: |
-          DESC=$(cat /tmp/suggestion_desc.txt)
+          STITLE=$(cat /tmp/suggestion_title.txt)
+          SDESC=$(cat /tmp/suggestion_desc.txt)
+          PREV_ERROR=""
 
-          cat > /tmp/agent_prompt.txt << 'PROMPT_END'
-          You are an autonomous senior developer working on the SecureLend codebase.
+          for ATTEMPT in 1 2 3; do
+            echo ""
+            echo "═══════════════════════════════════════"
+            echo "  ATTEMPT $ATTEMPT / $MAX_RETRIES"
+            echo "═══════════════════════════════════════"
+
+            # ── Reset working tree for retry ──
+            if [ "$ATTEMPT" -gt 1 ]; then
+              echo "Resetting working tree for retry..."
+              git checkout -- .
+              git clean -fd
+            fi
+
+            # ── Build prompt ──
+            RETRY_CONTEXT=""
+            if [ -n "$PREV_ERROR" ]; then
+              RETRY_CONTEXT="
+          == RETRY (attempt $ATTEMPT/$MAX_RETRIES) ==
+          Previous attempt failed with this error:
+          $PREV_ERROR
+
+          Fix the issue. Do NOT repeat the same mistake.
+          "
+            fi
+
+            PROMPT="You are an autonomous senior developer working on the SecureLend codebase.
           This is a Turkish fintech rental-payment platform (kiraguvence.com).
 
           == TASK ==
-          PROMPT_END
+          Title: $STITLE
+          Priority: $SPRIORITY
 
-          echo "Title: ${{ steps.check.outputs.stitle }}" >> /tmp/agent_prompt.txt
-          echo "Priority: ${{ steps.check.outputs.spriority }}" >> /tmp/agent_prompt.txt
-          echo "" >> /tmp/agent_prompt.txt
-          echo "Description:" >> /tmp/agent_prompt.txt
-          echo "$DESC" >> /tmp/agent_prompt.txt
-
-          cat >> /tmp/agent_prompt.txt << 'PROMPT_END'
-
-          == INSTRUCTIONS ==
-          1. Read CLAUDE.md first for project context.
-          2. Find all relevant files (use Glob, Grep, Read tools).
-          3. Implement ONLY what the task asks. Nothing more.
+          Description:
+          $SDESC
+          $RETRY_CONTEXT
+          == RULES ==
+          1. Read CLAUDE.md first for project context and conventions.
+          2. Find all relevant files (Glob, Grep, Read).
+          3. Implement ONLY what the task asks. Nothing more, nothing less.
           4. Follow existing conventions:
-             - TypeScript strict mode
-             - JSend format: { status, data, message }
+             - TypeScript strict mode, no implicit any
+             - JSend response format: { status, data, message }
              - NestJS: controller -> service -> prisma
-             - Next.js App Router: page.tsx for pages
-             - Turkish UI labels
-             - Tailwind CSS for styling
-          5. Do NOT create branches, PRs, or run git commands.
-          6. Only change files relevant to the task. No extra refactoring.
-          PROMPT_END
+             - Next.js 15 App Router: page.tsx for pages
+             - Turkish UI labels, Tailwind CSS styling
+             - pnpm as package manager
+          5. Do NOT run git commands (no git add, commit, push).
+          6. Do NOT modify these protected files:
+             - .github/workflows/* (CI/CD configs)
+             - prisma/schema.prisma (DB schema - requires migration)
+             - pnpm-lock.yaml, pnpm-workspace.yaml, turbo.json
+             - Any .env files
+             - CLAUDE.md
+          7. Only change files relevant to the task. No refactoring.
+          8. Keep changes small and focused. Max 10 files, max 500 lines changed.
+          9. If the task requires a Prisma migration, create ONLY the SQL file
+             in prisma/migrations/ - do NOT touch schema.prisma."
 
-          PROMPT=$(cat /tmp/agent_prompt.txt)
-          echo "=== PROMPT ==="
-          echo "$PROMPT"
-          echo "=== END PROMPT ==="
+            echo "=== Running Claude Code ==="
+            if ! claude --print --dangerously-skip-permissions "$PROMPT"; then
+              PREV_ERROR="Claude Code exited with non-zero status."
+              echo "::warning::Attempt $ATTEMPT: Claude Code failed"
 
-          claude --print --dangerously-skip-permissions "$PROMPT"
+              curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                -H 'Content-Type: application/json' \
+                -d "{\"agentNotes\":\"Attempt $ATTEMPT: Claude Code failed. Retrying...\"}" \
+                "$API_BASE/api/v1/suggestions/$SID"
+              continue
+            fi
 
-      # ── Step 5: Commit and push ──
-      - name: Commit and push changes
-        if: steps.check.outputs.has_pending == 'true'
+            # ── Safety Check 1: Protected files ──
+            echo ""
+            echo "=== Safety Check: Protected files ==="
+            PROTECTED_CHANGES=$(git diff --name-only | grep -E '\.github/workflows/|prisma/schema\.prisma|pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.env' || true)
+            if [ -n "$PROTECTED_CHANGES" ]; then
+              echo "::error::Protected files were modified: $PROTECTED_CHANGES"
+              PREV_ERROR="Protected files were modified: $PROTECTED_CHANGES. Do NOT modify these files."
+              git checkout -- .
+              git clean -fd
+
+              curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                -H 'Content-Type: application/json' \
+                -d "{\"agentNotes\":\"Attempt $ATTEMPT: Modified protected files ($PROTECTED_CHANGES). Retrying...\"}" \
+                "$API_BASE/api/v1/suggestions/$SID"
+              continue
+            fi
+            echo "✓ No protected files modified"
+
+            # ── Safety Check 2: Diff size ──
+            echo ""
+            echo "=== Safety Check: Diff size ==="
+            FILES_CHANGED=$(git diff --name-only | wc -l | tr -d ' ')
+            LINES_CHANGED=$(git diff --stat | tail -1 | grep -oP '\d+ insertion|d+ deletion' | head -1 | grep -oP '\d+' || echo "0")
+            LINES_ADDED=$(git diff --numstat | awk '{s+=$1} END {print s+0}')
+            LINES_REMOVED=$(git diff --numstat | awk '{s+=$2} END {print s+0}')
+            TOTAL_LINES=$((LINES_ADDED + LINES_REMOVED))
+
+            echo "Files changed: $FILES_CHANGED (max: $MAX_FILES)"
+            echo "Lines changed: $TOTAL_LINES (max: $MAX_LINES)"
+
+            if [ "$FILES_CHANGED" -gt "$MAX_FILES" ]; then
+              PREV_ERROR="Too many files changed ($FILES_CHANGED). Maximum allowed is $MAX_FILES. Make smaller, focused changes."
+              echo "::warning::Attempt $ATTEMPT: Too many files ($FILES_CHANGED)"
+              git checkout -- .
+              git clean -fd
+
+              curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                -H 'Content-Type: application/json' \
+                -d "{\"agentNotes\":\"Attempt $ATTEMPT: Too many files changed ($FILES_CHANGED). Retrying...\"}" \
+                "$API_BASE/api/v1/suggestions/$SID"
+              continue
+            fi
+
+            if [ "$TOTAL_LINES" -gt "$MAX_LINES" ]; then
+              PREV_ERROR="Too many lines changed ($TOTAL_LINES). Maximum allowed is $MAX_LINES. Make smaller, focused changes."
+              echo "::warning::Attempt $ATTEMPT: Too many lines ($TOTAL_LINES)"
+              git checkout -- .
+              git clean -fd
+
+              curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                -H 'Content-Type: application/json' \
+                -d "{\"agentNotes\":\"Attempt $ATTEMPT: Too many lines changed ($TOTAL_LINES). Retrying...\"}" \
+                "$API_BASE/api/v1/suggestions/$SID"
+              continue
+            fi
+            echo "✓ Diff size OK"
+
+            # ── Safety Check 3: No changes at all ──
+            if [ "$FILES_CHANGED" = "0" ]; then
+              UNTRACKED=$(git ls-files --others --exclude-standard | wc -l | tr -d ' ')
+              if [ "$UNTRACKED" = "0" ]; then
+                PREV_ERROR="No files were changed. You must edit or create files to implement the task."
+                echo "::warning::Attempt $ATTEMPT: No changes made"
+
+                curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                  -H 'Content-Type: application/json' \
+                  -d "{\"agentNotes\":\"Attempt $ATTEMPT: No file changes detected. Retrying...\"}" \
+                  "$API_BASE/api/v1/suggestions/$SID"
+                continue
+              fi
+            fi
+
+            # ── Safety Check 4: Build check (frontend) ──
+            echo ""
+            echo "=== Build Check: Frontend ==="
+            WEB_CHANGED=$(git diff --name-only | grep "^apps/web/" || true)
+            UNTRACKED_WEB=$(git ls-files --others --exclude-standard | grep "^apps/web/" || true)
+
+            if [ -n "$WEB_CHANGED" ] || [ -n "$UNTRACKED_WEB" ]; then
+              echo "Frontend files changed, running build check..."
+              cd apps/web
+              if ! pnpm install --no-frozen-lockfile 2>&1 | tail -5; then
+                echo "pnpm install warning (continuing...)"
+              fi
+              if ! pnpm build 2>&1; then
+                BUILD_ERROR=$(pnpm build 2>&1 | tail -30)
+                cd ../..
+                PREV_ERROR="Frontend build failed:
+          $BUILD_ERROR
+
+          Fix the TypeScript/build errors and try again."
+                echo "::warning::Attempt $ATTEMPT: Frontend build failed"
+                git checkout -- .
+                git clean -fd
+
+                curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                  -H 'Content-Type: application/json' \
+                  -d "{\"agentNotes\":\"Attempt $ATTEMPT: Frontend build failed. Retrying...\"}" \
+                  "$API_BASE/api/v1/suggestions/$SID"
+                continue
+              fi
+              cd ../..
+              echo "✓ Frontend build passed"
+            else
+              echo "✓ No frontend changes, skipping build"
+            fi
+
+            # ── Safety Check 5: Build check (backend) ──
+            echo ""
+            echo "=== Build Check: Backend ==="
+            API_CHANGED=$(git diff --name-only | grep "^apps/api/" || true)
+            UNTRACKED_API=$(git ls-files --others --exclude-standard | grep "^apps/api/" || true)
+
+            if [ -n "$API_CHANGED" ] || [ -n "$UNTRACKED_API" ]; then
+              echo "Backend files changed, running build check..."
+              cd apps/api
+              if ! pnpm install --no-frozen-lockfile 2>&1 | tail -5; then
+                echo "pnpm install warning (continuing...)"
+              fi
+              npx prisma generate 2>&1 || true
+              if ! pnpm build 2>&1; then
+                BUILD_ERROR=$(pnpm build 2>&1 | tail -30)
+                cd ../..
+                PREV_ERROR="Backend build failed:
+          $BUILD_ERROR
+
+          Fix the TypeScript/NestJS errors and try again."
+                echo "::warning::Attempt $ATTEMPT: Backend build failed"
+                git checkout -- .
+                git clean -fd
+
+                curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+                  -H 'Content-Type: application/json' \
+                  -d "{\"agentNotes\":\"Attempt $ATTEMPT: Backend build failed. Retrying...\"}" \
+                  "$API_BASE/api/v1/suggestions/$SID"
+                continue
+              fi
+              cd ../..
+              echo "✓ Backend build passed"
+            else
+              echo "✓ No backend changes, skipping build"
+            fi
+
+            # ── All checks passed! ──
+            echo ""
+            echo "═══════════════════════════════════════"
+            echo "  ✓ ALL CHECKS PASSED (attempt $ATTEMPT)"
+            echo "═══════════════════════════════════════"
+
+            # Save changed files list for commit
+            git diff --name-only > /tmp/changed_files.txt
+            git ls-files --others --exclude-standard >> /tmp/changed_files.txt
+            echo "implementation_ok=true" >> $GITHUB_OUTPUT
+            echo "attempt=$ATTEMPT" >> $GITHUB_OUTPUT
+            exit 0
+          done
+
+          # All retries exhausted
+          echo "::error::All $MAX_RETRIES attempts failed."
+          echo "implementation_ok=false" >> $GITHUB_OUTPUT
+
+          curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "{\"status\":\"PENDING\",\"agentNotes\":\"All $MAX_RETRIES attempts failed. Last error: $(echo "$PREV_ERROR" | head -c 500 | tr '"' "'" | tr '\n' ' ')\"}" \
+            "$API_BASE/api/v1/suggestions/$SID"
+          exit 1
+
+      # ══════════════════════════════════════════
+      # STEP 5: Self-Review
+      # ══════════════════════════════════════════
+      - name: Self-review changes
+        id: review
+        if: steps.implement.outputs.implementation_ok == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          STITLE=$(cat /tmp/suggestion_title.txt)
+          DIFF=$(git diff)
+          UNTRACKED_DIFF=""
+          for f in $(git ls-files --others --exclude-standard); do
+            UNTRACKED_DIFF="$UNTRACKED_DIFF
+          === NEW FILE: $f ===
+          $(cat "$f")"
+          done
+
+          REVIEW_PROMPT="You are a strict code reviewer for SecureLend (Turkish fintech platform).
+
+          The task was: $STITLE
+
+          Here is the git diff of changes made:
+          $DIFF
+          $UNTRACKED_DIFF
+
+          Review these changes and answer with ONLY one of:
+          APPROVE - if changes correctly implement the task, follow conventions, and look safe
+          REJECT: <reason> - if changes have issues
+
+          Check for:
+          1. Does it implement what was asked? (not more, not less)
+          2. TypeScript types correct? No 'any' types?
+          3. No hardcoded secrets, API keys, or credentials?
+          4. No console.log left in production code?
+          5. Turkish UI labels where needed?
+          6. Follows existing code patterns?
+          7. No unrelated changes?"
+
+          echo "=== Running self-review ==="
+          REVIEW_RESULT=$(claude --print --dangerously-skip-permissions "$REVIEW_PROMPT" 2>&1 || echo "APPROVE")
+          echo "$REVIEW_RESULT"
+
+          if echo "$REVIEW_RESULT" | grep -q "^REJECT"; then
+            echo "::warning::Self-review rejected the changes"
+            echo "review_passed=false" >> $GITHUB_OUTPUT
+            echo "$REVIEW_RESULT" > /tmp/review_result.txt
+          else
+            echo "✓ Self-review approved"
+            echo "review_passed=true" >> $GITHUB_OUTPUT
+          fi
+
+      # ══════════════════════════════════════════
+      # STEP 6: Commit and Push
+      # ══════════════════════════════════════════
+      - name: Commit and push
+        id: push
+        if: steps.implement.outputs.implementation_ok == 'true' && steps.review.outputs.review_passed == 'true'
         env:
           STITLE: ${{ steps.check.outputs.stitle }}
         run: |
@@ -136,36 +423,127 @@ jobs:
           git add -A
 
           if git diff --staged --quiet; then
-            echo "::warning::Claude made no file changes."
-            echo "no_changes=true" >> $GITHUB_OUTPUT
+            echo "::warning::No staged changes to commit."
             exit 1
           fi
 
-          # Sanitize title for commit message
+          # Sanitize title
           SAFE_TITLE=$(echo "$STITLE" | tr -d '"' | tr -d "'" | head -c 60)
           git commit -m "feat: ${SAFE_TITLE}"
+
+          echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+          git push origin main
+          echo "push_ok=true" >> $GITHUB_OUTPUT
+          echo "✓ Pushed to main"
+
+      # ══════════════════════════════════════════
+      # STEP 7: Wait for Deploy + Health Check
+      # ══════════════════════════════════════════
+      - name: Verify deployment
+        id: deploy
+        if: steps.push.outputs.push_ok == 'true'
+        run: |
+          echo "Waiting ${DEPLOY_WAIT}s for Vercel + Railway to deploy..."
+          sleep "$DEPLOY_WAIT"
+
+          echo "=== Health Check: API ==="
+          API_OK=false
+          for i in 1 2 3; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/health" || echo "000")
+            echo "  Attempt $i: HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" = "200" ]; then
+              API_OK=true
+              break
+            fi
+            sleep 10
+          done
+
+          echo "=== Health Check: Web ==="
+          WEB_OK=false
+          for i in 1 2 3; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL" || echo "000")
+            echo "  Attempt $i: HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" = "200" ]; then
+              WEB_OK=true
+              break
+            fi
+            sleep 10
+          done
+
+          echo "API: $API_OK | Web: $WEB_OK"
+
+          if [ "$API_OK" = "true" ] && [ "$WEB_OK" = "true" ]; then
+            echo "✓ Both services healthy"
+            echo "deploy_ok=true" >> $GITHUB_OUTPUT
+          else
+            echo "::error::Health check failed! API=$API_OK Web=$WEB_OK"
+            echo "deploy_ok=false" >> $GITHUB_OUTPUT
+          fi
+
+      # ══════════════════════════════════════════
+      # STEP 8: Revert if deploy failed
+      # ══════════════════════════════════════════
+      - name: Revert on deploy failure
+        if: steps.deploy.outputs.deploy_ok == 'false'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          SID: ${{ steps.check.outputs.sid }}
+        run: |
+          echo "::error::Reverting last commit due to deploy failure..."
+
+          git revert --no-edit HEAD
           git push origin main
 
-      # ── Step 6: Mark DONE ──
+          echo "✓ Revert pushed"
+
+          curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d '{"status":"PENDING","agentNotes":"Deploy health check failed. Changes reverted. Will retry next run."}' \
+            "$API_BASE/api/v1/suggestions/$SID"
+
+      # ══════════════════════════════════════════
+      # STEP 9: Mark DONE (success path)
+      # ══════════════════════════════════════════
       - name: Mark suggestion DONE
-        if: steps.check.outputs.has_pending == 'true'
+        if: steps.deploy.outputs.deploy_ok == 'true'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          SID: ${{ steps.check.outputs.sid }}
         run: |
-          curl -s -X PATCH \
-            -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+          NOTES="Implemented, pushed, deployed and verified at $(date -u +%Y-%m-%dT%H:%M:%SZ). Attempt ${{ steps.implement.outputs.attempt }}/$MAX_RETRIES."
+          curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
             -H 'Content-Type: application/json' \
-            -H 'Accept: application/json' \
-            -d "{\"status\":\"DONE\",\"agentNotes\":\"Implemented and pushed to main by GitHub Actions agent at $(date -u +%Y-%m-%dT%H:%M:%SZ).\"}" \
-            "https://securelend-production.up.railway.app/api/v1/suggestions/${{ steps.check.outputs.sid }}"
+            -d "{\"status\":\"DONE\",\"agentNotes\":\"$NOTES\"}" \
+            "$API_BASE/api/v1/suggestions/$SID"
+          echo "::notice::✓ Task completed and verified!"
 
-          echo "::notice::Task completed and marked DONE!"
+      # ══════════════════════════════════════════
+      # STEP 10: Handle self-review rejection
+      # ══════════════════════════════════════════
+      - name: Handle review rejection
+        if: steps.review.outputs.review_passed == 'false'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          SID: ${{ steps.check.outputs.sid }}
+        run: |
+          REASON=$(cat /tmp/review_result.txt 2>/dev/null | head -c 500 | tr '"' "'" | tr '\n' ' ')
+          curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "{\"status\":\"PENDING\",\"agentNotes\":\"Self-review rejected: $REASON. Will retry next run.\"}" \
+            "$API_BASE/api/v1/suggestions/$SID"
+          echo "::warning::Changes rejected by self-review. Reverted to PENDING."
 
-      # ── Error handler: revert to PENDING ──
-      - name: Revert to PENDING on failure
+      # ══════════════════════════════════════════
+      # FALLBACK: Revert to PENDING on any failure
+      # ══════════════════════════════════════════
+      - name: Revert to PENDING on unexpected failure
         if: failure() && steps.check.outputs.has_pending == 'true'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+          SID: ${{ steps.check.outputs.sid }}
         run: |
-          curl -s -X PATCH \
-            -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+          curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
             -H 'Content-Type: application/json' \
-            -H 'Accept: application/json' \
-            -d '{"status":"PENDING","agentNotes":"GitHub Actions agent failed. Will retry on next run."}' \
-            "https://securelend-production.up.railway.app/api/v1/suggestions/${{ steps.check.outputs.sid }}"
+            -d '{"status":"PENDING","agentNotes":"Unexpected workflow failure. Will retry next run."}' \
+            "$API_BASE/api/v1/suggestions/$SID"
