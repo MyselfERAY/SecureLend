@@ -63,11 +63,24 @@ export default function AdminSuggestionsPage() {
     if (!tokens?.accessToken) return;
     setLoading(true);
     const res = await api<Suggestion[]>('/api/v1/suggestions', { token: tokens.accessToken });
-    if (res.status === 'success' && res.data) setSuggestions(res.data);
+    if (res.status === 'success' && res.data) {
+      setSuggestions(res.data);
+      // Keep selected item in sync with fresh data
+      if (selected) {
+        const updated = res.data.find((s: Suggestion) => s.id === selected.id);
+        if (updated) setSelected(updated);
+      }
+    }
     setLoading(false);
   };
 
   useEffect(() => { fetchSuggestions(); }, [tokens?.accessToken]);
+
+  // Auto-refresh every 15 seconds to keep data current
+  useEffect(() => {
+    const interval = setInterval(fetchSuggestions, 15000);
+    return () => clearInterval(interval);
+  }, [tokens?.accessToken]);
 
   const handleStatusChange = async (id: string, status: Status) => {
     if (!tokens?.accessToken) return;
@@ -124,7 +137,7 @@ export default function AdminSuggestionsPage() {
         {(['PENDING', 'IN_PROGRESS', 'DONE', 'REJECTED'] as Status[]).map((s) => {
           const count = suggestions.filter((sg) => sg.status === s).length;
           return (
-            <button key={s} onClick={() => setFilterStatus(filterStatus === s ? 'ALL' : s)}
+            <button key={s} onClick={() => { setFilterStatus(filterStatus === s ? 'ALL' : s); fetchSuggestions(); }}
               className={`rounded-xl border p-3 text-center transition ${filterStatus === s ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
               <div className="text-xs font-semibold text-slate-600">{statusLabel[s]}</div>
               <div className="text-lg font-bold text-slate-900">{count}</div>

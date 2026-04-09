@@ -156,7 +156,13 @@ export default function DashboardLayout({
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {sidebarLinks.map((link) => {
+          {sidebarLinks
+            .filter((link) => {
+              // Admin users only see Panel — other menu items are irrelevant
+              if (user?.roles.includes('ADMIN') && link.href !== '/dashboard') return false;
+              return true;
+            })
+            .map((link) => {
             const active = isActive(link.href);
             return (
               <Link
