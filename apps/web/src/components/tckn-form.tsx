@@ -2,12 +2,28 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  createApplicationSchema,
-  type CreateApplicationInput,
-} from '@securelend/shared';
+import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+function validateTckn(tckn: string): boolean {
+  if (tckn.length !== 11 || !/^\d{11}$/.test(tckn) || tckn[0] === '0') return false;
+  const d = tckn.split('').map(Number);
+  const tenth = (((7 * (d[0] + d[2] + d[4] + d[6] + d[8]) - (d[1] + d[3] + d[5] + d[7])) % 10) + 10) % 10;
+  if (d[9] !== tenth) return false;
+  return d[10] === d.slice(0, 10).reduce((a, b) => a + b, 0) % 10;
+}
+
+const createApplicationSchema = z.object({
+  tckn: z
+    .string()
+    .length(11, 'TCKN 11 haneli olmalıdır')
+    .regex(/^\d+$/, 'TCKN sadece rakam içermelidir')
+    .refine((val) => val[0] !== '0', 'TCKN 0 ile başlayamaz')
+    .refine(validateTckn, 'Geçersiz TCKN'),
+});
+
+type CreateApplicationInput = z.infer<typeof createApplicationSchema>;
 
 export function TcknForm() {
   const router = useRouter();
