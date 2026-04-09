@@ -156,8 +156,8 @@ jobs:
           $RETRY_CONTEXT
           == RULES ==
           1. Read CLAUDE.md first for project context and conventions.
-          2. Find all relevant files (Glob, Grep, Read).
-          3. Implement ONLY what the task asks. Nothing more, nothing less.
+          2. Find all relevant files (Glob, Grep, Read). ALWAYS read the FULL content of files you will modify — do not skip sections.
+          3. Implement EVERYTHING the task asks. Do not skip any part. If the task says 'hide X', find ALL instances of X and hide them all.
           4. Follow existing conventions:
              - TypeScript strict mode, no implicit any
              - JSend response format: { status, data, message }
@@ -418,8 +418,6 @@ jobs:
       - name: Commit and push
         id: push
         if: steps.implement.outputs.implementation_ok == 'true' && steps.review.outputs.review_passed == 'true'
-        env:
-          STITLE: ${{ steps.check.outputs.stitle }}
         run: |
           git config user.name "SecureLend Dev Agent"
           git config user.email "dev-agent@kiraguvence.com"
@@ -431,8 +429,11 @@ jobs:
             exit 1
           fi
 
-          # Sanitize title
-          SAFE_TITLE=$(echo "$STITLE" | tr -d '"' | tr -d "'" | head -c 60)
+          # Read title from file (safe for special chars)
+          SAFE_TITLE=$(cat /tmp/suggestion_title.txt | tr -d '"' | tr -d "'" | tr -d '\n' | head -c 60)
+          if [ -z "$SAFE_TITLE" ]; then
+            SAFE_TITLE="agent implementation"
+          fi
           git commit -m "feat: ${SAFE_TITLE}"
 
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
