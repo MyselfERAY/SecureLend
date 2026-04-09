@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
 
@@ -98,25 +98,37 @@ export default function AdminSuggestionsPage() {
   const [form, setForm] = useState({ title: '', description: '', priority: 'HIGH' as Priority });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const selectedRef = useRef<Suggestion | null>(null);
+  selectedRef.current = selected;
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = async (background = false) => {
     if (!tokens?.accessToken) return;
-    setLoading(true);
+    if (background) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     const res = await api<Suggestion[]>('/api/v1/suggestions', { token: tokens.accessToken });
     if (res.status === 'success' && res.data) {
       setSuggestions(res.data);
-      if (selected) {
-        const updated = res.data.find((s: Suggestion) => s.id === selected.id);
+      const currentSelected = selectedRef.current;
+      if (currentSelected) {
+        const updated = res.data.find((s: Suggestion) => s.id === currentSelected.id);
         if (updated) setSelected(updated);
       }
     }
-    setLoading(false);
+    if (background) {
+      setRefreshing(false);
+    } else {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchSuggestions(); }, [tokens?.accessToken]);
+  useEffect(() => { fetchSuggestions(false); }, [tokens?.accessToken]);
 
   useEffect(() => {
-    const interval = setInterval(fetchSuggestions, 15000);
+    const interval = setInterval(() => fetchSuggestions(true), 15000);
     return () => clearInterval(interval);
   }, [tokens?.accessToken]);
 
@@ -129,7 +141,7 @@ export default function AdminSuggestionsPage() {
     const res = await api<Suggestion>(`/api/v1/suggestions/${id}`, {
       method: 'PATCH', token: tokens.accessToken, body,
     });
-    if (res.status === 'success' && res.data) { setSelected(res.data); fetchSuggestions(); }
+    if (res.status === 'success' && res.data) { setSelected(res.data); fetchSuggestions(true); }
     setActionLoading(null);
   };
 
@@ -140,7 +152,7 @@ export default function AdminSuggestionsPage() {
     if (!tokens?.accessToken || !confirm('Bu oneriyi silmek istediginize emin misiniz?')) return;
     setActionLoading(id);
     await api(`/api/v1/suggestions/${id}`, { method: 'DELETE', token: tokens.accessToken });
-    setActionLoading(null); setSelected(null); fetchSuggestions();
+    setActionLoading(null); setSelected(null); fetchSuggestions(true);
   };
 
   const handleCreate = async () => {
@@ -157,7 +169,7 @@ export default function AdminSuggestionsPage() {
         body: { title: form.title.trim(), description: form.description.trim(), priority: form.priority },
       });
       if (res.status === 'success') {
-        setForm({ title: '', description: '', priority: 'HIGH' }); setShowForm(false); fetchSuggestions();
+        setForm({ title: '', description: '', priority: 'HIGH' }); setShowForm(false); fetchSuggestions(true);
       } else {
         setFormError(res.message || 'Kaydetme basarisiz oldu.');
       }
@@ -208,7 +220,7 @@ export default function AdminSuggestionsPage() {
       <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
         {pipeline.map((ds) => (
           <button key={ds}
-            onClick={() => { setFilterStatus(filterStatus === ds ? 'ALL' : ds); fetchSuggestions(); }}
+            onClick={() => { setFilterStatus(filterStatus === ds ? 'ALL' : ds); }}
             className={`rounded-xl border p-3 text-center transition ${
               filterStatus === ds ? displayStatusBorder[ds] : 'border-slate-200 bg-white hover:border-slate-300'
             }`}>
@@ -263,6 +275,9 @@ export default function AdminSuggestionsPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           {/* List */}
           <div className="space-y-3">
+            {refreshing && (
+              <div className="text-right text-xs text-slate-400 animate-pulse">Guncelleniyor...</div>
+            )}
             {filtered.map((s) => {
               const ds = getDisplayStatus(s);
               return (
