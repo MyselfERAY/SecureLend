@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../lib/auth-context';
@@ -32,11 +32,43 @@ const steps = [
 ];
 
 const stats = [
-  { value: '500+', label: 'Aktif Kullanıcı' },
-  { value: '₺2M+', label: 'İşlem Hacmi' },
-  { value: '%99.8', label: 'Ödeme Başarısı' },
-  { value: '< 5 dk', label: 'Onboarding Süresi' },
+  { target: 500, prefix: '', suffix: '+', label: 'Aktif Kullanıcı', decimals: 0 },
+  { target: 2, prefix: '₺', suffix: 'M+', label: 'İşlem Hacmi', decimals: 0 },
+  { target: 99.8, prefix: '%', suffix: '', label: 'Ödeme Başarısı', decimals: 1 },
+  { target: 5, prefix: '< ', suffix: ' dk', label: 'Onboarding Süresi', decimals: 0 },
 ];
+
+function useCountUp(target: number, decimals: number, duration = 1500) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const startTime = performance.now();
+          const step = (now: number) => {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(parseFloat((eased * target).toFixed(decimals)));
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, decimals, duration]);
+
+  return { count, ref };
+}
 
 const testimonials = [
   {
@@ -67,6 +99,17 @@ interface LatestArticle {
   category: string;
   audience: 'TENANT' | 'LANDLORD' | 'BOTH';
   publishedAt: string;
+}
+
+function StatItem({ stat }: { stat: typeof stats[number] }) {
+  const { count, ref } = useCountUp(stat.target, stat.decimals);
+  const display = stat.decimals > 0 ? count.toFixed(stat.decimals) : Math.floor(count).toString();
+  return (
+    <div ref={ref} className="text-center">
+      <p className="text-3xl font-extrabold text-white">{stat.prefix}{display}{stat.suffix}</p>
+      <p className="mt-1 text-sm text-slate-400">{stat.label}</p>
+    </div>
+  );
 }
 
 export default function HomePage() {
@@ -254,10 +297,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl">
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
               {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p className="text-3xl font-extrabold text-white">{stat.value}</p>
-                  <p className="mt-1 text-sm text-slate-400">{stat.label}</p>
-                </div>
+                <StatItem key={stat.label} stat={stat} />
               ))}
             </div>
           </div>
