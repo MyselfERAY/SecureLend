@@ -261,11 +261,42 @@ export default function PoJournalPage() {
 
   const handleMoveToDev = async (itemId: string) => {
     if (!tokens?.accessToken) return;
-    setActionLoading(itemId);
+    setActionLoading('dev-' + itemId);
     try {
       await api(`/api/v1/po/items/${itemId}/move-to-dev`, {
         method: 'POST',
         token: tokens.accessToken,
+      });
+      fetchReports(true);
+    } catch {
+      // ignore
+    }
+    setActionLoading(null);
+  };
+
+  const handleSendToTasks = async (itemId: string) => {
+    if (!tokens?.accessToken) return;
+    setActionLoading('task-' + itemId);
+    try {
+      await api(`/api/v1/po/items/${itemId}/send-to-tasks`, {
+        method: 'POST',
+        token: tokens.accessToken,
+      });
+      fetchReports(true);
+    } catch {
+      // ignore
+    }
+    setActionLoading(null);
+  };
+
+  const handleDismiss = async (itemId: string) => {
+    if (!tokens?.accessToken) return;
+    setActionLoading('dismiss-' + itemId);
+    try {
+      await api(`/api/v1/po/items/${itemId}`, {
+        method: 'PATCH',
+        token: tokens.accessToken,
+        body: { status: 'DISMISSED' },
       });
       fetchReports(true);
     } catch {
@@ -576,17 +607,35 @@ export default function PoJournalPage() {
                                   </div>
                                 )}
 
-                              {/* Move to dev button for ACTIVE items */}
+                              {/* Action buttons for ACTIVE items */}
                               {item.status === 'ACTIVE' && (
-                                <div className="mt-3 pt-3 border-t border-slate-100">
+                                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
                                   <button
                                     onClick={() => handleMoveToDev(item.id)}
-                                    disabled={actionLoading === item.id}
+                                    disabled={actionLoading !== null}
                                     className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
                                   >
-                                    {actionLoading === item.id
+                                    {actionLoading === 'dev-' + item.id
                                       ? 'Gonderiliyor...'
                                       : 'Gelistirmeye Gonder'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleSendToTasks(item.id)}
+                                    disabled={actionLoading !== null}
+                                    className="rounded-xl border border-blue-300 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+                                  >
+                                    {actionLoading === 'task-' + item.id
+                                      ? 'Gonderiliyor...'
+                                      : 'Gorev Takibine Gonder'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleDismiss(item.id)}
+                                    disabled={actionLoading !== null}
+                                    className="rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                                  >
+                                    {actionLoading === 'dismiss-' + item.id
+                                      ? 'Kapatiliyor...'
+                                      : 'Iptal Et'}
                                   </button>
                                 </div>
                               )}

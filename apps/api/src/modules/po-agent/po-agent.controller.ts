@@ -71,6 +71,12 @@ export class PoAgentController {
     return { status: 'success', data: result };
   }
 
+  @Post('items/:id/send-to-tasks')
+  async sendToTasks(@Param('id', ParseUUIDPipe) id: string) {
+    const result = await this.poAgentService.sendToTasks(id);
+    return { status: 'success', data: result };
+  }
+
   @Get('metrics')
   async getMetrics() {
     const metrics = await this.poAgentService.getMetrics();

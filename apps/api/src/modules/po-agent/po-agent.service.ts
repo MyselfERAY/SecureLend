@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePoReportDto } from './dto/create-po-report.dto';
 import { CreatePoItemDto } from './dto/create-po-item.dto';
 import { UpdatePoItemDto } from './dto/update-po-item.dto';
-import { PoItemStatus, SuggestionStatus } from '@prisma/client';
+import { PoItemStatus, SuggestionStatus, MarketingTaskStatus } from '@prisma/client';
 
 @Injectable()
 export class PoAgentService {
@@ -191,6 +191,29 @@ export class PoAgentService {
       });
 
       return { item: updatedItem, devSuggestion };
+    });
+  }
+
+  async sendToTasks(id: string) {
+    const item = await this.prisma.poItem.findUnique({ where: { id } });
+    if (!item) throw new NotFoundException('Item bulunamadi');
+
+    return this.prisma.$transaction(async (tx) => {
+      const task = await tx.marketingTask.create({
+        data: {
+          source: 'PO',
+          title: item.title,
+          description: item.description,
+          status: MarketingTaskStatus.TODO,
+        },
+      });
+
+      const updatedItem = await tx.poItem.update({
+        where: { id },
+        data: { status: PoItemStatus.DISMISSED },
+      });
+
+      return { item: updatedItem, task };
     });
   }
 
