@@ -292,16 +292,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── STATS ── */}
-        <section className="border-y border-slate-200 bg-slate-900 px-4 py-10 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-              {stats.map((stat) => (
-                <StatItem key={stat.label} stat={stat} />
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* stats hidden */}
 
         {/* ── FEATURES ── */}
         <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -384,20 +375,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* ── TESTİMONIALS ── */}
-        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Müşteri Yorumları</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kullanıcılarımız ne diyor?</h2>
-            </div>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((testimonial, index) => (
-                <TestimonialCard key={index} {...testimonial} />
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* testimonials hidden */}
 
         {/* ── CTA BAND ── */}
         <section className="bg-blue-700 px-4 py-14 sm:px-6 lg:px-8">
@@ -473,12 +451,13 @@ export default function HomePage() {
             <p className="text-xs text-slate-500">
               © {new Date().getFullYear()} Kira Güvence. Tüm hakları saklıdır.
             </p>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-950 px-3 py-1 text-xs font-medium text-blue-300 ring-1 ring-inset ring-blue-800">
-              Powered by SecureLend Tech
-            </span>
             <p className="text-xs text-slate-500">
               Bu platform 6698 sayılı KVKK kapsamında kişisel verileri korumaktadır.
             </p>
+            {/* ek */}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-3 w-3 text-slate-800 opacity-30" fill="currentColor" aria-hidden="true">
+              <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 14.93V17a1 1 0 10-2 0v-.07A8.001 8.001 0 014.07 11H4a1 1 0 110-2h.07A8.001 8.001 0 0111 4.07V4a1 1 0 112 0v.07A8.001 8.001 0 0119.93 11H20a1 1 0 110 2h-.07A8.001 8.001 0 0113 16.93z" />
+            </svg>
           </div>
         </div>
       </footer>
