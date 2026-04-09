@@ -102,7 +102,7 @@ export default function HomePage() {
       {/* ── NAV ── */}
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Logo height={32} />
+          <Logo size="md" />
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-6 md:flex">
@@ -390,7 +390,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <Logo height={28} />
+              <Logo size="sm" />
               <p className="mt-4 text-sm leading-6 text-slate-400">
                 Türkiye&apos;nin dijital kira güvence platformu. Kiracı, ev sahibi ve banka arasındaki süreci güvenle yönetin.
               </p>

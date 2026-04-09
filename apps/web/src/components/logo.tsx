@@ -2,91 +2,30 @@ import Link from 'next/link';
 
 interface LogoProps {
   className?: string;
-  height?: number;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export default function Logo({ className = '', height = 40 }: LogoProps) {
-  const width = height * (1040 / 300);
+export default function Logo({ className = '', size = 'md' }: LogoProps) {
+  const config = {
+    sm: { badge: 'h-7 w-7 rounded-lg text-xs', wordmark: 'text-base', gap: 'gap-2' },
+    md: { badge: 'h-9 w-9 rounded-xl text-sm', wordmark: 'text-xl', gap: 'gap-2.5' },
+    lg: { badge: 'h-12 w-12 rounded-2xl text-base', wordmark: 'text-2xl', gap: 'gap-3' },
+  }[size];
 
   return (
-    <Link href="/" className={`inline-block ${className}`}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1040 300"
-        width={width}
-        height={height}
-        aria-label="SecureLend - Kira Güvencesi"
+    <Link href="/" className={`inline-flex items-center ${config.gap} group ${className}`}>
+      {/* Badge mark */}
+      <div
+        className={`flex flex-shrink-0 items-center justify-center ${config.badge} bg-slate-900 font-black text-white shadow-sm group-hover:bg-blue-700 transition-colors duration-200`}
+        aria-hidden="true"
       >
-        {/* LEFT BRACKET */}
-        <path
-          d="M 130 70 L 95 70 L 95 230 L 130 230"
-          fill="none"
-          stroke="#C73E1D"
-          strokeWidth="7"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-        {/* RIGHT BRACKET */}
-        <path
-          d="M 910 70 L 945 70 L 945 230 L 910 230"
-          fill="none"
-          stroke="#C73E1D"
-          strokeWidth="7"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        />
-        {/* Serial mark above-left */}
-        <text
-          x="95"
-          y="55"
-          fontFamily="'Inter','Söhne',Arial,sans-serif"
-          fontSize="10"
-          fontWeight="500"
-          fill="#C73E1D"
-          letterSpacing="2"
-        >
-          N°&#160;01&#8201;/&#8201;MMXXVI
-        </text>
-        {/* Serial mark above-right */}
-        <text
-          x="945"
-          y="55"
-          textAnchor="end"
-          fontFamily="'Inter','Söhne',Arial,sans-serif"
-          fontSize="10"
-          fontWeight="500"
-          fill="#C73E1D"
-          letterSpacing="2"
-        >
-          TR&#160;·&#160;İSTANBUL
-        </text>
-        {/* WORDMARK */}
-        <text
-          x="520"
-          y="172"
-          textAnchor="middle"
-          fontFamily="'Inter','Söhne','GT America','Helvetica Neue',Arial,sans-serif"
-          fontSize="92"
-          fontWeight="500"
-          fill="#0B1220"
-          letterSpacing="-4"
-        >
-          secure<tspan fontWeight="800">Lend</tspan>
-        </text>
-        {/* TAGLINE */}
-        <text
-          x="520"
-          y="212"
-          textAnchor="middle"
-          fontFamily="'Inter','Söhne',Arial,sans-serif"
-          fontSize="11"
-          fontWeight="500"
-          fill="#5B6675"
-          letterSpacing="5.2"
-        >
-          KİRA&#160;&#160;GÜVENCESİ&#160;&#160;·&#160;&#160;UNDERWRITTEN&#160;&#160;TRUST
-        </text>
-      </svg>
+        sL
+      </div>
+
+      {/* Wordmark */}
+      <span className={`${config.wordmark} font-bold leading-none tracking-tight text-slate-900 group-hover:text-blue-700 transition-colors duration-200`}>
+        secure<span className="font-black">Lend</span>
+      </span>
     </Link>
   );
 }
