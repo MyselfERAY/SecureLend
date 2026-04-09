@@ -170,6 +170,7 @@ jobs:
              - .github/workflows/* (CI/CD configs)
              - prisma/schema.prisma (DB schema - requires migration)
              - pnpm-lock.yaml, pnpm-workspace.yaml, turbo.json
+             - tsconfig.json (any tsconfig file in any directory)
              - Any .env files
              - CLAUDE.md
           7. Only change files relevant to the task. No refactoring.
@@ -192,7 +193,7 @@ jobs:
             # ── Safety Check 1: Protected files ──
             echo ""
             echo "=== Safety Check: Protected files ==="
-            PROTECTED_CHANGES=$(git diff --name-only | grep -E '\.github/workflows/|prisma/schema\.prisma|pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|\.env' || true)
+            PROTECTED_CHANGES=$(git diff --name-only | grep -E '\.github/workflows/|prisma/schema\.prisma|pnpm-lock\.yaml|pnpm-workspace\.yaml|turbo\.json|tsconfig\.json|\.env' || true)
             if [ -n "$PROTECTED_CHANGES" ]; then
               echo "::error::Protected files were modified: $PROTECTED_CHANGES"
               PREV_ERROR="Protected files were modified: $PROTECTED_CHANGES. Do NOT modify these files."
