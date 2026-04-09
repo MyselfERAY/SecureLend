@@ -1,14 +1,5 @@
+import type { ApplicationResult } from '@securelend/shared';
 import Link from 'next/link';
-
-interface ApplicationResult {
-  applicationId: string;
-  status: string;
-  maskedTckn: string;
-  creditLimit?: number;
-  interestRate?: number;
-  rejectionReason?: string;
-  createdAt: string;
-}
 
 export function ResultApproved({
   application,

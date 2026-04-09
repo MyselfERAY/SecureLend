@@ -118,7 +118,6 @@ export default function HomePage() {
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [latestArticles, setLatestArticles] = useState<LatestArticle[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showDraft, setShowDraft] = useState(false);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`)
@@ -294,17 +293,15 @@ export default function HomePage() {
         </section>
 
         {/* ── STATS ── */}
-        {showDraft && (
-          <section className="border-y border-slate-200 bg-slate-900 px-4 py-10 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl">
-              <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-                {stats.map((stat) => (
-                  <StatItem key={stat.label} stat={stat} />
-                ))}
-              </div>
+        <section className="border-y border-slate-200 bg-slate-900 px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+              {stats.map((stat) => (
+                <StatItem key={stat.label} stat={stat} />
+              ))}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         {/* ── FEATURES ── */}
         <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -388,21 +385,19 @@ export default function HomePage() {
         )}
 
         {/* ── TESTİMONIALS ── */}
-        {showDraft && (
-          <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl">
-              <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Müşteri Yorumları</p>
-                <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kullanıcılarımız ne diyor?</h2>
-              </div>
-              <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {testimonials.map((testimonial, index) => (
-                  <TestimonialCard key={index} {...testimonial} />
-                ))}
-              </div>
+        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Müşteri Yorumları</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kullanıcılarımız ne diyor?</h2>
             </div>
-          </section>
-        )}
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard key={index} {...testimonial} />
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* ── CTA BAND ── */}
         <section className="bg-blue-700 px-4 py-14 sm:px-6 lg:px-8">
@@ -477,14 +472,6 @@ export default function HomePage() {
           <div className="mt-10 border-t border-slate-800 pt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
             <p className="text-xs text-slate-500">
               © {new Date().getFullYear()} Kira Güvence. Tüm hakları saklıdır.
-              <button
-                onClick={() => setShowDraft((v) => !v)}
-                aria-label=""
-                className="ml-1 inline-block opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity duration-300 text-slate-600 cursor-default select-none"
-                tabIndex={-1}
-              >
-                ◆
-              </button>
             </p>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-950 px-3 py-1 text-xs font-medium text-blue-300 ring-1 ring-inset ring-blue-800">
               Powered by SecureLend Tech
