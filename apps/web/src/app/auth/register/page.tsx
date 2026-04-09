@@ -13,6 +13,8 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [kvkkOnayladi, setKvkkOnayladi] = useState(false);
+  const [acikRizaOnayladi, setAcikRizaOnayladi] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +24,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(tckn, phone, fullName, dateOfBirth);
+      await register(tckn, phone, fullName, dateOfBirth, [
+        { type: 'KVKK_AYDINLATMA', version: '1.0' },
+        { type: 'KVKK_ACIK_RIZA', version: '1.0' },
+      ]);
       sessionStorage.setItem('otp_phone', phone);
       router.push('/auth/verify-otp');
     } catch (err: any) {
@@ -118,9 +123,44 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={kvkkOnayladi}
+                  onChange={(e) => setKvkkOnayladi(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 accent-blue-700"
+                  required
+                />
+                <span className="text-sm text-slate-700 leading-snug">
+                  <Link href="/kvkk" target="_blank" className="font-semibold text-blue-700 hover:underline">
+                    KVKK Aydinlatma Metni
+                  </Link>
+                  &apos;ni okudum, kisisel verilerimin islenmesine iliskin bilgilendirildim.{' '}
+                  <span className="text-rose-600 font-semibold">*</span>
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acikRizaOnayladi}
+                  onChange={(e) => setAcikRizaOnayladi(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 accent-blue-700"
+                  required
+                />
+                <span className="text-sm text-slate-700 leading-snug">
+                  Finansal verilerimin (IBAN, gelir bilgisi, kredi gecmisi) KMH basvurusu kapsaminda islenip
+                  anlasmali bankalarla paylasilmasina{' '}
+                  <span className="font-semibold text-slate-900">acik riza</span> veriyorum.{' '}
+                  <span className="text-rose-600 font-semibold">*</span>
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading || tckn.length !== 11 || phone.length !== 10 || fullName.length < 3 || !dateOfBirth}
+              disabled={loading || tckn.length !== 11 || phone.length !== 10 || fullName.length < 3 || !dateOfBirth || !kvkkOnayladi || !acikRizaOnayladi}
               className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Kayit yapiliyor...' : 'Kaydi Tamamla'}
