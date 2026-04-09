@@ -576,9 +576,11 @@ model Article {
 // ─── Dev Suggestions ──────────────────────────────────────────
 
 enum SuggestionStatus {
+  NEW
   PENDING
   IN_PROGRESS
-  DONE
+  DEVELOPED
+  DEPLOYED
   REJECTED
 
   @@map("suggestion_status")
@@ -598,7 +600,7 @@ model DevSuggestion {
   title       String             @db.VarChar(300)
   description String
   priority    SuggestionPriority @default(MEDIUM)
-  status      SuggestionStatus   @default(PENDING)
+  status      SuggestionStatus   @default(NEW)
   agentNotes  String?            @map("agent_notes")
   prLink      String?            @map("pr_link") @db.VarChar(500)
   createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz()

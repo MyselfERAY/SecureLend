@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
 
-type Status = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'REJECTED';
+type Status = 'NEW' | 'PENDING' | 'IN_PROGRESS' | 'DEVELOPED' | 'DEPLOYED' | 'REJECTED';
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 interface Suggestion {
@@ -20,17 +20,30 @@ interface Suggestion {
 }
 
 const statusLabel: Record<Status, string> = {
-  PENDING: 'Bekliyor',
+  NEW: 'Yeni',
+  PENDING: 'Onaylandı',
   IN_PROGRESS: 'Geliştiriliyor',
-  DONE: 'Tamamlandı',
+  DEVELOPED: 'Geliştirildi',
+  DEPLOYED: 'Deploy Edildi',
   REJECTED: 'Reddedildi',
 };
 
 const statusColor: Record<Status, string> = {
+  NEW: 'bg-slate-100 text-slate-700',
   PENDING: 'bg-amber-100 text-amber-700',
   IN_PROGRESS: 'bg-blue-100 text-blue-700',
-  DONE: 'bg-emerald-100 text-emerald-700',
+  DEVELOPED: 'bg-violet-100 text-violet-700',
+  DEPLOYED: 'bg-emerald-100 text-emerald-700',
   REJECTED: 'bg-rose-100 text-rose-700',
+};
+
+const statusIcon: Record<Status, string> = {
+  NEW: '📝',
+  PENDING: '⏳',
+  IN_PROGRESS: '⚙️',
+  DEVELOPED: '✅',
+  DEPLOYED: '🚀',
+  REJECTED: '❌',
 };
 
 const priorityLabel: Record<Priority, string> = {
@@ -114,7 +127,18 @@ export default function AdminSuggestionsPage() {
     ? suggestions
     : suggestions.filter((s) => s.status === filterStatus);
 
+  const newCount = suggestions.filter((s) => s.status === 'NEW').length;
   const pendingCount = suggestions.filter((s) => s.status === 'PENDING').length;
+
+  // Allowed next-status transitions for manual actions
+  const allowedTransitions: Record<Status, Status[]> = {
+    NEW: ['PENDING', 'REJECTED'],
+    PENDING: ['REJECTED'],            // agent handles PENDING → IN_PROGRESS
+    IN_PROGRESS: ['REJECTED'],        // agent handles IN_PROGRESS → DEVELOPED
+    DEVELOPED: ['DEPLOYED', 'REJECTED'],
+    DEPLOYED: [],
+    REJECTED: ['NEW'],
+  };
 
   return (
     <div className="space-y-6">
@@ -122,13 +146,18 @@ export default function AdminSuggestionsPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">Geliştirme Önerileri</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Developer Agent&apos;ın işleyeceği görevleri buradan ekleyin ve takip edin.
+            Öneri ekle → onayla → agent otomatik geliştirir → deploy edilir.
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {newCount > 0 && (
+            <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
+              {newCount} yeni
+            </span>
+          )}
           {pendingCount > 0 && (
             <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-              {pendingCount} bekliyor
+              {pendingCount} onaylandı
             </span>
           )}
           <button
@@ -138,6 +167,26 @@ export default function AdminSuggestionsPage() {
             + Yeni Öneri
           </button>
         </div>
+      </div>
+
+      {/* Pipeline overview */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+        {(['NEW', 'PENDING', 'IN_PROGRESS', 'DEVELOPED', 'DEPLOYED', 'REJECTED'] as Status[]).map((s) => {
+          const count = suggestions.filter((sg) => sg.status === s).length;
+          return (
+            <button
+              key={s}
+              onClick={() => { setFilterStatus(s); setSelected(null); }}
+              className={`rounded-xl border p-3 text-center transition ${
+                filterStatus === s ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white hover:border-slate-300'
+              }`}
+            >
+              <div className="text-lg">{statusIcon[s]}</div>
+              <div className="text-xs font-semibold text-slate-600 mt-1">{statusLabel[s]}</div>
+              <div className="text-lg font-bold text-slate-900">{count}</div>
+            </button>
+          );
+        })}
       </div>
 
       {/* New suggestion form */}
@@ -197,19 +246,33 @@ export default function AdminSuggestionsPage() {
 
       {/* Filter tabs */}
       <div className="flex gap-2 border-b border-slate-200">
-        {(['ALL', 'PENDING', 'IN_PROGRESS', 'DONE', 'REJECTED'] as const).map((s) => (
-          <button
-            key={s}
-            onClick={() => { setFilterStatus(s); setSelected(null); }}
-            className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
-              filterStatus === s
-                ? 'border-blue-600 text-blue-700'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            {s === 'ALL' ? 'Tümü' : statusLabel[s]}
-          </button>
-        ))}
+        <button
+          onClick={() => { setFilterStatus('ALL'); setSelected(null); }}
+          className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
+            filterStatus === 'ALL'
+              ? 'border-blue-600 text-blue-700'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Tümü ({suggestions.length})
+        </button>
+        {(['NEW', 'PENDING', 'IN_PROGRESS', 'DEVELOPED', 'DEPLOYED', 'REJECTED'] as Status[]).map((s) => {
+          const count = suggestions.filter((sg) => sg.status === s).length;
+          if (count === 0) return null;
+          return (
+            <button
+              key={s}
+              onClick={() => { setFilterStatus(s); setSelected(null); }}
+              className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
+                filterStatus === s
+                  ? 'border-blue-600 text-blue-700'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              {statusLabel[s]} ({count})
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
@@ -237,7 +300,7 @@ export default function AdminSuggestionsPage() {
                     ▲ {priorityLabel[s.priority]}
                   </span>
                   <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColor[s.status]}`}>
-                    {statusLabel[s.status]}
+                    {statusIcon[s.status]} {statusLabel[s.status]}
                   </span>
                 </div>
                 <p className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">{s.title}</p>
@@ -259,7 +322,7 @@ export default function AdminSuggestionsPage() {
               <div className="p-6 space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusColor[selected.status]}`}>
-                    {statusLabel[selected.status]}
+                    {statusIcon[selected.status]} {statusLabel[selected.status]}
                   </span>
                   <span className={`text-xs font-bold ${priorityColor[selected.priority]}`}>
                     ▲ {priorityLabel[selected.priority]}
@@ -288,23 +351,23 @@ export default function AdminSuggestionsPage() {
                 )}
 
                 {/* Status actions */}
-                <div className="space-y-2 pt-2">
-                  <p className="text-xs font-semibold text-slate-500">Durumu Güncelle</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(['PENDING', 'IN_PROGRESS', 'DONE', 'REJECTED'] as Status[])
-                      .filter((s) => s !== selected.status)
-                      .map((s) => (
+                {allowedTransitions[selected.status].length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <p className="text-xs font-semibold text-slate-500">Durumu Güncelle</p>
+                    <div className="flex flex-wrap gap-2">
+                      {allowedTransitions[selected.status].map((s) => (
                         <button
                           key={s}
                           onClick={() => handleStatusChange(selected.id, s)}
                           disabled={actionLoading === selected.id}
                           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${statusColor[s]} hover:opacity-80`}
                         >
-                          {statusLabel[s]}
+                          {s === 'PENDING' ? 'Onayla' : statusLabel[s]}
                         </button>
                       ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <button
                   onClick={() => handleDelete(selected.id)}
