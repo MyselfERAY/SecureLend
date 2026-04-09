@@ -139,7 +139,10 @@ jobs:
             exit 1
           fi
 
-          git commit -m "feat: ${{ steps.check.outputs.stitle }}"
+          TITLE="${{ steps.check.outputs.stitle }}"
+          # Sanitize title for commit message (remove quotes)
+          SAFE_TITLE=$(echo "$TITLE" | tr -d '"' | tr -d "'")
+          git commit -m "feat: ${SAFE_TITLE}"
           git push origin main
 
       # ── Step 6: Mark DONE ──
