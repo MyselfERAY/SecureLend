@@ -1,0 +1,275 @@
+name: Marketing Agent - Strategy & Research
+
+on:
+  schedule:
+    - cron: '0 6 * * 1-5'     # Weekdays at 06:00 UTC (09:00 Turkey)
+  workflow_dispatch:
+    inputs:
+      research_topic:
+        description: 'Research topic (leave empty for daily strategy)'
+        required: false
+        default: ''
+
+env:
+  API_BASE: https://securelend-production.up.railway.app
+
+concurrency:
+  group: securelend-agents
+  cancel-in-progress: false
+
+jobs:
+  marketing-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Create Agent Run
+        id: run
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"agentType":"MARKETING"}' \
+            "$API_BASE/api/v1/agent-runs")
+
+          RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Determine mode
+        id: mode
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          MANUAL_TOPIC="${{ github.event.inputs.research_topic }}"
+
+          if [ -n "$MANUAL_TOPIC" ]; then
+            echo "mode=research" >> $GITHUB_OUTPUT
+            echo "$MANUAL_TOPIC" > /tmp/research_topic.txt
+            echo "" > /tmp/research_details.txt
+            echo "research_id=" >> $GITHUB_OUTPUT
+            echo "::notice::Research mode: $MANUAL_TOPIC"
+            exit 0
+          fi
+
+          # Check for pending research requests
+          PENDING=$(curl -s -H "x-api-key: $SERVICE_API_KEY" \
+            "$API_BASE/api/v1/marketing/research")
+
+          FIRST_PENDING=$(echo "$PENDING" | jq -r '[.data[]? | select(.status == "PENDING")] | .[0] // empty')
+
+          if [ -n "$FIRST_PENDING" ] && [ "$FIRST_PENDING" != "null" ]; then
+            TOPIC=$(echo "$FIRST_PENDING" | jq -r '.topic')
+            DETAILS=$(echo "$FIRST_PENDING" | jq -r '.details // ""')
+            RID=$(echo "$FIRST_PENDING" | jq -r '.id')
+            echo "$TOPIC" > /tmp/research_topic.txt
+            echo "$DETAILS" > /tmp/research_details.txt
+            echo "mode=research" >> $GITHUB_OUTPUT
+            echo "research_id=$RID" >> $GITHUB_OUTPUT
+            echo "::notice::Research mode (from queue): $TOPIC"
+          else
+            echo "mode=daily" >> $GITHUB_OUTPUT
+            echo "research_id=" >> $GITHUB_OUTPUT
+            echo "::notice::Daily strategy mode"
+          fi
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Generate daily strategy
+        id: daily
+        if: steps.mode.outputs.mode == 'daily'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+
+          PROMPT="You are the Marketing & Business Development Director of SecureLend (kiraguvence.com), a Turkish fintech rental-payment and KMH platform.
+
+          Today is $TODAY. Generate the daily marketing and business development report.
+
+          == OUTPUT FORMAT ==
+          Return ONLY a valid JSON object (no markdown, no code fences):
+          {
+            \"type\": \"DAILY_STRATEGY\",
+            \"title\": \"Pazarlama Raporu - $TODAY\",
+            \"content\": \"<full HTML report with h2/h3 headings, ul/li lists, strong tags, tables where appropriate>\",
+            \"tasks\": [
+              {\"title\": \"Task title in Turkish\", \"description\": \"Detailed description\"}
+            ]
+          }
+
+          == SECTIONS TO INCLUDE IN content ==
+          <h2>Gunun Pazarlama Stratejisi</h2> - Key marketing actions for today
+          <h2>Is Gelistirme Adimlari</h2> - Business development steps and partnerships
+          <h2>Pazar Analizi</h2> - Market analysis: pricing, competitors, trends
+          <h2>Dijital Pazarlama Onerileri</h2> - SEO, social media, content marketing
+          <h2>Is Birligi Firsatlari</h2> - Partnership opportunities with banks, real estate, etc.
+
+          == RULES ==
+          1. Write EVERYTHING in Turkish.
+          2. Include 3-8 actionable tasks.
+          3. Reference REAL Turkish market data: rental market size (~2M contracts/year), competitor landscape, regulatory environment.
+          4. Competitors to analyze: Depovio, Emlakjet, Hepsiemlak, Sahibinden, iyzico, Papara, N Kolay.
+          5. Content must be rich HTML (no markdown). Use tables for comparisons.
+          6. Be specific and data-driven. Cite real industry trends.
+          7. Max 2000 words for content.
+          8. Return ONLY the JSON."
+
+          echo "=== Generating Daily Strategy ==="
+          RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
+
+          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -300)
+          if [ -z "$JSON_RESULT" ]; then
+            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
+          fi
+
+          if [ -z "$JSON_RESULT" ]; then
+            echo "::error::Failed to extract JSON"
+            echo "generate_ok=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "$JSON_RESULT" > /tmp/marketing_report.json
+          echo "generate_ok=true" >> $GITHUB_OUTPUT
+
+      - name: Generate research report
+        id: research
+        if: steps.mode.outputs.mode == 'research'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          TOPIC=$(cat /tmp/research_topic.txt)
+          DETAILS=$(cat /tmp/research_details.txt)
+          TODAY=$(date -u +%Y-%m-%d)
+
+          PROMPT="You are a senior market research analyst for SecureLend (kiraguvence.com), a Turkish fintech rental-payment platform.
+
+          == RESEARCH TOPIC ==
+          $TOPIC
+
+          == ADDITIONAL CONTEXT ==
+          $DETAILS
+
+          Generate a comprehensive, data-driven research report.
+
+          == OUTPUT FORMAT ==
+          Return ONLY a valid JSON object (no markdown, no code fences):
+          {
+            \"type\": \"RESEARCH\",
+            \"title\": \"Arastirma: $TOPIC\",
+            \"content\": \"<full HTML research report with h2/h3, tables, ul/li, strong>\",
+            \"tasks\": [
+              {\"title\": \"Aksiyon maddesi\", \"description\": \"Detay\"}
+            ]
+          }
+
+          == RULES ==
+          1. Turkish language throughout.
+          2. Use REAL, verifiable market data. Reference actual Turkish companies, regulations, statistics.
+          3. Include comparison tables where relevant (e.g., competitor pricing, feature comparison).
+          4. If data is uncertain, clearly state 'Tahmini veri' rather than fabricating.
+          5. Structure: Executive Summary → Market Overview → Detailed Analysis → Competitive Landscape → Recommendations → Action Items.
+          6. Include 2-5 actionable tasks derived from the research.
+          7. Rich HTML formatting with proper headings, tables, lists.
+          8. Max 3000 words.
+          9. Return ONLY the JSON."
+
+          echo "=== Generating Research Report ==="
+          RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
+
+          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -400)
+          if [ -z "$JSON_RESULT" ]; then
+            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
+          fi
+
+          if [ -z "$JSON_RESULT" ]; then
+            echo "::error::Failed to extract JSON"
+            echo "generate_ok=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "$JSON_RESULT" > /tmp/marketing_report.json
+          echo "generate_ok=true" >> $GITHUB_OUTPUT
+
+      - name: Submit report to API
+        id: submit
+        if: steps.daily.outputs.generate_ok == 'true' || steps.research.outputs.generate_ok == 'true'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          REPORT=$(cat /tmp/marketing_report.json)
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+
+          TYPE=$(echo "$REPORT" | jq -r '.type // "DAILY_STRATEGY"')
+          TITLE=$(echo "$REPORT" | jq -r '.title // "Marketing Report"')
+          CONTENT=$(echo "$REPORT" | jq -r '.content // ""')
+          TASKS=$(echo "$REPORT" | jq '[.tasks[]? | {title, description}]')
+
+          PAYLOAD=$(jq -n \
+            --arg type "$TYPE" \
+            --arg title "$TITLE" \
+            --arg content "$CONTENT" \
+            --argjson tasks "$TASKS" \
+            --arg agentRunId "$RUN_ID" \
+            '{type: $type, title: $title, content: $content, tasks: $tasks, agentRunId: (if $agentRunId == "" then null else $agentRunId end)}')
+
+          RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$API_BASE/api/v1/marketing/reports")
+
+          echo "$RESPONSE" | jq .
+
+          if echo "$RESPONSE" | jq -e '.status == "success"' > /dev/null 2>&1; then
+            REPORT_ID=$(echo "$RESPONSE" | jq -r '.data.id')
+            echo "report_id=$REPORT_ID" >> $GITHUB_OUTPUT
+            echo "submit_ok=true" >> $GITHUB_OUTPUT
+            echo "::notice::Marketing report submitted: $REPORT_ID"
+          else
+            echo "::error::Failed to submit marketing report"
+            echo "submit_ok=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Link research request
+        if: steps.submit.outputs.submit_ok == 'true' && steps.mode.outputs.research_id != ''
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RID="${{ steps.mode.outputs.research_id }}"
+          REPORT_ID="${{ steps.submit.outputs.report_id }}"
+
+          # Complete the research request with the report link
+          curl -s -X PATCH \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"COMPLETED\",\"resultReportId\":\"$REPORT_ID\"}" \
+            "$API_BASE/api/v1/marketing/research/$RID"
+
+          echo "::notice::Research request $RID linked to report $REPORT_ID"
+
+      - name: Complete agent run
+        if: always()
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+          if [ -z "$RUN_ID" ]; then exit 0; fi
+
+          GEN_OK="${{ steps.daily.outputs.generate_ok }}${{ steps.research.outputs.generate_ok }}"
+
+          if echo "$GEN_OK" | grep -q "true"; then
+            curl -s -X PATCH \
+              -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"COMPLETED","summary":"Marketing report generated and submitted."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          else
+            curl -s -X PATCH \
+              -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"FAILED","errorMessage":"Failed to generate marketing report."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          fi

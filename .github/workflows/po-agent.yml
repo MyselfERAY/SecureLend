@@ -1,0 +1,181 @@
+name: PO Agent - Daily Report
+
+on:
+  schedule:
+    - cron: '0 5 * * *'       # Every day at 05:00 UTC (08:00 Turkey)
+  workflow_dispatch:            # Manual trigger
+
+env:
+  API_BASE: https://securelend-production.up.railway.app
+
+concurrency:
+  group: securelend-agents
+  cancel-in-progress: false
+
+jobs:
+  po-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Create Agent Run
+        id: run
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"agentType":"PO"}' \
+            "$API_BASE/api/v1/agent-runs")
+
+          echo "$RUN_RESPONSE" | jq .
+
+          RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+          if [ -z "$RUN_ID" ]; then
+            echo "::warning::Could not create agent run. Continuing anyway."
+            RUN_ID=""
+          fi
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Fetch platform metrics
+        id: metrics
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          METRICS=$(curl -s -H "x-api-key: $SERVICE_API_KEY" "$API_BASE/api/v1/po/metrics")
+          echo "$METRICS" | jq .
+
+          # Save to file (safe for special chars)
+          echo "$METRICS" > /tmp/metrics.json
+          echo "has_metrics=true" >> $GITHUB_OUTPUT
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Generate PO Report
+        id: generate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          METRICS=$(cat /tmp/metrics.json)
+          TODAY=$(date -u +%Y-%m-%d)
+
+          PROMPT="You are the Product Owner (PO) of SecureLend (kiraguvence.com), a Turkish fintech rental-payment and KMH (Konut Mortgage Hesabi) platform.
+
+          Today is $TODAY. Generate the daily PO report.
+
+          == CURRENT PLATFORM METRICS ==
+          $METRICS
+
+          == OUTPUT FORMAT ==
+          Return ONLY a valid JSON object (no markdown, no code fences). Schema:
+          {
+            \"summary\": \"<h2>Gunluk PO Raporu - $TODAY</h2><p>... (Turkish, HTML formatted, max 600 words)</p>\",
+            \"metricsSnapshot\": { ... copy of key metrics ... },
+            \"items\": [
+              {
+                \"category\": \"UX_IMPROVEMENT|COMPETITOR_ANALYSIS|REGULATION_COMPLIANCE|FEATURE_SUGGESTION|BUG_REPORT\",
+                \"title\": \"Short title in Turkish (max 100 chars)\",
+                \"description\": \"Detailed description in Turkish\",
+                \"priority\": \"LOW|MEDIUM|HIGH|CRITICAL\",
+                \"isDevTask\": true or false
+              }
+            ]
+          }
+
+          == RULES ==
+          1. Generate 5-10 actionable items across different categories.
+          2. COMPETITOR_ANALYSIS: Reference real Turkish proptech/fintech competitors (Depovio, Emlakjet, Hepsiemlak, iyzico, Papara, etc.).
+          3. REGULATION_COMPLIANCE: Turkish KVKK, BDDK, SPK regulations relevant to fintech/rental platforms.
+          4. FEATURE_SUGGESTION: Based on platform metrics, suggest improvements.
+          5. UX_IMPROVEMENT: Practical UI/UX enhancements for kiraguvence.com.
+          6. Mark isDevTask=true ONLY for items that require actual code changes.
+          7. Write EVERYTHING in Turkish.
+          8. The summary should be a concise daily briefing with key insights.
+          9. Be specific and actionable — no vague suggestions.
+          10. Return ONLY the JSON, nothing else."
+
+          echo "=== Running Claude Code for PO Report ==="
+          RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
+
+          # Extract JSON from response (handle potential markdown wrapping)
+          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -200)
+
+          if [ -z "$JSON_RESULT" ]; then
+            # Try extracting from code fences
+            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
+          fi
+
+          if [ -z "$JSON_RESULT" ]; then
+            echo "::error::Failed to extract JSON from Claude response"
+            echo "$RESULT" | tail -50
+            echo "generate_ok=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "$JSON_RESULT" > /tmp/po_report.json
+          echo "=== Generated Report ==="
+          cat /tmp/po_report.json | jq . 2>/dev/null || cat /tmp/po_report.json | head -50
+          echo "generate_ok=true" >> $GITHUB_OUTPUT
+
+      - name: Submit report to API
+        if: steps.generate.outputs.generate_ok == 'true'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          REPORT=$(cat /tmp/po_report.json)
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+          TODAY=$(date -u +%Y-%m-%d)
+
+          # Build the API payload
+          SUMMARY=$(echo "$REPORT" | jq -r '.summary // ""')
+          METRICS=$(echo "$REPORT" | jq '.metricsSnapshot // {}')
+          ITEMS=$(echo "$REPORT" | jq '[.items[]? | {category, title, description, priority, isDevTask}]')
+
+          PAYLOAD=$(jq -n \
+            --arg summary "$SUMMARY" \
+            --argjson metricsSnapshot "$METRICS" \
+            --argjson items "$ITEMS" \
+            --arg agentRunId "$RUN_ID" \
+            '{summary: $summary, metricsSnapshot: $metricsSnapshot, items: $items, agentRunId: (if $agentRunId == "" then null else $agentRunId end)}')
+
+          echo "=== Submitting to API ==="
+          RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$API_BASE/api/v1/po/reports")
+
+          echo "$RESPONSE" | jq .
+
+          if echo "$RESPONSE" | jq -e '.status == "success"' > /dev/null 2>&1; then
+            echo "::notice::PO Report submitted successfully!"
+          else
+            echo "::error::Failed to submit PO report"
+            exit 1
+          fi
+
+      - name: Complete agent run
+        if: always()
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+          if [ -z "$RUN_ID" ]; then exit 0; fi
+
+          if [ "${{ steps.generate.outputs.generate_ok }}" = "true" ]; then
+            curl -s -X PATCH \
+              -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"COMPLETED","summary":"Daily PO report generated and submitted."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+            echo "::notice::Agent run marked COMPLETED"
+          else
+            curl -s -X PATCH \
+              -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"FAILED","errorMessage":"Failed to generate or parse PO report."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+            echo "::warning::Agent run marked FAILED"
+          fi
