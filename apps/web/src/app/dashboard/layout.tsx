@@ -88,7 +88,11 @@ export default function DashboardLayout({
     if (!isLoading && !tokens) {
       router.replace('/auth/login');
     }
-  }, [isLoading, tokens, router]);
+    // Admin users go directly to admin panel — regular dashboard is irrelevant
+    if (!isLoading && user?.roles.includes('ADMIN') && pathname === '/dashboard') {
+      router.replace('/dashboard/admin');
+    }
+  }, [isLoading, tokens, user, pathname, router]);
 
   const fetchUnreadCount = useCallback(async () => {
     if (!tokens?.accessToken) return;
@@ -158,8 +162,8 @@ export default function DashboardLayout({
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {sidebarLinks
             .filter((link) => {
-              // Admin users only see Panel — other menu items are irrelevant
-              if (user?.roles.includes('ADMIN') && link.href !== '/dashboard') return false;
+              // Admin users only see Admin panel — regular menu items are irrelevant
+              if (user?.roles.includes('ADMIN')) return false;
               return true;
             })
             .map((link) => {

@@ -41,6 +41,12 @@ export default function AdminArticlesPage() {
 
   useEffect(() => { fetchArticles(); }, [tokens?.accessToken]);
 
+  // Auto-refresh every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchArticles, 15000);
+    return () => clearInterval(interval);
+  }, [tokens?.accessToken]);
+
   const handlePublish = async (id: string) => {
     if (!tokens?.accessToken) return;
     setActionLoading(id);
@@ -81,7 +87,7 @@ export default function AdminArticlesPage() {
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-200">
         <button
-          onClick={() => { setTab('DRAFT'); setPreview(null); }}
+          onClick={() => { setTab('DRAFT'); setPreview(null); fetchArticles(); }}
           className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
             tab === 'DRAFT' ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
@@ -94,7 +100,7 @@ export default function AdminArticlesPage() {
           )}
         </button>
         <button
-          onClick={() => { setTab('PUBLISHED'); setPreview(null); }}
+          onClick={() => { setTab('PUBLISHED'); setPreview(null); fetchArticles(); }}
           className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
             tab === 'PUBLISHED' ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
