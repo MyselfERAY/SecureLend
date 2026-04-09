@@ -97,6 +97,7 @@ export default function AdminSuggestionsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', priority: 'HIGH' as Priority });
   const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const fetchSuggestions = async () => {
     if (!tokens?.accessToken) return;
@@ -143,15 +144,25 @@ export default function AdminSuggestionsPage() {
   };
 
   const handleCreate = async () => {
-    if (!tokens?.accessToken || !form.title.trim() || !form.description.trim()) return;
+    if (!tokens?.accessToken) return;
+    if (!form.title.trim() || !form.description.trim()) {
+      setFormError('Baslik ve aciklama zorunludur.');
+      return;
+    }
+    setFormError(null);
     setFormLoading(true);
-    // Create as REJECTED with null agentNotes = "NEW" (awaiting approval)
-    const res = await api<Suggestion>('/api/v1/suggestions', {
-      method: 'POST', token: tokens.accessToken,
-      body: { ...form, status: 'REJECTED' },
-    });
-    if (res.status === 'success') {
-      setForm({ title: '', description: '', priority: 'HIGH' }); setShowForm(false); fetchSuggestions();
+    try {
+      const res = await api<Suggestion>('/api/v1/suggestions', {
+        method: 'POST', token: tokens.accessToken,
+        body: { title: form.title.trim(), description: form.description.trim(), priority: form.priority },
+      });
+      if (res.status === 'success') {
+        setForm({ title: '', description: '', priority: 'HIGH' }); setShowForm(false); fetchSuggestions();
+      } else {
+        setFormError(res.message || 'Kaydetme basarisiz oldu.');
+      }
+    } catch {
+      setFormError('Bir hata olustu. Tekrar deneyin.');
     }
     setFormLoading(false);
   };
@@ -223,6 +234,11 @@ export default function AdminSuggestionsPage() {
             <option value="MEDIUM">Orta</option>
             <option value="LOW">Dusuk</option>
           </select>
+          {formError && (
+            <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-sm text-rose-600 font-medium">
+              {formError}
+            </div>
+          )}
           <div className="flex gap-3">
             <button onClick={handleCreate} disabled={formLoading}
               className="rounded-xl bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50">

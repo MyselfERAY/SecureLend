@@ -22,7 +22,10 @@ export class SuggestionService {
   }
 
   async create(dto: CreateSuggestionDto) {
-    return this.prisma.devSuggestion.create({ data: dto });
+    // New suggestions start as REJECTED with no agentNotes = "Yeni" (awaiting admin approval)
+    return this.prisma.devSuggestion.create({
+      data: { ...dto, status: SuggestionStatus.REJECTED },
+    });
   }
 
   async update(id: string, dto: UpdateSuggestionDto) {
