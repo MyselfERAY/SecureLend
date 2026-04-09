@@ -120,6 +120,11 @@ const metricsLabel: Record<string, string> = {
   activeContracts: 'Aktif Sozlesme',
   monthlyPayments: 'Aylik Odeme',
   pendingSuggestions: 'Bekleyen Oneri',
+  'users.total': 'Toplam Kullanici',
+  'users.lastSevenDays': 'Son 7 Gun (Kullanici)',
+  'contracts.lastSevenDays': 'Son 7 Gun (Sozlesme)',
+  total: 'Toplam',
+  lastSevenDays: 'Son 7 Gun',
 };
 
 // ── Helpers ──
@@ -145,6 +150,20 @@ const chipActiveColor: Record<FilterKey, string> = {
   BUG_REPORT: categoryBorder.BUG_REPORT + ' text-rose-800',
   METRIC_SUMMARY: categoryBorder.METRIC_SUMMARY + ' text-slate-800',
 };
+
+/** Flatten nested metrics into [label, number] pairs for safe rendering */
+function flattenMetrics(obj: Record<string, unknown>, prefix = ''): [string, number][] {
+  const result: [string, number][] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const label = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'number') {
+      result.push([label, value]);
+    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      result.push(...flattenMetrics(value as Record<string, unknown>, label));
+    }
+  }
+  return result;
+}
 
 function formatReportDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('tr-TR', {
@@ -297,10 +316,11 @@ export default function PoJournalPage() {
   // ── Filter items within reports ──
 
   const filteredReports: PoReport[] = reports.map((report) => {
-    if (filter === 'ALL') return report;
+    const items = report.items ?? [];
+    if (filter === 'ALL') return { ...report, items };
     return {
       ...report,
-      items: report.items.filter((item) => item.category === filter),
+      items: items.filter((item) => item.category === filter),
     };
   });
 
@@ -475,9 +495,8 @@ export default function PoJournalPage() {
                 {report.metricsSnapshot &&
                   Object.keys(report.metricsSnapshot).length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {Object.entries(report.metricsSnapshot).map(
-                        ([key, value]) =>
-                          value !== undefined && (
+                      {flattenMetrics(report.metricsSnapshot).map(
+                        ([key, value]) => (
                             <div
                               key={key}
                               className="rounded-xl border border-slate-200 bg-white p-4 text-center"
@@ -488,7 +507,7 @@ export default function PoJournalPage() {
                               <div className="mt-1 text-xl font-bold text-slate-900">
                                 {typeof value === 'number'
                                   ? value.toLocaleString('tr-TR')
-                                  : value}
+                                  : String(value)}
                               </div>
                             </div>
                           ),
