@@ -8,9 +8,17 @@ import { SuggestionStatus } from '@prisma/client';
 export class SuggestionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(status?: SuggestionStatus) {
+  async findAll(status?: SuggestionStatus, search?: string) {
+    const where: Record<string, unknown> = {};
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
     return this.prisma.devSuggestion.findMany({
-      where: status ? { status } : undefined,
+      where,
       orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     });
   }
@@ -27,7 +35,12 @@ export class SuggestionService {
 
   async update(id: string, dto: UpdateSuggestionDto) {
     await this.findOne(id);
-    return this.prisma.devSuggestion.update({ where: { id }, data: dto });
+    const data: Record<string, unknown> = { ...dto };
+    // Auto-set completedAt when reaching DEVELOPED or DEPLOYED
+    if (dto.status === SuggestionStatus.DEVELOPED || dto.status === SuggestionStatus.DEPLOYED) {
+      data.completedAt = new Date();
+    }
+    return this.prisma.devSuggestion.update({ where: { id }, data });
   }
 
   async remove(id: string) {
