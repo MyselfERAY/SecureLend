@@ -11,11 +11,8 @@ export class SuggestionController {
   constructor(private readonly suggestionService: SuggestionService) {}
 
   @Get()
-  async findAll(
-    @Query('status') status?: SuggestionStatus,
-    @Query('search') search?: string,
-  ) {
-    const suggestions = await this.suggestionService.findAll(status, search);
+  async findAll(@Query('status') status?: SuggestionStatus) {
+    const suggestions = await this.suggestionService.findAll(status);
     return { status: 'success', data: suggestions };
   }
 

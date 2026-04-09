@@ -19,7 +19,4 @@ export class UpdateSuggestionDto {
   @MaxLength(500)
   prLink?: string;
 
-  @IsOptional()
-  @IsString()
-  imageUrl?: string;
 }

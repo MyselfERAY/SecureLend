@@ -15,7 +15,4 @@ export class CreateSuggestionDto {
   @IsEnum(SuggestionPriority)
   priority?: SuggestionPriority;
 
-  @IsOptional()
-  @IsString()
-  imageUrl?: string;
 }

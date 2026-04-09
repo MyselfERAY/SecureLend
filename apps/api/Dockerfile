@@ -13,7 +13,6 @@ RUN pnpm --filter @securelend/api build
 
 FROM node:20-alpine
 RUN corepack enable && corepack prepare pnpm@8.15.4 --activate
-RUN apk add --no-cache postgresql-client
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
@@ -23,4 +22,4 @@ COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
 WORKDIR /app/apps/api
 EXPOSE 3000
-CMD ["sh", "-c", "echo '=== CLEANUP START ===' && psql \"$DATABASE_URL\" -c \"DELETE FROM _prisma_migrations WHERE migration_name IN ('20260409100000_update_suggestion_statuses','20260409110000_add_suggestion_image');\" 2>&1 && echo '=== CLEANUP DONE ===' ; echo '=== MIGRATE START ===' && npx prisma migrate deploy 2>&1 ; echo '=== MIGRATE DONE ===' && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy 2>&1; node dist/main.js"]
