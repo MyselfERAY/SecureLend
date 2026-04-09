@@ -70,7 +70,14 @@ export class PoAgentService {
         skip,
         take: limit,
         orderBy: { reportDate: 'desc' },
-        include: { _count: { select: { items: true } } },
+        include: {
+          items: {
+            include: {
+              devSuggestion: { select: { id: true, status: true, prLink: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       }),
       this.prisma.poReport.count(),
     ]);

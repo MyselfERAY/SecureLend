@@ -6,8 +6,8 @@ import { api } from '../../../../lib/api';
 
 // ── Types ──
 
-type ReportType = 'DAILY_STRATEGY' | 'MARKET_ANALYSIS' | 'RESEARCH' | 'BIZ_DEV';
-type ResearchStatus = 'PENDING' | 'COMPLETED';
+type ReportType = 'DAILY_STRATEGY' | 'MARKET_ANALYSIS' | 'RESEARCH' | 'BUSINESS_DEVELOPMENT';
+type ResearchStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 interface MarketingTask {
@@ -44,24 +44,28 @@ const reportTypeLabel: Record<ReportType, string> = {
   DAILY_STRATEGY: 'Gunluk Strateji',
   MARKET_ANALYSIS: 'Pazar Analizi',
   RESEARCH: 'Arastirma',
-  BIZ_DEV: 'Is Gelistirme',
+  BUSINESS_DEVELOPMENT: 'Is Gelistirme',
 };
 
 const reportTypeColor: Record<ReportType, string> = {
   DAILY_STRATEGY: 'bg-blue-100 text-blue-700',
   MARKET_ANALYSIS: 'bg-emerald-100 text-emerald-700',
   RESEARCH: 'bg-purple-100 text-purple-700',
-  BIZ_DEV: 'bg-amber-100 text-amber-700',
+  BUSINESS_DEVELOPMENT: 'bg-amber-100 text-amber-700',
 };
 
 const researchStatusLabel: Record<ResearchStatus, string> = {
   PENDING: 'Bekliyor',
+  IN_PROGRESS: 'Devam Ediyor',
   COMPLETED: 'Tamamlandi',
+  FAILED: 'Basarisiz',
 };
 
 const researchStatusColor: Record<ResearchStatus, string> = {
   PENDING: 'bg-amber-100 text-amber-700',
+  IN_PROGRESS: 'bg-blue-100 text-blue-700',
   COMPLETED: 'bg-emerald-100 text-emerald-700',
+  FAILED: 'bg-rose-100 text-rose-700',
 };
 
 const taskStatusLabel: Record<TaskStatus, string> = {
@@ -85,7 +89,7 @@ const filterOptions: { key: FilterType; label: string }[] = [
   { key: 'DAILY_STRATEGY', label: 'Gunluk Strateji' },
   { key: 'MARKET_ANALYSIS', label: 'Pazar Analizi' },
   { key: 'RESEARCH', label: 'Arastirma' },
-  { key: 'BIZ_DEV', label: 'Is Gelistirme' },
+  { key: 'BUSINESS_DEVELOPMENT', label: 'Is Gelistirme' },
 ];
 
 function formatDate(dateStr: string): string {
@@ -139,11 +143,17 @@ export default function MarketingReportsPage() {
       setLoading(true);
     }
     try {
-      const res = await api<{ data: MarketingReport[] }>('/api/v1/marketing/reports', {
+      const res = await api<any>('/api/v1/marketing/reports', {
         token: tokens.accessToken,
       });
       if (res.status === 'success' && res.data) {
-        const list = Array.isArray(res.data) ? res.data : (res.data as any).data ?? [];
+        // API returns { data: [...], total, page, limit }
+        const raw = Array.isArray(res.data) ? res.data : Array.isArray(res.data.data) ? res.data.data : [];
+        // Ensure each report has a tasks array (list query uses _count, not include)
+        const list: MarketingReport[] = raw.map((r: any) => ({
+          ...r,
+          tasks: r.tasks ?? [],
+        }));
         setReports(list);
         const currentSelected = selectedRef.current;
         if (currentSelected) {
@@ -387,7 +397,7 @@ export default function MarketingReportsPage() {
                   >
                     {reportTypeLabel[r.type]}
                   </span>
-                  {r.tasks.length > 0 && (
+                  {(r.tasks?.length ?? 0) > 0 && (
                     <span className="ml-auto text-xs text-slate-400">
                       {r.tasks.length} gorev
                     </span>

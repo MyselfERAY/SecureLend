@@ -6,7 +6,7 @@ import { api } from '../../../../lib/api';
 
 // ── Types ──
 
-type ItemCategory = 'UX' | 'COMPETITOR' | 'REGULATION' | 'FEATURE' | 'BUG';
+type ItemCategory = 'UX_IMPROVEMENT' | 'COMPETITOR_ANALYSIS' | 'REGULATION_COMPLIANCE' | 'FEATURE_SUGGESTION' | 'BUG_REPORT' | 'METRIC_SUMMARY';
 type ItemStatus = 'ACTIVE' | 'MOVED_TO_DEV' | 'DISMISSED';
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 type DevSuggestionStatus = 'NEW' | 'APPROVED' | 'IN_PROGRESS' | 'DONE' | 'REJECTED';
@@ -45,27 +45,30 @@ interface PoReport {
 // ── Category display config ──
 
 const categoryLabel: Record<ItemCategory, string> = {
-  UX: 'UX',
-  COMPETITOR: 'Rakip Analizi',
-  REGULATION: 'Regulasyon',
-  FEATURE: 'Ozellik',
-  BUG: 'Bug',
+  UX_IMPROVEMENT: 'UX',
+  COMPETITOR_ANALYSIS: 'Rakip Analizi',
+  REGULATION_COMPLIANCE: 'Regulasyon',
+  FEATURE_SUGGESTION: 'Ozellik',
+  BUG_REPORT: 'Bug',
+  METRIC_SUMMARY: 'Metrik Ozeti',
 };
 
 const categoryColor: Record<ItemCategory, string> = {
-  UX: 'bg-blue-100 text-blue-700',
-  COMPETITOR: 'bg-purple-100 text-purple-700',
-  REGULATION: 'bg-amber-100 text-amber-700',
-  FEATURE: 'bg-emerald-100 text-emerald-700',
-  BUG: 'bg-rose-100 text-rose-700',
+  UX_IMPROVEMENT: 'bg-blue-100 text-blue-700',
+  COMPETITOR_ANALYSIS: 'bg-purple-100 text-purple-700',
+  REGULATION_COMPLIANCE: 'bg-amber-100 text-amber-700',
+  FEATURE_SUGGESTION: 'bg-emerald-100 text-emerald-700',
+  BUG_REPORT: 'bg-rose-100 text-rose-700',
+  METRIC_SUMMARY: 'bg-slate-100 text-slate-700',
 };
 
 const categoryBorder: Record<ItemCategory, string> = {
-  UX: 'border-blue-400 bg-blue-50',
-  COMPETITOR: 'border-purple-400 bg-purple-50',
-  REGULATION: 'border-amber-400 bg-amber-50',
-  FEATURE: 'border-emerald-400 bg-emerald-50',
-  BUG: 'border-rose-400 bg-rose-50',
+  UX_IMPROVEMENT: 'border-blue-400 bg-blue-50',
+  COMPETITOR_ANALYSIS: 'border-purple-400 bg-purple-50',
+  REGULATION_COMPLIANCE: 'border-amber-400 bg-amber-50',
+  FEATURE_SUGGESTION: 'border-emerald-400 bg-emerald-50',
+  BUG_REPORT: 'border-rose-400 bg-rose-50',
+  METRIC_SUMMARY: 'border-slate-400 bg-slate-50',
 };
 
 // ── Status display config ──
@@ -125,20 +128,22 @@ type FilterKey = 'ALL' | ItemCategory;
 
 const filterChips: { key: FilterKey; label: string }[] = [
   { key: 'ALL', label: 'Tumu' },
-  { key: 'UX', label: 'UX' },
-  { key: 'COMPETITOR', label: 'Rakip Analizi' },
-  { key: 'REGULATION', label: 'Regulasyon' },
-  { key: 'FEATURE', label: 'Ozellik' },
-  { key: 'BUG', label: 'Bug' },
+  { key: 'UX_IMPROVEMENT', label: 'UX' },
+  { key: 'COMPETITOR_ANALYSIS', label: 'Rakip Analizi' },
+  { key: 'REGULATION_COMPLIANCE', label: 'Regulasyon' },
+  { key: 'FEATURE_SUGGESTION', label: 'Ozellik' },
+  { key: 'BUG_REPORT', label: 'Bug' },
+  { key: 'METRIC_SUMMARY', label: 'Metrik Ozeti' },
 ];
 
 const chipActiveColor: Record<FilterKey, string> = {
   ALL: 'border-slate-500 bg-slate-100 text-slate-800',
-  UX: categoryBorder.UX + ' text-blue-800',
-  COMPETITOR: categoryBorder.COMPETITOR + ' text-purple-800',
-  REGULATION: categoryBorder.REGULATION + ' text-amber-800',
-  FEATURE: categoryBorder.FEATURE + ' text-emerald-800',
-  BUG: categoryBorder.BUG + ' text-rose-800',
+  UX_IMPROVEMENT: categoryBorder.UX_IMPROVEMENT + ' text-blue-800',
+  COMPETITOR_ANALYSIS: categoryBorder.COMPETITOR_ANALYSIS + ' text-purple-800',
+  REGULATION_COMPLIANCE: categoryBorder.REGULATION_COMPLIANCE + ' text-amber-800',
+  FEATURE_SUGGESTION: categoryBorder.FEATURE_SUGGESTION + ' text-emerald-800',
+  BUG_REPORT: categoryBorder.BUG_REPORT + ' text-rose-800',
+  METRIC_SUMMARY: categoryBorder.METRIC_SUMMARY + ' text-slate-800',
 };
 
 function formatReportDate(dateStr: string): string {
@@ -151,11 +156,12 @@ function formatReportDate(dateStr: string): string {
 
 function groupItemsByCategory(items: PoItem[]): Record<ItemCategory, PoItem[]> {
   const groups: Record<ItemCategory, PoItem[]> = {
-    UX: [],
-    COMPETITOR: [],
-    REGULATION: [],
-    FEATURE: [],
-    BUG: [],
+    UX_IMPROVEMENT: [],
+    COMPETITOR_ANALYSIS: [],
+    REGULATION_COMPLIANCE: [],
+    FEATURE_SUGGESTION: [],
+    BUG_REPORT: [],
+    METRIC_SUMMARY: [],
   };
   items.forEach((item) => {
     if (groups[item.category]) {
@@ -178,7 +184,7 @@ export default function PoJournalPage() {
   // Add Item form state
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    category: 'FEATURE' as ItemCategory,
+    category: 'FEATURE_SUGGESTION' as ItemCategory,
     title: '',
     description: '',
     priority: 'HIGH' as Priority,
@@ -200,11 +206,17 @@ export default function PoJournalPage() {
       setLoading(true);
     }
     try {
-      const res = await api<PoReport[]>('/api/v1/po/reports', {
+      const res = await api<any>('/api/v1/po/reports', {
         token: tokens.accessToken,
       });
       if (res.status === 'success' && res.data) {
-        setReports(res.data);
+        // API returns { reports: [...], total, page, limit }
+        const list: PoReport[] = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data.reports)
+          ? res.data.reports
+          : [];
+        setReports(list);
       }
     } catch {
       // silently fail on background refresh
@@ -265,7 +277,7 @@ export default function PoJournalPage() {
       });
       if (res.status === 'success') {
         setForm({
-          category: 'FEATURE',
+          category: 'FEATURE_SUGGESTION',
           title: '',
           description: '',
           priority: 'HIGH',
@@ -341,11 +353,12 @@ export default function PoJournalPage() {
             }
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
           >
-            <option value="UX">UX</option>
-            <option value="COMPETITOR">Rakip Analizi</option>
-            <option value="REGULATION">Regulasyon</option>
-            <option value="FEATURE">Ozellik</option>
-            <option value="BUG">Bug</option>
+            <option value="UX_IMPROVEMENT">UX</option>
+            <option value="COMPETITOR_ANALYSIS">Rakip Analizi</option>
+            <option value="REGULATION_COMPLIANCE">Regulasyon</option>
+            <option value="FEATURE_SUGGESTION">Ozellik</option>
+            <option value="BUG_REPORT">Bug</option>
+            <option value="METRIC_SUMMARY">Metrik Ozeti</option>
           </select>
 
           <input

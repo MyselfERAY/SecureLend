@@ -47,7 +47,7 @@ export class MarketingAgentService {
         orderBy: { reportDate: 'desc' },
         skip,
         take: limit,
-        include: { _count: { select: { tasks: true } } },
+        include: { tasks: { orderBy: { createdAt: 'asc' } } },
       }),
       this.prisma.marketingReport.count({ where }),
     ]);

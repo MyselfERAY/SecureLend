@@ -113,11 +113,14 @@ export default function TaskTrackingPage() {
       ]);
 
       if (tasksRes.status === 'success' && tasksRes.data) {
-        const list = Array.isArray(tasksRes.data) ? tasksRes.data : [];
+        // API returns { data: [...], total, page, limit }
+        const raw = tasksRes.data as any;
+        const list: Task[] = Array.isArray(raw) ? raw : Array.isArray(raw.data) ? raw.data : [];
         setTasks(list);
       }
       if (upcomingRes.status === 'success' && upcomingRes.data) {
-        const list = Array.isArray(upcomingRes.data) ? upcomingRes.data : [];
+        const raw = upcomingRes.data as any;
+        const list: Task[] = Array.isArray(raw) ? raw : Array.isArray(raw.data) ? raw.data : [];
         setUpcomingTasks(list);
       }
     } catch {
