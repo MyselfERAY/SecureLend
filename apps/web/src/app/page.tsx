@@ -198,17 +198,18 @@ export default function HomePage() {
       <main>
 
         {/* ── HERO ── */}
-        <section className="bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <section className="bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8 overflow-hidden">
           <div className="mx-auto max-w-6xl">
-            <div className="max-w-2xl">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+              {/* Left: Text */}
               <div>
                 <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
                   Türkiye&apos;nin Dijital Kira Platformu
                 </span>
-                <h1 className="mt-5 max-w-xl text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
+                <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
                   Kiranızı güvenle ödeyin, sözleşmenizi dijitalde yönetin
                 </h1>
-                <p className="mt-5 max-w-lg text-base leading-7 text-slate-600 sm:text-lg">
+                <p className="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
                   Kiracı, ev sahibi ve banka arasındaki süreci tek merkezde yönetin.
                   Sözleşme, ödeme ve uygunluk adımları fintech seviyesinde güvence altında.
                 </p>
@@ -228,7 +229,7 @@ export default function HomePage() {
                   </a>
                 </div>
 
-                <div className="mt-6 flex items-center gap-4 text-sm text-slate-500">
+                <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500">
                   <span className="flex items-center gap-1.5">
                     <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -250,11 +251,82 @@ export default function HomePage() {
                 </div>
               </div>
 
+              {/* Right: Dashboard mockup illustration */}
+              <div className="hidden lg:block relative">
+                <div className="absolute -right-8 -top-8 h-72 w-72 rounded-full bg-blue-100 opacity-40 blur-3xl" />
+                <div className="absolute -bottom-4 -left-4 h-48 w-48 rounded-full bg-emerald-100 opacity-40 blur-3xl" />
+                <div className="relative rounded-2xl border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-200/60">
+                  {/* Window chrome */}
+                  <div className="flex items-center gap-1.5 border-b border-slate-100 px-4 py-2.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                    <div className="ml-3 h-5 flex-1 rounded-md bg-slate-100" />
+                  </div>
+                  {/* Dashboard content */}
+                  <div className="p-5 space-y-4">
+                    {/* Stats row */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-xl bg-blue-50 p-3">
+                        <div className="text-[10px] font-medium text-blue-600">Aktif Sozlesme</div>
+                        <div className="mt-0.5 text-lg font-extrabold text-blue-900">24</div>
+                      </div>
+                      <div className="rounded-xl bg-emerald-50 p-3">
+                        <div className="text-[10px] font-medium text-emerald-600">Odeme Basarisi</div>
+                        <div className="mt-0.5 text-lg font-extrabold text-emerald-900">%99.8</div>
+                      </div>
+                      <div className="rounded-xl bg-amber-50 p-3">
+                        <div className="text-[10px] font-medium text-amber-600">Bu Ay</div>
+                        <div className="mt-0.5 text-lg font-extrabold text-amber-900">42,500 TL</div>
+                      </div>
+                    </div>
+                    {/* Table mockup */}
+                    <div className="rounded-xl border border-slate-100">
+                      <div className="grid grid-cols-4 gap-2 border-b border-slate-100 px-3 py-2 text-[10px] font-semibold text-slate-400 uppercase">
+                        <span>Kiraci</span><span>Tutar</span><span>Tarih</span><span>Durum</span>
+                      </div>
+                      {[
+                        { name: 'Ahmet Y.', amount: '8,500 TL', date: '01 Nis', color: 'emerald' },
+                        { name: 'Zeynep K.', amount: '12,000 TL', date: '01 Nis', color: 'emerald' },
+                        { name: 'Can D.', amount: '6,750 TL', date: '05 Nis', color: 'amber' },
+                      ].map((row) => (
+                        <div key={row.name} className="grid grid-cols-4 gap-2 px-3 py-2.5 text-xs text-slate-700">
+                          <span className="font-medium">{row.name}</span>
+                          <span>{row.amount}</span>
+                          <span className="text-slate-400">{row.date}</span>
+                          <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            row.color === 'emerald' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                          }`}>
+                            {row.color === 'emerald' ? 'Odendi' : 'Bekliyor'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Chart mockup */}
+                    <div className="flex items-end gap-1.5 h-16 px-2">
+                      {[40, 55, 35, 65, 50, 75, 60, 80, 70, 90, 85, 95].map((h, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 rounded-sm bg-blue-200 transition-all hover:bg-blue-400"
+                          style={{ height: `${h}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* stats hidden */}
+        {/* ── STATS ── */}
+        <section className="bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl grid grid-cols-2 gap-8 sm:grid-cols-4">
+            {stats.map((stat) => (
+              <StatItem key={stat.label} stat={stat} />
+            ))}
+          </div>
+        </section>
 
         {/* ── FEATURES ── */}
         <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -337,7 +409,21 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* testimonials hidden */}
+        {/* ── TESTIMONIALS ── */}
+        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Kullanıcılar</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Ne Diyorlar?</h2>
+              <p className="mt-3 text-base text-slate-500">Platformumuzu kullanan kiracı, ev sahibi ve emlakçıların görüşleri.</p>
+            </div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              {testimonials.map((t) => (
+                <TestimonialCard key={t.name} {...t} />
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* ── CTA BAND ── */}
         <section className="bg-blue-700 px-4 py-14 sm:px-6 lg:px-8">

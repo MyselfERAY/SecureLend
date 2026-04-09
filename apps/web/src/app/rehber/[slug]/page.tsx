@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import Logo from '../../../components/logo';
+import SiteNav from '../../../components/site-nav';
 
 interface Article {
   id: string;
@@ -55,57 +55,60 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const paragraphs = article.content.split('\n\n').filter(Boolean);
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-2xl">
-        {/* Back */}
-        <div className="mb-8 flex items-center justify-between">
-          <Logo />
-          <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            Tüm Yazılar
-          </Link>
-        </div>
+    <div className="min-h-screen bg-slate-50">
+      <SiteNav />
 
-        {/* Header */}
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="text-xs font-medium text-slate-400">{article.category}</span>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
-              {audienceLabel[article.audience]}
-            </span>
+      <main className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          {/* Back */}
+          <div className="mb-8 flex items-center justify-end">
+            <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              Tüm Yazılar
+            </Link>
           </div>
 
-          <h1 className="text-2xl font-extrabold text-slate-900 leading-snug sm:text-3xl">
-            {article.title}
-          </h1>
-          <p className="mt-3 text-sm text-slate-400">
-            {new Date(article.publishedAt).toLocaleDateString('tr-TR', {
-              day: 'numeric', month: 'long', year: 'numeric',
-            })}
-          </p>
-          <p className="mt-4 text-base text-slate-600 font-medium border-l-4 border-blue-200 pl-4">
-            {article.summary}
-          </p>
-        </div>
+          {/* Header */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-xs font-medium text-slate-400">{article.category}</span>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
+                {audienceLabel[article.audience]}
+              </span>
+            </div>
 
-        {/* Content */}
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-          <div className="prose-like space-y-4">
-            {paragraphs.map((para, i) => (
-              <p key={i} className="text-base text-slate-700 leading-relaxed">
-                {para}
-              </p>
-            ))}
+            <h1 className="text-2xl font-extrabold text-slate-900 leading-snug sm:text-3xl">
+              {article.title}
+            </h1>
+            <p className="mt-3 text-sm text-slate-400">
+              {new Date(article.publishedAt).toLocaleDateString('tr-TR', {
+                day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </p>
+            <p className="mt-4 text-base text-slate-600 font-medium border-l-4 border-blue-200 pl-4">
+              {article.summary}
+            </p>
+          </div>
+
+          {/* Content */}
+          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+            <div className="prose-like space-y-4">
+              {paragraphs.map((para, i) => (
+                <p key={i} className="text-base text-slate-700 leading-relaxed">
+                  {para}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer nav */}
+          <div className="mt-8 text-center">
+            <Link href="/rehber" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
+              ← Tüm yazılara dön
+            </Link>
           </div>
         </div>
-
-        {/* Footer nav */}
-        <div className="mt-8 text-center">
-          <Link href="/rehber" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
-            ← Tüm yazılara dön
-          </Link>
-        </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
