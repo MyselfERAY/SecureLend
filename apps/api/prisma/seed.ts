@@ -20,7 +20,7 @@ async function main() {
     create: {
       tcknHash,
       tcknMasked,
-      fullName: 'Platform Admin',
+      fullName: 'Admin User',
       phone: '5000000000',
       phoneVerified: true,
       roles: [UserRole.ADMIN],
