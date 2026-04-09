@@ -1,0 +1,204 @@
+name: Article Agent - SEO Blog Content
+
+on:
+  schedule:
+    - cron: '0 7 * * 2,4'     # Tuesday & Thursday at 07:00 UTC (10:00 Turkey)
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Specific article topic (leave empty for auto-pick)'
+        required: false
+        default: ''
+      audience:
+        description: 'Target audience'
+        required: false
+        default: 'BOTH'
+        type: choice
+        options:
+          - BOTH
+          - TENANT
+          - LANDLORD
+
+env:
+  API_BASE: https://securelend-production.up.railway.app
+
+concurrency:
+  group: securelend-agents
+  cancel-in-progress: false
+
+jobs:
+  article-generation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Create Agent Run
+        id: run
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"agentType":"MARKETING"}' \
+            "$API_BASE/api/v1/agent-runs")
+
+          RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Fetch existing articles
+        id: existing
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          # Get existing article titles to avoid duplicates
+          ARTICLES=$(curl -s -H "x-api-key: $SERVICE_API_KEY" \
+            "$API_BASE/api/v1/articles/admin/all")
+
+          TITLES=$(echo "$ARTICLES" | jq -r '[.data[]?.title // empty] | join(" | ")' 2>/dev/null || echo "")
+          echo "$TITLES" > /tmp/existing_titles.txt
+          echo "::notice::Existing articles: $(echo "$TITLES" | head -c 200)"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Generate article
+        id: generate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          MANUAL_TOPIC="${{ github.event.inputs.topic }}"
+          AUDIENCE="${{ github.event.inputs.audience }}"
+          if [ -z "$AUDIENCE" ]; then AUDIENCE="BOTH"; fi
+          EXISTING=$(cat /tmp/existing_titles.txt)
+          TODAY=$(date -u +%Y-%m-%d)
+
+          PROMPT="You are the content marketing writer for SecureLend (kiraguvence.com), a Turkish fintech platform for secure rental payments and KMH (housing savings accounts).
+
+          Generate a high-quality, SEO-optimized blog article in Turkish for the /rehber (guide) section.
+
+          == EXISTING ARTICLES (do NOT repeat these topics) ==
+          $EXISTING
+
+          == MANUAL TOPIC REQUEST ==
+          $(if [ -n "$MANUAL_TOPIC" ]; then echo "Write about: $MANUAL_TOPIC"; else echo "Choose a topic automatically from the categories below."; fi)
+
+          == TARGET AUDIENCE ==
+          $AUDIENCE (TENANT = kiraci, LANDLORD = ev sahibi, BOTH = herkes)
+
+          == TOPIC CATEGORIES (pick one) ==
+          1. Kiracinin Haklari - tenant rights, deposit rules, eviction process
+          2. Ev Sahibinin Haklari - landlord rights, rental income tax, contract termination
+          3. Kira Sozlesmesi - lease agreement tips, clauses, legal requirements
+          4. Finansal Rehber - budgeting for rent, KMH savings, credit score impact
+          5. Guvenli Odeme - secure payment methods, receipt importance, digital payments
+          6. Hukuki Bilgi - Turkish rental law (6098 TBK), dispute resolution, mediation
+          7. Emlak Piyasasi - rental market trends, pricing, city comparisons
+          8. Dijital Donusum - proptech, fintech in real estate, digital contracts
+
+          == OUTPUT FORMAT ==
+          Return ONLY a valid JSON object (no markdown, no code fences):
+          {
+            \"title\": \"Article title in Turkish (compelling, SEO-friendly, 40-80 chars)\",
+            \"slug\": \"url-friendly-slug-in-turkish (lowercase, hyphens, no special chars)\",
+            \"summary\": \"2-3 sentence summary in Turkish (100-200 chars, appears in cards)\",
+            \"content\": \"Full article body in Turkish (plain text, use \\n\\n for paragraph breaks)\",
+            \"category\": \"One of: Kiracinin Haklari, Ev Sahibinin Haklari, Kira Sozlesmesi, Finansal Rehber, Guvenli Odeme, Hukuki Bilgi, Emlak Piyasasi, Dijital Donusum\",
+            \"audience\": \"$AUDIENCE\"
+          }
+
+          == RULES ==
+          1. Write EVERYTHING in Turkish. Natural, conversational tone.
+          2. Article must be 800-1500 words (content field).
+          3. Include real Turkish legal references where relevant (TBK madde numbers, KVKK, etc.).
+          4. SEO: naturally include keywords like 'kira odeme', 'kira sozlesmesi', 'kiraci haklari', 'ev sahibi', 'guvenli kira', 'KMH', 'kiraguvence'.
+          5. Structure content with clear paragraphs (\\n\\n between them). Use numbered lists and bullet points where appropriate.
+          6. Do NOT use markdown formatting (no #, **, etc.). Plain text only.
+          7. Mention SecureLend/kiraguvence.com naturally 1-2 times as a helpful platform reference, not as an ad.
+          8. Make it genuinely useful and informative for Turkish renters/landlords.
+          9. The slug must be unique and URL-safe (a-z, 0-9, hyphens only).
+          10. Return ONLY the JSON."
+
+          echo "=== Generating Article ==="
+          RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
+
+          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -300)
+          if [ -z "$JSON_RESULT" ]; then
+            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
+          fi
+
+          if [ -z "$JSON_RESULT" ]; then
+            echo "::error::Failed to extract JSON"
+            echo "generate_ok=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "$JSON_RESULT" > /tmp/article.json
+          echo "=== Generated Article ==="
+          cat /tmp/article.json | jq '.title, .slug, .category' 2>/dev/null
+          echo "generate_ok=true" >> $GITHUB_OUTPUT
+
+      - name: Submit article as draft
+        id: submit
+        if: steps.generate.outputs.generate_ok == 'true'
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          ARTICLE=$(cat /tmp/article.json)
+
+          TITLE=$(echo "$ARTICLE" | jq -r '.title // "Untitled"')
+          SLUG=$(echo "$ARTICLE" | jq -r '.slug // "untitled"')
+          SUMMARY=$(echo "$ARTICLE" | jq -r '.summary // ""')
+          CONTENT=$(echo "$ARTICLE" | jq -r '.content // ""')
+          CATEGORY=$(echo "$ARTICLE" | jq -r '.category // "Rehber"')
+          AUDIENCE=$(echo "$ARTICLE" | jq -r '.audience // "BOTH"')
+
+          PAYLOAD=$(jq -n \
+            --arg title "$TITLE" \
+            --arg slug "$SLUG" \
+            --arg summary "$SUMMARY" \
+            --arg content "$CONTENT" \
+            --arg category "$CATEGORY" \
+            --arg audience "$AUDIENCE" \
+            '{title: $title, slug: $slug, summary: $summary, content: $content, category: $category, audience: $audience}')
+
+          RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$API_BASE/api/v1/articles")
+
+          echo "$RESPONSE" | jq .
+
+          if echo "$RESPONSE" | jq -e '.status == "success"' > /dev/null 2>&1; then
+            ARTICLE_ID=$(echo "$RESPONSE" | jq -r '.data.id')
+            echo "article_id=$ARTICLE_ID" >> $GITHUB_OUTPUT
+            echo "submit_ok=true" >> $GITHUB_OUTPUT
+            echo "::notice::Article created as DRAFT: $TITLE (id: $ARTICLE_ID)"
+          else
+            echo "::error::Failed to create article"
+            echo "submit_ok=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Complete agent run
+        if: always()
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+          if [ -z "$RUN_ID" ]; then exit 0; fi
+
+          if [ "${{ steps.submit.outputs.submit_ok }}" = "true" ]; then
+            TITLE=$(cat /tmp/article.json | jq -r '.title // "article"')
+            curl -s -X PATCH \
+              -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"status\":\"COMPLETED\",\"summary\":\"Article generated: $TITLE\"}" \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          else
+            curl -s -X PATCH \
+              -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"FAILED","errorMessage":"Failed to generate article."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          fi
