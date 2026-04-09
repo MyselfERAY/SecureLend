@@ -115,16 +115,8 @@ function StatItem({ stat }: { stat: typeof stats[number] }) {
 export default function HomePage() {
   const { tokens, isLoading } = useAuth();
   const router = useRouter();
-  const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [latestArticles, setLatestArticles] = useState<LatestArticle[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`)
-      .then((r) => r.json())
-      .then((d) => setApiStatus(d.status === 'success' ? 'online' : 'offline'))
-      .catch(() => setApiStatus('offline'));
-  }, []);
 
   useEffect(() => {
     if (!isLoading && tokens) {
@@ -208,7 +200,7 @@ export default function HomePage() {
         {/* ── HERO ── */}
         <section className="bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-6xl">
-            <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="max-w-2xl">
               <div>
                 <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
                   Türkiye&apos;nin Dijital Kira Platformu
@@ -258,36 +250,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Operasyon Özeti card */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg sm:p-7">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Operasyon Özeti</p>
-                <div className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-                  apiStatus === 'online' ? 'bg-emerald-50 text-emerald-700' :
-                  apiStatus === 'offline' ? 'bg-red-50 text-red-700' :
-                  'bg-slate-100 text-slate-500'
-                }`}>
-                  <span className={`h-2 w-2 rounded-full ${
-                    apiStatus === 'online' ? 'bg-emerald-500 animate-pulse' :
-                    apiStatus === 'offline' ? 'bg-red-500' :
-                    'bg-slate-400'
-                  }`} />
-                  {apiStatus === 'online' ? 'API Bağlantısı Aktif' :
-                   apiStatus === 'offline' ? 'API Bağlantısı Pasif' :
-                   'Kontrol ediliyor...'}
-                </div>
-                <div className="mt-5 space-y-4">
-                  <Metric label="Doğrulama ve onboarding" value="< 5 dk" />
-                  <Metric label="Sözleşme durumu takibi" value="Gerçek zamanlı" />
-                  <Metric label="Ödeme takvim görünürlüğü" value="Uçtan uca" />
-                </div>
-                <Link
-                  href="/credit-check"
-                  className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
-                >
-                  Kredi Uygunluk Kontrolü
-                  <span className="ml-2" aria-hidden="true">→</span>
-                </Link>
-              </div>
             </div>
           </div>
         </section>
@@ -462,15 +424,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-1 text-base font-bold text-slate-900">{value}</div>
     </div>
   );
 }
