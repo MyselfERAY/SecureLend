@@ -22,4 +22,5 @@ COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
 WORKDIR /app/apps/api
 EXPOSE 3000
-CMD ["sh", "-c", "echo '=== MIGRATION START ===' && npx prisma migrate resolve --rolled-back 20260409100000_update_suggestion_statuses 2>/dev/null; npx prisma migrate deploy 2>&1; echo '=== MIGRATION EXIT CODE: '$?' ===' && node dist/main.js"]
+COPY --from=builder /app/apps/api/fix-migration.js ./fix-migration.js
+CMD ["sh", "-c", "node fix-migration.js && npx prisma migrate deploy 2>&1 && node dist/main.js"]
