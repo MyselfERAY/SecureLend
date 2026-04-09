@@ -573,6 +573,42 @@ model Article {
   @@map("articles")
 }
 
+// ─── Dev Suggestions ──────────────────────────────────────────
+
+enum SuggestionStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  REJECTED
+
+  @@map("suggestion_status")
+}
+
+enum SuggestionPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+
+  @@map("suggestion_priority")
+}
+
+model DevSuggestion {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String             @db.VarChar(300)
+  description String
+  priority    SuggestionPriority @default(MEDIUM)
+  status      SuggestionStatus   @default(PENDING)
+  agentNotes  String?            @map("agent_notes")
+  prLink      String?            @map("pr_link") @db.VarChar(500)
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@index([status], map: "idx_dev_suggestion_status")
+  @@index([priority], map: "idx_dev_suggestion_priority")
+  @@map("dev_suggestions")
+}
+
 // ─── Chat System ───────────────────────────────────────────────
 
 enum ChatRoomType {

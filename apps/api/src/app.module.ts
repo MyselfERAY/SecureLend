@@ -21,6 +21,7 @@ import { InAppNotificationModule } from './modules/in-app-notification/in-app-no
 import { PushNotificationModule } from './modules/push-notification/push-notification.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ArticleModule } from './modules/article/article.module';
+import { SuggestionModule } from './modules/suggestion/suggestion.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -73,6 +74,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     PushNotificationModule,
     ChatModule,
     ArticleModule,
+    SuggestionModule,
     HealthModule,
   ],
   providers: [
