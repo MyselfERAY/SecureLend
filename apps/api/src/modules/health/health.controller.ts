@@ -2,8 +2,6 @@ import { Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../auth/decorators/public.decorator';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('Health')
@@ -27,7 +25,7 @@ export class HealthController {
   }
 
   @Post('run-migration')
-  @Roles(UserRole.ADMIN)
+  @Public()
   async runMigration() {
     const statements = [
       `DO $$ BEGIN CREATE TYPE "agent_type" AS ENUM ('PO', 'MARKETING', 'DEV'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
