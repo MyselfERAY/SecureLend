@@ -466,7 +466,7 @@ jobs:
           echo "=== Health Check: Web ==="
           WEB_OK=false
           for i in 1 2 3; do
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL" || echo "000")
+            HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" "$WEB_URL" || echo "000")
             echo "  Attempt $i: HTTP $HTTP_CODE"
             if [ "$HTTP_CODE" = "200" ]; then
               WEB_OK=true
