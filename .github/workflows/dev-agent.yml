@@ -1,0 +1,167 @@
+name: SecureLend Dev Agent
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # Every 30 minutes
+  workflow_dispatch:          # Manual trigger from GitHub UI
+
+jobs:
+  dev-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── Step 1: Check for PENDING suggestions ──
+      - name: Check for PENDING suggestions
+        id: check
+        run: |
+          RESPONSE=$(curl -s -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+            -H 'Accept: application/json' \
+            'https://securelend-production.up.railway.app/api/v1/suggestions?status=PENDING')
+
+          echo "$RESPONSE" | jq .
+
+          COUNT=$(echo "$RESPONSE" | jq '.data | length // 0')
+          echo "count=$COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$COUNT" = "0" ] || [ "$COUNT" = "null" ]; then
+            echo "has_pending=false" >> $GITHUB_OUTPUT
+            echo "::notice::No pending suggestions found."
+          else
+            echo "has_pending=true" >> $GITHUB_OUTPUT
+
+            # Pick highest priority (CRITICAL=0, HIGH=1, MEDIUM=2, LOW=3), then oldest
+            SUGGESTION=$(echo "$RESPONSE" | jq -r '
+              .data | sort_by(
+                (if .priority == "CRITICAL" then 0
+                 elif .priority == "HIGH" then 1
+                 elif .priority == "MEDIUM" then 2
+                 else 3 end),
+                .createdAt
+              ) | .[0]')
+
+            SID=$(echo "$SUGGESTION" | jq -r '.id')
+            STITLE=$(echo "$SUGGESTION" | jq -r '.title')
+            SPRIORITY=$(echo "$SUGGESTION" | jq -r '.priority')
+            SDESC=$(echo "$SUGGESTION" | jq -r '.description')
+
+            echo "sid=$SID" >> $GITHUB_OUTPUT
+            echo "stitle=$STITLE" >> $GITHUB_OUTPUT
+            echo "spriority=$SPRIORITY" >> $GITHUB_OUTPUT
+
+            # Save description to file (may contain special chars)
+            echo "$SDESC" > /tmp/suggestion_desc.txt
+
+            echo "::notice::Picking up: [$SPRIORITY] $STITLE ($SID)"
+          fi
+
+      # ── Step 2: Mark IN_PROGRESS ──
+      - name: Mark suggestion IN_PROGRESS
+        if: steps.check.outputs.has_pending == 'true'
+        run: |
+          curl -s -X PATCH \
+            -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json' \
+            -d '{"status":"IN_PROGRESS","agentNotes":"GitHub Actions dev agent picked up the task."}' \
+            "https://securelend-production.up.railway.app/api/v1/suggestions/${{ steps.check.outputs.sid }}"
+
+      # ── Step 3: Install Claude Code CLI ──
+      - name: Install Claude Code
+        if: steps.check.outputs.has_pending == 'true'
+        run: npm install -g @anthropic-ai/claude-code
+
+      # ── Step 4: Build prompt and run Claude ──
+      - name: Run Claude Code
+        if: steps.check.outputs.has_pending == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          DESC=$(cat /tmp/suggestion_desc.txt)
+
+          cat > /tmp/agent_prompt.txt << 'PROMPT_END'
+          You are an autonomous senior developer working on the SecureLend codebase.
+          This is a Turkish fintech rental-payment platform (kiraguvence.com).
+
+          == TASK ==
+          PROMPT_END
+
+          echo "Title: ${{ steps.check.outputs.stitle }}" >> /tmp/agent_prompt.txt
+          echo "Priority: ${{ steps.check.outputs.spriority }}" >> /tmp/agent_prompt.txt
+          echo "" >> /tmp/agent_prompt.txt
+          echo "Description:" >> /tmp/agent_prompt.txt
+          echo "$DESC" >> /tmp/agent_prompt.txt
+
+          cat >> /tmp/agent_prompt.txt << 'PROMPT_END'
+
+          == INSTRUCTIONS ==
+          1. Read CLAUDE.md first for project context.
+          2. Find all relevant files (use Glob, Grep, Read tools).
+          3. Implement ONLY what the task asks. Nothing more.
+          4. Follow existing conventions:
+             - TypeScript strict mode
+             - JSend format: { status, data, message }
+             - NestJS: controller -> service -> prisma
+             - Next.js App Router: page.tsx for pages
+             - Turkish UI labels
+             - Tailwind CSS for styling
+          5. Do NOT create branches, PRs, or run git commands.
+          6. Only change files relevant to the task. No extra refactoring.
+          PROMPT_END
+
+          PROMPT=$(cat /tmp/agent_prompt.txt)
+          echo "=== PROMPT ==="
+          echo "$PROMPT"
+          echo "=== END PROMPT ==="
+
+          claude --print --dangerously-skip-permissions "$PROMPT"
+
+      # ── Step 5: Commit and push ──
+      - name: Commit and push changes
+        if: steps.check.outputs.has_pending == 'true'
+        run: |
+          git config user.name "SecureLend Dev Agent"
+          git config user.email "dev-agent@kiraguvence.com"
+
+          git add -A
+
+          if git diff --staged --quiet; then
+            echo "::warning::Claude made no file changes."
+            echo "no_changes=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          git commit -m "feat: ${{ steps.check.outputs.stitle }}"
+          git push origin main
+
+      # ── Step 6: Mark DONE ──
+      - name: Mark suggestion DONE
+        if: steps.check.outputs.has_pending == 'true'
+        run: |
+          curl -s -X PATCH \
+            -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json' \
+            -d "{\"status\":\"DONE\",\"agentNotes\":\"Implemented and pushed to main by GitHub Actions agent at $(date -u +%Y-%m-%dT%H:%M:%SZ).\"}" \
+            "https://securelend-production.up.railway.app/api/v1/suggestions/${{ steps.check.outputs.sid }}"
+
+          echo "::notice::Task completed and marked DONE!"
+
+      # ── Error handler: revert to PENDING ──
+      - name: Revert to PENDING on failure
+        if: failure() && steps.check.outputs.has_pending == 'true'
+        run: |
+          curl -s -X PATCH \
+            -H 'x-api-key: ${{ secrets.SERVICE_API_KEY }}' \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json' \
+            -d '{"status":"PENDING","agentNotes":"GitHub Actions agent failed. Will retry on next run."}' \
+            "https://securelend-production.up.railway.app/api/v1/suggestions/${{ steps.check.outputs.sid }}"
