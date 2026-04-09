@@ -22,5 +22,4 @@ COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
 WORKDIR /app/apps/api
 EXPOSE 3000
-COPY --from=builder /app/apps/api/fix-migration.js ./fix-migration.js
-CMD ["sh", "-c", "node fix-migration.js && npx prisma migrate deploy 2>&1 && node dist/main.js"]
+CMD ["sh", "-c", "echo \"DELETE FROM _prisma_migrations WHERE migration_name IN ('20260409100000_update_suggestion_statuses','20260409110000_add_suggestion_image');\" | npx prisma db execute --stdin 2>&1; npx prisma migrate deploy 2>&1; node dist/main.js"]
