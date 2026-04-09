@@ -22,4 +22,4 @@ COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
 WORKDIR /app/apps/api
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy 2>&1 || echo 'Migration warning (continuing...)' && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss 2>&1 || echo 'Schema push warning (continuing...)' && node dist/main.js"]
