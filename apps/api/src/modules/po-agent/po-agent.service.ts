@@ -14,14 +14,31 @@ export class PoAgentService {
     today.setHours(0, 0, 0, 0);
 
     return this.prisma.$transaction(async (tx) => {
-      const report = await tx.poReport.create({
-        data: {
+      // Upsert: if today's report exists, update it; otherwise create
+      const report = await tx.poReport.upsert({
+        where: { reportDate: today },
+        update: {
+          summary: dto.summary,
+          metricsSnapshot: dto.metricsSnapshot ?? undefined,
+          agentRunId: dto.agentRunId ?? undefined,
+        },
+        create: {
           reportDate: today,
           summary: dto.summary,
           metricsSnapshot: dto.metricsSnapshot ?? undefined,
           agentRunId: dto.agentRunId ?? undefined,
         },
       });
+
+      // If updating existing report, remove old items first
+      const existingItems = await tx.poItem.count({
+        where: { poReportId: report.id },
+      });
+      if (existingItems > 0) {
+        await tx.poItem.deleteMany({
+          where: { poReportId: report.id },
+        });
+      }
 
       const createdItems = [];
 

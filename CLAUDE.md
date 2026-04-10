@@ -1,7 +1,7 @@
 # SecureLend - Project Context for Claude Code
 
 ## Project Overview
-SecureLend is a Turkish fintech platform for rental payments and KMH (Konut Mortgage Hesabi) financing. It operates as an AI-powered autonomous company where n8n multi-agent workflows handle operations with minimal human intervention.
+SecureLend is a Turkish fintech platform for rental payments and KMH (Konut Mortgage Hesabi) financing. It operates as an AI-powered autonomous company where GitHub Actions agent workflows handle operations with minimal human intervention.
 
 **Owner:** Eray Karacaoglan
 **Domain:** kiraguvence.com
@@ -35,7 +35,7 @@ SecureLend/
 |-----------|----------|-----|-------|
 | Frontend | Vercel | kiraguvence.com / www.kiraguvence.com | Auto-deploy on main push |
 | Backend | Railway | securelend-production.up.railway.app | Dockerfile build, auto-deploy on main push |
-| Backend (custom) | Railway | api.kiraguvence.com | CNAME verified, SSL pending |
+| Backend (custom) | Railway | api.kiraguvence.com | CNAME verified, SSL active |
 | Database | Railway | PostgreSQL (internal) | Connected via DATABASE_URL reference |
 | DNS | Vercel | Vercel nameservers | All DNS records managed here |
 | Email | Microsoft 365 | info@kiraguvence.com | Business Basic, $6/mo, 1 user + 4 aliases |
@@ -95,7 +95,7 @@ Uses multi-stage build with pnpm. Key steps:
 - **API prefix:** `/api/v1/`
 - **Modules:** auth, user, property, contract, payment, bank, admin, health
 - **Global:** ValidationPipe (whitelist, transform), AllExceptionsFilter (JSend format), LoggingInterceptor (masks TCKN/phone/OTP)
-- **CORS:** `origin: true` (needs tightening to WEB_URL + localhost)
+- **CORS:** Configured with specific origins (WEB_URL + localhost in dev)
 
 ### API Routes (from NestJS logs)
 ```
@@ -152,87 +152,59 @@ src/
 
 ---
 
-## n8n Multi-Agent System
+## GitHub Actions Agent System
+
+All agents run as GitHub Actions workflows in `.github/workflows/`. They use Claude Code CLI (`@anthropic-ai/claude-code`) for AI generation, and communicate with the backend via `SERVICE_API_KEY` authenticated REST calls.
 
 ### Active Agents
-1. **CEO Agent v3** - Orchestrator, daily briefing, dispatches to Marketing
-2. **Marketing & Sales Agent** - GTM reports, CEO task analysis
-3. **PO Agent v2** - Backlog management, Developer dispatch via webhook
-4. **Developer Agent v6** - Senior Autonomous Developer (upgraded from v5)
+| Agent | Workflow | Schedule | Function |
+|-------|----------|----------|----------|
+| PO Agent | `po-agent.yml` | Daily 08:00 TR | Daily product report, platform metrics analysis, dev suggestions |
+| Marketing Agent | `marketing-agent.yml` | Weekdays 09:00 TR | Daily strategy or research reports, task generation |
+| Article Agent | `article-agent.yml` | Tue+Thu 10:00 TR | SEO blog articles in Turkish for /rehber section |
+| Developer Agent | `dev-agent.yml` | Every 30 min | Picks up PENDING suggestions, implements, builds, deploys, verifies |
 
-### Developer Agent v6 Workflow
+### Agent Data Flow
 ```
-Webhook → Initialize Variables → Get Main SHA → Create Feature Branch →
-Get Repo Tree → Parse File Tree (+ Claude prompt) → Claude API - Kod Uret →
-Parse + Branch Safety → Prep Review → Claude API - Review → Parse Review →
-Review Passed? → [True] Build Git Tree → Create Git Tree → ...commit/PR flow
-                → [False] Review Retry Prep → Get Repo Tree (retry loop)
+GitHub Actions (cron/manual) → Create AgentRun → Claude Code CLI → Generate content →
+POST to API (reports/articles/suggestions) → Update AgentRun status (COMPLETED/FAILED)
 ```
 
-### Key Dev Agent v6 Improvements (over v5)
-1. **Strict scope prompt** - "SADECE task'ta belirtilen degisikligi yap, baska dosyaya DOKUNMA"
-2. **Self-review node** - Second Claude call checks if changes match task
-3. **Review retry loop** - If review fails, agent retries (max 5 attempts)
-4. **No clarification** - Agent must write code, never ask questions
-5. **Next.js file convention** in prompt - Knows page.tsx vs layout.tsx difference
+### Developer Agent Features
+1. **Priority queue** - Picks highest priority PENDING suggestion
+2. **Retry loop** - Up to 3 attempts with error feedback
+3. **Safety checks** - Protected files, diff size limits, build verification
+4. **Self-review** - Second Claude call validates changes before push
+5. **Auto-deploy** - Pushes to main, waits for deploy, health check
+6. **Auto-revert** - Reverts commit if deploy health check fails
 
-### Dev Agent Known Issues & Fixes
-- **Body mapping fix:** CEO Panel sends Baslik/Aciklama (Turkish), Node 2 maps both Turkish and English field names
-- **Dispatch fix:** "Specify Body" must be "Using JSON" with `{{ JSON.stringify($input.first().json) }}`
-- **Prisma types:** Dockerfile must include `RUN cd apps/api && npx prisma generate` before API build
-- **pnpm workspace:** npm can't handle `workspace:*` protocol → Dockerfile uses pnpm
-- **Peer deps:** @nestjs/serve-static@5.0.4 wants NestJS 11, project uses 10 → pnpm handles with warnings
+### Concurrency Groups (prevent mutual cancellation)
+- `securelend-po` - PO Agent
+- `securelend-marketing` - Marketing Agent
+- `securelend-article` - Article Agent
+- Dev Agent has no concurrency group (runs independently)
 
-### n8n Quirks Catalog
-- Classic GitHub PATs require `token` prefix, not `Bearer`
-- `JSON.stringify()` must happen in Code nodes, NOT in n8n expressions (Turkish chars, newlines, markdown break expressions)
-- `Buffer.from().toString('base64')` must happen in Code nodes
-- Google Sheets "Column to match on" must be set via UI dropdown (JSON values ignored in n8n 2.13.3)
-- Turkish characters in Code node comments cause syntax errors - use ASCII only
-- `N8N_RUNNERS_TASK_TIMEOUT=900` required for long-running loops
-- IF node `object exists` operator fails on null strings - use boolean flag in Code node instead
-- Webhook node (typeVersion 2): use `responseMode: "onReceived"` for immediate response
-- Two separate Header Auth credentials: GitHub (`Authorization: token ...`), Anthropic (`x-api-key: sk-ant-...`)
-- After workflow import, credential assignments reset - manually reassign each node
-
-### Google Sheets Backlog
-- **Document ID:** `10EGOxn4cOxIo6XX46eGyysKZGN4IkCrZBX7iylxAfHE`
-- **Sheets:** Backlog, Sprint, Log, Dashboard
-- **Backlog columns:** ID | Kaynak | Baslik | Aciklama | Oncelik | Durum | Atanan | CEO_Onay | CEO_Yorum | PR_Link | Test_Sonucu | Tarih | Guncelleme
-- **Log columns:** Tarih | ID | Islem | Yapan | Detay
-
-### CEO Approval Form v2
-- **Endpoint:** `GET /webhook/ceo-panel-v2`
-- **Respond mode:** "Using Respond to Webhook Node" (not lastNode)
-- Approve/reject/add suggestions via query params
-- All 3 agents have parallel Backlog append path with smart dev-only extraction
-
-### n8n Credential IDs
-- GitHub PAT: `gCMOrHhShldSvItU`
-- Anthropic API Key: `unWAUMB020BIfyxs`
+### Required GitHub Secrets
+- `ANTHROPIC_API_KEY` - Claude API key for Claude Code CLI
+- `SERVICE_API_KEY` - Backend service authentication
+- `GH_PAT` - GitHub Personal Access Token (for Dev Agent pushes)
 
 ---
 
 ## Roadmap
-- **Phase 1:** Backend infra (NestJS+PostgreSQL deploy ✅, token security, CI/CD, Dev Agent backend support)
-- **Phase 1.5:** Domain ✅, test/prod environments, hosting setup ✅
-- **Phase 2:** Dev Agent quality (lint/typecheck gate, test gen, repo awareness, Playwright)
-- **Phase 3:** Multi-role tasking (PO/Marketing task routing, job description revision, smart dispatcher)
-- **Phase 4:** Autonomous company (agent-to-agent, KPI dashboard, self-improvement, CEO exception-only)
+- **Phase 1:** Backend infra ✅ (NestJS+PostgreSQL, Railway, Vercel, domain, SSL)
+- **Phase 2:** Agent system ✅ (4 GitHub Actions agents: PO, Marketing, Article, Developer)
+- **Phase 3:** Agent quality (repo awareness, KPI dashboard, agent-to-agent coordination)
+- **Phase 4:** Product maturity (SMS/OTP integration, dev/test environments, Playwright testing)
+- **Phase 5:** Autonomous company (self-improvement, CEO exception-only, full automation)
 
 ---
 
-## Pending Tasks
-1. CEO Panel'e screenshot upload (vision support for Dev Agent)
-2. Mevcut dosya icerigini Claude'a gonderme (repo awareness - Dev Agent update yaparken mevcut kodu bilmiyor)
-3. CORS sikilastirma: `origin: true` → `[process.env.WEB_URL, 'http://localhost:3000']`
-4. JWT_SECRET + TCKN_HASH_PEPPER guclu random degerlerle degistir
-5. Hardcoded token'lari n8n credentials'a tasi
-6. api.kiraguvence.com SSL sertifikasi (Railway TXT verification pending)
-7. Dev environment setup (dev branch + separate Railway environment) - deferred
-8. PO/Marketing task assignment + job description revision
-9. PO Playwright UI testing
-10. Vercel NEXT_PUBLIC_API_URL'i api.kiraguvence.com'a guncelle (custom domain aktif olunca)
+## Pending Tasks (Active)
+1. SMS/OTP entegrasyonu (provider secimi: Netgsm, Ileti Merkezi, Twilio) - deferred
+2. Dev/Test environment setup (dev branch + separate Railway environment) - deferred
+3. Production secret'lar guclendirme (JWT_SECRET, JWT_REFRESH_SECRET) - deferred
+4. Vercel NEXT_PUBLIC_API_URL'i api.kiraguvence.com'a guncelle - deferred
 
 ---
 

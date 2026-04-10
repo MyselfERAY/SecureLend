@@ -119,6 +119,24 @@ jobs:
           SDESC=$(cat /tmp/suggestion_desc.txt)
           PREV_ERROR=""
 
+          # ── Gather repo context for Claude ──
+          echo "=== Gathering repo context ==="
+          FILE_TREE=$(find . -maxdepth 3 \
+            -not -path '*/node_modules/*' \
+            -not -path '*/.next/*' \
+            -not -path '*/dist/*' \
+            -not -path '*/.git/*' \
+            -not -path '*/.turbo/*' \
+            -not -path '*/.cache/*' \
+            -not -path '*/coverage/*' \
+            | sort | head -100)
+          API_MODULES=$(ls -1 apps/api/src/modules/ 2>/dev/null || echo "(none)")
+          WEB_PAGES=$(find apps/web/src/app -name 'page.tsx' 2>/dev/null | sort | head -30 || echo "(none)")
+          PRISMA_MODELS=$(grep -E '^model |^enum ' apps/api/prisma/schema.prisma 2>/dev/null || echo "(none)")
+          API_DEPS=$(node -e "const p=require('./apps/api/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
+          WEB_DEPS=$(node -e "const p=require('./apps/web/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
+          echo "✓ Repo context gathered"
+
           for ATTEMPT in 1 2 3; do
             echo ""
             echo "═══════════════════════════════════════"
@@ -154,6 +172,24 @@ jobs:
           Description:
           $SDESC
           $RETRY_CONTEXT
+          == REPO STRUCTURE (top 3 levels) ==
+          $FILE_TREE
+
+          == API MODULES (apps/api/src/modules/) ==
+          $API_MODULES
+
+          == FRONTEND PAGES ==
+          $WEB_PAGES
+
+          == PRISMA MODELS & ENUMS ==
+          $PRISMA_MODELS
+
+          == API DEPENDENCIES ==
+          $API_DEPS
+
+          == WEB DEPENDENCIES ==
+          $WEB_DEPS
+
           == RULES ==
           1. Read CLAUDE.md first for project context and conventions.
           2. Find all relevant files (Glob, Grep, Read). ALWAYS read the FULL content of files you will modify — do not skip sections.

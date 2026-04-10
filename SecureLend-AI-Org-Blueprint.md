@@ -1,295 +1,135 @@
-# SecureLend AI Organization — Tam Organizasyon Planı
+# SecureLend AI Organization Blueprint
 
-## Organizasyon Şeması
-
-```
-                    ┌──────────────┐
-                    │    ERAY      │
-                    │  (Founder)   │
-                    └──────┬───────┘
-                           │ Telegram
-                    ┌──────┴───────┐
-                    │  CEO AGENT   │
-                    │ Koordinatör  │
-                    └──┬───┬───┬───┘
-              ┌────────┘   │   └─────────┐
-              ▼            ▼             ▼
-      ┌───────────┐ ┌───────────┐ ┌──────────────┐
-      │  PRODUCT   │ │ DEVELOPER │ │  MARKETING   │
-      │  OWNER     │ │   AGENT   │ │  & SALES     │
-      └───────────┘ └───────────┘ └──────────────┘
-           ▲               ▲              │
-           │               │              │
-           └───────────────┘──────────────┘
-              Karşılıklı iletişim
-```
-
-## İletişim Akışları
-
-### Akış 1: Eray'dan Emir Geldiğinde
-```
-Eray → (Telegram) → CEO Agent
-CEO Agent → analiz eder → ilgili agent'a görev atar
-İlgili Agent → çalışır → sonucu CEO'ya iletir
-CEO Agent → özet + onay talebi → Eray'a (Telegram)
-Eray → onay/red → CEO Agent → agent'a bildirir
-```
-
-### Akış 2: Marketing → PO → Developer Döngüsü
-```
-Marketing Agent → pazar analizi + öneri → CEO Agent
-CEO Agent → özet → Eray onayı
-Eray onay → CEO → PO Agent'a iletir
-PO Agent → araştırır, dokümante eder → CEO'ya özet doküman
-CEO → Eray onayı → PO → Developer Agent'a spec verir
-Developer → geliştirir → PO'ya test için gönderir
-PO → test + code quality → onay → CEO'ya bildirir
-CEO → deploy onayı → Eray
-Eray onay → CEO → Developer deploy eder
-```
-
-### Akış 3: Günlük/Haftalık Raporlama
-```
-Her Agent → günlük durum → CEO Agent
-CEO Agent → birleştirir → Telegram ile Eray'a gönderir
-
-Marketing Agent → haftalık kullanım istatistikleri → CEO
-Developer Agent → kalite istatistikleri → CEO
-PO Agent → ürün ilerleme raporu → CEO
-CEO → haftalık strateji raporu → Eray
-```
-
----
-
-## AGENT 1: CEO AGENT (Mevcut — Güncelleme Gerekli)
-
-### Durum: ✅ Çalışıyor (Daily Briefing + Telegram)
-
-### Güncellenecek Görevler
-- Eray'dan gelen emirleri alıp ilgili agent'a yönlendirme
-- Agent'lar arası iletişim koordinasyonu
-- Onay/red mekanizması (Telegram butonları)
-- Günlük toplu rapor (tüm agent'lardan)
-- Haftalık strateji raporu
-
-### Karar Yetkileri
-- ✅ Otonom: Bilgi toplama, agent'lara görev atama, rutin raporlama
-- ❌ Eray onayı: Harcama, fiyatlama, feature kararı, deploy, public iletişim
-
----
-
-## AGENT 2: PRODUCT OWNER AGENT
-
-### Sorumluluklar
-
-**A. Ürün Araştırma & Dokümantasyon**
-- Türkiye pazarı için SecureLend'in çalışması gereken özellikleri araştırma
-- Türkiye'deki bankacılık/fintech regülasyonları (BDDK, TCMB, SPK)
-- Yerel ödeme altyapıları (BKM, FAST, IBAN yapısı, TROY)
-- Rakip analizi (Türkiye'deki fintech'ler: Papara, Param, Colendi, Figopara)
-- Her feature için detaylı spec dokümanı hazırlama
-
-**B. Entegrasyon Haritası**
-- Türkiye bankaları API'leri (açık bankacılık)
-- TCMB veri servisleri
-- KKB/Findeks entegrasyonu gereksinimleri
-- BKM Switch / BKM Express entegrasyonu
-- E-Devlet / MERNİS doğrulama
-- Erişilecek API'lerin listesi, dokümantasyonları, erişim şartları
-
-**C. Kalite Kontrol**
-- Developer'dan gelen geliştirmelerin fonksiyonel testi
-- Code quality kontrolü (linting, test coverage, best practices)
-- Kullanıcı deneyimi (UX) değerlendirmesi
-- Spec'e uygunluk kontrolü
-
-**D. CEO'ya Raporlama**
-- Her feature önerisi için: Özet doküman + etki analizi + öncelik önerisi
-- Haftalık ürün ilerleme raporu
-- Entegrasyon timeline'ı
-
-### Kullanacağı Tool'lar
-- Web araması (SerpAPI): Pazar araştırması, API dokümantasyonu bulma
-- GitHub API: PR review, code quality metrikleri
-- Claude API: Doküman üretimi, analiz, spec yazımı
-
-### n8n Workflow Tetikleyicileri
-- CEO'dan görev geldiğinde (webhook)
-- Haftalık otomatik pazar taraması (cron)
-- Developer PR açtığında (GitHub webhook)
-- Marketing'den öneri geldiğinde (agent bus)
-
----
-
-## AGENT 3: DEVELOPER AGENT
-
-### Sorumluluklar
-
-**A. Geliştirme**
-- PO'dan gelen spec'lere göre kod geliştirme
-- SecureLend SDK iyileştirmeleri (TypeScript, React, Python)
-- MCP server güncellemeleri
-- API endpoint geliştirme
-- Bug fix'ler
-
-**B. Test & Kalite**
-- Unit test yazma ve çalıştırma
-- Integration test
-- Code coverage raporları
-- Performance metrikleri
-- Kalite istatistikleri hazırlama (test coverage %, bug sayısı, code smell)
-
-**C. Deployment**
-- Deploy planı hazırlama
-- CEO'dan (dolayısıyla Eray'dan) onay alma
-- Staging → Production deploy süreci
-- Rollback planı
-- Post-deploy monitoring
-
-**D. Raporlama**
-- Günlük: Neler geliştirdi, neler bekleniyor
-- Haftalık: Kalite istatistikleri, velocity, technical debt
-
-### Kullanacağı Tool'lar
-- GitHub API: Commit, PR, branch yönetimi
-- Claude Code: Kod üretimi ve review
-- Docker: Test ortamları
-- AWS CLI: Deployment (Lambda, S3, DynamoDB)
-
-### n8n Workflow Tetikleyicileri
-- PO'dan spec geldiğinde (webhook)
-- Deploy onayı geldiğinde (CEO'dan)
-- Günlük kalite raporu (cron)
-- Bug/issue atandığında (GitHub webhook)
-
----
-
-## AGENT 4: MARKETING & SALES AGENT
-
-### Sorumluluklar
-
-**A. Pazarlama Stratejisi**
-- Ürün konumlandırma (fintech B2B, developer tools, AI-native)
-- Hedef kitle tanımlama (Türkiye fintech'leri, bankalar, yazılım şirketleri)
-- Rakip pozisyonlama analizi
-- İçerik stratejisi (blog, social media, developer docs)
-- SEO stratejisi ve keyword araştırması
-
-**B. Pazarlama Planı & Bütçe**
-- Aylık/çeyreklik pazarlama planı
-- Kanal bazlı bütçe önerisi (Google Ads, LinkedIn, GitHub Sponsors, DevTo)
-- ROI tahminleri
-- CEO'ya özet + bütçe sunumu → Eray onayı
-
-**C. Satış**
-- Lead generation stratejisi
-- Outreach mesaj şablonları
-- Demo/pitch deck hazırlama
-- Potansiyel müşteri listesi (Türkiye bankaları, fintech'ler)
-
-**D. PO'ya Öneriler**
-- Müşteri geri bildirimlerinden feature önerileri
-- Pazar trendlerine göre ürün önerileri
-- Rakiplerin yeni özellikleri → PO'ya bildirim
-
-**E. İstatistik & Raporlama**
-- Günlük: Website traffic, npm downloads, GitHub stars
-- Haftalık: Pazarlama performansı, lead sayısı, dönüşüm oranları
-- Kampanya bazlı ROI raporları
-
-### Kullanacağı Tool'lar
-- SerpAPI: SEO analizi, keyword araştırması, rakip takibi
-- Google Analytics API (ileride): Traffic analizi
-- GitHub API: Stars, forks, contributor metrikleri
-- npm API: Download istatistikleri
-- Claude API: İçerik üretimi, analiz, rapor
-
-### n8n Workflow Tetikleyicileri
-- Günlük metrik toplama (cron)
-- Haftalık pazarlama raporu (cron)
-- CEO'dan kampanya onayı geldiğinde (webhook)
-- Rakipte değişiklik algılandığında (web tarama)
-
----
-
-## Uygulama Yol Haritası
-
-### Hafta 1 (Şimdi): CEO Agent Güncelleme ✅→🔄
-- [x] Temel briefing çalışıyor
-- [x] Telegram entegrasyonu aktif
-- [ ] Agent bus (Redis pub/sub) kurulumu
-- [ ] Çok agent koordinasyon mantığı
-- [ ] Telegram butonlu karar mekanizması
-
-### Hafta 2: Marketing & Sales Agent
-- Neden önce bu? Diğer agent'lar ürün geliştirmeye başlamadan pazar analizi lazım.
-- Türkiye pazarı araştırması
-- Rakip analizi
-- İlk SEO raporu
-- İlk pazarlama planı önerisi
-
-### Hafta 3: Product Owner Agent
-- Türkiye entegrasyon haritası
-- İlk feature spec dokümanı
-- Marketing önerilerini değerlendirme
-- API araştırması (açık bankacılık, KKB, BKM)
-
-### Hafta 4: Developer Agent
-- PO'dan gelen ilk spec'i geliştirme
-- Test pipeline kurulumu
-- Deploy süreci tanımlama
-- İlk kalite raporu
-
-### Ay 2: Tam Koordinasyon
-- Tüm agent'lar aktif ve birbiriyle konuşuyor
-- Eray sadece kritik kararları onaylıyor
-- Otomatik raporlama döngüsü çalışıyor
-- İlk ürün iyileştirmesi canlıya çıkıyor
-
----
-
-## Teknik Mimari (Tüm Agent'lar)
+## Organizasyon Semasi
 
 ```
-┌─────────────────────────────────────────────────┐
-│              n8n Workflow Engine                  │
-├─────────┬──────────┬───────────┬────────────────┤
-│ CEO     │ PO       │ Developer │ Marketing      │
-│ Workflow│ Workflow  │ Workflow  │ Workflow       │
-└────┬────┴────┬─────┴─────┬────┴───────┬────────┘
-     │         │           │            │
-     └─────────┴─────┬─────┴────────────┘
-                     │
-              ┌──────┴──────┐
-              │ Agent Bus   │
-              │ (Redis +    │
-              │  Webhooks)  │
-              └──────┬──────┘
-                     │
-              ┌──────┴──────┐
-              │ PostgreSQL  │
-              │ (Logs +     │
-              │  State)     │
-              └─────────────┘
+                    +------------------+
+                    |      ERAY        |
+                    |    (Founder)     |
+                    +--------+---------+
+                             |
+                    Admin Dashboard (kiraguvence.com)
+                             |
+              +--------------+--------------+
+              |              |              |
+     +--------+----+  +-----+------+  +----+--------+
+     |  PO Agent   |  | Marketing  |  |  Developer  |
+     | (Daily 08)  |  |  (Daily 09)|  | (Every 30m) |
+     +--------+----+  +-----+------+  +----+--------+
+              |              |              |
+              |        +-----+------+      |
+              |        |  Article   |      |
+              |        | (Tue+Thu)  |      |
+              |        +------------+      |
+              |                            |
+              +------- PO Item -------->---+
+              (isDevTask=true -> DevSuggestion)
 ```
 
-### Agent Arası İletişim
-Her agent diğerine n8n webhook üzerinden mesaj gönderir:
-- `POST /webhook/ceo-task` → CEO Agent'a görev/rapor
-- `POST /webhook/po-task` → PO Agent'a spec talebi
-- `POST /webhook/dev-task` → Developer Agent'a geliştirme talebi
-- `POST /webhook/mkt-task` → Marketing Agent'a analiz talebi
+## Agent Akislari
 
-Her mesaj formatı:
-```json
-{
-  "from": "marketing_agent",
-  "to": "ceo_agent",
-  "type": "report|request|response|alert",
-  "subject": "Haftalık SEO Raporu",
-  "payload": { ... },
-  "priority": "low|medium|high|urgent",
-  "requires_eray_approval": false,
-  "timestamp": "2026-03-10T22:00:00Z"
-}
+### Akis 1: Gunluk PO Raporu
 ```
+Cron (08:00 TR) -> PO Agent -> Platform metriklerini cek ->
+Claude Code ile rapor uret -> POST /api/v1/po/reports ->
+Admin PO Gunlugu sayfasinda gorunur
+```
+
+### Akis 2: PO -> Developer Dongusu
+```
+PO Raporu'ndaki item -> Admin "Move to Dev" tiklar ->
+DevSuggestion olusur (PENDING) -> Developer Agent alir ->
+Implement + Build + Deploy + Verify -> DONE
+```
+
+### Akis 3: Marketing Stratejisi
+```
+Cron (09:00 TR) -> Marketing Agent -> Gunluk strateji veya
+arastirma raporu uret -> POST /api/v1/marketing/reports ->
+Admin Pazarlama sayfasinda gorunur
+```
+
+### Akis 4: Makale Uretimi
+```
+Cron (Tue+Thu 10:00 TR) -> Article Agent -> Mevcut makale basliklarini cek ->
+Tekrar etmeyen SEO makale uret -> POST /api/v1/articles (DRAFT) ->
+Admin Makaleler sayfasinda incele ve yayinla
+```
+
+### Akis 5: Developer Agent Detay
+```
+Cron (*/30) -> GET /api/v1/suggestions?status=PENDING ->
+En yuksek oncelikli suggestion'i al -> IN_PROGRESS yap ->
+Repo checkout + Claude Code implement -> Safety checks:
+  1. Protected files check
+  2. Diff size check (max 10 files, 500 lines)
+  3. Frontend build check
+  4. Backend build check
+-> Self-review (second Claude call) ->
+Push to main -> Wait for deploy -> Health check ->
+Success: DONE | Fail: Revert + PENDING
+```
+
+## Teknik Mimari
+
+```
++---------------------------------------------------+
+|           GitHub Actions (Cron Triggers)            |
++------+-------+--------+--------+-----------------+
+| PO   | Mktg  | Article| Dev    |                 |
+| Agent| Agent | Agent  | Agent  |                 |
++------+-------+--------+--------+-----------------+
+       |              |
+       v              v
++---------------------------------------------------+
+|   Claude Code CLI (@anthropic-ai/claude-code)      |
++---------------------------------------------------+
+       |
+       v
++---------------------------------------------------+
+|   NestJS Backend (Railway)                         |
+|   api.kiraguvence.com                              |
+|   SERVICE_API_KEY auth                             |
++---+------+--------+--------+--------+------------+
+    |      |        |        |        |
+    v      v        v        v        v
++------+------+--------+--------+-----------+
+|Agent | PO   | Mktg   | Dev    | Article   |
+|Runs  |Report| Report | Sugg.  | Module    |
++------+------+--------+--------+-----------+
+       |
+       v
++---------------------------------------------------+
+|   PostgreSQL (Railway)                             |
++---------------------------------------------------+
+       |
+       v
++---------------------------------------------------+
+|   Next.js Frontend (Vercel)                        |
+|   kiraguvence.com/dashboard/admin/*                |
++---------------------------------------------------+
+```
+
+## API Endpointleri (Agent)
+
+| Method | Endpoint | Aciklama |
+|--------|----------|----------|
+| POST   | /api/v1/agent-runs | Agent calismasini baslatir |
+| PATCH  | /api/v1/agent-runs/:id | Durumu gunceller (COMPLETED/FAILED) |
+| GET    | /api/v1/agent-runs | Tum agent calismalarini listeler |
+| GET    | /api/v1/agent-runs/stats | KPI istatistikleri |
+| POST   | /api/v1/po/reports | PO raporu olusturur |
+| GET    | /api/v1/po/reports | PO raporlarini listeler |
+| GET    | /api/v1/po/metrics | Platform metriklerini cekerr |
+| POST   | /api/v1/marketing/reports | Pazarlama raporu olusturur |
+| GET    | /api/v1/marketing/reports | Pazarlama raporlarini listeler |
+| POST   | /api/v1/marketing/research | Arastirma talebi olusturur |
+| POST   | /api/v1/articles | Makale olusturur (DRAFT) |
+| GET    | /api/v1/suggestions | Gelistirme onerilerini listeler |
+| PATCH  | /api/v1/suggestions/:id | Oneri durumunu gunceller |
+
+## Karar Yetkileri
+
+- **Otonom (Agent karar verir):** Rapor uretimi, metrik toplama, makale taslagi, kod implementasyonu
+- **Admin onay gerekir:** Makale yayinlama, DevSuggestion'a tasima, gorev atama
+- **Eray onay gerekir:** Deploy (otomatik ama revert mekanizmasi var), fiyatlama, harcama

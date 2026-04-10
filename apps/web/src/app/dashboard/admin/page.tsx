@@ -94,6 +94,7 @@ export default function AdminDashboardPage() {
           <AdminLink href="/dashboard/admin/po" title="PO Gunlugu" desc="Gunluk urun raporu ve oneriler" icon="P" />
           <AdminLink href="/dashboard/admin/marketing" title="Pazarlama & Strateji" desc="Pazarlama raporlari ve arastirma" icon="R" />
           <AdminLink href="/dashboard/admin/tasks" title="Gorev Takibi" desc="Tum gorevler ve son tarihler" icon="T" />
+          <AdminLink href="/dashboard/admin/agents" title="Agent KPI" desc="Agent performansi ve calisma gecmisi" icon="A" />
         </div>
       </div>
     </div>
