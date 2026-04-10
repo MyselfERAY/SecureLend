@@ -310,21 +310,50 @@ export default function HomePage() {
 
         {/* ── VIDEO DEMO ── */}
         <section className="px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl">
+          <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanitim</p>
               <h2 className="mt-2 text-3xl font-extrabold text-slate-900">KiraGuvence Nasil Calisir?</h2>
               <p className="mt-3 text-base text-slate-500">Platform tanitimini adim adim inceleyin.</p>
             </div>
             <div className="mt-10">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-lg" style={{ aspectRatio: '16/9' }}>
-                <iframe
-                  src="https://gamma.app/embed/t086cru076bp06i"
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                  allow="fullscreen"
-                  title="KiraGuvence Platform Tanitimi"
-                />
-              </div>
+              <a
+                href="https://kiraguvence-7aql6b3.gamma.site/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative block overflow-hidden rounded-2xl border border-slate-200 shadow-lg transition hover:shadow-xl hover:border-blue-300"
+              >
+                <div className="relative aspect-video bg-gradient-to-br from-blue-50 via-white to-slate-50">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-700 shadow-lg transition group-hover:bg-blue-800 group-hover:scale-110">
+                      <svg className="ml-1 h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                    <p className="mt-5 text-lg font-bold text-slate-900">Platform Tanitim Sunumu</p>
+                    <p className="mt-1.5 text-sm text-slate-500">9 adimda KiraGuvence&apos;yi kesfet</p>
+                    <div className="mt-4 flex items-center gap-6 text-xs text-slate-400">
+                      <span className="flex items-center gap-1.5">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Nasil Calisir
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        Guvenlik
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                        Fiyatlandirma
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white px-6 py-3 text-center border-t border-slate-100">
+                  <span className="text-sm font-medium text-blue-600 group-hover:text-blue-700 transition">
+                    Sunumu goruntule &rarr;
+                  </span>
+                </div>
+              </a>
             </div>
           </div>
         </section>
