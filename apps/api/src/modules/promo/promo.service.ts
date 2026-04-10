@@ -281,14 +281,101 @@ export class PromoService implements OnModuleInit {
     return promo;
   }
 
+  // ─── REFERRAL BONUS ───
+
+  async applyReferralBonus(newUserId: string, referrerId: string) {
+    const template = await this.prisma.promoTemplate.findFirst({
+      where: { type: 'REFERRAL_BONUS', isActive: true },
+    });
+    if (!template) {
+      this.logger.warn('No active REFERRAL_BONUS template found');
+      return;
+    }
+
+    // Check usage limit
+    if (template.maxUsageCount && template.currentUsage >= template.maxUsageCount) {
+      this.logger.warn('REFERRAL_BONUS usage limit reached');
+      return;
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // Promo for new user (referred)
+      await tx.userPromo.create({
+        data: {
+          userId: newUserId,
+          templateId: template.id,
+          remainingMonths: template.durationMonths,
+          referredByUserId: referrerId,
+          expiresAt: new Date(Date.now() + template.durationMonths * 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      // Promo for referrer
+      await tx.userPromo.create({
+        data: {
+          userId: referrerId,
+          templateId: template.id,
+          remainingMonths: template.durationMonths,
+          expiresAt: new Date(Date.now() + template.durationMonths * 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      await tx.promoTemplate.update({
+        where: { id: template.id },
+        data: { currentUsage: { increment: 2 } },
+      });
+    });
+
+    this.logger.log(`Referral bonus applied: referrer=${referrerId}, referred=${newUserId}`);
+  }
+
+  // ─── USER: Referral info & stats ───
+
+  async getReferralInfo(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { referralCode: true },
+    });
+
+    // Count how many people this user referred
+    const referralCount = await this.prisma.userPromo.count({
+      where: { referredByUserId: userId },
+    });
+
+    // Get list of referred users
+    const referrals = await this.prisma.userPromo.findMany({
+      where: { referredByUserId: userId },
+      include: {
+        user: { select: { fullName: true, createdAt: true } },
+        template: { select: { name: true, discountPercent: true, durationMonths: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+
+    return {
+      referralCode: user?.referralCode || null,
+      referralLink: user?.referralCode ? `https://kiraguvence.com/auth/register?ref=${user.referralCode}` : null,
+      totalReferrals: referralCount,
+      referrals: referrals.map((r) => ({
+        userName: r.user.fullName,
+        joinedAt: r.user.createdAt,
+        promoName: r.template.name,
+        discountPercent: r.template.discountPercent,
+        durationMonths: r.template.durationMonths,
+      })),
+    };
+  }
+
   // ─── ADMIN: Stats ───
 
   async getStats() {
-    const [templates, totalActive, totalUsed] = await Promise.all([
+    const [templates, totalActive, totalUsed, totalReferrals] = await Promise.all([
       this.prisma.promoTemplate.count(),
       this.prisma.userPromo.count({ where: { status: 'ACTIVE' } }),
       this.prisma.userPromo.count({ where: { status: 'USED' } }),
+      this.prisma.userPromo.count({ where: { referredByUserId: { not: null } } }),
     ]);
-    return { templates, totalActive, totalUsed };
+    return { templates, totalActive, totalUsed, totalReferrals };
   }
 }

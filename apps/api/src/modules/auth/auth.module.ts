@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { IdentityVerificationModule } from '../identity-verification/identity-verification.module';
+import { PromoModule } from '../promo/promo.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
@@ -18,6 +19,7 @@ import { JwtStrategy } from './jwt.strategy';
       }),
     }),
     IdentityVerificationModule,
+    PromoModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

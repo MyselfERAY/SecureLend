@@ -104,6 +104,16 @@ export class PromoController {
     return { status: 'success', data: promo };
   }
 
+  // ─── USER: Referral info ───
+
+  @Get('referral')
+  async getReferralInfo(
+    @CurrentUser('id') userId: string,
+  ): Promise<JSendSuccess<unknown>> {
+    const info = await this.promoService.getReferralInfo(userId);
+    return { status: 'success', data: info };
+  }
+
   // ─── ADMIN: Stats ───
 
   @Get('stats')

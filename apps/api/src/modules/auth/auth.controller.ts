@@ -50,6 +50,7 @@ export class AuthController {
       ipAddress,
       dto.consents,
       userAgent,
+      dto.referralCode,
     );
     return { status: 'success', data: result };
   }

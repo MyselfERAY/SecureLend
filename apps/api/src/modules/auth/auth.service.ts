@@ -7,12 +7,13 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID, randomInt, createHmac, timingSafeEqual } from 'crypto';
+import { randomUUID, randomInt, createHmac, timingSafeEqual, randomBytes } from 'crypto';
 import { maskTckn, validateTckn } from '@securelend/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { IdentityVerificationService } from '../identity-verification/identity-verification.service';
 import { SmsService } from '../notification/sms.service';
+import { PromoService } from '../promo/promo.service';
 import { ConsentType } from '@prisma/client';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { AuthTokens } from './interfaces/auth-tokens.interface';
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly encryptionService: EncryptionService,
     private readonly identityService: IdentityVerificationService,
     private readonly smsService: SmsService,
+    private readonly promoService: PromoService,
   ) {
     this.refreshSecret = this.configService.getOrThrow<string>('JWT_SECRET');
   }
@@ -41,6 +43,7 @@ export class AuthService {
     ipAddress: string,
     consents?: { type: ConsentType; version: string }[],
     userAgent?: string,
+    referralCode?: string,
   ) {
     if (!validateTckn(tckn)) {
       throw new BadRequestException('Gecersiz TCKN');
@@ -63,6 +66,22 @@ export class AuthService {
       throw new BadRequestException('Kimlik dogrulamasi basarisiz');
     }
 
+    // Validate referrer if referral code provided
+    let referrer: { id: string } | null = null;
+    if (referralCode) {
+      referrer = await this.prisma.user.findUnique({
+        where: { referralCode },
+        select: { id: true },
+      });
+      if (!referrer) {
+        this.logger.warn(`Invalid referral code used: ${referralCode}`);
+        // Don't block registration for invalid referral code
+      }
+    }
+
+    // Generate unique referral code for new user
+    const newReferralCode = await this.generateReferralCode();
+
     // Create user
     const user = await this.prisma.$transaction(async (tx) => {
       const u = await tx.user.create({
@@ -73,6 +92,7 @@ export class AuthService {
           phone,
           dateOfBirth: new Date(dateOfBirth),
           kpsVerified: true,
+          referralCode: newReferralCode,
         },
       });
 
@@ -107,6 +127,23 @@ export class AuthService {
     });
 
     this.logger.log(`User registered: ${user.id} (${maskedTckn})`);
+
+    // Apply auto promos (e.g. first 3 months free)
+    try {
+      await this.promoService.applyAutoPromos(user.id);
+    } catch (err) {
+      this.logger.error(`Auto-promo failed for ${user.id}: ${err instanceof Error ? err.message : err}`);
+    }
+
+    // Apply referral bonus for both parties
+    if (referrer) {
+      try {
+        await this.promoService.applyReferralBonus(user.id, referrer.id);
+        this.logger.log(`Referral bonus applied: referrer=${referrer.id}, referred=${user.id}`);
+      } catch (err) {
+        this.logger.error(`Referral bonus failed: ${err instanceof Error ? err.message : err}`);
+      }
+    }
 
     // Send OTP
     await this.sendOtp(phone, user.id, 'REGISTER');
@@ -295,5 +332,20 @@ export class AuthService {
   private maskPhone(phone: string): string {
     if (phone.length < 4) return '****';
     return `****${phone.slice(-4)}`;
+  }
+
+  private async generateReferralCode(): Promise<string> {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No I/O/0/1 to avoid confusion
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const bytes = randomBytes(8);
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        code += chars[bytes[i] % chars.length];
+      }
+      const exists = await this.prisma.user.findUnique({ where: { referralCode: code } });
+      if (!exists) return code;
+    }
+    // Fallback: longer code
+    return randomBytes(6).toString('hex').toUpperCase().slice(0, 10);
   }
 }

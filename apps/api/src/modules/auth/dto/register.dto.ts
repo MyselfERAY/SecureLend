@@ -45,4 +45,9 @@ export class RegisterDto {
   @ValidateNested({ each: true })
   @Type(() => ConsentItemDto)
   consents?: ConsentItemDto[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(10, { message: 'Davet kodu en fazla 10 karakter olmali' })
+  referralCode?: string;
 }

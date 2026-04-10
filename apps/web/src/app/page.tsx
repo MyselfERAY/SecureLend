@@ -119,6 +119,9 @@ export default function HomePage() {
             <Link href="/fiyatlandirma" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               Fiyatlandirma
             </Link>
+            <Link href="/sablonlar" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+              Sablonlar
+            </Link>
             <a href="#iletisim" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               İletişim
             </a>
@@ -159,6 +162,7 @@ export default function HomePage() {
               <a href="#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Nasıl Çalışır?</a>
               <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Rehber</Link>
               <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Fiyatlandirma</Link>
+              <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Sablonlar</Link>
               <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">İletişim</a>
               <hr className="border-slate-200" />
               <Link href="/auth/login" className="text-sm font-semibold text-slate-700">Giriş Yap</Link>
