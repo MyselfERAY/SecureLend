@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../../lib/auth-context';
 import { api } from '../../../lib/api';
 
@@ -247,6 +248,14 @@ export default function BankPage() {
               <p className="text-sm text-slate-400">
                 Kira Mevduat Hesabi (KMH) basvurusu icin asagidaki bilgileri doldurun.
               </p>
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
+                <strong className="text-amber-200">KVKK Bilgilendirmesi:</strong> Kayit sirasinda
+                verdiginiz acik riza kapsaminda; gelir belgesi, istihdam bilgisi ve kredi gecmisi
+                bu basvuru icin islenecek ve anlasmalı bankalar ile KKB ile paylasilacaktir.{' '}
+                <Link href="/acik-riza" target="_blank" className="underline text-amber-200 hover:text-amber-100">
+                  Acik Riza Formu
+                </Link>
+              </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>

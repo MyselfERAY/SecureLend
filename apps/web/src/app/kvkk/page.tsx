@@ -22,7 +22,7 @@ export default function KVKKPage() {
 
       <main className="mx-auto max-w-3xl px-6 py-12">
         <h1 className="text-3xl font-extrabold text-slate-900 mb-2">KVKK Aydınlatma Metni</h1>
-        <p className="text-sm text-slate-500 mb-10">Son güncelleme: Nisan 2026 · Sürüm 1.0</p>
+        <p className="text-sm text-slate-500 mb-10">Son güncelleme: Nisan 2026 · Sürüm 2.0</p>
 
         <div className="space-y-8 text-slate-700 leading-relaxed">
 
@@ -50,6 +50,13 @@ export default function KVKKPage() {
               <li><strong>Meşru menfaat (KVKK m.5/2-f):</strong> Bilgi güvenliği, dolandırıcılık tespiti, istatistiksel analiz, hukuki süreç takibi.</li>
               <li><strong>Açık rıza (KVKK m.5/1):</strong> Profilleme, pazarlama bildirimleri, KKB/Findeks sorgulama, üçüncü taraf veri aktarımı (rıza gerektiren haller), otomatik kredi değerlendirmesi.</li>
             </ul>
+            <div className="mt-4 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              <strong>2026 İdari Para Cezaları (KVKK m.18):</strong> Aydınlatma yükümlülüğünü
+              yerine getirmeme, açık rıza almama veya veri güvenliği tedbirlerini uygulamamak;
+              KVKK Kurulu kararıyla 2026 yılı yeniden değerleme oranına göre güncellenen idari
+              para cezalarına yol açabilir. Güncel ceza tarifeleri için{' '}
+              <strong>kvkk.gov.tr</strong>&apos;yi ziyaret edin.
+            </div>
           </section>
 
           {/* 2. İşlenen Veriler */}
@@ -63,6 +70,69 @@ export default function KVKKPage() {
               <li><strong>İşlem:</strong> Kira sözleşmesi detayları, ödeme geçmişi, KMH başvuru sonucu.</li>
               <li><strong>Teknik:</strong> IP adresi, tarayıcı/cihaz bilgisi, oturum ve erişim kayıtları.</li>
             </ul>
+          </section>
+
+          {/* KYC Hassas Veri İşleme */}
+          <section className="rounded-2xl border border-slate-200 bg-white px-6 py-5">
+            <h2 className="text-xl font-bold text-slate-900 mb-3">
+              KYC / Kimlik Doğrulama Sürecinde İşlenen Hassas Veriler
+            </h2>
+            <p className="text-sm text-slate-600 mb-4">
+              6698 sayılı KVKK kapsamında, kimlik doğrulama (KYC) ve KMH başvurusu süreçlerinde
+              toplanan aşağıdaki veriler açıkça belirlenmiş amaçlarla işlenmektedir:
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-slate-200 text-left">
+                    <th className="pb-2 pr-3 font-semibold text-slate-600 uppercase tracking-wide w-1/5">Veri Türü</th>
+                    <th className="pb-2 pr-3 font-semibold text-slate-600 uppercase tracking-wide w-2/5">İşleme Amacı</th>
+                    <th className="pb-2 pr-3 font-semibold text-slate-600 uppercase tracking-wide w-1/4">Hukuki Dayanak</th>
+                    <th className="pb-2 font-semibold text-slate-600 uppercase tracking-wide">Rıza</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="py-2.5 pr-3 font-medium text-slate-800">T.C. Kimlik No</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Kimlik tespiti (KPS), MASAK uyum kaydı, hesap açılışı</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Kanuni yükümlülük (m.5/2-a); Sözleşme ifası (m.5/2-c)</td>
+                    <td className="py-2.5"><span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Kanuni zorunluluk</span></td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 pr-3 font-medium text-slate-800">IBAN</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Kira ödemelerinin kiracıdan ev sahibine aktarımı; KMH hesap bildirimi</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Sözleşmenin ifası (m.5/2-c)</td>
+                    <td className="py-2.5"><span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">Sözleşme gereği</span></td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 pr-3 font-medium text-slate-800">Gelir Belgesi</td>
+                    <td className="py-2.5 pr-3 text-slate-600">KMH başvurusu kredi değerlendirmesi; anlaşmalı bankaya iletim</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Açık rıza (m.5/1)</td>
+                    <td className="py-2.5"><span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Açık rıza zorunlu</span></td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 pr-3 font-medium text-slate-800">Kredi Notu (KKB/Findeks)</td>
+                    <td className="py-2.5 pr-3 text-slate-600">KMH risk değerlendirmesi — yalnızca KMH başvurusu yapılırsa</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Açık rıza (m.5/1)</td>
+                    <td className="py-2.5"><span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Açık rıza zorunlu</span></td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 pr-3 font-medium text-slate-800">İstihdam Bilgisi</td>
+                    <td className="py-2.5 pr-3 text-slate-600">KMH kredi değerlendirmesi; anlaşmalı bankaya iletim</td>
+                    <td className="py-2.5 pr-3 text-slate-600">Açık rıza (m.5/1)</td>
+                    <td className="py-2.5"><span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Açık rıza zorunlu</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-4 text-xs text-slate-500">
+              Açık rıza gerektiren işlemler yalnızca KMH başvurusu yapılması durumunda devreye
+              girer. Rızanız olmadan bu veriler işlenmez veya paylaşılmaz. Kayıt sırasında
+              verilen açık rıza beyanının tamamı için:{' '}
+              <Link href="/acik-riza" className="text-blue-600 hover:underline font-medium">
+                Açık Rıza Formu
+              </Link>
+            </p>
           </section>
 
           {/* 3. Aktarım */}
