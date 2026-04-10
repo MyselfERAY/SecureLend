@@ -7,15 +7,31 @@ import { api } from '../../lib/api';
 import OnboardingWizard from '../../components/onboarding-wizard';
 
 interface DashboardData {
-  activeContracts: number;
-  totalContracts: number;
-  pendingPayments: number;
-  overduePayments: number;
-  monthlyIncome: number;
-  properties: number;
-  occupancyRate: number;
-  nextPaymentDate: string | null;
-  nextPaymentAmount: number | null;
+  roles: string[];
+  fullName: string;
+  memberSince: string;
+  tenant?: {
+    activeContracts: number;
+    totalMonthlyRent: number;
+    pendingPayments: number;
+    overduePayments: number;
+    totalPaid: number;
+    kmhStatus: string | null;
+    kmhLimit: number | null;
+    nextPaymentDate: string | null;
+    nextPaymentAmount: number | null;
+  };
+  landlord?: {
+    activeContracts: number;
+    totalProperties: number;
+    rentedProperties: number;
+    totalMonthlyIncome: number;
+    totalReceived: number;
+    pendingPayments: number;
+    overduePayments: number;
+    occupancyRate: number;
+  };
+  recentNotifications: unknown[];
 }
 
 interface ContractSummary {
@@ -111,14 +127,18 @@ export default function DashboardPage() {
   const isTenant = user?.roles.includes('TENANT');
   const isLandlord = user?.roles.includes('LANDLORD');
 
-  // Compute stats from local data if dashboard endpoint doesn't return data
+  // Compute stats from nested dashboard data
+  const dd = dashboardData;
+  const landlordData = dd?.landlord;
+  const tenantData = dd?.tenant;
+
   const stats = {
-    activeContracts: dashboardData?.activeContracts ?? activeContracts.length,
-    totalContracts: dashboardData?.totalContracts ?? contracts.length,
-    pendingPayments: dashboardData?.pendingPayments ?? payments.filter((p) => p.status === 'PENDING').length,
-    overduePayments: dashboardData?.overduePayments ?? payments.filter((p) => p.status === 'OVERDUE').length,
-    properties: dashboardData?.properties ?? 0,
-    monthlyIncome: dashboardData?.monthlyIncome ?? 0,
+    activeContracts: (isLandlord ? landlordData?.activeContracts : tenantData?.activeContracts) ?? activeContracts.length,
+    totalContracts: contracts.length,
+    pendingPayments: (isLandlord ? landlordData?.pendingPayments : tenantData?.pendingPayments) ?? payments.filter((p) => p.status === 'PENDING').length,
+    overduePayments: (isLandlord ? landlordData?.overduePayments : tenantData?.overduePayments) ?? payments.filter((p) => p.status === 'OVERDUE').length,
+    properties: landlordData?.totalProperties ?? 0,
+    monthlyIncome: landlordData?.totalMonthlyIncome ?? tenantData?.totalMonthlyRent ?? 0,
   };
 
   return (
@@ -310,16 +330,30 @@ export default function DashboardPage() {
           <div className="text-lg font-medium text-slate-300">Henuz sozlesmeniz yok</div>
           <p className="mt-2 text-sm text-slate-500">
             {isLandlord
-              ? 'Mulk ekleyip sozlesme olusturabilirsiniz.'
+              ? stats.properties > 0
+                ? 'Mulkunuz var ancak henuz sozlesme olusturmamissiniz.'
+                : 'Once mulk ekleyin, sonra sozlesme olusturun.'
               : 'Ev sahibiniz sozlesme olusturdugunda burada gorunecektir.'}
           </p>
           {isLandlord && (
-            <Link
-              href="/dashboard/properties"
-              className="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              Mulk Ekle
-            </Link>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              {stats.properties === 0 && (
+                <Link
+                  href="/dashboard/properties"
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Mulk Ekle
+                </Link>
+              )}
+              {stats.properties > 0 && (
+                <Link
+                  href="/dashboard/contracts"
+                  className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Sozlesme Olustur
+                </Link>
+              )}
+            </div>
           )}
         </div>
       )}

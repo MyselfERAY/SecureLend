@@ -20,6 +20,7 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/apps/api/assets ./apps/api/assets
 WORKDIR /app/apps/api
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]

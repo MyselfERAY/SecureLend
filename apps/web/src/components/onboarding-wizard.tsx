@@ -17,7 +17,12 @@ interface PropertyForm {
   city: string;
   district: string;
   propertyType: string;
+  roomCount: string;
+  areaM2: string;
+  floor: string;
+  totalFloors: string;
   monthlyRent: string;
+  depositAmount: string;
 }
 
 interface FoundUser {
@@ -38,7 +43,12 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
     city: '',
     district: '',
     propertyType: 'APARTMENT',
+    roomCount: '',
+    areaM2: '',
+    floor: '',
+    totalFloors: '',
     monthlyRent: '',
+    depositAmount: '',
   });
   const [phoneSearch, setPhoneSearch] = useState('');
   const [foundUser, setFoundUser] = useState<FoundUser | null>(null);
@@ -112,17 +122,24 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
     setLoading(true);
     setError('');
     try {
+      const body: Record<string, unknown> = {
+        title: propertyForm.title,
+        addressLine1: propertyForm.addressLine1,
+        city: propertyForm.city,
+        district: propertyForm.district,
+        propertyType: propertyForm.propertyType,
+        monthlyRent: parseFloat(propertyForm.monthlyRent),
+      };
+      if (propertyForm.roomCount) body.roomCount = propertyForm.roomCount;
+      if (propertyForm.areaM2) body.areaM2 = parseFloat(propertyForm.areaM2);
+      if (propertyForm.floor) body.floor = parseInt(propertyForm.floor, 10);
+      if (propertyForm.totalFloors) body.totalFloors = parseInt(propertyForm.totalFloors, 10);
+      if (propertyForm.depositAmount) body.depositAmount = parseFloat(propertyForm.depositAmount);
+
       const res = await api('/api/v1/properties', {
         token,
         method: 'POST',
-        body: {
-          title: propertyForm.title,
-          addressLine1: propertyForm.addressLine1,
-          city: propertyForm.city,
-          district: propertyForm.district,
-          propertyType: propertyForm.propertyType,
-          monthlyRent: parseFloat(propertyForm.monthlyRent),
-        },
+        body,
       });
       if (res.status === 'success') {
         setPropertyAdded(true);
@@ -349,12 +366,77 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
             </select>
           </div>
           <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Oda Sayisi</label>
+            <select
+              value={propertyForm.roomCount}
+              onChange={(e) => setPropertyForm((prev) => ({ ...prev, roomCount: e.target.value }))}
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Secin</option>
+              <option value="1+0">1+0 (Studyo)</option>
+              <option value="1+1">1+1</option>
+              <option value="2+1">2+1</option>
+              <option value="3+1">3+1</option>
+              <option value="3+2">3+2</option>
+              <option value="4+1">4+1</option>
+              <option value="4+2">4+2</option>
+              <option value="5+1">5+1</option>
+              <option value="5+2">5+2</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Brut m2</label>
+            <input
+              type="number"
+              value={propertyForm.areaM2}
+              onChange={(e) => setPropertyForm((prev) => ({ ...prev, areaM2: e.target.value }))}
+              placeholder="120"
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Bulundugu Kat</label>
+            <input
+              type="number"
+              value={propertyForm.floor}
+              onChange={(e) => setPropertyForm((prev) => ({ ...prev, floor: e.target.value }))}
+              placeholder="3"
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Toplam Kat</label>
+            <input
+              type="number"
+              value={propertyForm.totalFloors}
+              onChange={(e) => setPropertyForm((prev) => ({ ...prev, totalFloors: e.target.value }))}
+              placeholder="7"
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Aylik Kira (TL)</label>
             <input
               type="number"
               value={propertyForm.monthlyRent}
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, monthlyRent: e.target.value }))}
               placeholder="15000"
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Depozito (TL)</label>
+            <input
+              type="number"
+              value={propertyForm.depositAmount}
+              onChange={(e) => setPropertyForm((prev) => ({ ...prev, depositAmount: e.target.value }))}
+              placeholder="30000"
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
