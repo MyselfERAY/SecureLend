@@ -23,8 +23,8 @@ const RT_COOKIE = '__rt';
 const RT_COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  path: '/api/v1/auth',
+  sameSite: 'lax' as const,
+  path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
@@ -110,7 +110,7 @@ export class AuthController {
   ) {
     const refreshToken = req.cookies?.[RT_COOKIE] || dto.refreshToken;
     if (refreshToken) await this.authService.logout(refreshToken);
-    res.clearCookie(RT_COOKIE, { path: '/api/v1/auth' });
+    res.clearCookie(RT_COOKIE, { path: '/' });
     return { status: 'success', data: { message: 'Cikis yapildi' } };
   }
 }

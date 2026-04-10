@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // SRI disabled: causes hydration failures on Vercel CDN (hash mismatch)
   // experimental: { sri: { algorithm: 'sha256' } },
   async rewrites() {
-    const apiDest = process.env.BACKEND_URL || 'http://localhost:4000';
+    const apiDest = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
     return [
       {
         source: '/api/:path*',

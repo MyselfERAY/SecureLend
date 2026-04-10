@@ -1,15 +1,13 @@
 function resolveApiUrl(): string {
-  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
-  if (!configured) return '';
-
-  const isLocalApi = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(configured);
-  if (isLocalApi && typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
-    if (!isLocalHost) return '';
+  // In production, use relative paths so requests go through Vercel proxy (same domain).
+  // This ensures httpOnly cookies are set on the correct domain.
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return '';
   }
 
-  return configured;
+  // In development, use the configured API URL (typically http://localhost:4000)
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+  return configured || '';
 }
 
 const API_URL = resolveApiUrl();
