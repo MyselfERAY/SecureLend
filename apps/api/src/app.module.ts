@@ -26,6 +26,7 @@ import { AgentRunModule } from './modules/agent-run/agent-run.module';
 import { PoAgentModule } from './modules/po-agent/po-agent.module';
 import { MarketingAgentModule } from './modules/marketing-agent/marketing-agent.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
+import { PromoModule } from './modules/promo/promo.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -83,6 +84,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     PoAgentModule,
     MarketingAgentModule,
     OnboardingModule,
+    PromoModule,
     HealthModule,
   ],
   providers: [

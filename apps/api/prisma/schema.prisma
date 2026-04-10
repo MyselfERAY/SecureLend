@@ -80,6 +80,8 @@ model User {
   refreshTokens        RefreshToken[]
   chatParticipations   ChatRoomParticipant[]
   chatMessages         ChatMessage[]
+  userPromos           UserPromo[]           @relation("UserPromos")
+  referredPromos       UserPromo[]           @relation("ReferredPromos")
 
   @@index([tcknHash], map: "idx_user_tckn_hash")
   @@index([phone], map: "idx_user_phone")
@@ -231,6 +233,7 @@ model Contract {
   paymentOrders     PaymentOrder[]
   payments          PaymentSchedule[]
   chatRooms         ChatRoom[]
+  userPromos        UserPromo[]
 
   @@index([propertyId], map: "idx_contract_property")
   @@index([tenantId], map: "idx_contract_tenant")
@@ -845,4 +848,64 @@ model ChatMessage {
   @@index([senderId], map: "idx_chat_message_sender")
   @@index([chatRoomId, isRead], map: "idx_chat_message_unread")
   @@map("chat_messages")
+}
+
+// ─── PROMO SYSTEM ───────────────────────────
+enum PromoType {
+  FIRST_MONTHS_FREE      // Ilk X ay komisyonsuz
+  RENEWAL_DISCOUNT       // 2. yil yenileme indirimi
+  REFERRAL_BONUS         // Arkadasini getir bonusu
+  LOYALTY_REWARD         // Sadakat odulu (12. ay vb.)
+  CUSTOM                 // Admin tarafindan ozel tanimlanan
+}
+
+enum PromoStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+}
+
+model PromoTemplate {
+  id               String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String      @db.VarChar(200)
+  type             PromoType
+  description      String?     @db.VarChar(500)
+  discountPercent  Int         @map("discount_percent")          // 100 = tamamen ucretsiz, 50 = %50 indirim
+  durationMonths   Int         @map("duration_months")           // Kac ay gecerli (orn. 3 = ilk 3 ay)
+  isActive         Boolean     @default(true) @map("is_active")
+  isAutoApply      Boolean     @default(false) @map("is_auto_apply")  // Yeni kayitlara otomatik uygula
+  maxUsageCount    Int?        @map("max_usage_count")           // Toplam kullanim limiti (null = sinirsiz)
+  currentUsage     Int         @default(0) @map("current_usage")
+  validFrom        DateTime?   @map("valid_from") @db.Timestamptz()
+  validUntil       DateTime?   @map("valid_until") @db.Timestamptz()
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+  userPromos       UserPromo[]
+
+  @@index([type, isActive], map: "idx_promo_template_type")
+  @@map("promo_templates")
+}
+
+model UserPromo {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String      @map("user_id") @db.Uuid
+  templateId      String      @map("template_id") @db.Uuid
+  contractId      String?     @map("contract_id") @db.Uuid
+  status          PromoStatus @default(ACTIVE)
+  remainingMonths Int         @map("remaining_months")           // Kalan ay sayisi
+  activatedAt     DateTime    @default(now()) @map("activated_at") @db.Timestamptz()
+  expiresAt       DateTime?   @map("expires_at") @db.Timestamptz()
+  referredByUserId String?    @map("referred_by_user_id") @db.Uuid  // Referral icin: kim davet etti
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user            User        @relation("UserPromos", fields: [userId], references: [id])
+  template        PromoTemplate @relation(fields: [templateId], references: [id])
+  contract        Contract?   @relation(fields: [contractId], references: [id])
+  referredByUser  User?       @relation("ReferredPromos", fields: [referredByUserId], references: [id])
+
+  @@index([userId, status], map: "idx_user_promo_user_status")
+  @@index([templateId], map: "idx_user_promo_template")
+  @@map("user_promos")
 }

@@ -308,6 +308,34 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── VIDEO DEMO ── */}
+        <section className="px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanitim</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">60 Saniyede KiraGuvence</h2>
+              <p className="mt-3 text-base text-slate-500">Platformun nasil calistigini kisa videomuzda gorun.</p>
+            </div>
+            <div className="mt-10">
+              <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-lg">
+                {/*
+                  Video embed alani. Loom, YouTube veya direkt video URL'i ekleyin.
+                  Ornek: <iframe src="https://www.loom.com/embed/VIDEO_ID" ... />
+                */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-700 shadow-lg transition hover:bg-blue-800 cursor-pointer">
+                    <svg className="ml-1 h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <p className="mt-4 text-sm font-medium text-slate-500">Tanitim videosu yakinda eklenecek</p>
+                  <p className="mt-1 text-xs text-slate-400">Kayit ol, sozlesme olustur, otomatik odeme — hepsini 60 saniyede gor</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── FEATURES ── */}
         <section className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
