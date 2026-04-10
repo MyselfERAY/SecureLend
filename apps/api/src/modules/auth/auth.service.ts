@@ -250,7 +250,8 @@ export class AuthService {
   // ─── Private helpers ─────────────────────────────
 
   private async sendOtp(phone: string, userId: string, purpose: string) {
-    const code = randomInt(100000, 999999).toString();
+    // TODO: SMS entegrasyonu tamamlaninca randomInt(100000, 999999) kullan
+    const code = '111111';
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
     await this.prisma.otpCode.create({

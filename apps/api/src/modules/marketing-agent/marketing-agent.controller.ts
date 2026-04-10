@@ -12,6 +12,7 @@ import { MarketingAgentService } from './marketing-agent.service';
 import { CreateMarketingReportDto } from './dto/create-marketing-report.dto';
 import { UpdateMarketingTaskDto } from './dto/update-marketing-task.dto';
 import { CreateResearchRequestDto } from './dto/create-research-request.dto';
+import { CompleteResearchRequestDto } from './dto/complete-research-request.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import {
   UserRole,
@@ -106,6 +107,18 @@ export class MarketingAgentController {
   @Get('research/:id')
   async findResearchRequestById(@Param('id') id: string) {
     const request = await this.marketingAgentService.findResearchRequestById(id);
+    return { status: 'success', data: request };
+  }
+
+  @Patch('research/:id/complete')
+  async completeResearchRequest(
+    @Param('id') id: string,
+    @Body() dto: CompleteResearchRequestDto,
+  ) {
+    const request = await this.marketingAgentService.completeResearchRequest(
+      id,
+      dto.resultReportId,
+    );
     return { status: 'success', data: request };
   }
 }

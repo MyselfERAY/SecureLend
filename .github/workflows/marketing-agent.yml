@@ -34,8 +34,13 @@ jobs:
             -d '{"agentType":"MARKETING"}' \
             "$API_BASE/api/v1/agent-runs")
 
-          RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          if ! echo "$RUN_RESPONSE" | jq . > /dev/null 2>&1; then
+            echo "::warning::Agent run creation returned non-JSON, skipping run tracking"
+            echo "run_id=" >> $GITHUB_OUTPUT
+          else
+            RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+            echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          fi
 
       - name: Determine mode
         id: mode
@@ -215,16 +220,25 @@ jobs:
             --arg agentRunId "$RUN_ID" \
             '{type: $type, title: $title, content: $content, tasks: $tasks, agentRunId: (if $agentRunId == "" then null else $agentRunId end)}')
 
-          RESPONSE=$(curl -s -X POST \
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "x-api-key: $SERVICE_API_KEY" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
             "$API_BASE/api/v1/marketing/reports")
 
-          echo "$RESPONSE" | jq .
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
 
-          if echo "$RESPONSE" | jq -e '.status == "success"' > /dev/null 2>&1; then
-            REPORT_ID=$(echo "$RESPONSE" | jq -r '.data.id')
+          if ! echo "$BODY" | jq . > /dev/null 2>&1; then
+            echo "::error::API returned non-JSON (HTTP $HTTP_CODE): $(echo "$BODY" | head -5)"
+            echo "submit_ok=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "$BODY" | jq .
+
+          if echo "$BODY" | jq -e '.status == "success"' > /dev/null 2>&1; then
+            REPORT_ID=$(echo "$BODY" | jq -r '.data.id')
             echo "report_id=$REPORT_ID" >> $GITHUB_OUTPUT
             echo "submit_ok=true" >> $GITHUB_OUTPUT
             echo "::notice::Marketing report submitted: $REPORT_ID"
@@ -241,14 +255,17 @@ jobs:
           RID="${{ steps.mode.outputs.research_id }}"
           REPORT_ID="${{ steps.submit.outputs.report_id }}"
 
-          # Complete the research request with the report link
-          curl -s -X PATCH \
+          LINK_RESPONSE=$(curl -s -X PATCH \
             -H "x-api-key: $SERVICE_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"status\":\"COMPLETED\",\"resultReportId\":\"$REPORT_ID\"}" \
-            "$API_BASE/api/v1/marketing/research/$RID"
+            -d "{\"resultReportId\":\"$REPORT_ID\"}" \
+            "$API_BASE/api/v1/marketing/research/$RID/complete")
 
-          echo "::notice::Research request $RID linked to report $REPORT_ID"
+          if echo "$LINK_RESPONSE" | jq -e '.status == "success"' > /dev/null 2>&1; then
+            echo "::notice::Research request $RID linked to report $REPORT_ID"
+          else
+            echo "::warning::Failed to link research request $RID: $LINK_RESPONSE"
+          fi
 
       - name: Complete agent run
         if: always()
