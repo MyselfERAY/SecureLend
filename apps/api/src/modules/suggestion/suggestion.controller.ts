@@ -6,7 +6,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole, SuggestionStatus } from '@prisma/client';
 
 @Controller('api/v1/suggestions')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SERVICE)
 export class SuggestionController {
   constructor(private readonly suggestionService: SuggestionService) {}
 

@@ -23,7 +23,7 @@ env:
   API_BASE: https://securelend-production.up.railway.app
 
 concurrency:
-  group: securelend-agents
+  group: securelend-article
   cancel-in-progress: false
 
 jobs:
