@@ -42,10 +42,16 @@ const statusMap: Record<string, { text: string; cls: string }> = {
   EXPIRED: { text: 'Suresi Doldu', cls: 'bg-slate-500/20 text-slate-500' },
 };
 
+type TabKey = 'active' | 'archive';
+
+const ACTIVE_STATUSES = ['DRAFT', 'PENDING_SIGNATURES', 'ACTIVE'];
+const ARCHIVE_STATUSES = ['TERMINATED', 'EXPIRED'];
+
 export default function ContractsPage() {
   const { tokens, user } = useAuth();
   const [contracts, setContracts] = useState<ContractSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabKey>('active');
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -195,6 +201,10 @@ export default function ContractsPage() {
     );
   }
 
+  const activeContracts = contracts.filter((c) => ACTIVE_STATUSES.includes(c.status));
+  const archiveContracts = contracts.filter((c) => ARCHIVE_STATUSES.includes(c.status));
+  const filteredContracts = activeTab === 'active' ? activeContracts : archiveContracts;
+
   const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
   const labelCls = 'mb-1.5 block text-sm font-medium text-slate-300';
 
@@ -215,6 +225,38 @@ export default function ContractsPage() {
           </button>
         )}
       </div>
+
+      {/* Tabs */}
+      {contracts.length > 0 && (
+        <div className="flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
+              activeTab === 'active'
+                ? 'bg-blue-600/20 text-blue-400'
+                : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/30'
+            }`}
+          >
+            Aktif Sozlesmeler
+            {activeContracts.length > 0 && (
+              <span className="ml-2 rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-semibold text-blue-400">{activeContracts.length}</span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('archive')}
+            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
+              activeTab === 'archive'
+                ? 'bg-slate-600/20 text-slate-300'
+                : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/30'
+            }`}
+          >
+            Arsiv
+            {archiveContracts.length > 0 && (
+              <span className="ml-2 rounded-full bg-slate-500/20 px-2 py-0.5 text-xs font-semibold text-slate-400">{archiveContracts.length}</span>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Create Form */}
       {showForm && (
@@ -377,9 +419,31 @@ export default function ContractsPage() {
             </p>
           )}
         </div>
+      ) : filteredContracts.length === 0 ? (
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-12 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-700/50">
+            {activeTab === 'archive' ? (
+              <svg className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+            ) : (
+              <svg className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            )}
+          </div>
+          <div className="text-base font-medium text-slate-300">
+            {activeTab === 'archive' ? 'Arsivde sozlesme yok' : 'Aktif sozlesmeniz yok'}
+          </div>
+          <p className="mt-1 text-sm text-slate-500">
+            {activeTab === 'archive'
+              ? 'Feshedilen veya suresi dolan sozlesmeler burada gorunecektir.'
+              : 'Aktif, taslak veya imza bekleyen sozlesmeleriniz burada gorunecektir.'}
+          </p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {contracts.map((c) => (
+          {filteredContracts.map((c) => (
             <Link
               key={c.id}
               href={`/dashboard/contracts/${c.id}`}

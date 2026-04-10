@@ -306,7 +306,7 @@ export class ContractPdfService {
         'Kiracinin olumu halinde, birlikte yasayan es veya aile bireyleri ayni kosullarla kiraciligin devamini talep edebilir (TBK m.333). Kiraya veren bu durumda sozlesmeyi belirli kosullar disinda sona erdiremez.',
         'isbu sozlesmeden dogan uyusmazliklarda kiralananin bulundugu yerdeki Sulh Hukuk Mahkemeleri ve icra Mudurlugu yetkilidir.',
         'Bu sozlesme toplam 9 (dokuz) maddeden ibaret olup, taraflarin karsilikli iradelerini yansitmaktadir.',
-        'Sozlesme, her iki tarafin da dijital veya islak imzasi ile yururluge girer.',
+        'Sozlesme, her iki tarafin islak imzasi ile yururluge girer.',
       ];
 
       miscClauses.forEach((clause, idx) => {
@@ -318,52 +318,59 @@ export class ContractPdfService {
       doc.moveDown(0.8);
 
       // ─── iMZALAR ───
-      this.checkPageSpace(doc, 180);
+      this.checkPageSpace(doc, 220);
       this.drawLine(doc);
       doc.moveDown(0.5);
       this.sectionTitle(doc, fontB, 'iMZALAR');
 
-      if (contract.signatures.length > 0) {
-        doc.fontSize(9).font(fontR).fillColor('#333333')
-          .text('Bu sozlesme asagidaki taraflarca dijital ortamda imzalanmistir:');
-        doc.moveDown(0.5);
+      doc.fontSize(8.5).font(fontR).fillColor('#555555')
+        .text('isbu sozlesme, asagida isimleri ve imzalari bulunan taraflarca okunmus, anlasma saglanarakislak imza ile imzalanmistir.', { lineGap: 2 });
+      doc.moveDown(0.8);
 
-        contract.signatures.forEach((sig) => {
-          const roleLabel = sig.role === 'LANDLORD' ? 'Kiraya Veren' : 'Kiraci';
-          doc.fontSize(9).font(fontB).fillColor('#000000')
-            .text(`${roleLabel}: ${sig.user.fullName}`);
-          doc.fontSize(8).font(fontR).fillColor('#666666')
-            .text(`imza Tarihi: ${sig.signedAt.toLocaleString('tr-TR')}`);
-          doc.text(`IP Adresi: ${sig.ipAddress}`);
-          doc.moveDown(0.5);
-        });
+      const boxY = doc.y;
+      const leftX = 55;
+      const rightX = 310;
+      const boxWidth = 200;
+      const lineSpacing = 22;
 
-        doc.moveDown(0.3);
-        doc.fontSize(7.5).font(fontI).fillColor('#888888')
-          .text(
-            'Dijital imzalar, 6098 sayili Turk Borclar Kanunu ve 5070 sayili Elektronik imza Kanunu ' +
-            'kapsaminda gecerli kabul edilir. imza isleminde IP adresi, zaman damgasi ve cihaz bilgisi kaydedilmistir.',
-            { lineGap: 2 },
-          );
-      } else {
-        // Unsigned — draw signature boxes
-        const boxY = doc.y;
-        doc.fontSize(9).font(fontB).fillColor('#000000');
+      // ─── Left box: KiRAYA VEREN ───
+      doc.rect(leftX - 5, boxY - 5, boxWidth + 20, 130).strokeColor('#cccccc').lineWidth(0.5).stroke();
 
-        doc.text('KiRAYA VEREN', 55, boxY);
-        doc.fontSize(9).font(fontR).text(contract.landlord.fullName, 55, boxY + 18);
-        doc.text(`T.C.: ${contract.landlord.tcknMasked}`, 55, boxY + 33);
-        doc.moveTo(55, boxY + 80).lineTo(260, boxY + 80).strokeColor('#aaaaaa').stroke();
-        doc.fontSize(8).text('imza / Tarih', 55, boxY + 85);
+      doc.fontSize(10).font(fontB).fillColor('#1a365d').text('KiRAYA VEREN', leftX, boxY);
+      doc.moveDown(0.4);
 
-        doc.fontSize(9).font(fontB).text('KiRACI', 310, boxY);
-        doc.fontSize(9).font(fontR).text(contract.tenant.fullName, 310, boxY + 18);
-        doc.text(`T.C.: ${contract.tenant.tcknMasked}`, 310, boxY + 33);
-        doc.moveTo(310, boxY + 80).lineTo(520, boxY + 80).strokeColor('#aaaaaa').stroke();
-        doc.fontSize(8).text('imza / Tarih', 310, boxY + 85);
+      const leftFieldY = boxY + 20;
+      doc.fontSize(8.5).font(fontB).fillColor('#555555').text('Ad Soyad:', leftX, leftFieldY);
+      doc.moveTo(leftX + 55, leftFieldY + 12).lineTo(leftX + boxWidth, leftFieldY + 12).strokeColor('#aaaaaa').lineWidth(0.5).stroke();
 
-        doc.y = boxY + 110;
-      }
+      doc.fontSize(8.5).font(fontB).text('T.C. Kimlik No:', leftX, leftFieldY + lineSpacing);
+      doc.moveTo(leftX + 80, leftFieldY + lineSpacing + 12).lineTo(leftX + boxWidth, leftFieldY + lineSpacing + 12).strokeColor('#aaaaaa').stroke();
+
+      doc.fontSize(8.5).font(fontB).text('Tarih:', leftX, leftFieldY + lineSpacing * 2);
+      doc.moveTo(leftX + 35, leftFieldY + lineSpacing * 2 + 12).lineTo(leftX + boxWidth, leftFieldY + lineSpacing * 2 + 12).strokeColor('#aaaaaa').stroke();
+
+      doc.fontSize(8.5).font(fontB).text('imza:', leftX, leftFieldY + lineSpacing * 3);
+      // Empty space for signature
+
+      // ─── Right box: KiRACI ───
+      doc.rect(rightX - 5, boxY - 5, boxWidth + 20, 130).strokeColor('#cccccc').lineWidth(0.5).stroke();
+
+      doc.fontSize(10).font(fontB).fillColor('#1a365d').text('KiRACI', rightX, boxY);
+
+      const rightFieldY = boxY + 20;
+      doc.fontSize(8.5).font(fontB).fillColor('#555555').text('Ad Soyad:', rightX, rightFieldY);
+      doc.moveTo(rightX + 55, rightFieldY + 12).lineTo(rightX + boxWidth, rightFieldY + 12).strokeColor('#aaaaaa').lineWidth(0.5).stroke();
+
+      doc.fontSize(8.5).font(fontB).text('T.C. Kimlik No:', rightX, rightFieldY + lineSpacing);
+      doc.moveTo(rightX + 80, rightFieldY + lineSpacing + 12).lineTo(rightX + boxWidth, rightFieldY + lineSpacing + 12).strokeColor('#aaaaaa').stroke();
+
+      doc.fontSize(8.5).font(fontB).text('Tarih:', rightX, rightFieldY + lineSpacing * 2);
+      doc.moveTo(rightX + 35, rightFieldY + lineSpacing * 2 + 12).lineTo(rightX + boxWidth, rightFieldY + lineSpacing * 2 + 12).strokeColor('#aaaaaa').stroke();
+
+      doc.fontSize(8.5).font(fontB).text('imza:', rightX, rightFieldY + lineSpacing * 3);
+      // Empty space for signature
+
+      doc.y = boxY + 145;
 
       // ─── FOOTER ───
       doc.moveDown(1.5);
@@ -371,7 +378,7 @@ export class ContractPdfService {
       doc.moveDown(0.4);
       doc.fontSize(7).font(fontR).fillColor('#999999')
         .text(
-          'Bu sozlesme KiraGuvence.com dijital kira guvence platformu uzerinden olusturulmustur. ' +
+          'Bu sozlesme KiraGuvence.com kira guvence platformu uzerinden olusturulmustur. ' +
           'Sozlesme 6098 sayili Turk Borclar Kanunu (TBK) m.299-378 hukumlerine tabidir. ' +
           'Platform odeme araciligi yapmamakta olup, kira tahsilati banka duzenli odeme talimati ile gerceklestirilmektedir. ' +
           'Platform hizmetleri BDDK duzenlemelerine tabi degildir.',
