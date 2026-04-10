@@ -1,8 +1,14 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+
+function SafeHtml({ html }: { html: string }) {
+  const clean = useMemo(() => DOMPurify.sanitize(html, { ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'span', 'div', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'blockquote', 'code', 'pre'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }), [html]);
+  return <div className="prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: clean }} />;
+}
 
 // ── Types ──
 
@@ -443,10 +449,7 @@ export default function MarketingReportsPage() {
 
                 {/* Report content rendered as HTML */}
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-5">
-                  <div
-                    className="prose prose-sm prose-slate max-w-none"
-                    dangerouslySetInnerHTML={{ __html: selected.content }}
-                  />
+                  <SafeHtml html={selected.content} />
                 </div>
 
                 {/* Tasks from this report */}

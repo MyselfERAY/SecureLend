@@ -44,7 +44,7 @@ export class ArticleController {
     return { status: 'success', data: article };
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SERVICE)
   @Post()
   async create(@Body() dto: CreateArticleDto) {
     const article = await this.articleService.create(dto);

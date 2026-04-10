@@ -24,15 +24,20 @@ export class UserController {
   }
 
   @Get('search')
-  @Throttle({ short: { limit: 5, ttl: seconds(10) } })
+  @Throttle({ short: { limit: 2, ttl: seconds(30) } })
+  @ApiOperation({ summary: 'Search user by phone (requires LANDLORD role)' })
   async searchByPhone(
     @Query('phone') phone: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() currentUser: { id: string; roles: string[] },
   ) {
     if (!phone || !/^5\d{9}$/.test(phone)) {
       return { status: 'fail', data: { message: 'Gecerli telefon numarasi girin (5XXXXXXXXX)' } };
     }
-    const user = await this.userService.searchByPhone(phone, userId);
+    // Only landlords creating contracts can search tenants
+    if (!currentUser.roles.includes('LANDLORD') && !currentUser.roles.includes('ADMIN')) {
+      return { status: 'fail', data: { message: 'Bu islem icin yetkiniz yok' } };
+    }
+    const user = await this.userService.searchByPhone(phone, currentUser.id);
     return { status: 'success', data: user };
   }
 

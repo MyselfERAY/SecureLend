@@ -20,7 +20,7 @@ import {
 } from '@prisma/client';
 
 @Controller('api/v1/marketing')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SERVICE)
 export class MarketingAgentController {
   constructor(private readonly marketingAgentService: MarketingAgentService) {}
 

@@ -1,11 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
 
 export default function VerifyOtpPage() {
+  return (
+    <Suspense>
+      <VerifyOtpContent />
+    </Suspense>
+  );
+}
+
+function VerifyOtpContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { verifyOtp } = useAuth();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
@@ -14,14 +23,14 @@ export default function VerifyOtpPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    const storedPhone = sessionStorage.getItem('otp_phone');
-    if (!storedPhone) {
+    const p = searchParams.get('p');
+    if (!p) {
       router.replace('/auth/login');
       return;
     }
-    setPhone(storedPhone);
+    setPhone(p);
     inputRefs.current[0]?.focus();
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
@@ -62,7 +71,6 @@ export default function VerifyOtpPage() {
 
     try {
       await verifyOtp(phone, otpCode);
-      sessionStorage.removeItem('otp_phone');
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'OTP dogrulama hatasi');

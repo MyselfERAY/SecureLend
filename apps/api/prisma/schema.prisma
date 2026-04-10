@@ -384,6 +384,7 @@ enum UserRole {
   TENANT
   LANDLORD
   ADMIN
+  SERVICE
 
   @@map("user_role")
 }

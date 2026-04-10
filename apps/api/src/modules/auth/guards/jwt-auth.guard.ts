@@ -21,7 +21,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       const request = context.switchToHttp().getRequest();
       const provided = request.headers['x-api-key'];
       if (provided && provided === serviceKey) {
-        request.user = { id: 'service', roles: ['ADMIN'] };
+        request.user = { id: 'service', roles: ['SERVICE'] };
         return true;
       }
     }

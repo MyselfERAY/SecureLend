@@ -3,21 +3,30 @@ import {
   Post,
   Body,
   Req,
+  Res,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle, seconds } from '@nestjs/throttler';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import type { JSendSuccess } from '@securelend/shared';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
-import { CurrentUser } from './decorators/current-user.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { AuthTokens } from './interfaces/auth-tokens.interface';
+
+const RT_COOKIE = '__rt';
+const RT_COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  path: '/api/v1/auth',
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -51,28 +60,27 @@ export class AuthController {
   @Throttle({ short: { limit: 1, ttl: seconds(5) } })
   async login(
     @Body() dto: LoginDto,
+    @Req() req: Request,
   ): Promise<JSendSuccess<{ userId: string; phone: string }>> {
-    const result = await this.authService.login(dto.tckn, dto.phone);
+    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
+    const result = await this.authService.login(dto.tckn, dto.phone, ipAddress);
     return { status: 'success', data: result };
   }
 
   @Public()
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ short: { limit: 3, ttl: seconds(10) } })
+  @Throttle({ short: { limit: 3, ttl: seconds(60) } })
   async verifyOtp(
     @Body() dto: VerifyOtpDto,
     @Req() req: Request,
-  ): Promise<JSendSuccess<AuthTokens>> {
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
     const userAgent = (req.headers['user-agent'] as string) || 'unknown';
-    const tokens = await this.authService.verifyOtp(
-      dto.phone,
-      dto.code,
-      ipAddress,
-      userAgent,
-    );
-    return { status: 'success', data: tokens };
+    const tokens = await this.authService.verifyOtp(dto.phone, dto.code, ipAddress, userAgent);
+    res.cookie(RT_COOKIE, tokens.refreshToken, RT_COOKIE_OPTS);
+    return { status: 'success', data: { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn } };
   }
 
   @Public()
@@ -82,23 +90,27 @@ export class AuthController {
   async refresh(
     @Body() dto: RefreshTokenDto,
     @Req() req: Request,
-  ): Promise<JSendSuccess<AuthTokens>> {
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.[RT_COOKIE] || dto.refreshToken;
+    if (!refreshToken) throw new UnauthorizedException('Refresh token bulunamadi');
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
     const userAgent = (req.headers['user-agent'] as string) || 'unknown';
-    const tokens = await this.authService.refreshTokens(
-      dto.refreshToken,
-      ipAddress,
-      userAgent,
-    );
-    return { status: 'success', data: tokens };
+    const tokens = await this.authService.refreshTokens(refreshToken, ipAddress, userAgent);
+    res.cookie(RT_COOKIE, tokens.refreshToken, RT_COOKIE_OPTS);
+    return { status: 'success', data: { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn } };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(
     @Body() dto: RefreshTokenDto,
-  ): Promise<JSendSuccess<{ message: string }>> {
-    await this.authService.logout(dto.refreshToken);
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.[RT_COOKIE] || dto.refreshToken;
+    if (refreshToken) await this.authService.logout(refreshToken);
+    res.clearCookie(RT_COOKIE, { path: '/api/v1/auth' });
     return { status: 'success', data: { message: 'Cikis yapildi' } };
   }
 }

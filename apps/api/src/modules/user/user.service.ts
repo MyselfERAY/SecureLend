@@ -73,7 +73,7 @@ export class UserService {
       id: user.id,
       fullName: user.fullName,
       maskedTckn: user.tcknMasked,
-      phone: user.phone.slice(0, 3) + '****' + user.phone.slice(7),
+      phone: '****' + user.phone.slice(-2),
       roles: user.roles,
     };
   }

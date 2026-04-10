@@ -29,8 +29,7 @@ export default function LoginPage() {
 
     try {
       await login(tckn, phone);
-      sessionStorage.setItem('otp_phone', phone);
-      router.push('/auth/verify-otp');
+      router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}`);
     } catch (err: any) {
       setError(err.message || 'Giris hatasi');
     } finally {

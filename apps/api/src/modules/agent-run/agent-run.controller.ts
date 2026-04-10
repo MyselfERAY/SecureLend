@@ -6,7 +6,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole, AgentType, AgentRunStatus } from '@prisma/client';
 
 @Controller('api/v1/agent-runs')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SERVICE)
 export class AgentRunController {
   constructor(private readonly agentRunService: AgentRunService) {}
 

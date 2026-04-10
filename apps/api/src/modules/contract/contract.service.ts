@@ -167,10 +167,13 @@ export class ContractService {
       contractId: acc.contractId,
     }));
 
+    // Hide landlord IBAN from tenants
+    const showIban = !userId || userId === contract.landlordId;
+
     return {
       id: contract.id,
       status: contract.status,
-      landlordIban: contract.landlordIban,
+      landlordIban: showIban ? contract.landlordIban : undefined,
       monthlyRent: Number(contract.monthlyRent),
       depositAmount: contract.depositAmount ? Number(contract.depositAmount) : undefined,
       startDate: contract.startDate.toISOString().split('T')[0],
@@ -571,10 +574,18 @@ export class ContractService {
     if (!photoBase64 || photoBase64.length === 0) {
       throw new ForbiddenException('Fotograf verisi bos');
     }
-    // Base64 size check: ~10MB decoded limit
-    const approxSizeBytes = (photoBase64.length * 3) / 4;
-    if (approxSizeBytes > 10 * 1024 * 1024) {
-      throw new ForbiddenException('Fotograf cok buyuk (max 10MB)');
+
+    // Decode and validate MIME type
+    const buffer = Buffer.from(photoBase64, 'base64');
+    if (buffer.length > 5 * 1024 * 1024) {
+      throw new ForbiddenException('Fotograf cok buyuk (max 5MB)');
+    }
+
+    // Check JPEG (FF D8 FF) or PNG (89 50 4E 47) magic bytes
+    const isJpeg = buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+    const isPng = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+    if (!isJpeg && !isPng) {
+      throw new ForbiddenException('Sadece JPEG ve PNG dosyalari kabul edilir');
     }
 
     const contract = await this.prisma.contract.findUnique({ where: { id: contractId } });
@@ -582,7 +593,8 @@ export class ContractService {
     if (contract.tenantId !== userId && contract.landlordId !== userId)
       throw new ForbiddenException('Bu sozlesmenin tarafi degilsiniz');
 
-    const photoKey = `contracts/${contractId}/document-${Date.now()}.jpg`;
+    const ext = isJpeg ? 'jpg' : 'png';
+    const photoKey = `contracts/${contractId}/document-${Date.now()}.${ext}`;
 
     await this.prisma.contract.update({
       where: { id: contractId },

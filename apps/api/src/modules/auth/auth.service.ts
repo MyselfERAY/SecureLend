@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID, randomInt, createHmac } from 'crypto';
+import { randomUUID, randomInt, createHmac, timingSafeEqual } from 'crypto';
 import { maskTckn, validateTckn } from '@securelend/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../encryption/encryption.service';
@@ -114,7 +114,7 @@ export class AuthService {
     return { userId: user.id, maskedTckn, phone: this.maskPhone(phone) };
   }
 
-  async login(tckn: string, phone: string) {
+  async login(tckn: string, phone: string, ipAddress?: string) {
     if (!validateTckn(tckn)) {
       throw new BadRequestException('Gecersiz TCKN');
     }
@@ -123,6 +123,17 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { tcknHash } });
 
     if (!user || user.phone !== phone || !user.isActive) {
+      // Log failed login attempt
+      await this.prisma.auditLog.create({
+        data: {
+          userId: user?.id,
+          action: 'LOGIN_FAILED',
+          entityType: 'User',
+          entityId: user?.id,
+          ipAddress: ipAddress || 'unknown',
+          tcknMasked: user ? user.tcknMasked : maskTckn(tckn),
+        },
+      });
       throw new UnauthorizedException('TCKN veya telefon numarasi hatali');
     }
 
@@ -154,7 +165,7 @@ export class AuthService {
       throw new BadRequestException('Maksimum deneme sayisina ulasildi');
     }
 
-    if (otp.code !== code) {
+    if (!timingSafeEqual(Buffer.from(otp.code), Buffer.from(code.padEnd(otp.code.length)))) {
       await this.prisma.otpCode.update({
         where: { id: otp.id },
         data: { attempts: { increment: 1 } },
@@ -239,7 +250,7 @@ export class AuthService {
   // ─── Private helpers ─────────────────────────────
 
   private async sendOtp(phone: string, userId: string, purpose: string) {
-    const code = '111111'; // DEV: sabit OTP
+    const code = randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
     await this.prisma.otpCode.create({

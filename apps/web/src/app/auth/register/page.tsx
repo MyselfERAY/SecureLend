@@ -28,8 +28,7 @@ export default function RegisterPage() {
         { type: 'KVKK_AYDINLATMA', version: '1.0' },
         { type: 'KVKK_ACIK_RIZA', version: '1.0' },
       ]);
-      sessionStorage.setItem('otp_phone', phone);
-      router.push('/auth/verify-otp');
+      router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}`);
     } catch (err: any) {
       setError(err.message || 'Kayit hatasi');
     } finally {

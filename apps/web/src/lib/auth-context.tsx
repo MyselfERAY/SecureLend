@@ -13,15 +13,9 @@ interface User {
   kycStatus: string;
 }
 
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
 interface AuthContextType {
   user: User | null;
-  tokens: AuthTokens | null;
+  tokens: { accessToken: string; expiresIn: number } | null;
   isLoading: boolean;
   login: (tckn: string, phone: string) => Promise<{ userId: string; phone: string }>;
   register: (tckn: string, phone: string, fullName: string, dateOfBirth: string, consents?: Array<{ type: string; version: string }>) => Promise<{ userId: string }>;
@@ -34,24 +28,15 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [tokens, setTokens] = useState<AuthTokens | null>(null);
+  const [tokens, setTokens] = useState<{ accessToken: string; expiresIn: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load from localStorage on mount
+  // On mount: try to restore session via httpOnly refresh cookie
   useEffect(() => {
-    const stored = localStorage.getItem('securelend_tokens');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as AuthTokens;
-        setTokens(parsed);
-      } catch {
-        localStorage.removeItem('securelend_tokens');
-      }
-    }
-    setIsLoading(false);
+    tryRestoreSession();
   }, []);
 
-  // Fetch user profile when tokens change
+  // Fetch user profile when accessToken changes
   useEffect(() => {
     if (tokens?.accessToken) {
       fetchProfile(tokens.accessToken);
@@ -60,32 +45,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [tokens?.accessToken]);
 
+  const tryRestoreSession = async () => {
+    try {
+      const res = await api<{ accessToken: string; expiresIn: number }>('/api/v1/auth/refresh', {
+        method: 'POST',
+        body: {},
+      });
+      if (res.status === 'success' && res.data?.accessToken) {
+        setTokens(res.data);
+      }
+    } catch {
+      // No valid session — that's fine
+    }
+    setIsLoading(false);
+  };
+
   const fetchProfile = async (token: string) => {
     try {
       const res = await api<User>('/api/v1/users/me', { token });
       if (res.status === 'success' && res.data) {
         setUser(res.data);
-      } else {
-        // Token might be expired, try refresh
-        if (tokens?.refreshToken) {
-          await doRefresh(tokens.refreshToken);
-        } else {
-          clearAuth();
-        }
-      }
-    } catch {
-      clearAuth();
-    }
-  };
-
-  const doRefresh = async (refreshToken: string) => {
-    try {
-      const res = await api<AuthTokens>('/api/v1/auth/refresh', {
-        method: 'POST',
-        body: { refreshToken },
-      });
-      if (res.status === 'success' && res.data) {
-        saveTokens(res.data);
       } else {
         clearAuth();
       }
@@ -94,15 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const saveTokens = (newTokens: AuthTokens) => {
-    setTokens(newTokens);
-    localStorage.setItem('securelend_tokens', JSON.stringify(newTokens));
-  };
-
   const clearAuth = () => {
     setUser(null);
     setTokens(null);
-    localStorage.removeItem('securelend_tokens');
   };
 
   const register = async (tckn: string, phone: string, fullName: string, dateOfBirth: string, consents?: Array<{ type: string; version: string }>) => {
@@ -128,27 +101,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const verifyOtp = async (phone: string, code: string) => {
-    const res = await api<AuthTokens>('/api/v1/auth/verify-otp', {
+    const res = await api<{ accessToken: string; expiresIn: number }>('/api/v1/auth/verify-otp', {
       method: 'POST',
       body: { phone, code },
     });
     if (res.status !== 'success' || !res.data) {
       throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'OTP hatasi');
     }
-    saveTokens(res.data);
+    // refreshToken is now set as httpOnly cookie by the backend
+    setTokens(res.data);
   };
 
   const logout = async () => {
-    if (tokens?.refreshToken) {
-      try {
-        await api('/api/v1/auth/logout', {
-          method: 'POST',
-          body: { refreshToken: tokens.refreshToken },
-          token: tokens.accessToken,
-        });
-      } catch {
-        // Ignore errors on logout
-      }
+    try {
+      await api('/api/v1/auth/logout', {
+        method: 'POST',
+        body: {},
+        token: tokens?.accessToken,
+      });
+    } catch {
+      // Ignore errors on logout
     }
     clearAuth();
   };

@@ -16,7 +16,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
 @Controller('api/v1/po')
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.ADMIN, UserRole.SERVICE)
 export class PoAgentController {
   constructor(private readonly poAgentService: PoAgentService) {}
 

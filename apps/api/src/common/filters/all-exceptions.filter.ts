@@ -73,9 +73,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else {
       const errMsg = exception instanceof Error ? exception.message : String(exception);
       this.logger.error(`Unhandled exception: ${errMsg}`, exception instanceof Error ? exception.stack : '');
+      // Never expose internal error details to clients
       body = {
         status: 'error',
-        message: errMsg || 'Bir hata olustu. Lutfen daha sonra tekrar deneyin.',
+        message: 'Bir hata olustu. Lutfen daha sonra tekrar deneyin.',
       };
     }
 
