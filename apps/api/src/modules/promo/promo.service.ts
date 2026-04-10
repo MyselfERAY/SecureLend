@@ -9,6 +9,19 @@ export class PromoService implements OnModuleInit {
 
   async onModuleInit() {
     try {
+      // Check if promo_templates table exists
+      const tableCheck = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'promo_templates'
+        ) as exists`;
+
+      if (!tableCheck[0]?.exists) {
+        this.logger.warn('promo_templates table missing — creating via raw SQL...');
+        await this.ensureTablesExist();
+      }
+
+      // Seed default templates if table is empty
       const count = await this.prisma.promoTemplate.count();
       if (count === 0) {
         this.logger.log('No promo templates found — seeding defaults...');
@@ -23,8 +36,81 @@ export class PromoService implements OnModuleInit {
         this.logger.log('Default promo templates seeded successfully');
       }
     } catch (err) {
-      this.logger.warn(`Promo seed check skipped: ${err instanceof Error ? err.message : err}`);
+      this.logger.error(`Promo onModuleInit failed: ${err instanceof Error ? err.message : err}`);
     }
+  }
+
+  private async ensureTablesExist() {
+    // Create enum types if they don't exist
+    await this.prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        CREATE TYPE "PromoType" AS ENUM ('FIRST_MONTHS_FREE', 'RENEWAL_DISCOUNT', 'REFERRAL_BONUS', 'LOYALTY_REWARD', 'CUSTOM');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$;
+    `);
+    await this.prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        CREATE TYPE "PromoStatus" AS ENUM ('ACTIVE', 'USED', 'EXPIRED', 'CANCELLED');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$;
+    `);
+
+    // Create promo_templates table
+    await this.prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "promo_templates" (
+        "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+        "name" VARCHAR(200) NOT NULL,
+        "type" "PromoType" NOT NULL,
+        "description" VARCHAR(500),
+        "discount_percent" INTEGER NOT NULL,
+        "duration_months" INTEGER NOT NULL,
+        "is_active" BOOLEAN NOT NULL DEFAULT true,
+        "is_auto_apply" BOOLEAN NOT NULL DEFAULT false,
+        "max_usage_count" INTEGER,
+        "current_usage" INTEGER NOT NULL DEFAULT 0,
+        "valid_from" TIMESTAMPTZ,
+        "valid_until" TIMESTAMPTZ,
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "promo_templates_pkey" PRIMARY KEY ("id")
+      );
+    `);
+
+    // Create user_promos table
+    await this.prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "user_promos" (
+        "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+        "user_id" UUID NOT NULL,
+        "template_id" UUID NOT NULL,
+        "contract_id" UUID,
+        "status" "PromoStatus" NOT NULL DEFAULT 'ACTIVE',
+        "remaining_months" INTEGER NOT NULL,
+        "activated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "expires_at" TIMESTAMPTZ,
+        "referred_by_user_id" UUID,
+        "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "user_promos_pkey" PRIMARY KEY ("id")
+      );
+    `);
+
+    // Create indexes
+    await this.prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_promo_template_type" ON "promo_templates"("type", "is_active");`);
+    await this.prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_user_promo_user_status" ON "user_promos"("user_id", "status");`);
+    await this.prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "idx_user_promo_template" ON "user_promos"("template_id");`);
+
+    // Add foreign keys (ignore if already exist)
+    const fks = [
+      `ALTER TABLE "user_promos" ADD CONSTRAINT "user_promos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;`,
+      `ALTER TABLE "user_promos" ADD CONSTRAINT "user_promos_template_id_fkey" FOREIGN KEY ("template_id") REFERENCES "promo_templates"("id") ON DELETE RESTRICT ON UPDATE CASCADE;`,
+      `ALTER TABLE "user_promos" ADD CONSTRAINT "user_promos_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts"("id") ON DELETE SET NULL ON UPDATE CASCADE;`,
+      `ALTER TABLE "user_promos" ADD CONSTRAINT "user_promos_referred_by_user_id_fkey" FOREIGN KEY ("referred_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;`,
+    ];
+    for (const fk of fks) {
+      try { await this.prisma.$executeRawUnsafe(fk); } catch { /* constraint may already exist */ }
+    }
+
+    this.logger.log('Promo tables created successfully via raw SQL');
   }
 
   // ─── ADMIN: Template CRUD ───
