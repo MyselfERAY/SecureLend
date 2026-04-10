@@ -26,6 +26,7 @@ export class UserService {
       roles: user.roles,
       kycStatus: user.kycStatus,
       phoneVerified: user.phoneVerified,
+      onboardingCompleted: user.onboardingCompleted,
       createdAt: user.createdAt.toISOString(),
     };
   }
@@ -268,6 +269,13 @@ export class UserService {
       overduePayments,
       occupancyRate,
     };
+  }
+
+  async completeOnboarding(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { onboardingCompleted: true },
+    });
   }
 
   async completeKyc(userId: string, ipAddress: string) {

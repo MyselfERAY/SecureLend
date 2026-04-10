@@ -11,6 +11,7 @@ interface User {
   email: string | null;
   roles: string[];
   kycStatus: string;
+  onboardingCompleted?: boolean;
 }
 
 interface AuthContextType {

@@ -20,6 +20,9 @@ export default function SiteNav() {
           <Link href="/rehber" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
             Rehber
           </Link>
+          <Link href="/fiyatlandirma" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            Fiyatlandirma
+          </Link>
           <Link href="/#iletisim" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
             İletişim
           </Link>
@@ -59,6 +62,7 @@ export default function SiteNav() {
           <div className="flex flex-col gap-3">
             <Link href="/#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Nasıl Çalışır?</Link>
             <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Rehber</Link>
+            <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Fiyatlandirma</Link>
             <Link href="/#iletisim" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">İletişim</Link>
             <hr className="border-slate-200" />
             <Link href="/auth/login" className="text-sm font-semibold text-slate-700">Giriş Yap</Link>

@@ -69,6 +69,15 @@ export class UserController {
     return { status: 'success', data: profile };
   }
 
+  @Post('me/onboarding-complete')
+  @Throttle({ short: { limit: 2, ttl: seconds(5) } })
+  async completeOnboarding(
+    @CurrentUser() user: { id: string },
+  ): Promise<JSendSuccess<unknown>> {
+    await this.userService.completeOnboarding(user.id);
+    return { status: 'success', data: { message: 'Onboarding tamamlandi' } };
+  }
+
   @Post('me/kyc')
   @Throttle({ short: { limit: 1, ttl: seconds(30) } })
   async completeKyc(

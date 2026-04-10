@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../lib/auth-context';
@@ -31,44 +31,24 @@ const steps = [
   { number: '04', title: 'Takip Et', desc: 'Tüm ödemeler ve belgeler tek panelden görüntülenir.' },
 ];
 
-const stats = [
-  { target: 500, prefix: '', suffix: '+', label: 'Aktif Kullanıcı', decimals: 0 },
-  { target: 2, prefix: '₺', suffix: 'M+', label: 'İşlem Hacmi', decimals: 0 },
-  { target: 99.8, prefix: '%', suffix: '', label: 'Ödeme Başarısı', decimals: 1 },
-  { target: 5, prefix: '< ', suffix: ' dk', label: 'Onboarding Süresi', decimals: 0 },
+const trustBadges = [
+  {
+    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    title: "Turkiye'nin Ilk Dijital Kira Guvence Platformu",
+  },
+  {
+    icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+    title: 'KVKK Uyumlu, Banka Duzeyinde Guvenlik',
+  },
+  {
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    title: '5 Dakikada Dijital Sozlesme',
+  },
+  {
+    icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+    title: 'BDDK Uyumlu Odeme Modeli',
+  },
 ];
-
-function useCountUp(target: number, decimals: number, duration = 1500) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const startTime = performance.now();
-          const step = (now: number) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(parseFloat((eased * target).toFixed(decimals)));
-            if (progress < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        }
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target, decimals, duration]);
-
-  return { count, ref };
-}
 
 const testimonials = [
   {
@@ -99,17 +79,6 @@ interface LatestArticle {
   category: string;
   audience: 'TENANT' | 'LANDLORD' | 'BOTH';
   publishedAt: string;
-}
-
-function StatItem({ stat }: { stat: typeof stats[number] }) {
-  const { count, ref } = useCountUp(stat.target, stat.decimals);
-  const display = stat.decimals > 0 ? count.toFixed(stat.decimals) : Math.floor(count).toString();
-  return (
-    <div ref={ref} className="text-center">
-      <p className="text-3xl font-extrabold text-white">{stat.prefix}{display}{stat.suffix}</p>
-      <p className="mt-1 text-sm text-slate-400">{stat.label}</p>
-    </div>
-  );
 }
 
 export default function HomePage() {
@@ -146,6 +115,9 @@ export default function HomePage() {
             </a>
             <Link href="/rehber" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               Rehber
+            </Link>
+            <Link href="/fiyatlandirma" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+              Fiyatlandirma
             </Link>
             <a href="#iletisim" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               İletişim
@@ -186,6 +158,7 @@ export default function HomePage() {
             <div className="flex flex-col gap-3">
               <a href="#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Nasıl Çalışır?</a>
               <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Rehber</Link>
+              <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Fiyatlandirma</Link>
               <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">İletişim</a>
               <hr className="border-slate-200" />
               <Link href="/auth/login" className="text-sm font-semibold text-slate-700">Giriş Yap</Link>
@@ -319,11 +292,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── STATS ── */}
+        {/* ── TRUST BADGES ── */}
         <section className="bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl grid grid-cols-2 gap-8 sm:grid-cols-4">
-            {stats.map((stat) => (
-              <StatItem key={stat.label} stat={stat} />
+          <div className="mx-auto max-w-5xl grid grid-cols-2 gap-6 sm:grid-cols-4">
+            {trustBadges.map((badge) => (
+              <div key={badge.title} className="flex flex-col items-center text-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20">
+                  <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={badge.icon} />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-slate-200 leading-snug">{badge.title}</p>
+              </div>
             ))}
           </div>
         </section>
@@ -467,6 +447,7 @@ export default function HomePage() {
               <ul className="mt-4 space-y-2">
                 <li><a href="#nasil-calisir" className="text-sm text-slate-400 hover:text-white transition">Nasıl Çalışır?</a></li>
                 <li><Link href="/rehber" className="text-sm text-slate-400 hover:text-white transition">Rehber</Link></li>
+                <li><Link href="/fiyatlandirma" className="text-sm text-slate-400 hover:text-white transition">Fiyatlandirma</Link></li>
                 <li><Link href="/auth/register" className="text-sm text-slate-400 hover:text-white transition">Hesap Oluştur</Link></li>
                 <li><Link href="/auth/login" className="text-sm text-slate-400 hover:text-white transition">Giriş Yap</Link></li>
               </ul>

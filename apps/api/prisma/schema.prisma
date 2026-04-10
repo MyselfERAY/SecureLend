@@ -62,6 +62,7 @@ model User {
   roles             UserRole[]          @default([])
   kycStatus         KycStatus           @default(PENDING) @map("kyc_status")
   kpsVerified       Boolean             @default(false) @map("kps_verified")
+  onboardingCompleted Boolean            @default(false) @map("onboarding_completed")
   isActive          Boolean             @default(true) @map("is_active")
   lastLoginAt       DateTime?           @map("last_login_at")
   createdAt         DateTime            @default(now()) @map("created_at")

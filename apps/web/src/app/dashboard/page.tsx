@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../lib/auth-context';
 import { api } from '../../lib/api';
+import OnboardingWizard from '../../components/onboarding-wizard';
 
 interface DashboardData {
   activeContracts: number;
@@ -39,11 +40,12 @@ interface PaymentItem {
 }
 
 export default function DashboardPage() {
-  const { user, tokens } = useAuth();
+  const { user, tokens, refreshUser } = useAuth();
   const [contracts, setContracts] = useState<ContractSummary[]>([]);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false);
 
   useEffect(() => {
     if (!tokens?.accessToken) return;
@@ -75,6 +77,8 @@ export default function DashboardPage() {
     load();
   }, [tokens?.accessToken]);
 
+  const showOnboarding = !loading && !onboardingJustCompleted && !user?.onboardingCompleted && contracts.length === 0;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -83,6 +87,19 @@ export default function DashboardPage() {
           <span className="text-sm text-slate-400">Veriler yukleniyor...</span>
         </div>
       </div>
+    );
+  }
+
+  if (showOnboarding && tokens?.accessToken) {
+    return (
+      <OnboardingWizard
+        token={tokens.accessToken}
+        userName={user?.fullName || ''}
+        onComplete={() => {
+          setOnboardingJustCompleted(true);
+          refreshUser();
+        }}
+      />
     );
   }
 
