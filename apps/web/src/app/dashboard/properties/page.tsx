@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../lib/auth-context';
 import { api } from '../../../lib/api';
+import { PROVINCES, DISTRICTS } from '../../../lib/turkey-locations';
 
 interface Property {
   id: string;
@@ -196,11 +197,28 @@ export default function PropertiesPage() {
             </div>
             <div>
               <label className={labelCls}>Sehir *</label>
-              <input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} className={inputCls} required />
+              <select
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value, district: '' })}
+                className={inputCls}
+                required
+              >
+                <option value="">Secin</option>
+                {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
             </div>
             <div>
               <label className={labelCls}>Ilce *</label>
-              <input type="text" value={formData.district} onChange={(e) => setFormData({ ...formData, district: e.target.value })} className={inputCls} required />
+              <select
+                value={formData.district}
+                onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                className={inputCls}
+                required
+                disabled={!formData.city}
+              >
+                <option value="">Secin</option>
+                {(DISTRICTS[formData.city] || []).map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
             </div>
             <div>
               <label className={labelCls}>Tur</label>

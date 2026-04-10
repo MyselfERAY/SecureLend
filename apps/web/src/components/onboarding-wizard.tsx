@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '../lib/api';
+import { PROVINCES, DISTRICTS } from '../lib/turkey-locations';
 
 interface OnboardingWizardProps {
   token: string;
@@ -331,23 +332,26 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Sehir</label>
-            <input
-              type="text"
+            <select
               value={propertyForm.city}
-              onChange={(e) => setPropertyForm((prev) => ({ ...prev, city: e.target.value }))}
-              placeholder="Istanbul"
-              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+              onChange={(e) => setPropertyForm((prev) => ({ ...prev, city: e.target.value, district: '' }))}
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">Secin</option>
+              {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Ilce</label>
-            <input
-              type="text"
+            <select
               value={propertyForm.district}
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, district: e.target.value }))}
-              placeholder="Kadikoy"
-              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+              className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              disabled={!propertyForm.city}
+            >
+              <option value="">Secin</option>
+              {(DISTRICTS[propertyForm.city] || []).map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
           </div>
         </div>
 
