@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Body, Param,
-  ParseUUIDPipe, HttpCode, HttpStatus, Logger,
+  ParseUUIDPipe, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle, seconds } from '@nestjs/throttler';
@@ -15,8 +15,6 @@ import { PromoService } from './promo.service';
 @ApiBearerAuth('access-token')
 @Controller('api/v1/promos')
 export class PromoController {
-  private readonly logger = new Logger(PromoController.name);
-
   constructor(private readonly promoService: PromoService) {}
 
   // ─── PUBLIC: Active promos for pricing page ───
@@ -24,16 +22,8 @@ export class PromoController {
   @Get('active')
   @Public()
   async getActivePromos(): Promise<JSendSuccess<unknown>> {
-    try {
-      const promos = await this.promoService.getActivePromos();
-      return { status: 'success', data: promos };
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      const stack = error instanceof Error ? error.stack : '';
-      this.logger.error(`getActivePromos failed: ${msg}`, stack);
-      // Temporarily return debug info to diagnose production issue
-      return { status: 'success', data: { _debug_error: msg } } as any;
-    }
+    const promos = await this.promoService.getActivePromos();
+    return { status: 'success', data: promos };
   }
 
   // ─── USER: My promos ───

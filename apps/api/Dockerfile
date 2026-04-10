@@ -23,4 +23,4 @@ COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/apps/api/assets ./apps/api/assets
 WORKDIR /app/apps/api
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy 2>&1; npx prisma db push --skip-generate 2>&1; node dist/main.js"]

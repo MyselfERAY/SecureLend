@@ -1,11 +1,31 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class PromoService {
+export class PromoService implements OnModuleInit {
   private readonly logger = new Logger(PromoService.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    try {
+      const count = await this.prisma.promoTemplate.count();
+      if (count === 0) {
+        this.logger.log('No promo templates found — seeding defaults...');
+        await this.prisma.promoTemplate.createMany({
+          data: [
+            { name: 'Ilk 3 Ay Komisyonsuz', type: 'FIRST_MONTHS_FREE', description: 'Yeni kayit olan tum kullanicilar icin ilk 3 ay komisyon alinmaz.', discountPercent: 100, durationMonths: 3, isActive: true, isAutoApply: true },
+            { name: '12. Ay Komisyonsuz', type: 'LOYALTY_REWARD', description: '1 yil boyunca platformu kullanan kullanicilara 12. ay hediye.', discountPercent: 100, durationMonths: 1, isActive: true, isAutoApply: false },
+            { name: '2. Yil Yenileme Indirimi', type: 'RENEWAL_DISCOUNT', description: 'Sozlesmesini yenileyen kullanicilara komisyon oraninda %25 indirim.', discountPercent: 25, durationMonths: 12, isActive: true, isAutoApply: false },
+            { name: 'Arkadasini Getir', type: 'REFERRAL_BONUS', description: 'Davet eden ve davet edilen, her biri 1 ay komisyonsuz.', discountPercent: 100, durationMonths: 1, isActive: true, isAutoApply: false },
+          ],
+        });
+        this.logger.log('Default promo templates seeded successfully');
+      }
+    } catch (err) {
+      this.logger.warn(`Promo seed check skipped: ${err instanceof Error ? err.message : err}`);
+    }
+  }
 
   // ─── ADMIN: Template CRUD ───
 
