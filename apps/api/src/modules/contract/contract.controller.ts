@@ -1,15 +1,16 @@
 import {
-  Controller, Get, Post, Body, Param, Req,
-  ParseUUIDPipe, HttpCode, HttpStatus,
+  Controller, Get, Post, Body, Param, Req, Res,
+  ParseUUIDPipe, HttpCode, HttpStatus, Header,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle, seconds } from '@nestjs/throttler';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import type { JSendSuccess } from '@securelend/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { ContractService } from './contract.service';
+import { ContractPdfService } from './contract-pdf.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { ActivateContractDto } from './dto/activate-contract.dto';
 
@@ -17,7 +18,10 @@ import { ActivateContractDto } from './dto/activate-contract.dto';
 @ApiBearerAuth('access-token')
 @Controller('api/v1/contracts')
 export class ContractController {
-  constructor(private readonly contractService: ContractService) {}
+  constructor(
+    private readonly contractService: ContractService,
+    private readonly contractPdfService: ContractPdfService,
+  ) {}
 
   @Post()
   @Roles(UserRole.LANDLORD)
@@ -45,6 +49,21 @@ export class ContractController {
   ): Promise<JSendSuccess<unknown>> {
     const contract = await this.contractService.getContractDetail(id, user.id);
     return { status: 'success', data: contract };
+  }
+
+  @Get(':id/pdf')
+  async getPdf(
+    @CurrentUser() user: { id: string },
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() res: Response,
+  ) {
+    const pdfBuffer = await this.contractPdfService.generatePdf(id, user.id);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="kira-sozlesmesi-${id.slice(0, 8)}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+    res.end(pdfBuffer);
   }
 
   @Post(':id/sign')

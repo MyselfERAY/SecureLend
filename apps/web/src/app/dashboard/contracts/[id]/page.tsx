@@ -65,6 +65,7 @@ export default function ContractDetailPage() {
   const [terminateReason, setTerminateReason] = useState('');
   const [error, setError] = useState('');
   const [selectedKmhAccountId, setSelectedKmhAccountId] = useState<string>('');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const contractId = params.id as string;
 
@@ -145,6 +146,31 @@ export default function ContractDetailPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!tokens?.accessToken || !contractId) return;
+    setDownloadingPdf(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/v1/contracts/${contractId}/pdf`, {
+        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+      });
+      if (!res.ok) throw new Error('PDF olusturulamadi');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kira-sozlesmesi-${contractId.slice(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setError(err.message || 'PDF indirilemedi');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -199,9 +225,21 @@ export default function ContractDetailPage() {
             <h1 className="text-xl font-bold text-white">{contract.property.title}</h1>
             <p className="mt-1 text-sm text-slate-400">{contract.property.addressLine1}, {contract.property.district}, {contract.property.city}</p>
           </div>
-          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${statusColors[contract.status] || 'bg-slate-500/20 text-slate-400'}`}>
-            {statusLabel[contract.status] || contract.status}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50 disabled:opacity-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {downloadingPdf ? 'Hazirlaniyor...' : 'PDF Indir'}
+            </button>
+            <span className={`rounded-full px-3 py-1.5 text-sm font-semibold ${statusColors[contract.status] || 'bg-slate-500/20 text-slate-400'}`}>
+              {statusLabel[contract.status] || contract.status}
+            </span>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
