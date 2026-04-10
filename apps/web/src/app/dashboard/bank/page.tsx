@@ -246,7 +246,7 @@ export default function BankPage() {
             <form onSubmit={handleApplyKmh} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
               <h3 className="text-lg font-semibold text-white">KMH Basvurusu</h3>
               <p className="text-sm text-slate-400">
-                Kira Mevduat Hesabi (KMH) basvurusu icin asagidaki bilgileri doldurun.
+                Kredili Mevduat Hesabi (KMH) basvurusu icin asagidaki bilgileri doldurun.
               </p>
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
                 <strong className="text-amber-200">KVKK Bilgilendirmesi:</strong> Kayit sirasinda
@@ -374,7 +374,7 @@ export default function BankPage() {
               </div>
               <div className="text-lg font-medium text-slate-300">Henuz KMH basvurunuz yok</div>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-                Kira Mevduat Hesabi (KMH) ile sozlesme imzalayabilir ve kira odemelerinizi guvence altina alabilirsiniz.
+                Kredili Mevduat Hesabi (KMH) ile sozlesme imzalayabilir ve kira odemelerinizi guvence altina alabilirsiniz.
               </p>
             </div>
           )}

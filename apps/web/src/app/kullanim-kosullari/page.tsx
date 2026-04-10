@@ -26,7 +26,7 @@ export default function KullanimKosullariPage() {
           <h2 className="text-xl font-bold text-slate-900 mt-8">1. Hizmet Tanımı</h2>
           <p>
             SecureLend, kiracılar, ev sahipleri ve bankalar arasında kira ödeme süreçlerini dijitalleştiren
-            bir fintech platformudur. KMH (Konut Mortgage Hesabı) finansmanı ve güvenli ödeme altyapısı sunar.
+            bir fintech platformudur. KMH (Kredili Mevduat Hesabı) finansmanı ve güvenli ödeme altyapısı sunar.
           </p>
 
           <h2 className="text-xl font-bold text-slate-900 mt-8">2. Hesap Oluşturma</h2>

@@ -61,7 +61,7 @@ jobs:
           METRICS=$(cat /tmp/metrics.json)
           TODAY=$(date -u +%Y-%m-%d)
 
-          PROMPT="You are the Product Owner (PO) of SecureLend (kiraguvence.com), a Turkish fintech rental-payment and KMH (Konut Mortgage Hesabi) platform.
+          PROMPT="You are the Product Owner (PO) of SecureLend (kiraguvence.com), a Turkish fintech rental-payment and KMH (Kredili Mevduat Hesabi) platform.
 
           Today is $TODAY. Generate the daily PO report.
 

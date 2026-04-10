@@ -125,7 +125,7 @@ const faqItems = [
   },
   {
     q: 'Odemeyi siz mi aliyorsunuz?',
-    a: 'Hayir. KiraGuvence bir odeme aracisi degildir. Tum odemeler banka duzenli odeme talimati (Konut Mortgage Hesabi) uzerinden gerceklesir. Komisyon banka tarafindan kaynakta kesilir.',
+    a: 'Hayir. KiraGuvence bir odeme aracisi degildir. Tum odemeler banka duzenli odeme talimati (Kredili Mevduat Hesabi) uzerinden gerceklesir. Komisyon banka tarafindan kaynakta kesilir.',
   },
   {
     q: 'Plan degistirmek istersem ne olur?',

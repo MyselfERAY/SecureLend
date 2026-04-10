@@ -68,7 +68,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
         <ul style="line-height:1.8">
           <li>Dijital kira sözleşmesi ve e-imza</li>
           <li>Otomatik ödeme takibi ve hatırlatmalar</li>
-          <li>KMH (Konut Mortgage Hesabı) finansman seçenekleri</li>
+          <li>KMH (Kredili Mevduat Hesabı) finansman seçenekleri</li>
           <li>Güvenli mesajlaşma ve destek</li>
         </ul>
         <a href="https://kiraguvence.com/dashboard/properties" style="display:inline-block;background:#1a56db;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;margin-top:10px">

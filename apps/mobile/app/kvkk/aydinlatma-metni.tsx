@@ -46,7 +46,7 @@ Kisisel verileriniz asagidaki amaclarla islenmektedir:
 
 1. Uyelik ve hesap islemlerinin yurutulmesi
 2. Kimlik dogrulama ve KYC (Know Your Customer) sureclerinin tamamlanmasi
-3. Kira Mevduat Hesabi (KMH) basvuru ve degerlendirme sureclerinin yurutulmesi
+3. Kredili Mevduat Hesabi (KMH) basvuru ve degerlendirme sureclerinin yurutulmesi
 4. Kira odeme islemlerinin gerceklestirilmesi ve takibi
 5. Sozlesme sureclerinin yurutulmesi
 6. Yasal yukumluluklerin yerine getirilmesi (BDDK, MASAK, SPK mevzuati)

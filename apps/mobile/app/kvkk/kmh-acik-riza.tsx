@@ -17,7 +17,7 @@ import { markConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
-const KMH_ACIK_RIZA_METNI = `KIRA MEVDUAT HESABI (KMH) FINANSAL VERILERIN ISLENMESINE ILISKIN ACIK RIZA METNI
+const KMH_ACIK_RIZA_METNI = `KREDILI MEVDUAT HESABI (KMH) FINANSAL VERILERIN ISLENMESINE ILISKIN ACIK RIZA METNI
 
 Son Guncelleme: 01.04.2026
 
@@ -29,7 +29,7 @@ E-posta: info@kiraguvence.com
 
 ACIK RIZA BEYANI
 
-6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kira Mevduat Hesabi (KMH) basvurumun degerlendirilmesi ve hesap islemlerimin yurutulmesi amaciyla asagidaki finansal ve kisisel verilerimin islenmesine acik rizamla onay veriyorum:
+6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kredili Mevduat Hesabi (KMH) basvurumun degerlendirilmesi ve hesap islemlerimin yurutulmesi amaciyla asagidaki finansal ve kisisel verilerimin islenmesine acik rizamla onay veriyorum:
 
 ISLENEN FINANSAL VERILER
 

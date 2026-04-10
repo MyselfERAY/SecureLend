@@ -1,7 +1,7 @@
 # SecureLend - Project Context for Claude Code
 
 ## Project Overview
-SecureLend is a Turkish fintech platform for rental payments and KMH (Konut Mortgage Hesabi) financing. It operates as an AI-powered autonomous company where GitHub Actions agent workflows handle operations with minimal human intervention.
+SecureLend is a Turkish fintech platform for rental payments and KMH (Kredili Mevduat Hesabi) financing. It operates as an AI-powered autonomous company where GitHub Actions agent workflows handle operations with minimal human intervention.
 
 **Owner:** Eray Karacaoglan
 **Domain:** kiraguvence.com

@@ -144,7 +144,7 @@ export class ContractPdfService {
         this.fieldRow(doc, fontB, fontR, 'Depozito (Guven Bedeli)', `${dep.toLocaleString('tr-TR')} ${contract.currency}`);
       }
       this.fieldRow(doc, fontB, fontR, 'Odeme Gunu', `Her ayin ${contract.paymentDayOfMonth}. gunu`);
-      this.fieldRow(doc, fontB, fontR, 'Odeme Yontemi', 'Banka duzenli odeme talimati (Konut Mortgage Hesabi uzerinden)');
+      this.fieldRow(doc, fontB, fontR, 'Odeme Yontemi', 'Banka duzenli odeme talimati (Kredili Mevduat Hesabi uzerinden)');
 
       // IBAN only to landlord
       if (userId === contract.landlordId && contract.landlordIban) {
@@ -154,7 +154,7 @@ export class ContractPdfService {
       doc.moveDown(0.4);
       doc.fontSize(8.5).font(fontR).fillColor('#333333')
         .text(
-          '3.1 Kira bedeli, her ay yukarida belirtilen gunde kiracinin KMH (Konut Mortgage Hesabi) ' +
+          '3.1 Kira bedeli, her ay yukarida belirtilen gunde kiracinin KMH (Kredili Mevduat Hesabi) ' +
           'uzerinden banka duzenli odeme talimati ile kiraya verenin hesabina otomatik olarak aktarilir. ' +
           'Platform herhangi bir odeme araciligi yapmamakta olup, tum finansal islemler banka tarafindan gerceklestirilir.',
           { lineGap: 2 },

@@ -95,7 +95,7 @@ export default function AcikRizaPage() {
             </div>
             <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 space-y-4 text-sm">
               <p className="text-slate-600">
-                Bu açık rıza beyanı, Konut Mevduat Hesabı (KMH) başvurusu kapsamında aşağıdaki
+                Bu açık rıza beyanı, Kredili Mevduat Hesabı (KMH) başvurusu kapsamında aşağıdaki
                 finansal ve kişisel verilerin işlenmesi ile belirtilen taraflarla paylaşılması için
                 gereklidir. KMH başvurusu yapmayı planlamıyorsanız bu onay zorunlu değildir; ancak
                 KMH hizmetinden yararlanamayabilirsiniz.

@@ -361,8 +361,8 @@ export default function KmhOnboardingScreen() {
   const AGREEMENT_TEXTS: Record<string, { title: string; subtitle: string; body: string }> = {
     kmh: {
       title: 'KMH Sozlesmesi',
-      subtitle: 'Kira Mevduat Hesabi kosullari',
-      body: `KIRA MEVDUAT HESABI (KMH) SOZLESMESI
+      subtitle: 'Kredili Mevduat Hesabi kosullari',
+      body: `KREDILI MEVDUAT HESABI (KMH) SOZLESMESI
 
 Sozlesme No: [Otomatik atanacaktir]
 Tarih: [Basvuru tarihi]
@@ -375,7 +375,7 @@ Platform: Kira Guvence Teknoloji A.S.
 
 MADDE 1 - TANIMLAR
 
-1.1. KMH (Kira Mevduat Hesabi): Kiracinin kira guvencesi olarak kullanilmak uzere acilan ozel mevduat hesabidir.
+1.1. KMH (Kredili Mevduat Hesabi): Kiracinin kira guvencesi olarak kullanilmak uzere acilan ozel mevduat hesabidir.
 1.2. Kredi Limiti: Musterinin gelir durumu, kredi gecmisi ve diger kriterlere gore belirlenen azami kredi kullanim tutaridir.
 1.3. Platform: Kira Guvence Teknoloji A.S. tarafindan isletilen kiraguvence.com web sitesi ve Kira Guvence mobil uygulamasidir.
 
@@ -509,7 +509,7 @@ Kira Guvence Teknoloji A.S. ("Kira Guvence") tarafindan isletilen kiraguvence.co
 MADDE 1 - HIZMET TANIMI
 
 1.1. Kira Guvence, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir platformdur.
-1.2. Platform, Kira Mevduat Hesabi (KMH) basvurusu, kira sozlesmesi yonetimi ve odeme takibi hizmetleri sunar.
+1.2. Platform, Kredili Mevduat Hesabi (KMH) basvurusu, kira sozlesmesi yonetimi ve odeme takibi hizmetleri sunar.
 1.3. Kira Guvence bir banka veya finansal kurulus degildir. Kredi kararlari ve hesap yonetimi tamamen anlasmali bankalar tarafindan yurutulur.
 
 MADDE 2 - UYGUNLUK KOSULLARI

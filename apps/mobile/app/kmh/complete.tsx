@@ -93,7 +93,7 @@ export default function KmhCompleteScreen() {
               <Ionicons name="card" size={22} color="#ffffff" />
             </View>
             <View>
-              <Text style={styles.accountTypeLabel}>Kira Mevduat Hesabi</Text>
+              <Text style={styles.accountTypeLabel}>Kredili Mevduat Hesabi</Text>
               <View style={styles.statusPill}>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusLabel}>Aktif</Text>

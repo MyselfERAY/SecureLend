@@ -44,7 +44,7 @@ const slides: TutorialSlide[] = [
     iconBg: '#fefce8',
     title: 'KMH ile Guvenli Odeme',
     description:
-      'Konut Mortgage Hesabi (KMH) basvurusu yapin. Kira odeleriniz otomatik olarak takip edilsin.',
+      'Kredili Mevduat Hesabi (KMH) basvurusu yapin. Kira odeleriniz otomatik olarak takip edilsin.',
   },
   {
     icon: 'chatbubbles-outline',

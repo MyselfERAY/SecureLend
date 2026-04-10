@@ -120,7 +120,7 @@ const webAppJsonLd = {
     'Dijital kira sozlesmesi',
     'Otomatik kira odeme takibi',
     'KPS kimlik dogrulama',
-    'KMH (Konut Mortgage Hesabi) basvurusu',
+    'KMH (Kredili Mevduat Hesabi) basvurusu',
     'Anlık bildirimler',
     'Mulk yonetimi',
   ],
@@ -152,7 +152,7 @@ const faqJsonLd = {
     },
     {
       '@type': 'Question',
-      name: 'KMH (Konut Mortgage Hesabi) nedir?',
+      name: 'KMH (Kredili Mevduat Hesabi) nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
         text: 'KMH, kiracilar icin ozel olarak tasarlanmis bir finansman hesabidir. Kira odemelerinizi duzenli olarak yapmanizi saglayan, banka destekli bir odeme sistemidir.',

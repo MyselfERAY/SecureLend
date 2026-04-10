@@ -107,7 +107,7 @@ export default function KmhApplyScreen() {
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitle}>KMH Basvurusu</Text>
-            <Text style={styles.headerSubtitle}>Kira Mevduat Hesabi</Text>
+            <Text style={styles.headerSubtitle}>Kredili Mevduat Hesabi</Text>
           </View>
           <View style={styles.stepBadge}>
             <Text style={styles.stepText}>1/4</Text>
@@ -283,7 +283,7 @@ export default function KmhApplyScreen() {
 
 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kira Guvence Teknoloji A.S. ("Sirket") tarafindan hazirlanan Aydinlatma Metnini okudum ve anladim.
 
-KMH (Kira Mevduat Hesabi) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
+KMH (Kredili Mevduat Hesabi) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
 
 1. ISLENEN FINANSAL VERILER
 

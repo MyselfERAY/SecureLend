@@ -61,7 +61,7 @@ export const TBK_LEASE_SECTIONS = {
     },
     {
       id: 'kmh',
-      title: 'MADDE 12 - KMH (KIRA MEVDUAT HESABI)',
+      title: 'MADDE 12 - KMH (KREDILI MEVDUAT HESABI)',
       template: 'Kiraci, kira odemelerini SecureLend platformu uzerinden KMH hesabi araciligiyla yapacaktir. Bu hesap, kira odemelerinin guvence altina alinmasini saglar.',
     },
     {

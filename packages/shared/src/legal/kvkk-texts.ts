@@ -19,7 +19,7 @@ Web Sitesi: https://kiraguvence.com
 KEP Adresi: [KEP Adresi]
 Veri Sorumlusu Sicil No (VERBiS): [VERBiS Kayit No]
 
-SecureLend, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir fintek platformu olup, Kira Mevduat Hesabi (KMH) basvuru sureclerini, kira sozlesmesi yonetimini ve odeme takibi hizmetlerini sunmaktadir.
+SecureLend, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir fintek platformu olup, Kredili Mevduat Hesabi (KMH) basvuru sureclerini, kira sozlesmesi yonetimini ve odeme takibi hizmetlerini sunmaktadir.
 
 2. ISLENEN KISISEL VERI KATEGORILERI
 
@@ -192,9 +192,9 @@ Isbu Acik Riza Beyani'ni okudum, anladim ve yukarida belirtilen kisisel veri isl
 `;
 
 export const KVKK_ACIK_RIZA_KMH_METNI = `
-KIRA MEVDUAT HESABI (KMH) BASVURUSU KISISEL VERILERIN ISLENMESINE ILISKIN ACIK RIZA BEYANI
+KREDILI MEVDUAT HESABI (KMH) BASVURUSU KISISEL VERILERIN ISLENMESINE ILISKIN ACIK RIZA BEYANI
 
-6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, SecureLend Teknoloji A.S. ("Sirket") nezdinde gerceklestirmekte oldugum Kira Mevduat Hesabi ("KMH") basvurusu kapsaminda, asagida belirtilen kisisel veri isleme faaliyetlerine ozgur iradem ile acik riza verdigimi beyan ederim.
+6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, SecureLend Teknoloji A.S. ("Sirket") nezdinde gerceklestirmekte oldugum Kredili Mevduat Hesabi ("KMH") basvurusu kapsaminda, asagida belirtilen kisisel veri isleme faaliyetlerine ozgur iradem ile acik riza verdigimi beyan ederim.
 
 1. ISLENEN FINANSAL VERI KATEGORILERI
 KMH basvuru degerlendirmesi kapsaminda asagidaki finansal ve kisisel verilerimin islenmesine riza veriyorum:
@@ -421,7 +421,7 @@ Platform'a kayit olarak veya Platform'u kullanarak isbu Sozlesme'nin tum hukum v
 "Kullanici": Platform'a kayit olan ve/veya Platform'u kullanan gercek kisi.
 "Kiraci": Platform uzerinden kira sozlesmesi yonetimi ve/veya KMH basvurusu yapan kullanici.
 "Ev Sahibi": Platform uzerinden kira sozlesmesi yonetimi yapan tasinmaz maliki.
-"KMH": Kira Mevduat Hesabi; kiracinin mevduat biriktirdigi ve ev sahibinin teminat olarak yararlanabildigi ozel hesap turu.
+"KMH": Kredili Mevduat Hesabi; kiracinin mevduat biriktirdigi ve ev sahibinin teminat olarak yararlanabildigi ozel hesap turu.
 "Anlasmali Banka": SecureLend ile KMH hizmeti kapsaminda is birligi yapan banka ve finans kuruluslari.
 "Hizmetler": Platform uzerinden sunulan tum islevler, ozellikler ve icerikler.
 
@@ -431,7 +431,7 @@ SecureLend, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bi
 
 2.1. Kira Sozlesmesi Yonetimi: Kiraclar ve ev sahipleri arasinda dijital kira sozlesmesi olusturma, imzalama, yonetme ve takip etme hizmetleri.
 
-2.2. Kira Mevduat Hesabi (KMH) Basvurusu: Kiracilarini anlasmali bankalar nezdinde KMH acilmasi icin basvuru yapabilmesini saglayan aracilik hizmeti.
+2.2. Kredili Mevduat Hesabi (KMH) Basvurusu: Kiracilarini anlasmali bankalar nezdinde KMH acilmasi icin basvuru yapabilmesini saglayan aracilik hizmeti.
 
 2.3. Odeme Takibi: Kira odemelerinin takibi, hatirlatma bildirimleri ve odeme gecmisi raporlamasi.
 
