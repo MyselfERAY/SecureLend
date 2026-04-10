@@ -8,10 +8,16 @@ interface Notification {
   id: string;
   type: string;
   title: string;
-  message: string;
+  body: string;
   isRead: boolean;
   createdAt: string;
   data?: Record<string, unknown>;
+}
+
+interface NotificationsResponse {
+  notifications: Notification[];
+  total: number;
+  unreadCount: number;
 }
 
 const typeConfig: Record<string, { icon: React.ReactNode; color: string }> = {
@@ -68,9 +74,9 @@ export default function NotificationsPage() {
 
     const load = async () => {
       try {
-        const res = await api<Notification[]>('/api/v1/notifications', { token: tokens.accessToken });
+        const res = await api<NotificationsResponse>('/api/v1/notifications', { token: tokens.accessToken });
         if (res.status === 'success' && res.data) {
-          setNotifications(res.data);
+          setNotifications(res.data.notifications || []);
         }
       } catch {
         // Endpoint may not exist yet
@@ -86,7 +92,7 @@ export default function NotificationsPage() {
     if (!tokens?.accessToken) return;
     try {
       await api(`/api/v1/notifications/${id}/read`, {
-        method: 'POST',
+        method: 'PATCH',
         token: tokens.accessToken,
       });
       setNotifications((prev) =>
@@ -101,7 +107,7 @@ export default function NotificationsPage() {
     if (!tokens?.accessToken) return;
     try {
       await api('/api/v1/notifications/read-all', {
-        method: 'POST',
+        method: 'PATCH',
         token: tokens.accessToken,
       });
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
@@ -177,7 +183,7 @@ export default function NotificationsPage() {
                       <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
                     )}
                   </div>
-                  <p className="mt-0.5 text-sm text-slate-400">{n.message}</p>
+                  <p className="mt-0.5 text-sm text-slate-400">{n.body}</p>
                   <p className="mt-1 text-xs text-slate-600">
                     {new Date(n.createdAt).toLocaleString('tr-TR')}
                   </p>
