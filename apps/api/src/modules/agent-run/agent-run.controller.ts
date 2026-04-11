@@ -3,7 +3,7 @@ import { AgentRunService } from './agent-run.service';
 import { CreateAgentRunDto } from './dto/create-agent-run.dto';
 import { UpdateAgentRunDto } from './dto/update-agent-run.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole, AgentType, AgentRunStatus } from '@prisma/client';
+import { UserRole, AgentRunStatus } from '@prisma/client';
 
 @Controller('api/v1/agent-runs')
 @Roles(UserRole.ADMIN, UserRole.SERVICE)
@@ -39,7 +39,7 @@ export class AgentRunController {
   }
 
   @Get()
-  async findAll(@Query('agentType') agentType?: AgentType) {
+  async findAll(@Query('agentType') agentType?: string) {
     const runs = await this.agentRunService.findAll(agentType);
     return { status: 'success', data: runs };
   }

@@ -43,24 +43,32 @@ const agentLabel: Record<string, string> = {
   PO: 'PO Agent',
   MARKETING: 'Pazarlama Agent',
   DEV: 'Gelistirici Agent',
+  HEALTH: 'Saglik Agent',
+  ARTICLE: 'Makale Agent',
 };
 
 const agentIcon: Record<string, string> = {
   PO: 'P',
   MARKETING: 'M',
   DEV: 'G',
+  HEALTH: 'S',
+  ARTICLE: 'A',
 };
 
 const agentGradient: Record<string, string> = {
   PO: 'from-indigo-50 to-blue-50 border-indigo-200',
   MARKETING: 'from-amber-50 to-orange-50 border-amber-200',
   DEV: 'from-emerald-50 to-teal-50 border-emerald-200',
+  HEALTH: 'from-rose-50 to-pink-50 border-rose-200',
+  ARTICLE: 'from-purple-50 to-violet-50 border-purple-200',
 };
 
 const agentIconColor: Record<string, string> = {
   PO: 'bg-indigo-100 text-indigo-600',
   MARKETING: 'bg-amber-100 text-amber-600',
   DEV: 'bg-emerald-100 text-emerald-600',
+  HEALTH: 'bg-rose-100 text-rose-600',
+  ARTICLE: 'bg-purple-100 text-purple-600',
 };
 
 const statusBadge: Record<string, string> = {
@@ -182,7 +190,7 @@ export default function AgentKPIDashboardPage() {
   };
   const totalSuggestions = suggestions.length;
 
-  const agentTypes = ['PO', 'MARKETING', 'DEV'];
+  const agentTypes = ['PO', 'MARKETING', 'DEV', 'HEALTH', 'ARTICLE'];
 
   const lastRunByType: Record<string, AgentRun | undefined> = {};
   agentTypes.forEach((type) => {
@@ -200,7 +208,7 @@ export default function AgentKPIDashboardPage() {
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-48 bg-gray-100 rounded-xl" />
           ))}
         </div>
@@ -301,6 +309,8 @@ export default function AgentKPIDashboardPage() {
                       {type === 'PO' && 'Gunluk urun raporu'}
                       {type === 'MARKETING' && 'Pazarlama stratejisi'}
                       {type === 'DEV' && 'Otomatik gelistirme'}
+                      {type === 'HEALTH' && 'Hata analizi ve fix onerileri'}
+                      {type === 'ARTICLE' && 'SEO blog makale uretimi'}
                     </div>
                   </div>
                 </div>
