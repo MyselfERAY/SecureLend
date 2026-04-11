@@ -328,6 +328,17 @@ export class ContractService {
           where: { id: contractId },
           data: { status: ContractStatus.PENDING_ACTIVATION },
         });
+
+        // Create payment schedule now that both parties have agreed to terms.
+        // Schedules are created in PENDING status so they are visible to both
+        // parties during the activation step, even before UAVT/bank confirmation.
+        const scheduleItems = this.generatePaymentScheduleData(contract);
+        if (scheduleItems.length > 0) {
+          await tx.paymentSchedule.createMany({ data: scheduleItems });
+          this.logger.log(
+            `Payment schedule created for contract ${contractId}: ${scheduleItems.length} entries`,
+          );
+        }
       }
 
       await tx.auditLog.create({
@@ -602,10 +613,18 @@ export class ContractService {
         });
       }
 
-      // Generate payment schedule
-      const scheduleItems = this.generatePaymentScheduleData(contract);
-      if (scheduleItems.length > 0) {
-        await tx.paymentSchedule.createMany({ data: scheduleItems });
+      // Generate payment schedule if not already created at signing time
+      const existingScheduleCount = await tx.paymentSchedule.count({
+        where: { contractId },
+      });
+      if (existingScheduleCount === 0) {
+        const scheduleItems = this.generatePaymentScheduleData(contract);
+        if (scheduleItems.length > 0) {
+          await tx.paymentSchedule.createMany({ data: scheduleItems });
+          this.logger.log(
+            `Payment schedule created at activation for contract ${contractId}: ${scheduleItems.length} entries`,
+          );
+        }
       }
 
       await tx.auditLog.create({
