@@ -928,3 +928,35 @@ model NewsletterSubscriber {
   @@index([isActive], map: "idx_newsletter_active")
   @@map("newsletter_subscribers")
 }
+
+// ─── Analytics ───
+
+model AnalyticsEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  sessionId     String   @map("session_id") @db.VarChar(64)
+  eventType     String   @map("event_type") @db.VarChar(30)   // page_view, page_exit, error, click
+  page          String   @db.VarChar(500)                      // /dashboard, /fiyatlandirma, etc.
+  referrer      String?  @db.VarChar(500)
+  duration      Int?                                           // seconds on page (page_exit)
+  userId        String?  @map("user_id") @db.Uuid
+  ipAddress     String?  @map("ip_address") @db.VarChar(45)
+  country       String?  @db.VarChar(5)                        // TR, US, etc.
+  city          String?  @db.VarChar(100)
+  userAgent     String?  @map("user_agent") @db.VarChar(500)
+  device        String?  @db.VarChar(20)                       // desktop, mobile, tablet
+  browser       String?  @db.VarChar(50)                       // Chrome, Safari, Firefox
+  os            String?  @db.VarChar(50)                       // Windows, macOS, iOS, Android
+  screenWidth   Int?     @map("screen_width")
+  screenHeight  Int?     @map("screen_height")
+  errorMessage  String?  @map("error_message") @db.VarChar(1000)
+  errorStack    String?  @map("error_stack") @db.Text
+  metadata      Json?                                          // extra event data
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([eventType, createdAt], map: "idx_analytics_type_date")
+  @@index([page, createdAt], map: "idx_analytics_page_date")
+  @@index([sessionId], map: "idx_analytics_session")
+  @@index([userId], map: "idx_analytics_user")
+  @@index([createdAt], map: "idx_analytics_created")
+  @@map("analytics_events")
+}

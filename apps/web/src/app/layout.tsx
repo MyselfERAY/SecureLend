@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../lib/auth-context';
+import { AnalyticsProvider } from '../components/analytics-provider';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kiraguvence.com'),
@@ -189,7 +190,9 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AnalyticsProvider>{children}</AnalyticsProvider>
+        </AuthProvider>
       </body>
     </html>
   );
