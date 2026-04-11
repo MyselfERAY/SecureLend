@@ -136,6 +136,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/auth/register"
+              data-cta="header-hesap-olustur"
               className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
             >
               Hesap Oluştur
@@ -166,7 +167,7 @@ export default function HomePage() {
               <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">İletişim</a>
               <hr className="border-slate-200" />
               <Link href="/auth/login" className="text-sm font-semibold text-slate-700">Giriş Yap</Link>
-              <Link href="/auth/register" className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Hesap Oluştur</Link>
+              <Link href="/auth/register" data-cta="mobile-hesap-olustur" className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Hesap Oluştur</Link>
             </div>
           </div>
         )}
@@ -194,6 +195,7 @@ export default function HomePage() {
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <Link
                     href="/auth/register"
+                    data-cta="hero-ucretsiz-basla"
                     className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
                   >
                     Ücretsiz Başla
@@ -469,6 +471,7 @@ export default function HomePage() {
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/auth/register"
+                data-cta="cta-band-ucretsiz-basla"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
               >
                 Ücretsiz Başla

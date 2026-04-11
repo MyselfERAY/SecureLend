@@ -95,7 +95,7 @@ export class AnalyticsController {
     await this.analyticsService.trackBatch(dto.events, ip, ua, userId);
   }
 
-  // ─── ADMIN: Dashboard ───
+  // ─── ADMIN: Frontend Dashboard ───
 
   @Get('dashboard')
   @ApiBearerAuth('access-token')
@@ -105,6 +105,32 @@ export class AnalyticsController {
   ): Promise<JSendSuccess<unknown>> {
     const d = Math.min(Math.max(parseInt(days || '30', 10) || 30, 1), 365);
     const data = await this.analyticsService.getDashboard(d);
+    return { status: 'success', data };
+  }
+
+  // ─── ADMIN: API Dashboard ───
+
+  @Get('api-dashboard')
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  async getApiDashboard(
+    @Query('days') days?: string,
+  ): Promise<JSendSuccess<unknown>> {
+    const d = Math.min(Math.max(parseInt(days || '30', 10) || 30, 1), 365);
+    const data = await this.analyticsService.getApiDashboard(d);
+    return { status: 'success', data };
+  }
+
+  // ─── ADMIN: Extended Metrics (Bounce, Funnel, Referrer, Conversion) ───
+
+  @Get('extended')
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  async getExtendedMetrics(
+    @Query('days') days?: string,
+  ): Promise<JSendSuccess<unknown>> {
+    const d = Math.min(Math.max(parseInt(days || '30', 10) || 30, 1), 365);
+    const data = await this.analyticsService.getExtendedMetrics(d);
     return { status: 'success', data };
   }
 }

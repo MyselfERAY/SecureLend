@@ -320,6 +320,7 @@ export default function PricingContent() {
                   <div className="mt-8">
                     <Link
                       href="/auth/register"
+                      data-cta={`plan-${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
                       className={`block w-full rounded-xl px-6 py-3 text-center text-sm font-semibold transition ${
                         plan.highlighted
                           ? 'bg-blue-700 text-white hover:bg-blue-800'
@@ -636,6 +637,7 @@ export default function PricingContent() {
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
                 href="/auth/register"
+                data-cta="pricing-14-gun-ucretsiz"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-blue-700 shadow-lg transition hover:bg-blue-50"
               >
                 14 Gun Ucretsiz Basla
@@ -702,6 +704,7 @@ export default function PricingContent() {
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/auth/register"
+                data-cta="pricing-footer-ucretsiz-basla"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
               >
                 Ucretsiz Basla

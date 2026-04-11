@@ -4,23 +4,32 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
+  Optional,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { AnalyticsService } from '../../modules/analytics/analytics.service';
 
 @Catch()
+@Injectable()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(@Optional() private readonly analyticsService?: AnalyticsService) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let body: Record<string, unknown>;
+    let errMsg = '';
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
+      errMsg = exception.message;
       const exResponse = exception.getResponse();
 
       if (status === HttpStatus.TOO_MANY_REQUESTS) {
@@ -71,7 +80,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         };
       }
     } else {
-      const errMsg = exception instanceof Error ? exception.message : String(exception);
+      errMsg = exception instanceof Error ? exception.message : String(exception);
       this.logger.error(`Unhandled exception: ${errMsg}`, exception instanceof Error ? exception.stack : '');
       // Never expose internal error details to clients
       body = {
@@ -80,6 +89,33 @@ export class AllExceptionsFilter implements ExceptionFilter {
       };
     }
 
+    // Track API error in analytics (fire-and-forget)
+    const url = request?.url || '';
+    if (this.analyticsService && !this.shouldSkipTracking(url)) {
+      const startTime = (request as any)?.__apiStartTime;
+      const durationMs = startTime ? Date.now() - startTime : undefined;
+      this.analyticsService
+        .trackApiError(
+          request?.method || 'UNKNOWN',
+          url,
+          status,
+          errMsg,
+          exception instanceof Error ? exception.stack : undefined,
+          durationMs,
+          request,
+        )
+        .catch(() => {});
+    }
+
     response.status(status).json(body);
+  }
+
+  private shouldSkipTracking(url: string): boolean {
+    return (
+      url === '/health' ||
+      url.startsWith('/api/v1/analytics') ||
+      url.startsWith('/api/docs') ||
+      url.startsWith('/app/')
+    );
   }
 }

@@ -102,6 +102,64 @@ export class AnalyticsService implements OnModuleInit {
     }
   }
 
+  // ─── Track API Request (from LoggingInterceptor) ───
+
+  async trackApiRequest(method: string, url: string, statusCode: number, durationMs: number, req?: any) {
+    try {
+      await this.prisma.analyticsEvent.create({
+        data: {
+          sessionId: 'server',
+          eventType: 'api_request',
+          page: url.split('?')[0].slice(0, 500),
+          duration: durationMs,
+          device: method.slice(0, 20),
+          browser: String(statusCode).slice(0, 50),
+          ipAddress: this.extractIp(req)?.slice(0, 45),
+          userAgent: req?.headers?.['user-agent']?.slice(0, 500),
+          userId: req?.user?.id,
+          metadata: { method, statusCode } as any,
+        },
+      });
+    } catch (err) {
+      this.logger.error(`Failed to track API request: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  // ─── Track API Error (from AllExceptionsFilter) ───
+
+  async trackApiError(
+    method: string, url: string, statusCode: number,
+    errorMessage: string, stack?: string, durationMs?: number, req?: any,
+  ) {
+    try {
+      await this.prisma.analyticsEvent.create({
+        data: {
+          sessionId: 'server',
+          eventType: 'api_error',
+          page: url.split('?')[0].slice(0, 500),
+          duration: durationMs,
+          device: method.slice(0, 20),
+          browser: String(statusCode).slice(0, 50),
+          errorMessage: errorMessage?.slice(0, 1000),
+          errorStack: stack?.slice(0, 5000),
+          ipAddress: this.extractIp(req)?.slice(0, 45),
+          userAgent: req?.headers?.['user-agent']?.slice(0, 500),
+          userId: req?.user?.id,
+          metadata: { method, statusCode } as any,
+        },
+      });
+    } catch (err) {
+      this.logger.error(`Failed to track API error: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  private extractIp(req?: any): string | undefined {
+    if (!req) return undefined;
+    const forwarded = req.headers?.['x-forwarded-for'];
+    if (typeof forwarded === 'string') return forwarded.split(',')[0]?.trim();
+    return req.ip;
+  }
+
   // ─── Batch Track ───
 
   async trackBatch(events: TrackEventDto[], ipAddress?: string, userAgent?: string, userId?: string) {
@@ -254,6 +312,367 @@ export class AnalyticsService implements OnModuleInit {
         day: String(d.day).slice(0, 10),
         count: Number(d.count),
       })),
+    };
+  }
+
+  // ─── API Dashboard Stats ───
+
+  async getApiDashboard(days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const [
+      totalRequests,
+      totalErrors,
+      avgResponseTime,
+      topEndpoints,
+      errorEndpoints,
+      statusCodes,
+      methods,
+      slowEndpoints,
+      recentErrors,
+      dailyRequests,
+      dailyErrors,
+    ] = await Promise.all([
+      // Total successful API requests
+      this.prisma.analyticsEvent.count({
+        where: { eventType: 'api_request', createdAt: { gte: since } },
+      }),
+      // Total API errors
+      this.prisma.analyticsEvent.count({
+        where: { eventType: 'api_error', createdAt: { gte: since } },
+      }),
+      // Average response time (successful requests)
+      this.prisma.analyticsEvent.aggregate({
+        where: { eventType: 'api_request', createdAt: { gte: since }, duration: { not: null } },
+        _avg: { duration: true },
+      }),
+      // Top endpoints by request count
+      this.prisma.analyticsEvent.groupBy({
+        by: ['page'],
+        where: { eventType: 'api_request', createdAt: { gte: since } },
+        _count: true,
+        _avg: { duration: true },
+        orderBy: { _count: { page: 'desc' } },
+        take: 20,
+      }),
+      // Top error endpoints
+      this.prisma.analyticsEvent.groupBy({
+        by: ['page'],
+        where: { eventType: 'api_error', createdAt: { gte: since } },
+        _count: true,
+        orderBy: { _count: { page: 'desc' } },
+        take: 20,
+      }),
+      // Status code distribution (browser field stores status code)
+      this.prisma.analyticsEvent.groupBy({
+        by: ['browser'],
+        where: {
+          eventType: { in: ['api_request', 'api_error'] },
+          browser: { not: null },
+          createdAt: { gte: since },
+        },
+        _count: true,
+        orderBy: { _count: { browser: 'desc' } },
+      }),
+      // HTTP method distribution (device field stores method)
+      this.prisma.analyticsEvent.groupBy({
+        by: ['device'],
+        where: {
+          eventType: { in: ['api_request', 'api_error'] },
+          device: { not: null },
+          createdAt: { gte: since },
+        },
+        _count: true,
+        orderBy: { _count: { device: 'desc' } },
+      }),
+      // Slowest endpoints
+      this.prisma.analyticsEvent.groupBy({
+        by: ['page'],
+        where: { eventType: 'api_request', createdAt: { gte: since }, duration: { not: null } },
+        _avg: { duration: true },
+        _max: { duration: true },
+        _count: true,
+        orderBy: { _avg: { duration: 'desc' } },
+        take: 15,
+      }),
+      // Recent API errors
+      this.prisma.analyticsEvent.findMany({
+        where: { eventType: 'api_error', createdAt: { gte: since } },
+        select: {
+          page: true,
+          device: true,
+          browser: true,
+          errorMessage: true,
+          ipAddress: true,
+          userId: true,
+          duration: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      // Daily API requests
+      this.prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT DATE(created_at) as day, COUNT(*)::bigint as count
+        FROM analytics_events
+        WHERE event_type = 'api_request' AND created_at >= ${since}
+        GROUP BY DATE(created_at)
+        ORDER BY day ASC
+      `.catch(() => []),
+      // Daily API errors
+      this.prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT DATE(created_at) as day, COUNT(*)::bigint as count
+        FROM analytics_events
+        WHERE event_type = 'api_error' AND created_at >= ${since}
+        GROUP BY DATE(created_at)
+        ORDER BY day ASC
+      `.catch(() => []),
+    ]);
+
+    const total = totalRequests + totalErrors;
+
+    return {
+      summary: {
+        totalRequests: total,
+        totalErrors,
+        errorRate: total > 0 ? +((totalErrors / total) * 100).toFixed(2) : 0,
+        avgResponseTime: Math.round(avgResponseTime._avg?.duration || 0),
+      },
+      topEndpoints: topEndpoints.map((e) => ({
+        endpoint: e.page,
+        count: e._count,
+        avgMs: Math.round(e._avg?.duration || 0),
+      })),
+      errorEndpoints: errorEndpoints.map((e) => ({
+        endpoint: e.page,
+        count: e._count,
+      })),
+      statusCodes: statusCodes.map((s) => ({
+        code: s.browser,
+        count: s._count,
+      })),
+      methods: methods.map((m) => ({
+        method: m.device,
+        count: m._count,
+      })),
+      slowEndpoints: slowEndpoints.map((s) => ({
+        endpoint: s.page,
+        avgMs: Math.round(s._avg?.duration || 0),
+        maxMs: s._max?.duration || 0,
+        samples: s._count,
+      })),
+      recentErrors: recentErrors.map((e) => ({
+        endpoint: e.page,
+        method: e.device,
+        statusCode: e.browser,
+        errorMessage: e.errorMessage,
+        ip: e.ipAddress,
+        userId: e.userId,
+        durationMs: e.duration,
+        createdAt: e.createdAt,
+      })),
+      dailyRequests: (dailyRequests as any[]).map((d) => ({
+        day: String(d.day).slice(0, 10),
+        count: Number(d.count),
+      })),
+      dailyErrors: (dailyErrors as any[]).map((d) => ({
+        day: String(d.day).slice(0, 10),
+        count: Number(d.count),
+      })),
+    };
+  }
+
+  // ─── Extended Metrics ───
+
+  async getExtendedMetrics(days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const [
+      bounceData,
+      totalSessions,
+      referrerStats,
+      ctaClicks,
+      scrollDepthData,
+      funnelData,
+      conversionVisitors,
+      conversionRegistered,
+    ] = await Promise.all([
+      // Bounce rate: sessions with only 1 page_view
+      this.prisma.$queryRaw<Array<{ bounced: bigint; total: bigint }>>`
+        WITH session_pages AS (
+          SELECT session_id, COUNT(*) as page_count
+          FROM analytics_events
+          WHERE event_type = 'page_view' AND created_at >= ${since}
+            AND session_id != 'server'
+          GROUP BY session_id
+        )
+        SELECT
+          COUNT(*) FILTER (WHERE page_count = 1)::bigint as bounced,
+          COUNT(*)::bigint as total
+        FROM session_pages
+      `.catch(() => [{ bounced: BigInt(0), total: BigInt(0) }]),
+
+      // Total unique sessions (for funnel denominator)
+      this.prisma.analyticsEvent.groupBy({
+        by: ['sessionId'],
+        where: {
+          createdAt: { gte: since },
+          sessionId: { not: 'server' },
+        },
+      }).then((r) => r.length),
+
+      // Referrer analysis
+      this.prisma.analyticsEvent.groupBy({
+        by: ['referrer'],
+        where: {
+          eventType: 'page_view',
+          referrer: { not: null },
+          createdAt: { gte: since },
+          sessionId: { not: 'server' },
+        },
+        _count: true,
+        orderBy: { _count: { referrer: 'desc' } },
+        take: 20,
+      }),
+
+      // CTA clicks
+      this.prisma.analyticsEvent.groupBy({
+        by: ['page', 'errorMessage'], // errorMessage stores CTA label
+        where: {
+          eventType: 'cta_click',
+          createdAt: { gte: since },
+        },
+        _count: true,
+        orderBy: { _count: { page: 'desc' } },
+        take: 30,
+      }),
+
+      // Scroll depth distribution
+      this.prisma.$queryRaw<Array<{ depth: string; cnt: bigint }>>`
+        SELECT
+          CASE
+            WHEN (metadata->>'depth')::int <= 25 THEN '25%'
+            WHEN (metadata->>'depth')::int <= 50 THEN '50%'
+            WHEN (metadata->>'depth')::int <= 75 THEN '75%'
+            ELSE '100%'
+          END as depth,
+          COUNT(*)::bigint as cnt
+        FROM analytics_events
+        WHERE event_type = 'scroll_depth' AND created_at >= ${since}
+          AND metadata->>'depth' IS NOT NULL
+        GROUP BY depth
+        ORDER BY depth ASC
+      `.catch(() => []),
+
+      // Funnel: pages visited in order — Landing, Register, OTP, Dashboard
+      this.prisma.$queryRaw<Array<{ step: string; visitors: bigint }>>`
+        SELECT step, COUNT(DISTINCT session_id)::bigint as visitors FROM (
+          SELECT session_id, 'landing' as step FROM analytics_events
+            WHERE event_type = 'page_view' AND page = '/' AND created_at >= ${since} AND session_id != 'server'
+          UNION ALL
+          SELECT session_id, 'register' as step FROM analytics_events
+            WHERE event_type = 'page_view' AND page LIKE '%/kayit%' AND created_at >= ${since} AND session_id != 'server'
+          UNION ALL
+          SELECT session_id, 'otp' as step FROM analytics_events
+            WHERE event_type = 'page_view' AND page LIKE '%/otp%' AND created_at >= ${since} AND session_id != 'server'
+          UNION ALL
+          SELECT session_id, 'dashboard' as step FROM analytics_events
+            WHERE event_type = 'page_view' AND page LIKE '%/dashboard%' AND created_at >= ${since} AND session_id != 'server'
+        ) funnel
+        GROUP BY step
+      `.catch(() => []),
+
+      // Unique visitors (sessions with page_view)
+      this.prisma.analyticsEvent.groupBy({
+        by: ['sessionId'],
+        where: {
+          eventType: 'page_view',
+          createdAt: { gte: since },
+          sessionId: { not: 'server' },
+        },
+      }).then((r) => r.length),
+
+      // Registered users in the period (page_view on dashboard = logged in user)
+      this.prisma.analyticsEvent.groupBy({
+        by: ['userId'],
+        where: {
+          eventType: 'page_view',
+          createdAt: { gte: since },
+          userId: { not: null },
+        },
+      }).then((r) => r.length),
+    ]);
+
+    // Parse bounce rate
+    const bd = (bounceData as any[])[0] || { bounced: BigInt(0), total: BigInt(0) };
+    const bouncedCount = Number(bd.bounced);
+    const totalSessionsForBounce = Number(bd.total);
+    const bounceRate = totalSessionsForBounce > 0
+      ? +((bouncedCount / totalSessionsForBounce) * 100).toFixed(1)
+      : 0;
+
+    // Parse referrers into categories
+    const referrerCategories: Record<string, number> = {};
+    for (const r of referrerStats) {
+      const ref = r.referrer || '';
+      let category = 'Direkt';
+      if (ref.includes('google') || ref.includes('bing') || ref.includes('yahoo') || ref.includes('yandex')) {
+        category = 'Arama Motoru';
+      } else if (ref.includes('facebook') || ref.includes('instagram') || ref.includes('twitter') || ref.includes('linkedin') || ref.includes('tiktok') || ref.includes('t.co')) {
+        category = 'Sosyal Medya';
+      } else if (ref) {
+        category = 'Diger Site';
+      }
+      referrerCategories[category] = (referrerCategories[category] || 0) + r._count;
+    }
+
+    // Parse funnel steps
+    const funnelMap: Record<string, number> = {};
+    for (const f of funnelData as any[]) {
+      funnelMap[f.step] = Number(f.visitors);
+    }
+
+    // Parse scroll depth
+    const scrollDepths = (scrollDepthData as any[]).map((d) => ({
+      depth: d.depth as string,
+      count: Number(d.cnt),
+    }));
+
+    return {
+      bounceRate: {
+        rate: bounceRate,
+        bounced: bouncedCount,
+        total: totalSessionsForBounce,
+      },
+      funnel: {
+        landing: funnelMap['landing'] || 0,
+        register: funnelMap['register'] || 0,
+        otp: funnelMap['otp'] || 0,
+        dashboard: funnelMap['dashboard'] || 0,
+      },
+      conversionRate: {
+        visitors: conversionVisitors,
+        registered: conversionRegistered,
+        rate: conversionVisitors > 0
+          ? +((conversionRegistered / conversionVisitors) * 100).toFixed(1)
+          : 0,
+      },
+      referrers: {
+        categories: Object.entries(referrerCategories).map(([category, count]) => ({
+          category,
+          count,
+        })),
+        topSources: referrerStats.map((r) => ({
+          source: r.referrer || 'Direkt',
+          count: r._count,
+        })),
+      },
+      ctaClicks: ctaClicks.map((c) => ({
+        page: c.page,
+        label: c.errorMessage, // CTA label stored in errorMessage
+        count: c._count,
+      })),
+      scrollDepth: scrollDepths,
     };
   }
 

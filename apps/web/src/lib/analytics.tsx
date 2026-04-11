@@ -109,10 +109,11 @@ export function useAnalytics() {
     });
   }, [pathname, trackPageExit]);
 
-  // Track errors
+  // Track errors, scroll depth, and CTA clicks
   useEffect(() => {
     const sid = getSessionId();
 
+    // ─── Error tracking ───
     const handleError = (event: ErrorEvent) => {
       queueEvent({
         sessionId: sid,
@@ -143,7 +144,61 @@ export function useAnalytics() {
     window.addEventListener('error', handleError);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
-    // Flush on page hide (tab close, navigate away)
+    // ─── Scroll depth tracking ───
+    const scrollThresholds = new Set<number>();
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        1,
+      );
+      const pct = Math.round((scrollTop / docHeight) * 100);
+      for (const threshold of [25, 50, 75, 100]) {
+        if (pct >= threshold && !scrollThresholds.has(threshold)) {
+          scrollThresholds.add(threshold);
+          queueEvent({
+            sessionId: sid,
+            eventType: 'scroll_depth',
+            page: window.location.pathname,
+            metadata: { depth: threshold },
+          });
+        }
+      }
+    };
+    // Throttle scroll handler (every 500ms)
+    let scrollRaf: number | null = null;
+    const throttledScroll = () => {
+      if (scrollRaf) return;
+      scrollRaf = requestAnimationFrame(() => {
+        handleScroll();
+        scrollRaf = null;
+      });
+    };
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+
+    // ─── CTA click tracking (only elements with data-cta attribute) ───
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const ctaEl = target.closest('[data-cta]') as HTMLElement | null;
+      if (!ctaEl) return;
+
+      const ctaLabel = ctaEl.getAttribute('data-cta') || '';
+      queueEvent({
+        sessionId: sid,
+        eventType: 'cta_click',
+        page: window.location.pathname,
+        errorMessage: ctaLabel, // Store CTA label in errorMessage field
+        metadata: {
+          text: ctaEl.textContent?.trim()?.slice(0, 100),
+          href: (ctaEl as HTMLAnchorElement).href || undefined,
+          x: Math.round((event.clientX / window.innerWidth) * 100),
+          y: Math.round((event.clientY / window.innerHeight) * 100),
+        },
+      });
+    };
+    document.addEventListener('click', handleClick);
+
+    // ─── Page lifecycle ───
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         trackPageExit();
@@ -152,7 +207,6 @@ export function useAnalytics() {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Flush on beforeunload
     const handleBeforeUnload = () => {
       trackPageExit();
       flushEvents();
@@ -162,8 +216,11 @@ export function useAnalytics() {
     return () => {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('scroll', throttledScroll);
+      document.removeEventListener('click', handleClick);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
     };
   }, [trackPageExit]);
 }

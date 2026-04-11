@@ -5,8 +5,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 function buildCorsOrigins(): (string | RegExp)[] {
   const webUrl = process.env.WEB_URL || 'http://localhost:3000';
@@ -71,11 +69,8 @@ async function bootstrap() {
     }),
   );
 
-  // Global exception filter (JSend format)
-  app.useGlobalFilters(new AllExceptionsFilter());
-
-  // Global logging interceptor (masks TCKN, phone, OTP)
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  // Global exception filter & logging interceptor registered via DI in AppModule
+  // (APP_FILTER + APP_INTERCEPTOR) — enables AnalyticsService injection
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');
