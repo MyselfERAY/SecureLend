@@ -103,16 +103,15 @@ jobs:
           API_SUMMARY=$(echo "$API_DATA" | jq -r '.summary | "API: \(.totalRequests) istek, \(.totalErrors) hata (%\(.errorRate)), Ort: \(.avgResponseTime)ms"')
           API_ERROR_ENDPOINTS=$(echo "$API_DATA" | jq -r '.errorEndpoints[:15][]? | "\(.endpoint): \(.count) hata"')
           API_RECENT_ERRORS=$(echo "$API_DATA" | jq -r '.recentErrors[:15][]? | "[\(.statusCode)] \(.method) \(.endpoint) — \(.errorMessage // "?")"')
-          API_SLOW=$(echo "$API_DATA" | jq -r '.slowEndpoints[:10][]? | "\(.endpoint): ort \(.avgMs)ms, maks \(.maxMs)ms"')
           API_STATUS=$(echo "$API_DATA" | jq -r '.statusCodes[]? | "\(.code): \(.count)"')
 
           # ─── Frontend error details ───
           FE_SUMMARY=$(echo "$FE_DATA" | jq -r '.summary | "Frontend: \(.totalPageViews) goruntuleme, \(.totalErrors) hata"')
           FE_RECENT_ERRORS=$(echo "$FE_DATA" | jq -r '.recentErrors[:15][]? | "[\(.browser)/\(.device)] \(.page) — \(.errorMessage // "Bilinmeyen")"')
 
-          PROMPT="Sen SecureLend (kiraguvence.com) platformunun Backend+Frontend Muhendisi ajanisin. NestJS + Next.js + PostgreSQL + Prisma stack.
+          PROMPT="Sen SecureLend (kiraguvence.com) platformunun Health Agent'isin. NestJS + Next.js + PostgreSQL + Prisma stack.
 
-          Son 24 saatteki TUM hata ve performans verilerini analiz edip cozum onerileri uret.
+          SADECE gercek hata log'larini analiz et. Amacin: API veya frontend'de gercekten hata alan yerleri tespit edip fix onerisi vermek.
 
           == API OZETI ==
           $API_SUMMARY
@@ -123,11 +122,8 @@ jobs:
           == EN COK HATA VEREN API ENDPOINT'LERI ==
           $API_ERROR_ENDPOINTS
 
-          == SON API HATALARI ==
+          == SON API HATALARI (4xx/5xx) ==
           $API_RECENT_ERRORS
-
-          == EN YAVAS API ENDPOINT'LERI ==
-          $API_SLOW
 
           == FRONTEND OZETI ==
           $FE_SUMMARY
@@ -139,30 +135,38 @@ jobs:
           $EXISTING_SUGGESTIONS
 
           == GOREV ==
-          Hem API hem frontend hatalarini analiz et. Her hata icin kok neden tahmini yap ve spesifik kod degisikligi oner.
+          SADECE gercek hatalari (4xx/5xx HTTP response, frontend runtime error) analiz et.
+
+          KESINLIKLE YAPMA:
+          - Performans iyilestirmesi onerme (yavas endpoint vs.)
+          - Refactoring onerme
+          - Kod kalitesi / best practice onerisi verme
+          - Loglama, monitoring, test ekleme onerme
+          - Hata OLMAYAN durumlarda oneri uretme
+          - Mevcut kodu 'iyilestirme' amaciyla degistirme onerisi
+
+          SADECE SU DURUMLARDA ONERI URET:
+          1. API 500 hatasi (server crash, unhandled exception)
+          2. API 4xx hatasi (ancak client bug'indan kaynaklaniyorsa — ornegin yanlis route, eksik validation)
+          3. Frontend runtime error (ekran crash, render hatasi, caught exception)
+          4. Gercek bir bug olduguna emin oldugun durumlar
 
           KURALLAR:
           1. TEKRAR YASAGI: Mevcut oneriler listesindeki konulari tekrarlama.
-          2. Her oneri somut bir kod degisikligi icerecek — dosya adi, fonksiyon, ne degismeli.
-          3. Oncelik:
-             - CRITICAL: 500 hatalar, veri kaybi, guvenlik acigi
-             - HIGH: Tekrarlayan hatalar (>5/gun), yavas endpoint (>500ms), kullanici etkileyen frontend hatalari
-             - MEDIUM: Ara sira olan hatalar, performans iyilestirmeleri
-             - LOW: Loglama, kozmetik, edge case
-          4. Hata orani dusukse (%2 alti) sadece performans onerileri ver.
-          5. Maks 5 oneri. Hata yoksa bos suggestions dizisi dondur.
-          6. Her description'da: etkilenen dosya/modul, kok neden tahmini, cozum adimlari.
-          7. Frontend hatalari icin: hangi sayfa, hangi tarayici/cihaz, olasi neden.
+          2. Her oneri somut bir BUG FIX icerecek — dosya adi, fonksiyon, ne degismeli.
+          3. Oncelik: CRITICAL (500, veri kaybi), HIGH (tekrarlayan 4xx bug), MEDIUM (ara sira olan hata)
+          4. Maks 3 oneri. Gercek hata yoksa BOS suggestions dizisi dondur [].
+          5. Emin degilsen oneri URETME. Yanlis fix onerisi uretmek, sistemi bozabilir.
 
           == CIKTI FORMATI ==
           Sadece gecerli JSON dondur:
           {
-            \"analysis\": \"<h2>Saglik Raporu — $TODAY</h2><p>Turkce, API + Frontend ozet, maks 300 kelime</p>\",
+            \"analysis\": \"<h2>Saglik Raporu — $TODAY</h2><p>Turkce, sadece hata ozeti, maks 200 kelime</p>\",
             \"suggestions\": [
               {
                 \"title\": \"Kisa baslik (maks 200 karakter)\",
-                \"description\": \"Detayli aciklama\",
-                \"priority\": \"LOW|MEDIUM|HIGH|CRITICAL\"
+                \"description\": \"Detayli bug aciklamasi ve fix\",
+                \"priority\": \"MEDIUM|HIGH|CRITICAL\"
               }
             ]
           }"
@@ -207,7 +211,7 @@ jobs:
             exit 0
           fi
 
-          echo "::notice::Creating $SUGGESTION_COUNT auto-approved suggestions..."
+          echo "::notice::Creating $SUGGESTION_COUNT suggestions (only CRITICAL/HIGH auto-approved)..."
 
           SUBMITTED=0
           echo "$REPORT" | jq -c '.suggestions[]?' | while read -r SUGGESTION; do
@@ -231,14 +235,17 @@ jobs:
             SID=$(echo "$CREATE_RESPONSE" | jq -r '.data.id // empty')
 
             if [ -n "$SID" ] && [ "$SID" != "null" ]; then
-              # Step 2: Auto-approve — set status to PENDING for dev agent pickup
-              curl -s -X PATCH \
-                -H "x-api-key: $SERVICE_API_KEY" \
-                -H "Content-Type: application/json" \
-                -d '{"status":"PENDING"}' \
-                "$API_BASE/api/v1/suggestions/$SID" > /dev/null
-
-              echo "::notice::Auto-approved: $TITLE (id: $SID)"
+              # Step 2: Only auto-approve CRITICAL and HIGH — MEDIUM stays REJECTED for manual review
+              if [ "$PRIORITY" = "CRITICAL" ] || [ "$PRIORITY" = "HIGH" ]; then
+                curl -s -X PATCH \
+                  -H "x-api-key: $SERVICE_API_KEY" \
+                  -H "Content-Type: application/json" \
+                  -d '{"status":"PENDING"}' \
+                  "$API_BASE/api/v1/suggestions/$SID" > /dev/null
+                echo "::notice::Auto-approved ($PRIORITY): $TITLE (id: $SID)"
+              else
+                echo "::notice::Created but NOT auto-approved ($PRIORITY): $TITLE (id: $SID)"
+              fi
               SUBMITTED=$((SUBMITTED + 1))
             else
               echo "::warning::Failed to create: $TITLE"
