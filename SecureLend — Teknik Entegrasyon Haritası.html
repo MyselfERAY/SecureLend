@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<!-- saved from url=(0133)file:///Users/gtmac28/Desktop/prvt/Claude%20Project%201/securelend/SecureLend%20%E2%80%94%20Teknik%20Entegrasyon%20Haritas%C4%B1.html -->
+<html lang="tr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureLend — Teknik Entegrasyon Haritası</title>
+<style>
+  :root {
+    --navy: #0C1B33;
+    --navy-med: #1A2E50;
+    --navy-light: #243B63;
+    --teal: #028090;
+    --teal-light: #00A896;
+    --mint: #02C39A;
+    --gold: #F5A623;
+    --green: #10B981;
+    --red: #EF4444;
+    --off-white: #F0F4F8;
+    --light-gray: #E2E8F0;
+    --med-gray: #94A3B8;
+    --dark-text: #1E293B;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+    background: var(--off-white);
+    color: var(--dark-text);
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-med) 100%);
+    color: white;
+    padding: 3rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--teal), var(--mint), var(--gold));
+  }
+  .header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .header p { color: var(--med-gray); font-size: 1rem; }
+  .header .badge {
+    display: inline-block;
+    background: rgba(2, 128, 144, 0.25);
+    color: var(--teal-light);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(2, 128, 144, 0.4);
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 3rem; }
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .section-desc { color: var(--med-gray); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+  /* ── Architecture Diagram ── */
+  .arch-diagram {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-layer {
+    background: var(--navy-med);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    position: relative;
+  }
+  .arch-layer:last-child { margin-bottom: 0; }
+  .arch-layer h3 {
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .arch-layer .tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .arch-boxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .arch-box {
+    background: rgba(255,255,255,0.07);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.82rem;
+    color: var(--light-gray);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .arch-box:hover {
+    background: rgba(2, 128, 144, 0.2);
+    border-color: var(--teal);
+  }
+  .arch-box strong { color: white; display: block; margin-bottom: 0.2rem; font-size: 0.85rem; }
+
+  /* ── Flow Diagram ── */
+  .flow-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding: 1rem 0;
+  }
+  .flow-step {
+    min-width: 160px;
+    text-align: center;
+    position: relative;
+  }
+  .flow-circle {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    z-index: 2;
+  }
+  .flow-step h4 { font-size: 0.9rem; color: var(--navy); margin-bottom: 0.3rem; }
+  .flow-step p { font-size: 0.78rem; color: var(--med-gray); padding: 0 0.5rem; }
+  .flow-arrow {
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1rem;
+    color: var(--teal);
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  /* ── Service Cards ── */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .service-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.25rem;
+    border-left: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .service-card h4 {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+    color: var(--navy);
+  }
+  .service-card .subtitle {
+    font-size: 0.78rem;
+    color: var(--med-gray);
+    margin-bottom: 0.75rem;
+  }
+  .service-card .status {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .status-mock { background: #FEF3C7; color: #92400E; }
+  .status-ready { background: #D1FAE5; color: #065F46; }
+  .status-planned { background: #DBEAFE; color: #1E40AF; }
+
+  .api-list { list-style: none; margin-top: 0.5rem; }
+  .api-list li {
+    font-size: 0.82rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--light-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .api-list li:last-child { border-bottom: none; }
+  .method {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-family: 'Consolas', monospace;
+  }
+  .method-post { background: #D1FAE5; color: #065F46; }
+  .method-get { background: #DBEAFE; color: #1E40AF; }
+
+  /* ── Data Model ── */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .model-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .model-card .model-header {
+    padding: 0.6rem 1rem;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .model-card .model-body {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: var(--dark-text);
+  }
+  .model-card .model-body .field {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.2rem 0;
+    border-bottom: 1px dashed var(--light-gray);
+  }
+  .model-card .model-body .field:last-child { border-bottom: none; }
+  .field-type { color: var(--teal); font-family: monospace; font-size: 0.75rem; }
+
+  /* ── Timeline ── */
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--teal), var(--gold), var(--green));
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.6rem;
+    top: 0.4rem;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 3px solid;
+    background: white;
+  }
+  .timeline-item h4 { font-size: 1rem; color: var(--navy); }
+  .timeline-item .time-label {
+    font-size: 0.8rem;
+    color: var(--teal);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .timeline-item p { font-size: 0.85rem; color: var(--med-gray); }
+  .timeline-item ul { list-style: none; margin-top: 0.4rem; }
+  .timeline-item ul li {
+    font-size: 0.82rem;
+    color: var(--dark-text);
+    padding: 0.15rem 0;
+  }
+  .timeline-item ul li::before { content: '▸ '; color: var(--teal); font-weight: bold; }
+
+  /* ── Security Grid ── */
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.75rem;
+  }
+  .security-item {
+    background: white;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .security-num {
+    min-width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .security-item h5 { font-size: 0.85rem; color: var(--navy); }
+  .security-item p { font-size: 0.75rem; color: var(--med-gray); }
+
+  /* ── Relation Diagram ── */
+  .relation-diagram {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 2rem;
+    color: white;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .rel-table { color: var(--teal-light); }
+  .rel-arrow { color: var(--gold); }
+  .rel-type { color: var(--med-gray); }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--navy);
+    color: var(--med-gray);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    margin-top: 2rem;
+  }
+  .footer strong { color: var(--teal-light); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .container { padding: 1rem; }
+    .header h1 { font-size: 1.6rem; }
+    .arch-boxes { grid-template-columns: 1fr 1fr; }
+    .flow-container { flex-wrap: wrap; justify-content: center; }
+    .flow-arrow { min-width: 30px; }
+  }
+
+  @media print {
+    .service-card:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .arch-box:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.1); }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════ HEADER ════ -->
+<div class="header">
+  <div class="container" style="padding-top:0;padding-bottom:0;">
+    <h1>SecureLend — Teknik Entegrasyon Haritası</h1>
+    <p>KMH Tabanlı Dijital Kira Güvence Platformu • Banka API Entegrasyon Dokümantasyonu</p>
+    <span class="badge">Gizli — Teknik Ekipler İçin • Nisan 2026</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════ 1. PLATFORM MİMARİSİ ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--teal)"></span> Platform Mimarisi</h2>
+  <p class="section-desc">SecureLend full-stack TypeScript monorepo mimarisi — banka entegrasyonuna hazır modüler yapı.</p>
+
+  <div class="arch-diagram">
+    <!-- Frontend Layer -->
+    <div class="arch-layer" style="border-color: var(--teal);">
+      <h3>Frontend Katmanı <span class="tag" style="background:var(--teal);color:white">CLIENT</span></h3>
+      <div class="arch-boxes">
+        <div class="arch-box"><strong>Web App</strong>Next.js 15 • React 19 • TypeScript • Tailwind CSS</div>
+        <div class="arch-box"><strong>Mobil App</strong>Expo React Native • iOS &amp; Android</div>
+        <div class="arch-box"><strong>Admin Panel</strong>Role-based dashboard • Komisyon raporları</div>
+        <div class="arch-box"><strong>18 Sayfa</strong>Auth, KMH, Sözleşme, Ödeme, Profil, Admin</div>
+      </div>
+    </div>
+
+    <!-- API Layer -->
+    <div class="arch-layer" style="border-color: var(--gold);">
+      <h3>API Gateway &amp; Backend <span class="tag" style="background:var(--gold);color:var(--navy)">REST API</span></h3>
+      <div class="arch-boxes">
+        <div class="arch-box"><strong>NestJS 10</strong>13 modül • ~38 endpoint • Swagger docs</div>
+        <div class="arch-box"><strong>Auth Guard</strong>JWT + OTP • Role-based access • Token refresh</div>
+        <div class="arch-box"><strong>Validation</strong>class-validator DTO • Zod schemas • TCKN check</div>
+        <div class="arch-box"><strong>JSend Format</strong>Standart API response • Error handling</div>
+      </div>
+    </div>
+
+    <!-- Service Layer -->
+    <div class="arch-layer" style="border-color: var(--mint);">
+      <h3>Abstract Service Layer <span class="tag" style="background:var(--mint);color:var(--navy)">DI PATTERN</span></h3>
+      <div class="arch-boxes">
+        <div class="arch-box"><strong>BankService</strong>KMH açılış • Transfer • Bakiye • Ödeme emri</div>
+        <div class="arch-box"><strong>SmsService</strong>OTP gönderim • Bildirimler • SMS gateway</div>
+        <div class="arch-box"><strong>CreditScoring</strong>KKB/Findeks • Skor hesaplama • Risk analizi</div>
+        <div class="arch-box"><strong>IdentityVerify</strong>E-Devlet KPS • TCKN doğrulama • KYC</div>
+        <div class="arch-box"><strong>PropertyVerify</strong>TAKBİS • UAVT sorgu • Mülk sahiplik doğrulama</div>
+      </div>
+    </div>
+
+    <!-- Database Layer -->
+    <div class="arch-layer" style="border-color: var(--green);">
+      <h3>Veri Katmanı <span class="tag" style="background:var(--green);color:white">DATABASE</span></h3>
+      <div class="arch-boxes">
+        <div class="arch-box"><strong>PostgreSQL 14</strong>13 tablo • 10 enum • Full index</div>
+        <div class="arch-box"><strong>Prisma ORM</strong>Type-safe queries • Migration • Studio</div>
+        <div class="arch-box"><strong>Audit Log</strong>Tüm işlem kaydı • IP/UA tracking</div>
+        <div class="arch-box"><strong>Docker</strong>docker-compose • Turborepo • pnpm workspace</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 2. KMH ENTEGRASYON AKIŞI ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--gold)"></span> KMH Entegrasyon Akışı</h2>
+  <p class="section-desc">Kiracının KMH başvurusundan otomatik kira ödemesine kadar uçtan uca akış.</p>
+
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="flow-circle" style="background:var(--teal)">1</div>
+      <h4>KMH Başvurusu</h4>
+      <p>Kiracı gelir bilgileri, istihdam durumu ve tahmini kira bilgisi girer</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-circle" style="background:var(--navy-med)">2</div>
+      <h4>Kredi Değerlendirme</h4>
+      <p>Banka API: KKB/Findeks skoru, gelir/kira oranı analizi (≥2x)</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-circle" style="background:var(--teal)">3</div>
+      <h4>Onay &amp; Teklif</h4>
+      <p>Limit: Gelir×3 (max 500K TL), Faiz: %2.49, Teklif kabul</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-circle" style="background:var(--navy-med)">4</div>
+      <h4>Dijital Onboarding</h4>
+      <p>KYC: Kimlik + Selfie + Video doğrulama, KVKK onayı</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-circle" style="background:var(--green)">5</div>
+      <h4>KMH Hesap Açılışı</h4>
+      <p>IBAN üretimi, limit aktifleştirme, hesap ACTIVE duruma geçer</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-circle" style="background:var(--gold)">6</div>
+      <h4>Sözleşme &amp; Ödeme</h4>
+      <p>Dijital imza, KMH bağlama, otomatik ödeme emri oluşturma</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 3. ENTEGRASYON SERVİSLERİ ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--mint)"></span> Entegrasyon Servisleri</h2>
+  <p class="section-desc">5 dış servis entegrasyonu — Abstract Service Pattern ile geliştirmede Mock, üretimde Gerçek API kullanılır.</p>
+
+  <div class="service-grid">
+    <!-- BankService -->
+    <div class="service-card" style="border-color: var(--teal);">
+      <span class="status status-mock">MOCK HAZIR</span>
+      <h4>BankService</h4>
+      <div class="subtitle">KMH hesap yönetimi, transfer ve ödeme emirleri</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> applyForKmh(userId, dto)</li>
+        <li><span class="method method-post">POST</span> acceptOffer(appId, userId)</li>
+        <li><span class="method method-post">POST</span> startKyc(appId, userId)</li>
+        <li><span class="method method-post">POST</span> verifyId / verifySelfie</li>
+        <li><span class="method method-post">POST</span> completeVideoCall(appId)</li>
+        <li><span class="method method-post">POST</span> signAgreements(appId)</li>
+        <li><span class="method method-post">POST</span> completeOnboarding(appId)</li>
+        <li><span class="method method-post">POST</span> notifyContractSigned(contractId)</li>
+        <li><span class="method method-post">POST</span> transfer(from, toIban, amount)</li>
+        <li><span class="method method-get">GET</span> getBalance(accountId)</li>
+        <li><span class="method method-get">GET</span> getAccountsByUser(userId)</li>
+        <li><span class="method method-get">GET</span> getKycStatus(appId)</li>
+        <li><span class="method method-post">POST</span> cancelApplication(appId)</li>
+      </ul>
+    </div>
+
+    <!-- SmsService -->
+    <div class="service-card" style="border-color: var(--gold);">
+      <span class="status status-mock">MOCK HAZIR</span>
+      <h4>SmsService</h4>
+      <div class="subtitle">OTP gönderimi ve bildirim SMS'leri</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> sendOtp(phone, code)</li>
+        <li><span class="method method-post">POST</span> sendNotification(phone, msg)</li>
+      </ul>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--med-gray);">
+        <strong style="color:var(--dark-text)">Üretim hedefi:</strong> Netgsm veya İletimerkezi API
+      </div>
+    </div>
+
+    <!-- CreditScoringService -->
+    <div class="service-card" style="border-color: var(--green);">
+      <span class="status status-mock">MOCK HAZIR</span>
+      <h4>CreditScoringService</h4>
+      <div class="subtitle">Kredi skorlama ve risk değerlendirme</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> checkCredit(tckn, income)</li>
+        <li><span class="method method-get">GET</span> getCreditScore(tckn)</li>
+      </ul>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--med-gray);">
+        <strong style="color:var(--dark-text)">Üretim hedefi:</strong> KKB / Findeks API entegrasyonu
+      </div>
+    </div>
+
+    <!-- IdentityVerificationService -->
+    <div class="service-card" style="border-color: var(--navy);">
+      <span class="status status-mock">MOCK HAZIR</span>
+      <h4>IdentityVerificationService</h4>
+      <div class="subtitle">Kimlik doğrulama ve KPS entegrasyonu</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> verifyIdentity(tckn, name, dob)</li>
+        <li><span class="method method-get">GET</span> getKpsStatus(tckn)</li>
+      </ul>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--med-gray);">
+        <strong style="color:var(--dark-text)">Üretim hedefi:</strong> E-Devlet MERNİS / KPS
+      </div>
+    </div>
+
+    <!-- PropertyVerificationService (TAKBİS) -->
+    <div class="service-card" style="border-color: var(--red);">
+      <span class="status status-planned">PLANLI</span>
+      <h4>PropertyVerificationService</h4>
+      <div class="subtitle">TAKBİS üzerinden mülk sahiplik doğrulama — UAVT bazlı</div>
+      <ul class="api-list">
+        <li><span class="method method-get">GET</span> verifyOwnership(uavtCode, ownerTckn)</li>
+        <li><span class="method method-get">GET</span> getPropertyDetails(uavtCode)</li>
+        <li><span class="method method-get">GET</span> checkEncumbrance(uavtCode)</li>
+      </ul>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--med-gray);">
+        <strong style="color:var(--dark-text)">Üretim hedefi:</strong> TKGM TAKBİS Web Servisi<br>
+        <strong style="color:var(--dark-text)">Kullanım:</strong> "Bu UAVT numaralı mülk, bu TCKN'ye mi ait?" doğrulaması.<br>
+        Sözleşme oluşturma sırasında ev sahibinin mülk sahipliği otomatik kontrol edilir.
+        Ayrıca ipotek/haciz kontrolü ile risk değerlendirmesi yapılır.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 4. BANKA API ENDPOINTLERİ ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--red)"></span> Banka API Endpoint Detayı</h2>
+  <p class="section-desc">Bankanın sağlaması / SecureLend'in çağırması gereken API'ler — tam endpoint referansı.</p>
+
+  <div class="service-grid">
+    <div class="service-card" style="border-color: var(--teal);">
+      <span class="status status-ready">AKTİF</span>
+      <h4>KMH Başvuru API'leri</h4>
+      <div class="subtitle">SecureLend → Banka yönünde</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> /api/bank/kmh/apply</li>
+        <li><span class="method method-get">GET</span> /api/bank/kmh/applications</li>
+        <li><span class="method method-get">GET</span> /api/bank/kmh/applications/:id</li>
+        <li><span class="method method-post">POST</span> /api/bank/kmh/onboarding/:id</li>
+      </ul>
+    </div>
+
+    <div class="service-card" style="border-color: var(--gold);">
+      <span class="status status-ready">AKTİF</span>
+      <h4>KYC &amp; Onboarding API'leri</h4>
+      <div class="subtitle">Dijital kimlik doğrulama akışı</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> /api/bank/kmh/:id/accept-offer</li>
+        <li><span class="method method-post">POST</span> /api/bank/kmh/:id/kyc/start</li>
+        <li><span class="method method-post">POST</span> /api/bank/kmh/:id/kyc/verify-id</li>
+        <li><span class="method method-post">POST</span> /api/bank/kmh/:id/kyc/selfie</li>
+        <li><span class="method method-post">POST</span> /api/bank/kmh/:id/kyc/video</li>
+        <li><span class="method method-post">POST</span> /api/bank/kmh/:id/kyc/sign</li>
+        <li><span class="method method-get">GET</span> /api/bank/kmh/:id/kyc/status</li>
+      </ul>
+    </div>
+
+    <div class="service-card" style="border-color: var(--green);">
+      <span class="status status-ready">AKTİF</span>
+      <h4>Hesap &amp; Transfer API'leri</h4>
+      <div class="subtitle">Bakiye sorgulama ve para transferi</div>
+      <ul class="api-list">
+        <li><span class="method method-get">GET</span> /api/bank/accounts</li>
+        <li><span class="method method-get">GET</span> /api/bank/accounts/:id</li>
+        <li><span class="method method-post">POST</span> /api/bank/transfer</li>
+        <li><span class="method method-get">GET</span> /api/bank/payment-orders</li>
+      </ul>
+    </div>
+
+    <div class="service-card" style="border-color: var(--navy);">
+      <span class="status status-ready">AKTİF</span>
+      <h4>Sözleşme &amp; Ödeme API'leri</h4>
+      <div class="subtitle">Sözleşme yönetimi ve otomatik ödeme</div>
+      <ul class="api-list">
+        <li><span class="method method-post">POST</span> /api/contracts</li>
+        <li><span class="method method-post">POST</span> /api/contracts/:id/sign</li>
+        <li><span class="method method-get">GET</span> /api/payments</li>
+        <li><span class="method method-post">POST</span> /api/payments/:id/pay</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 5. VERİ MODELİ ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--navy)"></span> Veritabanı Modeli (ER Diyagramı)</h2>
+  <p class="section-desc">13 tablo, 10 enum — bankacılık düzeyinde veri bütünlüğü. PostgreSQL 14 + Prisma ORM.</p>
+
+  <div class="relation-diagram"><span class="rel-table">User</span> <span class="rel-arrow">──(1:N)──▶</span> <span class="rel-table">KmhApplication</span> <span class="rel-arrow">──(1:1)──▶</span> <span class="rel-table">BankAccount</span>
+  <span class="rel-type">│ tcknHash, roles, KYC          │ gelir, istihdam, limit          │ IBAN, limit, bakiye</span>
+  <span class="rel-arrow">│                                │                                  │</span>
+  <span class="rel-arrow">├──(1:N)──▶</span> <span class="rel-table">Property</span>              <span class="rel-arrow">│                    ├──(1:N)──▶</span> <span class="rel-table">BankTransaction</span>
+  <span class="rel-type">│            │ adres, kira, tip      │                    │              │ tutar, referans</span>
+  <span class="rel-arrow">│            │                       │                    │</span>
+  <span class="rel-arrow">│            └──(1:N)──▶</span> <span class="rel-table">Contract</span> <span class="rel-arrow">◀──────────────────┤</span>
+  <span class="rel-type">│                        │ kira, IBAN, tarih, durum         │</span>
+  <span class="rel-arrow">│                        │                                  │</span>
+  <span class="rel-arrow">│                        ├──(1:N)──▶</span> <span class="rel-table">ContractSignature</span>   <span class="rel-arrow">│</span>
+  <span class="rel-arrow">│                        ├──(1:N)──▶</span> <span class="rel-table">PaymentSchedule</span> <span class="rel-arrow">──▶</span> <span class="rel-table">Commission</span>
+  <span class="rel-arrow">│                        └──(1:N)──▶</span> <span class="rel-table">PaymentOrder</span>
+  <span class="rel-arrow">│</span>
+  <span class="rel-arrow">├──(1:N)──▶</span> <span class="rel-table">OtpCode</span>        <span class="rel-arrow">├──(1:N)──▶</span> <span class="rel-table">Notification</span>
+  <span class="rel-arrow">├──(1:N)──▶</span> <span class="rel-table">RefreshToken</span>   <span class="rel-arrow">├──(1:N)──▶</span> <span class="rel-table">Consent</span>
+  <span class="rel-arrow">└──(1:N)──▶</span> <span class="rel-table">AuditLog</span>       <span class="rel-arrow">└──(1:N)──▶</span> <span class="rel-table">ChatRoom</span> <span class="rel-arrow">──▶</span> <span class="rel-table">ChatMessage</span></div>
+
+  <div class="model-grid" style="margin-top: 1.5rem;">
+    <div class="model-card">
+      <div class="model-header" style="background:var(--teal)">User</div>
+      <div class="model-body">
+        <div class="field"><span>tcknHash</span><span class="field-type">String @unique</span></div>
+        <div class="field"><span>fullName</span><span class="field-type">String</span></div>
+        <div class="field"><span>phone</span><span class="field-type">String</span></div>
+        <div class="field"><span>roles</span><span class="field-type">UserRole[]</span></div>
+        <div class="field"><span>kycStatus</span><span class="field-type">KycStatus</span></div>
+        <div class="field"><span>kpsVerified</span><span class="field-type">Boolean</span></div>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-header" style="background:var(--navy)">KmhApplication</div>
+      <div class="model-body">
+        <div class="field"><span>employmentStatus</span><span class="field-type">Enum</span></div>
+        <div class="field"><span>monthlyIncome</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>estimatedRent</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>status</span><span class="field-type">KmhStatus</span></div>
+        <div class="field"><span>approvedLimit</span><span class="field-type">Decimal?</span></div>
+        <div class="field"><span>creditScore</span><span class="field-type">Int?</span></div>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-header" style="background:var(--teal)">BankAccount</div>
+      <div class="model-body">
+        <div class="field"><span>accountNumber</span><span class="field-type">String IBAN</span></div>
+        <div class="field"><span>accountType</span><span class="field-type">KMH|STANDARD</span></div>
+        <div class="field"><span>balance</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>creditLimit</span><span class="field-type">Decimal?</span></div>
+        <div class="field"><span>status</span><span class="field-type">AccountStatus</span></div>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-header" style="background:var(--gold)">Contract</div>
+      <div class="model-body">
+        <div class="field"><span>monthlyRent</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>landlordIban</span><span class="field-type">String(26)</span></div>
+        <div class="field"><span>status</span><span class="field-type">ContractStatus</span></div>
+        <div class="field"><span>startDate / endDate</span><span class="field-type">Date</span></div>
+        <div class="field"><span>paymentDayOfMonth</span><span class="field-type">Int</span></div>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-header" style="background:var(--green)">PaymentOrder</div>
+      <div class="model-body">
+        <div class="field"><span>fromAccountId</span><span class="field-type">UUID (KMH)</span></div>
+        <div class="field"><span>toIban</span><span class="field-type">String(26)</span></div>
+        <div class="field"><span>amount</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>dayOfMonth</span><span class="field-type">Int</span></div>
+        <div class="field"><span>nextExecutionDate</span><span class="field-type">Date</span></div>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-header" style="background:var(--navy-med)">Commission</div>
+      <div class="model-body">
+        <div class="field"><span>totalAmount</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>commissionRate</span><span class="field-type">%1 (0.01)</span></div>
+        <div class="field"><span>commissionAmount</span><span class="field-type">Decimal</span></div>
+        <div class="field"><span>landlordAmount</span><span class="field-type">Decimal</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 6. GÜVENLİK MİMARİSİ ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--green)"></span> Güvenlik Mimarisi (10 Katman)</h2>
+  <p class="section-desc">Bankacılık standartlarında güvenlik katmanları — dıştan içe doğru savunma derinliği.</p>
+
+  <div class="security-grid">
+    <div class="security-item"><div class="security-num">1</div><div><h5>Helmet HTTP Headers</h5><p>XSS, Clickjacking, MIME-sniff koruması</p></div></div>
+    <div class="security-item"><div class="security-num">2</div><div><h5>CORS Origin Control</h5><p>Yalnızca izinli frontend URL'leri</p></div></div>
+    <div class="security-item"><div class="security-num">3</div><div><h5>3-Tier Rate Limiting</h5><p>Short (10/min) • Medium (100/hr) • Long (1000/day)</p></div></div>
+    <div class="security-item"><div class="security-num">4</div><div><h5>JWT Auth Guard</h5><p>Access (15dk) + Refresh (7gün) token çifti</p></div></div>
+    <div class="security-item"><div class="security-num">5</div><div><h5>Roles Guard (RBAC)</h5><p>TENANT / LANDLORD / ADMIN rol ayrımı</p></div></div>
+    <div class="security-item"><div class="security-num">6</div><div><h5>DTO Validation Pipe</h5><p>class-validator + whitelist + forbidNonWhitelisted</p></div></div>
+    <div class="security-item"><div class="security-num">7</div><div><h5>TCKN Hash + Pepper</h5><p>Kriptografik hash ile kimlik saklama</p></div></div>
+    <div class="security-item"><div class="security-num">8</div><div><h5>Log Masking</h5><p>TCKN, telefon, OTP otomatik maskeleme</p></div></div>
+    <div class="security-item"><div class="security-num">9</div><div><h5>Audit Logging</h5><p>Tüm kritik işlemler + IP + User-Agent</p></div></div>
+    <div class="security-item"><div class="security-num">10</div><div><h5>AllExceptions Filter</h5><p>Güvenli hata mesajları — stack trace gizleme</p></div></div>
+  </div>
+</div>
+
+<!-- ════ 7. ENTEGRASYON YOL HARİTASI ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--gold)"></span> Entegrasyon Yol Haritası</h2>
+  <p class="section-desc">Mock'tan Production'a 16 haftalık geçiş planı — her servis için adım adım entegrasyon.</p>
+
+  <div class="timeline">
+    <div class="timeline-item" style="--dot-color: var(--teal);">
+      <div style="position:absolute;left:-1.6rem;top:0.4rem;width:14px;height:14px;border-radius:50%;border:3px solid var(--teal);background:white;"></div>
+      <div class="time-label">Faz 1 — Hafta 1-4: Teknik Keşif</div>
+      <h4>API Spesifikasyon &amp; Sandbox</h4>
+      <ul>
+        <li>Banka API dokümantasyonu inceleme ve spesifikasyon anlaşması</li>
+        <li>Sandbox/test ortamı kurulumu (banka tarafı)</li>
+        <li>MockBankService → Gerçek API mapping tablosu</li>
+        <li>Test veri setleri ve senaryo tanımlama</li>
+        <li>Güvenlik gereksinimleri (mutual TLS, API key, OAuth2) belirleme</li>
+      </ul>
+    </div>
+    <div class="timeline-item">
+      <div style="position:absolute;left:-1.6rem;top:0.4rem;width:14px;height:14px;border-radius:50%;border:3px solid var(--teal-light);background:white;"></div>
+      <div class="time-label">Faz 2 — Hafta 5-8: Entegrasyon</div>
+      <h4>Servis Bağlantıları</h4>
+      <ul>
+        <li>BankService: KMH başvuru, değerlendirme, hesap açılış API'leri</li>
+        <li>SmsService: Netgsm/İletimerkezi SMS gateway bağlantısı</li>
+        <li>CreditScoringService: KKB/Findeks API entegrasyonu</li>
+        <li>IdentityVerificationService: E-Devlet KPS bağlantısı</li>
+        <li>PropertyVerificationService: TKGM TAKBİS entegrasyonu (UAVT bazlı mülk sahiplik doğrulama)</li>
+        <li>Hata yönetimi ve retry mekanizmaları</li>
+      </ul>
+    </div>
+    <div class="timeline-item">
+      <div style="position:absolute;left:-1.6rem;top:0.4rem;width:14px;height:14px;border-radius:50%;border:3px solid var(--gold);background:white;"></div>
+      <div class="time-label">Faz 3 — Hafta 9-12: Test &amp; UAT</div>
+      <h4>Kalite Güvence</h4>
+      <ul>
+        <li>Uçtan uca test: KMH başvuru → Onay → Onboarding → Sözleşme → Ödeme</li>
+        <li>Penetrasyon testleri (OWASP Top 10)</li>
+        <li>Performans testleri (yük, stres, dayanıklılık)</li>
+        <li>BDDK ve KVKK uyum kontrolü</li>
+        <li>Banka güvenlik denetimi</li>
+      </ul>
+    </div>
+    <div class="timeline-item">
+      <div style="position:absolute;left:-1.6rem;top:0.4rem;width:14px;height:14px;border-radius:50%;border:3px solid var(--green);background:white;"></div>
+      <div class="time-label">Faz 4 — Hafta 13-16: Pilot &amp; Go-Live</div>
+      <h4>Canlıya Geçiş</h4>
+      <ul>
+        <li>Pilot bölge seçimi (İstanbul — Kadıköy/Beşiktaş vb.)</li>
+        <li>Kademeli kullanıcı artışı (%10 → %25 → %50 → %100)</li>
+        <li>Monitoring, alerting ve on-call yapısı kurulumu</li>
+        <li>Full production go-live ve basın duyurusu</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 8. DI KONFİGÜRASYONU ════ -->
+<div class="section">
+  <h2 class="section-title"><span class="dot" style="background:var(--mint)"></span> DI Konfigürasyon Örneği</h2>
+  <p class="section-desc">Geliştirmeden üretime geçiş — tek satır değişiklik.</p>
+
+  <div class="relation-diagram" style="font-size: 0.85rem; line-height: 1.7;">
+<span style="color:var(--med-gray)">// bank.module.ts — Dependency Injection konfigürasyonu</span>
+
+<span style="color:var(--gold)">@Module</span>({
+  providers: [
+    {
+      provide: <span class="rel-table">BankService</span>,
+      useClass: process.env.<span style="color:var(--gold)">NODE_ENV</span> === <span style="color:var(--green)">'production'</span>
+        ? <span style="color:var(--green)">RealBankService</span>     <span style="color:var(--med-gray)">// ← Gerçek banka API</span>
+        : <span style="color:var(--gold)">MockBankService</span>     <span style="color:var(--med-gray)">// ← Simülasyon (geliştirme)</span>
+    },
+  ]
+})
+
+<span style="color:var(--med-gray)">// Aynı pattern tüm dış servisler için:</span>
+<span style="color:var(--med-gray)">// • MockSmsService          → Netgsm / İletimerkezi</span>
+<span style="color:var(--med-gray)">// • MockCreditScoringService → KKB / Findeks</span>
+<span style="color:var(--med-gray)">// • MockIdentityVerification → E-Devlet KPS</span>
+<span style="color:var(--med-gray)">// • MockPropertyVerification → TKGM TAKBİS (UAVT mülk sahiplik sorgusu)</span></div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ════ FOOTER ════ -->
+<div class="footer">
+  <strong>SecureLend</strong> — Dijital Kira Güvence Platformu<br>
+  Teknik Entegrasyon Haritası • Nisan 2026 • Gizli Doküman<br>
+  <span style="color: var(--teal-light);">eraykaracaoglan@icloud.com</span>
+</div>
+
+
+
+</body></html>
