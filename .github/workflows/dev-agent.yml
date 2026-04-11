@@ -36,6 +36,19 @@ jobs:
       # ══════════════════════════════════════════
       # STEP 1: Check for PENDING suggestions
       # ══════════════════════════════════════════
+      - name: Create Agent Run
+        id: run
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"agentType":"DEV"}' \
+            "$API_BASE/api/v1/agent-runs")
+          RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
       - name: Check for PENDING suggestions
         id: check
         env:
@@ -600,3 +613,35 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"status":"PENDING","agentNotes":"Unexpected workflow failure. Will retry next run."}' \
             "$API_BASE/api/v1/suggestions/$SID"
+
+      # ══════════════════════════════════════════
+      # ALWAYS: Complete agent run record
+      # ══════════════════════════════════════════
+      - name: Complete agent run
+        if: always()
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+          if [ -z "$RUN_ID" ]; then exit 0; fi
+
+          HAS_PENDING="${{ steps.check.outputs.has_pending }}"
+          DEPLOY_OK="${{ steps.deploy.outputs.deploy_ok }}"
+
+          if [ "$HAS_PENDING" != "true" ]; then
+            curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"COMPLETED","summary":"No pending suggestions."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          elif [ "$DEPLOY_OK" = "true" ]; then
+            SID="${{ steps.check.outputs.sid }}"
+            curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"status\":\"COMPLETED\",\"summary\":\"Implemented and deployed suggestion $SID.\"}" \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          else
+            curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"FAILED","errorMessage":"Implementation or deploy failed."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          fi
