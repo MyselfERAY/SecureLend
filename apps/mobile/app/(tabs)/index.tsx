@@ -150,6 +150,8 @@ export default function DashboardScreen() {
     { title: 'Sozlesme', icon: 'document-text-outline' as const, color: '#10b981', bg: '#ecfdf5', route: '/(tabs)/contracts' },
     { title: 'KMH', icon: 'card-outline' as const, color: '#f59e0b', bg: '#fffbeb', route: '/kmh/apply' },
     { title: 'Odeme', icon: 'wallet-outline' as const, color: '#8b5cf6', bg: '#f5f3ff', route: '/(tabs)/payments' },
+    { title: 'Rehber', icon: 'book-outline' as const, color: '#0891b2', bg: '#ecfeff', route: '/rehber' },
+    { title: 'Davet Et', icon: 'gift-outline' as const, color: '#ea580c', bg: '#fff7ed', route: '/referral' },
   ];
 
   // Build activity feed from real data
@@ -742,12 +744,13 @@ const styles = StyleSheet.create({
   },
   quickGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 20,
     gap: 12,
     marginBottom: 24,
   },
   quickAction: {
-    flex: 1,
+    width: (SCREEN_WIDTH - 40 - 24) / 3,
     alignItems: 'center',
   },
   quickIconCircle: {

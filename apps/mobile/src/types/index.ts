@@ -183,6 +183,34 @@ export interface NotificationsResponse {
   unreadCount: number;
 }
 
+// Article types
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  category: string;
+  audience: 'TENANT' | 'LANDLORD' | 'BOTH';
+  status: 'DRAFT' | 'PUBLISHED';
+  publishedAt: string | null;
+  createdAt: string;
+}
+
+// Referral types
+export interface ReferralInfo {
+  referralCode: string | null;
+  referralLink: string | null;
+  totalReferrals: number;
+  referrals: {
+    userName: string;
+    joinedAt: string;
+    promoName: string;
+    discountPercent: number;
+    durationMonths: number;
+  }[];
+}
+
 // Dashboard types
 export interface DashboardTenantData {
   activeContracts: number;
