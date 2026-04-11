@@ -44,11 +44,19 @@ jobs:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
           METRICS=$(curl -s -H "x-api-key: $SERVICE_API_KEY" "$API_BASE/api/v1/po/metrics")
+          echo "=== Current Metrics ==="
           echo "$METRICS" | jq .
-
-          # Save to file (safe for special chars)
           echo "$METRICS" > /tmp/metrics.json
-          echo "has_metrics=true" >> $GITHUB_OUTPUT
+
+      - name: Fetch agent context (previous reports, active items)
+        id: context
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          CONTEXT=$(curl -s -H "x-api-key: $SERVICE_API_KEY" "$API_BASE/api/v1/po/agent-context")
+          echo "=== Agent Context ==="
+          echo "$CONTEXT" | jq '.data.recentItemTitles | length' 2>/dev/null || echo "No context"
+          echo "$CONTEXT" > /tmp/context.json
 
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
@@ -59,42 +67,81 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           METRICS=$(cat /tmp/metrics.json)
+          CONTEXT_RAW=$(cat /tmp/context.json)
+          CONTEXT=$(echo "$CONTEXT_RAW" | jq -r '.data // empty')
           TODAY=$(date -u +%Y-%m-%d)
+          DAY_OF_WEEK=$(echo "$CONTEXT" | jq -r '.dayOfWeek // "Monday"')
 
-          PROMPT="You are the Product Owner (PO) of SecureLend (kiraguvence.com), a Turkish fintech rental-payment and KMH (Kredili Mevduat Hesabi) platform.
+          # Extract context pieces
+          RECENT_TITLES=$(echo "$CONTEXT" | jq -r '.recentItemTitles // [] | .[]' 2>/dev/null | head -50)
+          ACTIVE_ITEMS=$(echo "$CONTEXT" | jq -r '.activeItems // [] | .[] | "- [\(.priority)] \(.title) (\(.daysOld) gun)"' 2>/dev/null | head -20)
+          COMPLETED_DEV=$(echo "$CONTEXT" | jq -r '.completedDevTasks // [] | .[]' 2>/dev/null | head -10)
+          PENDING_DEV=$(echo "$CONTEXT" | jq -r '.pendingDevTasks // [] | .[]' 2>/dev/null | head -10)
+          CATEGORY_COUNTS=$(echo "$CONTEXT" | jq -r '.categoryCounts // {} | to_entries | .[] | "\(.key): \(.value)"' 2>/dev/null)
+          PREV_METRICS=$(echo "$CONTEXT" | jq -r '.previousMetricsSnapshot // "yok"' 2>/dev/null)
 
-          Today is $TODAY. Generate the daily PO report.
+          PROMPT="Sen SecureLend (kiraguvence.com) platformunun Product Owner (PO) ajanısın. Türk fintech kira ödeme ve KMH platformu.
 
-          == CURRENT PLATFORM METRICS ==
+          Tarih: $TODAY ($DAY_OF_WEEK)
+
+          == GÜNCEL PLATFORM METRİKLERİ ==
           $METRICS
 
-          == OUTPUT FORMAT ==
-          Return ONLY a valid JSON object (no markdown, no code fences). Schema:
+          == ÖNCEKİ GÜN METRİKLERİ (delta analizi için) ==
+          $PREV_METRICS
+
+          == SON 7 GÜNDE ÖNERİLEN BAŞLIKLAR (BUNLARI TEKRARLAMA!) ==
+          $RECENT_TITLES
+
+          == HÂLÂ AKTİF OLAN MADDELER (çözülmemiş) ==
+          $ACTIVE_ITEMS
+
+          == SON TAMAMLANAN GELİŞTİRMELER ==
+          $COMPLETED_DEV
+
+          == DEVAM EDEN GELİŞTİRMELER ==
+          $PENDING_DEV
+
+          == SON 7 GÜNDE KATEGORİ DAĞILIMI ==
+          $CATEGORY_COUNTS
+
+          == GÖREV ==
+          Yukarıdaki bağlamı dikkatle inceleyerek BUGÜNE ÖZEL, TAZE bir PO raporu üret.
+
+          KRİTİK KURALLAR:
+          1. TEKRAR YASAĞI: 'SON 7 GÜNDE ÖNERİLEN BAŞLIKLAR' listesindeki hiçbir maddeyi tekrarlama. Aynı konuyu farklı kelimelerle de yazma. Tamamen yeni fikirler üret.
+          2. AKTİF MADDE TAKIBI: 'HÂLÂ AKTİF' maddelerden bahsedebilirsin ama 'güncelleme' olarak — yeni madde olarak değil.
+          3. METRİK DELTASı: Önceki günle kıyasla ne değişti? Artış/azalış varsa bunun üzerinde yorum yap.
+          4. GÜN ODAĞI: Her gün farklı bir ana temaya odaklan:
+             - Monday: Haftalık strateji ve büyüme
+             - Tuesday: Rekabet analizi ve pazar araştırması
+             - Wednesday: UX/UI ve kullanıcı deneyimi
+             - Thursday: Teknik altyapı ve performans
+             - Friday: Regülasyon ve hukuki uyumluluk
+             - Saturday: Veri analizi ve metrik derinlemesine inceleme
+             - Sunday: Gelecek hafta planlama ve önceliklendirme
+          5. Bugün $DAY_OF_WEEK — bu günün temasına ağırlık ver ama diğer kategorilerden de 1-2 madde ekle.
+          6. RAKIP ANALİZİ: Her raporda farklı bir rakip veya pazar trendi analiz et. Daha önce bahsedilenleri tekrarlama.
+          7. 5-8 madde üret (10 değil — kalite > miktar).
+          8. Her madde somut, uygulanabilir ve spesifik olmalı. Genel tavsiyeler verme.
+          9. isDevTask=true sadece gerçekten kod değişikliği gerektiren maddeler için.
+          10. Tamamlanan geliştirmelerin etkisini değerlendir (varsa).
+
+          == ÇIKTI FORMATI ==
+          Sadece geçerli JSON döndür (markdown yok, code fence yok):
           {
-            \"summary\": \"<h2>Gunluk PO Raporu - $TODAY</h2><p>... (Turkish, HTML formatted, max 600 words)</p>\",
-            \"metricsSnapshot\": { ... copy of key metrics ... },
+            \"summary\": \"<h2>PO Raporu — $TODAY</h2><p>... (Türkçe, HTML, maks 500 kelime, günün ana teması + metrik delta + önemli bulgular)</p>\",
+            \"metricsSnapshot\": { ... metriklerin kopyası ... },
             \"items\": [
               {
                 \"category\": \"UX_IMPROVEMENT|COMPETITOR_ANALYSIS|REGULATION_COMPLIANCE|FEATURE_SUGGESTION|BUG_REPORT\",
-                \"title\": \"Short title in Turkish (max 100 chars)\",
-                \"description\": \"Detailed description in Turkish\",
+                \"title\": \"Kısa, spesifik başlık (maks 100 karakter)\",
+                \"description\": \"Detaylı açıklama — neden önemli, nasıl uygulanmalı, beklenen etki\",
                 \"priority\": \"LOW|MEDIUM|HIGH|CRITICAL\",
-                \"isDevTask\": true or false
+                \"isDevTask\": true/false
               }
             ]
-          }
-
-          == RULES ==
-          1. Generate 5-10 actionable items across different categories.
-          2. COMPETITOR_ANALYSIS: Reference real Turkish proptech/fintech competitors (Depovio, Emlakjet, Hepsiemlak, iyzico, Papara, etc.).
-          3. REGULATION_COMPLIANCE: Turkish KVKK, BDDK, SPK regulations relevant to fintech/rental platforms.
-          4. FEATURE_SUGGESTION: Based on platform metrics, suggest improvements.
-          5. UX_IMPROVEMENT: Practical UI/UX enhancements for kiraguvence.com.
-          6. Mark isDevTask=true ONLY for items that require actual code changes.
-          7. Write EVERYTHING in Turkish.
-          8. The summary should be a concise daily briefing with key insights.
-          9. Be specific and actionable — no vague suggestions.
-          10. Return ONLY the JSON, nothing else."
+          }"
 
           echo "=== Running Claude Code for PO Report ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
@@ -126,7 +173,6 @@ jobs:
         run: |
           REPORT=$(cat /tmp/po_report.json)
           RUN_ID="${{ steps.run.outputs.run_id }}"
-          TODAY=$(date -u +%Y-%m-%d)
 
           # Build the API payload
           SUMMARY=$(echo "$REPORT" | jq -r '.summary // ""')
@@ -168,7 +214,7 @@ jobs:
             curl -s -X PATCH \
               -H "x-api-key: $SERVICE_API_KEY" \
               -H "Content-Type: application/json" \
-              -d '{"status":"COMPLETED","summary":"Daily PO report generated and submitted."}' \
+              -d '{"status":"COMPLETED","summary":"Daily PO report generated with context-aware deduplication."}' \
               "$API_BASE/api/v1/agent-runs/$RUN_ID"
             echo "::notice::Agent run marked COMPLETED"
           else

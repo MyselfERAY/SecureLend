@@ -82,4 +82,10 @@ export class PoAgentController {
     const metrics = await this.poAgentService.getMetrics();
     return { status: 'success', data: metrics };
   }
+
+  @Get('agent-context')
+  async getAgentContext() {
+    const context = await this.poAgentService.getAgentContext();
+    return { status: 'success', data: context };
+  }
 }

@@ -234,6 +234,125 @@ export class PoAgentService {
     });
   }
 
+  // ─── Agent Context: previous reports + active items + dev status ───
+
+  async getAgentContext() {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+    const [
+      recentReports,
+      activeItems,
+      completedDevSuggestions,
+      pendingDevSuggestions,
+      previousMetrics,
+    ] = await Promise.all([
+      // Last 7 report item titles + categories (to avoid repeating)
+      this.prisma.poReport.findMany({
+        where: { reportDate: { gte: sevenDaysAgo } },
+        orderBy: { reportDate: 'desc' },
+        select: {
+          reportDate: true,
+          items: {
+            select: {
+              category: true,
+              title: true,
+              status: true,
+              priority: true,
+            },
+          },
+        },
+      }),
+
+      // Currently ACTIVE items (not yet resolved)
+      this.prisma.poItem.findMany({
+        where: { status: 'ACTIVE' },
+        select: {
+          category: true,
+          title: true,
+          priority: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+      }),
+
+      // Dev suggestions completed in last 14 days
+      this.prisma.devSuggestion.findMany({
+        where: {
+          status: SuggestionStatus.DONE,
+          updatedAt: { gte: fourteenDaysAgo },
+        },
+        select: {
+          title: true,
+          updatedAt: true,
+          prLink: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 15,
+      }),
+
+      // Dev suggestions still pending
+      this.prisma.devSuggestion.findMany({
+        where: {
+          status: { in: [SuggestionStatus.PENDING, SuggestionStatus.IN_PROGRESS] },
+        },
+        select: {
+          title: true,
+          status: true,
+          priority: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 15,
+      }),
+
+      // Yesterday's metrics snapshot (for delta calculation)
+      this.prisma.poReport.findFirst({
+        where: {
+          reportDate: { lt: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+        orderBy: { reportDate: 'desc' },
+        select: {
+          reportDate: true,
+          metricsSnapshot: true,
+        },
+      }),
+    ]);
+
+    // Collect all recent item titles for dedup
+    const recentItemTitles = recentReports.flatMap((r) =>
+      r.items.map((i) => `[${i.category}] ${i.title}`),
+    );
+
+    // Category distribution in last 7 days
+    const categoryCounts: Record<string, number> = {};
+    for (const r of recentReports) {
+      for (const item of r.items) {
+        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+      }
+    }
+
+    // Day of week for focus guidance
+    const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+    return {
+      dayOfWeek,
+      recentItemTitles,
+      categoryCounts,
+      activeItems: activeItems.map((i) => ({
+        category: i.category,
+        title: i.title,
+        priority: i.priority,
+        daysOld: Math.floor((Date.now() - i.createdAt.getTime()) / (24 * 60 * 60 * 1000)),
+      })),
+      completedDevTasks: completedDevSuggestions.map((d) => d.title),
+      pendingDevTasks: pendingDevSuggestions.map((d) => `[${d.status}] ${d.title}`),
+      previousMetricsSnapshot: previousMetrics?.metricsSnapshot || null,
+      previousMetricsDate: previousMetrics?.reportDate || null,
+      totalReportsInLast7Days: recentReports.length,
+    };
+  }
+
   async getMetrics() {
     const [
       userCount,

@@ -132,6 +132,72 @@ export class MarketingAgentService {
     return this.prisma.marketingTask.update({ where: { id }, data });
   }
 
+  // ─── Agent Context (deduplication) ────────────────────────────
+
+  async getAgentContext() {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+      recentReports,
+      pendingTasks,
+      completedTasks,
+    ] = await Promise.all([
+      // Last 7 daily strategy report titles + task titles
+      this.prisma.marketingReport.findMany({
+        where: {
+          type: MarketingReportType.DAILY_STRATEGY,
+          reportDate: { gte: sevenDaysAgo },
+        },
+        orderBy: { reportDate: 'desc' },
+        select: {
+          reportDate: true,
+          title: true,
+          tasks: { select: { title: true, status: true } },
+        },
+      }),
+
+      // Active/TODO marketing tasks
+      this.prisma.marketingTask.findMany({
+        where: {
+          status: { in: [MarketingTaskStatus.TODO, MarketingTaskStatus.IN_PROGRESS] },
+        },
+        select: { title: true, status: true, source: true },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+
+      // Recently completed tasks (last 14 days)
+      this.prisma.marketingTask.findMany({
+        where: {
+          status: MarketingTaskStatus.COMPLETED,
+          completedAt: { gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) },
+        },
+        select: { title: true, completedAt: true },
+        orderBy: { completedAt: 'desc' },
+        take: 15,
+      }),
+    ]);
+
+    // All task titles from recent reports
+    const recentTaskTitles = recentReports.flatMap((r) =>
+      r.tasks.map((t) => t.title),
+    );
+
+    // Report titles for theme dedup
+    const recentReportTitles = recentReports.map((r) => r.title);
+
+    const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+    return {
+      dayOfWeek,
+      recentReportTitles,
+      recentTaskTitles,
+      pendingTasks: pendingTasks.map((t) => `[${t.status}] ${t.title}`),
+      completedTasks: completedTasks.map((t) => t.title),
+      totalReportsInLast7Days: recentReports.length,
+    };
+  }
+
   // ─── Research Requests ────────────────────────────────────────
 
   async createResearchRequest(dto: CreateResearchRequestDto) {

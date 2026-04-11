@@ -90,6 +90,14 @@ export class MarketingAgentController {
     return { status: 'success', data: task };
   }
 
+  // ─── Agent Context ────────────────────────────────────────────
+
+  @Get('agent-context')
+  async getAgentContext() {
+    const context = await this.marketingAgentService.getAgentContext();
+    return { status: 'success', data: context };
+  }
+
   // ─── Research Requests ────────────────────────────────────────
 
   @Post('research')

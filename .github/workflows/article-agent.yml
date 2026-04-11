@@ -46,18 +46,29 @@ jobs:
           RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
-      - name: Fetch existing articles
+      - name: Fetch existing articles (full context)
         id: existing
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
-          # Get existing article titles to avoid duplicates
+          # Get ALL existing articles — titles, categories, slugs
           ARTICLES=$(curl -s -H "x-api-key: $SERVICE_API_KEY" \
             "$API_BASE/api/v1/articles/admin/all")
 
-          TITLES=$(echo "$ARTICLES" | jq -r '[.data[]?.title // empty] | join(" | ")' 2>/dev/null || echo "")
-          echo "$TITLES" > /tmp/existing_titles.txt
-          echo "::notice::Existing articles: $(echo "$TITLES" | head -c 200)"
+          # Full title list for dedup
+          echo "$ARTICLES" | jq -r '[.data[]? | "\(.category // "Genel") — \(.title // "")"] | join("\n")' \
+            2>/dev/null > /tmp/existing_articles.txt || echo "" > /tmp/existing_articles.txt
+
+          # Category distribution
+          echo "$ARTICLES" | jq -r '[.data[]?.category // "Genel"] | group_by(.) | map({category: .[0], count: length}) | .[] | "\(.category): \(.count) makale"' \
+            2>/dev/null > /tmp/category_dist.txt || echo "" > /tmp/category_dist.txt
+
+          # Slug list (to avoid collision)
+          echo "$ARTICLES" | jq -r '[.data[]?.slug // ""] | join("\n")' \
+            2>/dev/null > /tmp/existing_slugs.txt || echo "" > /tmp/existing_slugs.txt
+
+          TOTAL=$(echo "$ARTICLES" | jq '[.data[]?] | length' 2>/dev/null || echo "0")
+          echo "::notice::Existing articles: $TOTAL"
 
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
@@ -70,60 +81,69 @@ jobs:
           MANUAL_TOPIC="${{ github.event.inputs.topic }}"
           AUDIENCE="${{ github.event.inputs.audience }}"
           if [ -z "$AUDIENCE" ]; then AUDIENCE="BOTH"; fi
-          EXISTING=$(cat /tmp/existing_titles.txt)
+          EXISTING=$(cat /tmp/existing_articles.txt)
+          CATEGORY_DIST=$(cat /tmp/category_dist.txt)
+          EXISTING_SLUGS=$(cat /tmp/existing_slugs.txt)
           TODAY=$(date -u +%Y-%m-%d)
 
-          PROMPT="You are the content marketing writer for SecureLend (kiraguvence.com), a Turkish fintech platform for secure rental payments and KMH (housing savings accounts).
+          PROMPT="Sen SecureLend (kiraguvence.com) icin icerik pazarlama yazarisin. Turk fintech kira odeme ve KMH platformu.
 
-          Generate a high-quality, SEO-optimized blog article in Turkish for the /rehber (guide) section.
+          /rehber bolumu icin yuksek kaliteli, SEO uyumlu bir blog makalesi uret.
 
-          == EXISTING ARTICLES (do NOT repeat these topics) ==
+          == MEVCUT MAKALELER (BU KONULARI TEKRARLAMA!) ==
           $EXISTING
 
-          == MANUAL TOPIC REQUEST ==
-          $(if [ -n "$MANUAL_TOPIC" ]; then echo "Write about: $MANUAL_TOPIC"; else echo "Choose a topic automatically from the categories below."; fi)
+          == KATEGORI DAGILIMI (az olan kategorilere oncelik ver) ==
+          $CATEGORY_DIST
 
-          == TARGET AUDIENCE ==
+          == MEVCUT SLUG'LAR (bunlarla carpisma!) ==
+          $EXISTING_SLUGS
+
+          == MANUEL KONU ISTEGI ==
+          $(if [ -n "$MANUAL_TOPIC" ]; then echo "Su konu hakkinda yaz: $MANUAL_TOPIC"; else echo "Asagidaki kategorilerden otomatik sec. Az icerigi olan kategorilere oncelik ver."; fi)
+
+          == HEDEF KITLE ==
           $AUDIENCE (TENANT = kiraci, LANDLORD = ev sahibi, BOTH = herkes)
 
-          == TOPIC CATEGORIES (pick one) ==
-          1. Kiracinin Haklari - tenant rights, deposit rules, eviction process, TBK m.299-378
-          2. Ev Sahibinin Haklari - landlord rights, rental income tax, contract termination, tahliye
-          3. Kira Sozlesmesi - lease agreement tips, clauses, legal requirements, islak imza
-          4. Finansal Rehber - budgeting for rent, KMH (Kredili Mevduat Hesabi) advantages, credit score
-          5. Guvenli Odeme - KMH ile otomatik kira odeme, banka talimati, dijital odeme yontemleri
-          6. Hukuki Bilgi - Turkish rental law (6098 TBK), dispute resolution, mediation, arabuluculuk
-          7. Emlak Piyasasi - rental market trends, il bazli kira karsilastirma, 2025-2026 piyasa analizi
-          8. Dijital Donusum - proptech, fintech in real estate, digital contracts, KiraGuvence platform
-          9. KMH Rehberi - Kredili Mevduat Hesabi nedir, nasil acilir, kira odemede KMH avantajlari, banka karsilastirma
-          10. Depozito ve Teminat - depozito iade sureci, yasal haklar, TBK m.342 depozito siniri, banka teminati
-          11. Vergi ve Muhasebe - kira gelir vergisi, beyanname, stopaj, mulk sahibi vergi rehberi, gider indirimi
-          12. Tasinma Rehberi - yeni eve tasinma kontrol listesi, adres degisikligi, abonelik transferi, ev kontrolu
-          13. Sozlesme Feshi - kiracinin fesih hakki, ev sahibinin tahliye sebepleri, TBK m.347 uzama, ihtar surecleri
-          14. Yatirim ve Portfoy - kira getirisi hesaplama, mulk yatirimi, portfoy yonetimi, pasif gelir stratejileri
+          == KONU KATEGORILERI ==
+          1. Kiracinin Haklari — kiraci haklari, depozito kurallari, tahliye sureci, TBK m.299-378
+          2. Ev Sahibinin Haklari — ev sahibi haklari, kira gelir vergisi, sozlesme feshi, tahliye
+          3. Kira Sozlesmesi — kira sozlesmesi ipuclari, maddeler, yasal gereklilikler, islak imza
+          4. Finansal Rehber — kira butceleme, KMH avantajlari, kredi notu
+          5. Guvenli Odeme — KMH ile otomatik kira odeme, banka talimati, dijital odeme
+          6. Hukuki Bilgi — Turk kira hukuku (6098 TBK), uyusmazlik cozumu, arabuluculuk
+          7. Emlak Piyasasi — kira piyasasi trendleri, il bazli karsilastirma, 2025-2026 analizi
+          8. Dijital Donusum — proptech, fintech, dijital sozlesmeler, KiraGuvence platformu
+          9. KMH Rehberi — KMH nedir, nasil acilir, kira odemede avantajlari, banka karsilastirma
+          10. Depozito ve Teminat — iade sureci, yasal haklar, TBK m.342 siniri, banka teminati
+          11. Vergi ve Muhasebe — kira gelir vergisi, beyanname, stopaj, gider indirimi
+          12. Tasinma Rehberi — yeni eve tasinma listesi, adres degisikligi, abonelik transferi
+          13. Sozlesme Feshi — kiraci fesih hakki, tahliye sebepleri, TBK m.347, ihtar surecleri
+          14. Yatirim ve Portfoy — kira getirisi hesaplama, mulk yatirimi, pasif gelir stratejileri
 
-          == OUTPUT FORMAT ==
-          Return ONLY a valid JSON object (no markdown, no code fences):
+          == KRITIK KURALLAR ==
+          1. TEKRAR YASAGI: Yukaridaki mevcut makale listesiyle AYNI veya BENZER konuda yazma. Tamamen farkli bir acidan veya alt konudan yaz.
+          2. KATEGORI DENGESI: Az icerigi olan kategorilere oncelik ver.
+          3. SLUG BENZERSIZLIGI: Mevcut slug'larla catismayan, benzersiz bir slug sec.
+          4. Turkce, dogal ve samimi dil kullan.
+          5. 800-1500 kelime (content alani).
+          6. Gercek Turk hukuk referanslari ekle (TBK madde numaralari, KVKK vb.).
+          7. SEO: 'kira odeme', 'kira sozlesmesi', 'kiraci haklari', 'ev sahibi', 'guvenli kira', 'KMH', 'kiraguvence' anahtar kelimelerini dogal sekilde kullan.
+          8. Paragraflar arasi \\n\\n kullan. Numarali listeler ve madde isaretleri ekle.
+          9. Markdown KULLANMA (# ** yok). Sadece duz metin.
+          10. SecureLend/kiraguvence.com'u dogal olarak 1-2 kez bahset — reklam degil, bilgilendirme olarak.
+          11. Slug: a-z, 0-9, tire (-) — ozel karakter yok.
+
+          == CIKTI FORMATI ==
+          Sadece gecerli JSON dondur:
           {
-            \"title\": \"Article title in Turkish (compelling, SEO-friendly, 40-80 chars)\",
-            \"slug\": \"url-friendly-slug-in-turkish (lowercase, hyphens, no special chars)\",
-            \"summary\": \"2-3 sentence summary in Turkish (100-200 chars, appears in cards)\",
-            \"content\": \"Full article body in Turkish (plain text, use \\n\\n for paragraph breaks)\",
-            \"category\": \"One of: Kiracinin Haklari, Ev Sahibinin Haklari, Kira Sozlesmesi, Finansal Rehber, Guvenli Odeme, Hukuki Bilgi, Emlak Piyasasi, Dijital Donusum, KMH Rehberi, Depozito ve Teminat, Vergi ve Muhasebe, Tasinma Rehberi, Sozlesme Feshi, Yatirim ve Portfoy\",
+            \"title\": \"Turkce makale basligi (cekici, SEO uyumlu, 40-80 karakter)\",
+            \"slug\": \"url-uyumlu-slug-turkce\",
+            \"summary\": \"2-3 cumlelik ozet (100-200 karakter, kart gorunumunde cikacak)\",
+            \"content\": \"Tam makale icerigi...\",
+            \"category\": \"Kategorilerden biri\",
             \"audience\": \"$AUDIENCE\"
-          }
-
-          == RULES ==
-          1. Write EVERYTHING in Turkish. Natural, conversational tone.
-          2. Article must be 800-1500 words (content field).
-          3. Include real Turkish legal references where relevant (TBK madde numbers, KVKK, etc.).
-          4. SEO: naturally include keywords like 'kira odeme', 'kira sozlesmesi', 'kiraci haklari', 'ev sahibi', 'guvenli kira', 'KMH', 'kiraguvence'.
-          5. Structure content with clear paragraphs (\\n\\n between them). Use numbered lists and bullet points where appropriate.
-          6. Do NOT use markdown formatting (no #, **, etc.). Plain text only.
-          7. Mention SecureLend/kiraguvence.com naturally 1-2 times as a helpful platform reference, not as an ad.
-          8. Make it genuinely useful and informative for Turkish renters/landlords.
-          9. The slug must be unique and URL-safe (a-z, 0-9, hyphens only).
-          10. Return ONLY the JSON."
+          }"
 
           echo "=== Generating Article ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
