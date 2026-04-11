@@ -153,21 +153,16 @@ jobs:
           }"
 
           echo "=== Generating Daily Strategy ==="
-          set +e
-          RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
-          CLAUDE_EXIT=$?
-          set -e
+          claude --print --dangerously-skip-permissions "$PROMPT" > /tmp/claude_raw.txt 2>&1 || true
 
-          if [ $CLAUDE_EXIT -ne 0 ]; then
-            echo "::warning::Claude Code exited with code $CLAUDE_EXIT"
-            echo "=== Claude output (last 20 lines) ==="
-            echo "$RESULT" | tail -20
+          if [ ! -s /tmp/claude_raw.txt ]; then
+            echo "::warning::Claude Code produced no output"
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # Robust JSON extraction: find outermost { } pair and validate
-          echo "$RESULT" | node -e "
+          cat /tmp/claude_raw.txt | node -e "
             process.stdin.setEncoding('utf8');let d='';
             process.stdin.on('data',c=>d+=c);
             process.stdin.on('end',()=>{
@@ -184,7 +179,7 @@ jobs:
           if [ ! -s /tmp/marketing_report.json ]; then
             echo "::error::Failed to extract valid JSON from Claude response"
             echo "=== Raw output (last 30 lines) ==="
-            echo "$RESULT" | tail -30
+            cat /tmp/claude_raw.txt | tail -30
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -234,20 +229,16 @@ jobs:
           9. Sadece JSON dondur."
 
           echo "=== Generating Research Report ==="
-          set +e
-          RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
+          claude --print --dangerously-skip-permissions "$PROMPT" > /tmp/claude_raw.txt 2>&1 || true
           CLAUDE_EXIT=$?
-          set -e
 
-          if [ $CLAUDE_EXIT -ne 0 ]; then
-            echo "::warning::Claude Code exited with code $CLAUDE_EXIT"
-            echo "=== Claude output (last 20 lines) ==="
-            echo "$RESULT" | tail -20
+          if [ ! -s /tmp/claude_raw.txt ]; then
+            echo "::warning::Claude Code produced no output (exit=$CLAUDE_EXIT)"
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "$RESULT" | node -e "
+          cat /tmp/claude_raw.txt | node -e "
             process.stdin.setEncoding('utf8');let d='';
             process.stdin.on('data',c=>d+=c);
             process.stdin.on('end',()=>{
@@ -264,7 +255,7 @@ jobs:
           if [ ! -s /tmp/marketing_report.json ]; then
             echo "::error::Failed to extract valid JSON from Claude response"
             echo "=== Raw output (last 30 lines) ==="
-            echo "$RESULT" | tail -30
+            cat /tmp/claude_raw.txt | tail -30
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
