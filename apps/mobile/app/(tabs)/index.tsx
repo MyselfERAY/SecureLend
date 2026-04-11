@@ -449,7 +449,12 @@ export default function DashboardScreen() {
       {/* Contract Cards - Horizontal */}
       {activeContracts.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Sozlesmelerim</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Sozlesmelerim</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/contracts')} activeOpacity={0.7}>
+              <Text style={styles.seeAllText}>Tumunu Gor</Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={activeContracts}
             horizontal
