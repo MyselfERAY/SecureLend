@@ -1,4 +1,4 @@
-name: Health Agent - Error Analysis & Auto-Fix Suggestions
+name: Health Agent
 
 on:
   schedule:
