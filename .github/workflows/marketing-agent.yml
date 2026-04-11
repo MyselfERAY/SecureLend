@@ -234,21 +234,16 @@ jobs:
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
-          REPORT=$(cat /tmp/marketing_report.json)
           RUN_ID="${{ steps.run.outputs.run_id }}"
 
-          TYPE=$(echo "$REPORT" | jq -r '.type // "DAILY_STRATEGY"')
-          TITLE=$(echo "$REPORT" | jq -r '.title // "Marketing Report"')
-          CONTENT=$(echo "$REPORT" | jq -r '.content // ""')
-          TASKS=$(echo "$REPORT" | jq '[.tasks[]? | {title, description}]')
-
-          PAYLOAD=$(jq -n \
-            --arg type "$TYPE" \
-            --arg title "$TITLE" \
-            --arg content "$CONTENT" \
-            --argjson tasks "$TASKS" \
-            --arg agentRunId "$RUN_ID" \
-            '{type: $type, title: $title, content: $content, tasks: $tasks, agentRunId: (if $agentRunId == "" then null else $agentRunId end)}')
+          # Build payload entirely within jq (avoids shell expansion issues with HTML content)
+          PAYLOAD=$(jq --arg agentRunId "$RUN_ID" '{
+            type: (.type // "DAILY_STRATEGY"),
+            title: (.title // "Marketing Report"),
+            content: (.content // ""),
+            tasks: [.tasks[]? | {title, description}],
+            agentRunId: (if $agentRunId == "" then null else $agentRunId end)
+          }' /tmp/marketing_report.json)
 
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             -H "x-api-key: $SERVICE_API_KEY" \

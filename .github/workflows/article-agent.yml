@@ -170,23 +170,15 @@ jobs:
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
-          ARTICLE=$(cat /tmp/article.json)
-
-          TITLE=$(echo "$ARTICLE" | jq -r '.title // "Untitled"')
-          SLUG=$(echo "$ARTICLE" | jq -r '.slug // "untitled"')
-          SUMMARY=$(echo "$ARTICLE" | jq -r '.summary // ""')
-          CONTENT=$(echo "$ARTICLE" | jq -r '.content // ""')
-          CATEGORY=$(echo "$ARTICLE" | jq -r '.category // "Rehber"')
-          AUDIENCE=$(echo "$ARTICLE" | jq -r '.audience // "BOTH"')
-
-          PAYLOAD=$(jq -n \
-            --arg title "$TITLE" \
-            --arg slug "$SLUG" \
-            --arg summary "$SUMMARY" \
-            --arg content "$CONTENT" \
-            --arg category "$CATEGORY" \
-            --arg audience "$AUDIENCE" \
-            '{title: $title, slug: $slug, summary: $summary, content: $content, category: $category, audience: $audience}')
+          # Build payload entirely within jq (avoids shell expansion issues with content)
+          PAYLOAD=$(jq '{
+            title: (.title // "Untitled"),
+            slug: (.slug // "untitled"),
+            summary: (.summary // ""),
+            content: (.content // ""),
+            category: (.category // "Rehber"),
+            audience: (.audience // "BOTH")
+          }' /tmp/article.json)
 
           RESPONSE=$(curl -s -X POST \
             -H "x-api-key: $SERVICE_API_KEY" \

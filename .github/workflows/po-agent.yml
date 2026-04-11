@@ -171,20 +171,15 @@ jobs:
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
-          REPORT=$(cat /tmp/po_report.json)
           RUN_ID="${{ steps.run.outputs.run_id }}"
 
-          # Build the API payload
-          SUMMARY=$(echo "$REPORT" | jq -r '.summary // ""')
-          METRICS=$(echo "$REPORT" | jq '.metricsSnapshot // {}')
-          ITEMS=$(echo "$REPORT" | jq '[.items[]? | {category, title, description, priority, isDevTask}]')
-
-          PAYLOAD=$(jq -n \
-            --arg summary "$SUMMARY" \
-            --argjson metricsSnapshot "$METRICS" \
-            --argjson items "$ITEMS" \
-            --arg agentRunId "$RUN_ID" \
-            '{summary: $summary, metricsSnapshot: $metricsSnapshot, items: $items, agentRunId: (if $agentRunId == "" then null else $agentRunId end)}')
+          # Build payload entirely within jq (avoids shell expansion issues)
+          PAYLOAD=$(jq --arg agentRunId "$RUN_ID" '{
+            summary: (.summary // ""),
+            metricsSnapshot: (.metricsSnapshot // {}),
+            items: [.items[]? | {category, title, description, priority, isDevTask}],
+            agentRunId: (if $agentRunId == "" then null else $agentRunId end)
+          }' /tmp/po_report.json)
 
           echo "=== Submitting to API ==="
           RESPONSE=$(curl -s -X POST \
