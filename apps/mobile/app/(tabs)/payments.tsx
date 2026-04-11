@@ -291,6 +291,58 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Quick Access */}
+        <Text style={styles.sectionLabel}>Hizli Erisim</Text>
+        <View style={styles.sectionCard}>
+          <TouchableOpacity style={styles.menuRow} onPress={() => router.push('/rehber')} activeOpacity={0.7}>
+            <View style={[styles.menuIcon, { backgroundColor: '#ecfeff' }]}>
+              <Ionicons name="book-outline" size={18} color="#0891b2" />
+            </View>
+            <Text style={styles.menuText}>Rehber & Makaleler</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.menuRow, styles.menuRowBorder]} onPress={() => router.push('/referral')} activeOpacity={0.7}>
+            <View style={[styles.menuIcon, { backgroundColor: '#fff7ed' }]}>
+              <Ionicons name="gift-outline" size={18} color="#ea580c" />
+            </View>
+            <Text style={styles.menuText}>Davet Et & Kazan</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.menuRow, styles.menuRowBorder]} onPress={() => router.push('/notifications')} activeOpacity={0.7}>
+            <View style={[styles.menuIcon, { backgroundColor: '#eff6ff' }]}>
+              <Ionicons name="notifications-outline" size={18} color="#2563eb" />
+            </View>
+            <Text style={styles.menuText}>Bildirimler</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Legal */}
+        <Text style={styles.sectionLabel}>Yasal</Text>
+        <View style={styles.sectionCard}>
+          <TouchableOpacity style={styles.menuRow} onPress={() => router.push('/kvkk/gizlilik-politikasi')} activeOpacity={0.7}>
+            <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
+              <Ionicons name="lock-closed-outline" size={18} color={colors.gray[600]} />
+            </View>
+            <Text style={styles.menuText}>Gizlilik Politikasi</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.menuRow, styles.menuRowBorder]} onPress={() => router.push('/kvkk/aydinlatma-metni')} activeOpacity={0.7}>
+            <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
+              <Ionicons name="document-text-outline" size={18} color={colors.gray[600]} />
+            </View>
+            <Text style={styles.menuText}>KVKK Aydinlatma Metni</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.menuRow, styles.menuRowBorder]} onPress={() => router.push('/kvkk/kmh-acik-riza')} activeOpacity={0.7}>
+            <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
+              <Ionicons name="shield-outline" size={18} color={colors.gray[600]} />
+            </View>
+            <Text style={styles.menuText}>KMH Acik Riza Metni</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+        </View>
+
         {/* Support Chat */}
         <TouchableOpacity
           style={styles.supportButton}
@@ -568,6 +620,31 @@ const styles = StyleSheet.create({
   },
   kycLabel: { fontSize: 12, color: colors.gray[400], fontWeight: '500' },
   kycValue: { fontSize: 15, fontWeight: '600', color: colors.gray[800], marginTop: 2 },
+
+  // Menu Rows
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  menuRowBorder: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.gray[100],
+  },
+  menuIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  menuText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.gray[800],
+  },
 
   // Support
   supportButton: {

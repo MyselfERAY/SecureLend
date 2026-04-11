@@ -483,7 +483,12 @@ export default function DashboardScreen() {
       {/* Upcoming Payments */}
       {pendingPayments.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Yaklasan Odemeler</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Yaklasan Odemeler</Text>
+            <TouchableOpacity onPress={() => router.push('/payments')} activeOpacity={0.7}>
+              <Text style={styles.seeAllText}>Tumunu Gor</Text>
+            </TouchableOpacity>
+          </View>
           {pendingPayments.slice(0, 4).map((p) => (
             <TouchableOpacity
               key={p.id}
