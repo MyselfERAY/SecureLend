@@ -9,6 +9,7 @@ import { ContractStatus, UserRole, BankAccountType, BankAccountStatus, Notificat
 import { PrismaService } from '../prisma/prisma.service';
 import { BankService } from '../bank/bank.service';
 import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
+import { EmailService } from '../notification/email.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class ContractService {
     private readonly prisma: PrismaService,
     private readonly bankService: BankService,
     private readonly inAppNotificationService: InAppNotificationService,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(landlordId: string, dto: CreateContractDto) {
@@ -37,6 +39,12 @@ export class ContractService {
     if (!tenant) throw new NotFoundException('Kiraci bulunamadi');
     if (tenant.id === landlordId)
       throw new BadRequestException('Kendinizle sozlesme olusturulamaz');
+
+    // Fetch landlord for email/name
+    const landlord = await this.prisma.user.findUnique({
+      where: { id: landlordId },
+    });
+    if (!landlord) throw new NotFoundException('Ev sahibi bulunamadi');
 
     // Auto-add TENANT role if missing (same pattern as property.service LANDLORD auto-assign)
     if (!tenant.roles.includes(UserRole.TENANT)) {
@@ -85,7 +93,7 @@ export class ContractService {
 
     this.logger.log(`Contract ${contract.id} created`);
 
-    // Notify tenant about new contract
+    // Notify both parties about new contract (in-app)
     try {
       await this.inAppNotificationService.create(
         dto.tenantId,
@@ -95,8 +103,68 @@ export class ContractService {
         'Contract',
         contract.id,
       );
+      await this.inAppNotificationService.create(
+        landlordId,
+        NotificationType.CONTRACT_CREATED,
+        'Sozlesme Olusturuldu',
+        'Olusturdugunuz kira sozlesmesi kiraciya iletildi. Sozlesmeyi imzalamayi unutmayin.',
+        'Contract',
+        contract.id,
+      );
     } catch (err) {
-      this.logger.warn(`Failed to create notification for contract ${contract.id}: ${err}`);
+      this.logger.warn(`Failed to create in-app notification for contract ${contract.id}: ${err}`);
+    }
+
+    // Send signature request emails to both parties
+    const contractUrl = this.buildContractUrl(contract.id);
+    const propertyTitle = property.title ?? `${property.city}/${property.district}`;
+
+    if (tenant.email) {
+      try {
+        await this.emailService.sendEmail(
+          tenant.email,
+          'Kira Sozlesmesi Imzanizi Bekliyor',
+          this.buildSignatureRequestEmail({
+            recipientName: tenant.fullName,
+            otherPartyName: landlord.fullName,
+            otherPartyRole: 'Ev Sahibi',
+            propertyTitle,
+            monthlyRent: Number(contract.monthlyRent),
+            startDate: contract.startDate.toISOString().split('T')[0],
+            endDate: contract.endDate.toISOString().split('T')[0],
+            contractUrl,
+          }),
+        );
+        this.logger.log(`Signature request email sent to tenant ${tenant.email} for contract ${contract.id}`);
+      } catch (err) {
+        this.logger.warn(`Failed to send signature email to tenant for contract ${contract.id}: ${err}`);
+      }
+    } else {
+      this.logger.warn(`Tenant ${tenant.id} has no email address — skipping signature email for contract ${contract.id}`);
+    }
+
+    if (landlord.email) {
+      try {
+        await this.emailService.sendEmail(
+          landlord.email,
+          'Kira Sozlesmesi Imzanizi Bekliyor',
+          this.buildSignatureRequestEmail({
+            recipientName: landlord.fullName,
+            otherPartyName: tenant.fullName,
+            otherPartyRole: 'Kiraci',
+            propertyTitle,
+            monthlyRent: Number(contract.monthlyRent),
+            startDate: contract.startDate.toISOString().split('T')[0],
+            endDate: contract.endDate.toISOString().split('T')[0],
+            contractUrl,
+          }),
+        );
+        this.logger.log(`Signature request email sent to landlord ${landlord.email} for contract ${contract.id}`);
+      } catch (err) {
+        this.logger.warn(`Failed to send signature email to landlord for contract ${contract.id}: ${err}`);
+      }
+    } else {
+      this.logger.warn(`Landlord ${landlordId} has no email address — skipping signature email for contract ${contract.id}`);
     }
 
     return this.getContractDetail(contract.id);
@@ -276,6 +344,12 @@ export class ContractService {
       return newStatus;
     });
 
+    // Fetch both parties for email notifications
+    const [tenantUser, landlordUser] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: contract.tenantId } }),
+      this.prisma.user.findUnique({ where: { id: contract.landlordId } }),
+    ]);
+
     // ─── IN-APP NOTIFICATIONS ───
     try {
       if (result === ContractStatus.PENDING_ACTIVATION) {
@@ -302,6 +376,59 @@ export class ContractService {
       }
     } catch (err) {
       this.logger.warn(`Failed to create notification for contract sign ${contractId}: ${err}`);
+    }
+
+    // ─── EMAIL NOTIFICATIONS ───
+    const contractUrl = this.buildContractUrl(contractId);
+    try {
+      if (result === ContractStatus.PENDING_ACTIVATION) {
+        // Both parties signed — notify both: activation step needed
+        if (tenantUser?.email) {
+          await this.emailService.sendEmail(
+            tenantUser.email,
+            'Tum Imzalar Tamamlandi — Sozlesmeyi Aktive Edin',
+            this.buildBothSignedEmail({
+              recipientName: tenantUser.fullName,
+              contractUrl,
+              isTenant: true,
+            }),
+          );
+          this.logger.log(`Both-signed email sent to tenant ${tenantUser.email} for contract ${contractId}`);
+        }
+        if (landlordUser?.email) {
+          await this.emailService.sendEmail(
+            landlordUser.email,
+            'Tum Imzalar Tamamlandi — Sozlesme Bekleniyor',
+            this.buildBothSignedEmail({
+              recipientName: landlordUser.fullName,
+              contractUrl,
+              isTenant: false,
+            }),
+          );
+          this.logger.log(`Both-signed email sent to landlord ${landlordUser.email} for contract ${contractId}`);
+        }
+      } else {
+        // First signature — remind the unsigned party
+        const isSignerTenant = userId === contract.tenantId;
+        const otherPartyUser = isSignerTenant ? landlordUser : tenantUser;
+        const signerUser = isSignerTenant ? tenantUser : landlordUser;
+        if (otherPartyUser?.email) {
+          await this.emailService.sendEmail(
+            otherPartyUser.email,
+            'Kira Sozlesmesi Imzanizi Bekliyor',
+            this.buildCounterpartySignedEmail({
+              recipientName: otherPartyUser.fullName,
+              signerName: signerUser?.fullName ?? 'Diger taraf',
+              contractUrl,
+            }),
+          );
+          this.logger.log(`Counter-party signed email sent to ${otherPartyUser.email} for contract ${contractId}`);
+        } else {
+          this.logger.warn(`Unsigned party has no email for contract ${contractId} — skipping reminder email`);
+        }
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to send sign email for contract ${contractId}: ${err}`);
     }
 
     this.logger.log(`Contract ${contractId} signed by ${role}, status: ${result}`);
@@ -678,5 +805,142 @@ export class ContractService {
       isSigned: c.signatures.some((s: any) => s.userId === userId),
       signatureCount: c.signatures.length,
     };
+  }
+
+  private buildContractUrl(contractId: string): string {
+    const webUrl = process.env.WEB_URL ?? 'https://kiraguvence.com';
+    return `${webUrl}/dashboard/contracts/${contractId}`;
+  }
+
+  private buildSignatureRequestEmail(params: {
+    recipientName: string;
+    otherPartyName: string;
+    otherPartyRole: string;
+    propertyTitle: string;
+    monthlyRent: number;
+    startDate: string;
+    endDate: string;
+    contractUrl: string;
+  }): string {
+    const { recipientName, otherPartyName, otherPartyRole, propertyTitle, monthlyRent, startDate, endDate, contractUrl } = params;
+    return `
+<!DOCTYPE html>
+<html lang="tr">
+<head><meta charset="UTF-8"><style>
+  body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+  .container { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .header { background: #1a56db; color: #fff; padding: 24px 32px; }
+  .header h1 { margin: 0; font-size: 20px; }
+  .body { padding: 28px 32px; color: #333; line-height: 1.6; }
+  .details { background: #f0f4ff; border-radius: 6px; padding: 16px 20px; margin: 20px 0; }
+  .details table { width: 100%; border-collapse: collapse; }
+  .details td { padding: 6px 0; font-size: 14px; }
+  .details td:first-child { color: #555; width: 40%; }
+  .details td:last-child { font-weight: 600; color: #111; }
+  .btn { display: inline-block; margin: 24px 0 8px; background: #1a56db; color: #fff; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: 600; }
+  .footer { padding: 16px 32px; background: #fafafa; border-top: 1px solid #eee; font-size: 12px; color: #888; }
+</style></head>
+<body>
+<div class="container">
+  <div class="header"><h1>KiraGuvence — Kira Sozlesmesi</h1></div>
+  <div class="body">
+    <p>Sayın <strong>${recipientName}</strong>,</p>
+    <p><strong>${otherPartyName}</strong> (${otherPartyRole}) tarafindan bir kira sozlesmesi olusturuldu ve imzanizi bekliyor.</p>
+    <div class="details">
+      <table>
+        <tr><td>Mulk</td><td>${propertyTitle}</td></tr>
+        <tr><td>Aylik Kira</td><td>${monthlyRent.toLocaleString('tr-TR')} TL</td></tr>
+        <tr><td>Baslangic Tarihi</td><td>${startDate}</td></tr>
+        <tr><td>Bitis Tarihi</td><td>${endDate}</td></tr>
+      </table>
+    </div>
+    <p>Sozlesmeyi incelemek ve imzalamak icin asagidaki butona tiklayin:</p>
+    <a href="${contractUrl}" class="btn">Sozlesmeyi Goruntule ve Imzala</a>
+    <p style="font-size:13px; color:#666;">Butonu goremediyseniz su linki kopyalayin:<br><a href="${contractUrl}">${contractUrl}</a></p>
+    <p>Herhangi bir sorunuz icin <a href="mailto:info@kiraguvence.com">info@kiraguvence.com</a> adresine yazabilirsiniz.</p>
+  </div>
+  <div class="footer">Bu e-posta KiraGuvence platformu tarafindan otomatik olarak gonderilmistir.</div>
+</div>
+</body>
+</html>`;
+  }
+
+  private buildCounterpartySignedEmail(params: {
+    recipientName: string;
+    signerName: string;
+    contractUrl: string;
+  }): string {
+    const { recipientName, signerName, contractUrl } = params;
+    return `
+<!DOCTYPE html>
+<html lang="tr">
+<head><meta charset="UTF-8"><style>
+  body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+  .container { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .header { background: #1a56db; color: #fff; padding: 24px 32px; }
+  .header h1 { margin: 0; font-size: 20px; }
+  .body { padding: 28px 32px; color: #333; line-height: 1.6; }
+  .alert { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 14px 18px; border-radius: 4px; margin: 20px 0; }
+  .btn { display: inline-block; margin: 24px 0 8px; background: #1a56db; color: #fff; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: 600; }
+  .footer { padding: 16px 32px; background: #fafafa; border-top: 1px solid #eee; font-size: 12px; color: #888; }
+</style></head>
+<body>
+<div class="container">
+  <div class="header"><h1>KiraGuvence — Imzaniz Gerekiyor</h1></div>
+  <div class="body">
+    <p>Sayın <strong>${recipientName}</strong>,</p>
+    <div class="alert">
+      <strong>${signerName}</strong> kira sozlesmesini imzaladi. Sozlesmenin tamamlanmasi icin sizin de imzaniz bekleniyor.
+    </div>
+    <p>Sozlesmeyi incelemek ve imzalamak icin asagidaki butona tiklayin:</p>
+    <a href="${contractUrl}" class="btn">Sozlesmeyi Imzala</a>
+    <p style="font-size:13px; color:#666;">Butonu goremediyseniz su linki kopyalayin:<br><a href="${contractUrl}">${contractUrl}</a></p>
+    <p>Herhangi bir sorunuz icin <a href="mailto:info@kiraguvence.com">info@kiraguvence.com</a> adresine yazabilirsiniz.</p>
+  </div>
+  <div class="footer">Bu e-posta KiraGuvence platformu tarafindan otomatik olarak gonderilmistir.</div>
+</div>
+</body>
+</html>`;
+  }
+
+  private buildBothSignedEmail(params: {
+    recipientName: string;
+    contractUrl: string;
+    isTenant: boolean;
+  }): string {
+    const { recipientName, contractUrl, isTenant } = params;
+    const actionText = isTenant
+      ? 'Sozlesmeyi aktif hale getirmek icin UAVT dogrulamasini tamamlamaniz gerekiyor.'
+      : 'Kiracinin UAVT dogrulamasini tamamlamasinı bekliyorsunuz.';
+    return `
+<!DOCTYPE html>
+<html lang="tr">
+<head><meta charset="UTF-8"><style>
+  body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+  .container { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .header { background: #059669; color: #fff; padding: 24px 32px; }
+  .header h1 { margin: 0; font-size: 20px; }
+  .body { padding: 28px 32px; color: #333; line-height: 1.6; }
+  .success { background: #ecfdf5; border-left: 4px solid #059669; padding: 14px 18px; border-radius: 4px; margin: 20px 0; }
+  .btn { display: inline-block; margin: 24px 0 8px; background: #059669; color: #fff; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: 600; }
+  .footer { padding: 16px 32px; background: #fafafa; border-top: 1px solid #eee; font-size: 12px; color: #888; }
+</style></head>
+<body>
+<div class="container">
+  <div class="header"><h1>KiraGuvence — Tum Imzalar Tamamlandi</h1></div>
+  <div class="body">
+    <p>Sayın <strong>${recipientName}</strong>,</p>
+    <div class="success">
+      Kira sozlesmesi her iki tarafca imzalandi.
+    </div>
+    <p>${actionText}</p>
+    <a href="${contractUrl}" class="btn">Sozlesmeyi Goruntule</a>
+    <p style="font-size:13px; color:#666;">Butonu goremediyseniz su linki kopyalayin:<br><a href="${contractUrl}">${contractUrl}</a></p>
+    <p>Herhangi bir sorunuz icin <a href="mailto:info@kiraguvence.com">info@kiraguvence.com</a> adresine yazabilirsiniz.</p>
+  </div>
+  <div class="footer">Bu e-posta KiraGuvence platformu tarafindan otomatik olarak gonderilmistir.</div>
+</div>
+</body>
+</html>`;
   }
 }
