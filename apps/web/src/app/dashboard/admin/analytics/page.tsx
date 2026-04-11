@@ -67,16 +67,35 @@ interface ExtendedMetrics {
   scrollDepth: { depth: string; count: number }[];
 }
 
-type TabType = 'overview' | 'pages' | 'errors' | 'api' | 'metrics';
+interface ActivationFunnel {
+  steps: { step: number; name: string; count: number; rate: number }[];
+  users: {
+    userId: string;
+    fullName: string;
+    tcknMasked: string;
+    kycStatus: string;
+    registeredAt: string;
+    kycCompletedAt: string | null;
+    contractCreatedAt: string | null;
+    contractSignedAt: string | null;
+    firstPaymentAt: string | null;
+    currentStep: number;
+  }[];
+  period: { days: number; since: string };
+}
+
+type TabType = 'overview' | 'pages' | 'errors' | 'api' | 'metrics' | 'funnel';
 
 export default function AdminAnalyticsPage() {
   const { tokens } = useAuth();
   const [data, setData] = useState<AnalyticsDashboard | null>(null);
   const [apiData, setApiData] = useState<ApiDashboard | null>(null);
   const [extData, setExtData] = useState<ExtendedMetrics | null>(null);
+  const [funnelData, setFunnelData] = useState<ActivationFunnel | null>(null);
   const [loading, setLoading] = useState(true);
   const [apiLoading, setApiLoading] = useState(false);
   const [extLoading, setExtLoading] = useState(false);
+  const [funnelLoading, setFunnelLoading] = useState(false);
   const [days, setDays] = useState(30);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
@@ -119,10 +138,24 @@ export default function AdminAnalyticsPage() {
       .finally(() => setExtLoading(false));
   }, [tokens?.accessToken, days, activeTab, extData]);
 
+  // Fetch activation funnel (lazy)
+  useEffect(() => {
+    if (activeTab !== 'funnel' || !tokens?.accessToken || funnelData) return;
+    setFunnelLoading(true);
+    api<ActivationFunnel>(`/api/v1/admin/activation-funnel?days=${days}`, {
+      token: tokens.accessToken,
+    })
+      .then((res) => {
+        if (res.status === 'success' && res.data) setFunnelData(res.data);
+      })
+      .finally(() => setFunnelLoading(false));
+  }, [tokens?.accessToken, days, activeTab, funnelData]);
+
   // Reset lazy data when days change
   useEffect(() => {
     setApiData(null);
     setExtData(null);
+    setFunnelData(null);
   }, [days]);
 
   if (loading) {
@@ -177,6 +210,7 @@ export default function AdminAnalyticsPage() {
           { key: 'errors', label: `Hatalar (${data.summary.totalErrors})` },
           { key: 'api', label: 'API' },
           { key: 'metrics', label: 'Metrikler' },
+          { key: 'funnel', label: 'Aktivasyon Hunisi' },
         ] as const).map((tab) => (
           <button
             key={tab.key}
@@ -377,6 +411,11 @@ export default function AdminAnalyticsPage() {
       {/* ─── Metrics Tab ─── */}
       {activeTab === 'metrics' && (
         <MetricsTabContent data={extData} loading={extLoading} days={days} />
+      )}
+
+      {/* ─── Funnel Tab ─── */}
+      {activeTab === 'funnel' && (
+        <FunnelTabContent data={funnelData} loading={funnelLoading} days={days} />
       )}
     </div>
   );
@@ -830,6 +869,172 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Funnel Tab Component
+// ═══════════════════════════════════════════════════════════════
+
+const STEP_COLORS = [
+  'bg-blue-500',
+  'bg-indigo-500',
+  'bg-violet-500',
+  'bg-purple-500',
+  'bg-emerald-500',
+];
+
+const STEP_TEXT_COLORS = [
+  'text-blue-700',
+  'text-indigo-700',
+  'text-violet-700',
+  'text-purple-700',
+  'text-emerald-700',
+];
+
+const STEP_BG_LIGHT = [
+  'bg-blue-50',
+  'bg-indigo-50',
+  'bg-violet-50',
+  'bg-purple-50',
+  'bg-emerald-50',
+];
+
+const STEP_BADGE = [
+  'bg-blue-100 text-blue-800',
+  'bg-indigo-100 text-indigo-800',
+  'bg-violet-100 text-violet-800',
+  'bg-purple-100 text-purple-800',
+  'bg-emerald-100 text-emerald-800',
+];
+
+function fmt(iso: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | null; loading: boolean; days: number }) {
+  if (loading) return <div className="text-center py-12 text-gray-500">Huni verisi yukleniyor...</div>;
+  if (!data) return <div className="text-center py-12 text-gray-500">Huni verisi yuklenemedi.</div>;
+
+  const maxCount = Math.max(...data.steps.map((s) => s.count), 1);
+
+  return (
+    <div className="space-y-6">
+      {/* Period info */}
+      <p className="text-sm text-gray-500">
+        Son <span className="font-semibold">{days} gun</span> icinde kayit olan kullanicilarin aktivasyon hunisi.
+        {' '}Toplam <span className="font-semibold">{data.steps[0].count}</span> kayit.
+      </p>
+
+      {/* Funnel bars */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Adim Bazinda Donusum</h3>
+        {data.steps.map((step, idx) => {
+          const barWidth = maxCount > 0 ? Math.max((step.count / maxCount) * 100, step.count > 0 ? 4 : 0) : 0;
+          const dropOff = idx > 0 ? data.steps[idx - 1].count - step.count : 0;
+          return (
+            <div key={step.step} className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className={`font-medium ${STEP_TEXT_COLORS[idx]}`}>
+                  {step.step}. {step.name}
+                </span>
+                <div className="flex items-center gap-3">
+                  {idx > 0 && dropOff > 0 && (
+                    <span className="text-xs text-red-500">-{dropOff} kullanici terketti</span>
+                  )}
+                  <span className="font-semibold text-gray-900">{step.count}</span>
+                  <span className={`w-12 text-right font-bold ${STEP_TEXT_COLORS[idx]}`}>%{step.rate}</span>
+                </div>
+              </div>
+              <div className="h-8 w-full rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${STEP_COLORS[idx]} transition-all`}
+                  style={{ width: `${barWidth}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid gap-4 sm:grid-cols-5">
+        {data.steps.map((step, idx) => (
+          <div key={step.step} className={`rounded-xl border border-gray-200 p-4 shadow-sm ${STEP_BG_LIGHT[idx]}`}>
+            <div className={`text-2xl font-bold ${STEP_TEXT_COLORS[idx]}`}>{step.count}</div>
+            <div className="mt-0.5 text-xs font-semibold text-gray-600">{step.name}</div>
+            <div className={`mt-1 text-xs font-bold ${STEP_TEXT_COLORS[idx]}`}>%{step.rate}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-user table */}
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-700">Kullanici Bazinda Huni Durumu</h3>
+        </div>
+        {data.users.length === 0 ? (
+          <div className="px-6 py-10 text-center text-gray-400 text-sm">Bu donemde kayit yok.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Kullanici</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Mevcut Adim</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Kayit</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">KYC</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Sozlesme</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Imza</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Ilk Odeme</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.users.map((u) => {
+                  const stepIdx = u.currentStep - 1;
+                  const stepLabel = data.steps[stepIdx]?.name ?? '?';
+                  return (
+                    <tr key={u.userId} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{u.fullName}</div>
+                        <div className="text-xs text-gray-400">{u.tcknMasked}</div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STEP_BADGE[stepIdx] ?? 'bg-gray-100 text-gray-700'}`}>
+                          {u.currentStep}. {stepLabel}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs text-gray-600">{fmt(u.registeredAt)}</td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {u.kycCompletedAt
+                          ? <span className="text-emerald-600">{fmt(u.kycCompletedAt)}</span>
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {u.contractCreatedAt
+                          ? <span className="text-emerald-600">{fmt(u.contractCreatedAt)}</span>
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {u.contractSignedAt
+                          ? <span className="text-emerald-600">{fmt(u.contractSignedAt)}</span>
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {u.firstPaymentAt
+                          ? <span className="text-emerald-600">{fmt(u.firstPaymentAt)}</span>
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

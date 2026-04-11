@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PaymentStatus, ContractStatus, KmhApplicationStatus } from '@prisma/client';
+import { PaymentStatus, ContractStatus, KmhApplicationStatus, KycStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -322,6 +322,141 @@ export class AdminService {
         totalLandlordPayouts: commissions.reduce((s, c) => s + Number(c.landlordAmount), 0),
         count: commissions.length,
       },
+    };
+  }
+
+  async getActivationFunnel(days = 30) {
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    // Step 1: All users registered in period
+    const users = await this.prisma.user.findMany({
+      where: { createdAt: { gte: since } },
+      select: { id: true, fullName: true, tcknMasked: true, kycStatus: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (users.length === 0) {
+      return {
+        steps: [
+          { step: 1, name: 'Kayıt', count: 0, rate: 100 },
+          { step: 2, name: 'KYC Tamamlama', count: 0, rate: 0 },
+          { step: 3, name: 'Sözleşme Oluşturma', count: 0, rate: 0 },
+          { step: 4, name: 'İmza', count: 0, rate: 0 },
+          { step: 5, name: 'İlk Ödeme', count: 0, rate: 0 },
+        ],
+        users: [],
+        period: { days, since: since.toISOString() },
+      };
+    }
+
+    const userIds = users.map((u) => u.id);
+
+    // Step 2: KYC completion timestamps from audit log
+    const kycLogs = await this.prisma.auditLog.findMany({
+      where: { userId: { in: userIds }, action: 'KYC_COMPLETED' },
+      select: { userId: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const kycTimestampMap = new Map<string, Date>();
+    for (const log of kycLogs) {
+      if (log.userId && !kycTimestampMap.has(log.userId)) {
+        kycTimestampMap.set(log.userId, log.createdAt);
+      }
+    }
+
+    // Step 3: Earliest contract created as tenant
+    const contracts = await this.prisma.contract.findMany({
+      where: { tenantId: { in: userIds } },
+      select: { id: true, tenantId: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const contractMap = new Map<string, { id: string; createdAt: Date }>();
+    for (const c of contracts) {
+      if (!contractMap.has(c.tenantId)) {
+        contractMap.set(c.tenantId, { id: c.id, createdAt: c.createdAt });
+      }
+    }
+
+    // Step 4: Contract signature by tenant (earliest signedAt)
+    const contractIds = [...new Set(contracts.map((c) => c.id))];
+    const signatures = contractIds.length > 0
+      ? await this.prisma.contractSignature.findMany({
+          where: { userId: { in: userIds }, contractId: { in: contractIds } },
+          select: { userId: true, signedAt: true },
+          orderBy: { signedAt: 'asc' },
+        })
+      : [];
+    const signatureMap = new Map<string, Date>();
+    for (const sig of signatures) {
+      if (!signatureMap.has(sig.userId)) {
+        signatureMap.set(sig.userId, sig.signedAt);
+      }
+    }
+
+    // Step 5: First completed payment on tenant's contracts
+    const contractToUser = new Map<string, string>();
+    for (const c of contracts) contractToUser.set(c.id, c.tenantId);
+
+    const completedPayments = contractIds.length > 0
+      ? await this.prisma.paymentSchedule.findMany({
+          where: { contractId: { in: contractIds }, status: PaymentStatus.COMPLETED, paidAt: { not: null } },
+          select: { contractId: true, paidAt: true },
+          orderBy: { paidAt: 'asc' },
+        })
+      : [];
+    const firstPaymentMap = new Map<string, Date>();
+    for (const p of completedPayments) {
+      const uid = contractToUser.get(p.contractId);
+      if (uid && p.paidAt && !firstPaymentMap.has(uid)) {
+        firstPaymentMap.set(uid, p.paidAt);
+      }
+    }
+
+    // Build per-user funnel rows
+    const userRows = users.map((u) => {
+      const kycAt = kycTimestampMap.get(u.id) ?? null;
+      const contract = contractMap.get(u.id) ?? null;
+      const signedAt = signatureMap.get(u.id) ?? null;
+      const paymentAt = firstPaymentMap.get(u.id) ?? null;
+
+      const kycDone = u.kycStatus === KycStatus.COMPLETED || kycAt !== null;
+      let currentStep = 1;
+      if (kycDone) currentStep = 2;
+      if (contract) currentStep = 3;
+      if (signedAt) currentStep = 4;
+      if (paymentAt) currentStep = 5;
+
+      return {
+        userId: u.id,
+        fullName: u.fullName,
+        tcknMasked: u.tcknMasked,
+        kycStatus: u.kycStatus,
+        registeredAt: u.createdAt.toISOString(),
+        kycCompletedAt: kycAt?.toISOString() ?? null,
+        contractCreatedAt: contract?.createdAt.toISOString() ?? null,
+        contractSignedAt: signedAt?.toISOString() ?? null,
+        firstPaymentAt: paymentAt?.toISOString() ?? null,
+        currentStep,
+      };
+    });
+
+    const total = users.length;
+    const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
+    const kycCount = userRows.filter((u) => u.currentStep >= 2).length;
+    const contractCount = userRows.filter((u) => u.currentStep >= 3).length;
+    const signedCount = userRows.filter((u) => u.currentStep >= 4).length;
+    const paidCount = userRows.filter((u) => u.currentStep >= 5).length;
+
+    return {
+      steps: [
+        { step: 1, name: 'Kayıt', count: total, rate: 100 },
+        { step: 2, name: 'KYC Tamamlama', count: kycCount, rate: pct(kycCount) },
+        { step: 3, name: 'Sözleşme Oluşturma', count: contractCount, rate: pct(contractCount) },
+        { step: 4, name: 'İmza', count: signedCount, rate: pct(signedCount) },
+        { step: 5, name: 'İlk Ödeme', count: paidCount, rate: pct(paidCount) },
+      ],
+      users: userRows,
+      period: { days, since: since.toISOString() },
     };
   }
 

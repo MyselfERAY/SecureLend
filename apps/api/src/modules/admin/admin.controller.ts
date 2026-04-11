@@ -46,6 +46,14 @@ export class AdminController {
     return { status: 'success', data };
   }
 
+  @Get('activation-funnel')
+  async getActivationFunnel(
+    @Query('days', new DefaultValuePipe(30), ParseIntPipe) days: number,
+  ) {
+    const data = await this.adminService.getActivationFunnel(Math.min(days, 365));
+    return { status: 'success', data };
+  }
+
   @Get('commissions')
   async getCommissionReport() {
     const data = await this.adminService.getCommissionReport();
