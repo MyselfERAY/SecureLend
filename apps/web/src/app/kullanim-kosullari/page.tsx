@@ -2,7 +2,10 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Kullanım Koşulları | SecureLend',
+  title: 'Kullanim Kosullari',
+  description: 'Kira Guvence kullanim kosullari ve hizmet sartlari.',
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/kullanim-kosullari' },
 };
 
 export default function KullanimKosullariPage() {

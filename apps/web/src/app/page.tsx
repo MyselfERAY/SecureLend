@@ -9,18 +9,18 @@ import Logo from '../components/logo';
 const features = [
   {
     icon: 'shield',
-    title: 'Kimlik Güvenliği',
-    desc: 'TCKN doğrulama ve kural bazlı risk kontrolleri ile güvenli onboarding.',
+    title: 'Kefil & Findeks Gereksiz',
+    desc: 'Banka güvencesiyle kiracınızın ödeme gücü garanti altında. Kefil aramaya, Findeks raporuna gerek yok.',
   },
   {
     icon: 'document',
-    title: 'Dijital Sözleşme',
-    desc: 'Taraflar arasında izlenebilir, saklanabilir ve denetlenebilir kontrat akışı.',
+    title: '5 Dakikada Dijital Sözleşme',
+    desc: 'Noterci masrafı olmadan, mahkemede geçerli dijital sözleşmeyi anında kurun.',
   },
   {
     icon: 'bank',
-    title: 'Banka Entegrasyonu',
-    desc: 'KMH odaklı ödeme altyapısı ile tahsilat ve teminat sürecini netleştirir.',
+    title: 'Banka Güvenceli Ödeme',
+    desc: 'KMH ile kira her ay otomatik ödenir. Ev sahibi zamanında alır, kiracı birkaç günlük faizle korunur.',
   },
 ];
 
@@ -185,11 +185,11 @@ export default function HomePage() {
                   Türkiye&apos;nin Dijital Kira Platformu
                 </span>
                 <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-                  Kiranızı güvenle ödeyin, sözleşmenizi dijitalde yönetin
+                  Kefil derdi bitti. Kiranız banka güvencesinde.
                 </h1>
                 <p className="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
-                  Kiracı, ev sahibi ve banka arasındaki süreci tek merkezde yönetin.
-                  Sözleşme, ödeme ve uygunluk adımları fintech seviyesinde güvence altında.
+                  Findeks raporu, kefil arayışı, noter masrafı — hepsi geride kaldı.
+                  Banka güvenceli dijital sözleşmeyle kontrat 5 dakikada kurulsun.
                 </p>
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">

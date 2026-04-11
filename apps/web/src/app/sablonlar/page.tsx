@@ -2,8 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Hukuki Sablonlar | KiraGuvence',
+  title: 'Hukuki Sablonlar',
   description: 'Kira sozlesmesi, tahliye taahhudu, ihtar mektubu ve diger hukuki belge sablonlari. TBK uyumlu, ucretsiz kullanim.',
+  openGraph: {
+    title: 'Hukuki Sablonlar | Kira Guvence',
+    description: 'Kira sozlesmesi ornegi, tahliye taahhudu, ihtar mektubu sablonlari. TBK uyumlu.',
+  },
+  alternates: { canonical: '/sablonlar' },
 };
 
 const templates = [

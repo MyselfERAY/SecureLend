@@ -40,10 +40,19 @@ const audienceColor: Record<string, string> = {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = await getArticle(slug);
-  if (!article) return { title: 'Makale Bulunamadı' };
+  if (!article) return { title: 'Makale Bulunamadi' };
   return {
-    title: `${article.title} | Kira Güvence Rehber`,
+    title: `${article.title} | Kira Guvence Rehber`,
     description: article.summary,
+    openGraph: {
+      title: article.title,
+      description: article.summary,
+      type: 'article',
+      locale: 'tr_TR',
+      siteName: 'Kira Guvence',
+      publishedTime: article.publishedAt,
+    },
+    alternates: { canonical: `/rehber/${slug}` },
   };
 }
 
@@ -54,8 +63,38 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   const paragraphs = article.content.split('\n\n').filter(Boolean);
 
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.summary,
+    datePublished: article.publishedAt,
+    author: { '@type': 'Organization', name: 'Kira Guvence' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Kira Guvence',
+      url: 'https://kiraguvence.com',
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://kiraguvence.com/rehber/${slug}`,
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://kiraguvence.com' },
+      { '@type': 'ListItem', position: 2, name: 'Rehber', item: 'https://kiraguvence.com/rehber' },
+      { '@type': 'ListItem', position: 3, name: article.title },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <SiteNav />
 
       <main className="px-4 py-10 sm:px-6 lg:px-8">

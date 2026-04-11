@@ -2,7 +2,10 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Gizlilik Politikası | SecureLend',
+  title: 'Gizlilik Politikasi',
+  description: 'Kira Guvence gizlilik politikasi. Kisisel verilerinizin nasil islendigi ve korunduguyla ilgili bilgiler.',
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/gizlilik' },
 };
 
 export default function GizlilikPage() {

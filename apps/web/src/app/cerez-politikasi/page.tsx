@@ -2,7 +2,10 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Çerez Politikası | SecureLend',
+  title: 'Cerez Politikasi',
+  description: 'Kira Guvence cerez politikasi. Web sitemizde kullanilan cerezler hakkinda bilgi.',
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/cerez-politikasi' },
 };
 
 export default function CerezPolitikasiPage() {
