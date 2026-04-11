@@ -910,3 +910,21 @@ model UserPromo {
   @@index([templateId], map: "idx_user_promo_template")
   @@map("user_promos")
 }
+
+// ─── Newsletter Subscribers ───
+
+model NewsletterSubscriber {
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  name          String?   @db.VarChar(200)
+  isVerified    Boolean   @default(false) @map("is_verified")
+  isActive      Boolean   @default(true) @map("is_active")
+  source        String    @default("landing") @db.VarChar(50) // landing, register, dashboard
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([email], map: "idx_newsletter_email")
+  @@index([isActive], map: "idx_newsletter_active")
+  @@map("newsletter_subscribers")
+}

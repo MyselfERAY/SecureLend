@@ -483,6 +483,67 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── NEWSLETTER ── */}
+        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Bulten</p>
+            <h2 className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+              Kira Rehberi Bulteni
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Kiraci haklari, ev sahibi rehberleri, KMH bilgileri ve emlak piyasasi analizlerini her hafta e-posta kutunuzda alin.
+            </p>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const email = (form.elements.namedItem('nlEmail') as HTMLInputElement).value;
+                const btn = form.querySelector('button') as HTMLButtonElement;
+                btn.textContent = 'Kaydediliyor...';
+                btn.disabled = true;
+                try {
+                  const res = await fetch(
+                    (process.env.NEXT_PUBLIC_API_URL || '') + '/api/v1/newsletter/subscribe',
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email, source: 'landing' }),
+                    },
+                  );
+                  const data = await res.json();
+                  if (data.status === 'success') {
+                    btn.textContent = 'Kayit Basarili!';
+                    (form.elements.namedItem('nlEmail') as HTMLInputElement).value = '';
+                  } else {
+                    btn.textContent = data.message || 'Hata olustu';
+                  }
+                } catch {
+                  btn.textContent = 'Hata olustu';
+                }
+                setTimeout(() => { btn.textContent = 'Abone Ol'; btn.disabled = false; }, 3000);
+              }}
+              className="mt-6 flex gap-2"
+            >
+              <input
+                name="nlEmail"
+                type="email"
+                required
+                placeholder="E-posta adresiniz"
+                className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+              <button
+                type="submit"
+                className="shrink-0 rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+              >
+                Abone Ol
+              </button>
+            </form>
+            <p className="mt-3 text-xs text-slate-400">
+              Aboneliginizi istediginiz zaman iptal edebilirsiniz. Verileriniz KVKK kapsaminda korunmaktadir.
+            </p>
+          </div>
+        </section>
+
       </main>
 
       {/* ── FOOTER ── */}

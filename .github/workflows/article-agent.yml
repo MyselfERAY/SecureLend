@@ -87,14 +87,20 @@ jobs:
           $AUDIENCE (TENANT = kiraci, LANDLORD = ev sahibi, BOTH = herkes)
 
           == TOPIC CATEGORIES (pick one) ==
-          1. Kiracinin Haklari - tenant rights, deposit rules, eviction process
-          2. Ev Sahibinin Haklari - landlord rights, rental income tax, contract termination
-          3. Kira Sozlesmesi - lease agreement tips, clauses, legal requirements
-          4. Finansal Rehber - budgeting for rent, KMH savings, credit score impact
-          5. Guvenli Odeme - secure payment methods, receipt importance, digital payments
-          6. Hukuki Bilgi - Turkish rental law (6098 TBK), dispute resolution, mediation
-          7. Emlak Piyasasi - rental market trends, pricing, city comparisons
-          8. Dijital Donusum - proptech, fintech in real estate, digital contracts
+          1. Kiracinin Haklari - tenant rights, deposit rules, eviction process, TBK m.299-378
+          2. Ev Sahibinin Haklari - landlord rights, rental income tax, contract termination, tahliye
+          3. Kira Sozlesmesi - lease agreement tips, clauses, legal requirements, islak imza
+          4. Finansal Rehber - budgeting for rent, KMH (Kredili Mevduat Hesabi) advantages, credit score
+          5. Guvenli Odeme - KMH ile otomatik kira odeme, banka talimati, dijital odeme yontemleri
+          6. Hukuki Bilgi - Turkish rental law (6098 TBK), dispute resolution, mediation, arabuluculuk
+          7. Emlak Piyasasi - rental market trends, il bazli kira karsilastirma, 2025-2026 piyasa analizi
+          8. Dijital Donusum - proptech, fintech in real estate, digital contracts, KiraGuvence platform
+          9. KMH Rehberi - Kredili Mevduat Hesabi nedir, nasil acilir, kira odemede KMH avantajlari, banka karsilastirma
+          10. Depozito ve Teminat - depozito iade sureci, yasal haklar, TBK m.342 depozito siniri, banka teminati
+          11. Vergi ve Muhasebe - kira gelir vergisi, beyanname, stopaj, mulk sahibi vergi rehberi, gider indirimi
+          12. Tasinma Rehberi - yeni eve tasinma kontrol listesi, adres degisikligi, abonelik transferi, ev kontrolu
+          13. Sozlesme Feshi - kiracinin fesih hakki, ev sahibinin tahliye sebepleri, TBK m.347 uzama, ihtar surecleri
+          14. Yatirim ve Portfoy - kira getirisi hesaplama, mulk yatirimi, portfoy yonetimi, pasif gelir stratejileri
 
           == OUTPUT FORMAT ==
           Return ONLY a valid JSON object (no markdown, no code fences):
@@ -103,7 +109,7 @@ jobs:
             \"slug\": \"url-friendly-slug-in-turkish (lowercase, hyphens, no special chars)\",
             \"summary\": \"2-3 sentence summary in Turkish (100-200 chars, appears in cards)\",
             \"content\": \"Full article body in Turkish (plain text, use \\n\\n for paragraph breaks)\",
-            \"category\": \"One of: Kiracinin Haklari, Ev Sahibinin Haklari, Kira Sozlesmesi, Finansal Rehber, Guvenli Odeme, Hukuki Bilgi, Emlak Piyasasi, Dijital Donusum\",
+            \"category\": \"One of: Kiracinin Haklari, Ev Sahibinin Haklari, Kira Sozlesmesi, Finansal Rehber, Guvenli Odeme, Hukuki Bilgi, Emlak Piyasasi, Dijital Donusum, KMH Rehberi, Depozito ve Teminat, Vergi ve Muhasebe, Tasinma Rehberi, Sozlesme Feshi, Yatirim ve Portfoy\",
             \"audience\": \"$AUDIENCE\"
           }
 

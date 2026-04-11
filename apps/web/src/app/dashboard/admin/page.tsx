@@ -96,6 +96,7 @@ export default function AdminDashboardPage() {
           <AdminLink href="/dashboard/admin/tasks" title="Gorev Takibi" desc="Tum gorevler ve son tarihler" icon="T" />
           <AdminLink href="/dashboard/admin/agents" title="Agent KPI" desc="Agent performansi ve calisma gecmisi" icon="A" />
           <AdminLink href="/dashboard/admin/promos" title="Promosyonlar" desc="Sablon olustur, ata ve takip et" icon="F" />
+          <AdminLink href="/dashboard/admin/newsletter" title="Bulten Aboneleri" desc="Newsletter aboneleri ve istatistikler" icon="B" />
         </div>
       </div>
     </div>
