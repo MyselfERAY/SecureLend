@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 6 * * *'        # Daily at 06:00 UTC (09:00 Turkey)
     - cron: '0 15 * * *'       # Daily at 15:00 UTC (18:00 Turkey)
-  workflow_dispatch:
+  workflow_dispatch:           # Manual trigger
 
 env:
   API_BASE: https://securelend-production.up.railway.app
