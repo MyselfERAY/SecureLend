@@ -1,4 +1,4 @@
-name: API Health Agent - Error Analysis & Fix Suggestions
+name: Health Agent - Error Analysis & Auto-Fix Suggestions
 
 on:
   schedule:
@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  api-health:
+  health-check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -34,34 +34,48 @@ jobs:
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Fetch API error analytics
-        id: errors
+        id: api_errors
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
-          # Get last 1 day of API dashboard data
           API_DASHBOARD=$(curl -s -H "x-api-key: $SERVICE_API_KEY" \
             "$API_BASE/api/v1/analytics/api-dashboard?days=1")
           echo "$API_DASHBOARD" > /tmp/api_dashboard.json
 
-          # Extract key numbers
-          TOTAL_REQUESTS=$(echo "$API_DASHBOARD" | jq '.data.summary.totalRequests // 0')
-          TOTAL_ERRORS=$(echo "$API_DASHBOARD" | jq '.data.summary.totalErrors // 0')
-          ERROR_RATE=$(echo "$API_DASHBOARD" | jq '.data.summary.errorRate // 0')
-          AVG_RESPONSE=$(echo "$API_DASHBOARD" | jq '.data.summary.avgResponseTime // 0')
+          API_ERRORS=$(echo "$API_DASHBOARD" | jq '.data.summary.totalErrors // 0')
+          echo "::notice::API errors (24h): $API_ERRORS"
+          echo "api_error_count=$API_ERRORS" >> $GITHUB_OUTPUT
 
-          echo "::notice::API Stats — Requests: $TOTAL_REQUESTS, Errors: $TOTAL_ERRORS, Rate: $ERROR_RATE%, Avg: ${AVG_RESPONSE}ms"
+      - name: Fetch frontend error analytics
+        id: fe_errors
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          FE_DASHBOARD=$(curl -s -H "x-api-key: $SERVICE_API_KEY" \
+            "$API_BASE/api/v1/analytics/dashboard?days=1")
+          echo "$FE_DASHBOARD" > /tmp/fe_dashboard.json
 
-          # Check if there are errors worth analyzing
-          if [ "$TOTAL_ERRORS" -eq 0 ] 2>/dev/null; then
-            echo "::notice::No API errors in last 24h. Skipping analysis."
-            echo "has_errors=false" >> $GITHUB_OUTPUT
+          FE_ERRORS=$(echo "$FE_DASHBOARD" | jq '.data.summary.totalErrors // 0')
+          echo "::notice::Frontend errors (24h): $FE_ERRORS"
+          echo "fe_error_count=$FE_ERRORS" >> $GITHUB_OUTPUT
+
+      - name: Check if analysis needed
+        id: check
+        run: |
+          API_ERRORS="${{ steps.api_errors.outputs.api_error_count }}"
+          FE_ERRORS="${{ steps.fe_errors.outputs.fe_error_count }}"
+          TOTAL=$((${API_ERRORS:-0} + ${FE_ERRORS:-0}))
+
+          if [ "$TOTAL" -eq 0 ] 2>/dev/null; then
+            echo "::notice::No errors in last 24h. System healthy."
+            echo "needs_analysis=false" >> $GITHUB_OUTPUT
           else
-            echo "has_errors=true" >> $GITHUB_OUTPUT
+            echo "::notice::Total errors: $TOTAL — analysis needed."
+            echo "needs_analysis=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Fetch existing suggestions (dedup)
-        id: existing
-        if: steps.errors.outputs.has_errors == 'true'
+        if: steps.check.outputs.needs_analysis == 'true'
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
         run: |
@@ -69,84 +83,91 @@ jobs:
             "$API_BASE/api/v1/suggestions")
           echo "$SUGGESTIONS" | jq -r '[.data[]? | select(.status != "DONE") | .title] | join("\n")' \
             2>/dev/null > /tmp/existing_suggestions.txt || echo "" > /tmp/existing_suggestions.txt
-          echo "::notice::Active suggestions: $(wc -l < /tmp/existing_suggestions.txt)"
 
       - name: Install Claude Code CLI
-        if: steps.errors.outputs.has_errors == 'true'
+        if: steps.check.outputs.needs_analysis == 'true'
         run: npm install -g @anthropic-ai/claude-code
 
       - name: Analyze errors and suggest fixes
         id: analyze
-        if: steps.errors.outputs.has_errors == 'true'
+        if: steps.check.outputs.needs_analysis == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           API_DATA=$(cat /tmp/api_dashboard.json | jq '.data')
+          FE_DATA=$(cat /tmp/fe_dashboard.json | jq '.data')
           EXISTING_SUGGESTIONS=$(cat /tmp/existing_suggestions.txt)
           TODAY=$(date -u +%Y-%m-%d)
 
-          # Extract error details for Claude
-          ERROR_ENDPOINTS=$(echo "$API_DATA" | jq -r '.errorEndpoints[]? | "\(.endpoint): \(.count) hata"' | head -20)
-          RECENT_ERRORS=$(echo "$API_DATA" | jq -r '.recentErrors[:20][]? | "[\(.statusCode)] \(.method) \(.endpoint) — \(.errorMessage // "?")"' | head -20)
-          SLOW_ENDPOINTS=$(echo "$API_DATA" | jq -r '.slowEndpoints[:10][]? | "\(.endpoint): ort \(.avgMs)ms, maks \(.maxMs)ms (\(.samples) istek)"' | head -10)
-          STATUS_DIST=$(echo "$API_DATA" | jq -r '.statusCodes[]? | "\(.code): \(.count)"' | head -10)
-          SUMMARY=$(echo "$API_DATA" | jq -r '.summary | "Toplam: \(.totalRequests) istek, \(.totalErrors) hata (%\(.errorRate)), Ort: \(.avgResponseTime)ms"')
+          # ─── API error details ───
+          API_SUMMARY=$(echo "$API_DATA" | jq -r '.summary | "API: \(.totalRequests) istek, \(.totalErrors) hata (%\(.errorRate)), Ort: \(.avgResponseTime)ms"')
+          API_ERROR_ENDPOINTS=$(echo "$API_DATA" | jq -r '.errorEndpoints[:15][]? | "\(.endpoint): \(.count) hata"')
+          API_RECENT_ERRORS=$(echo "$API_DATA" | jq -r '.recentErrors[:15][]? | "[\(.statusCode)] \(.method) \(.endpoint) — \(.errorMessage // "?")"')
+          API_SLOW=$(echo "$API_DATA" | jq -r '.slowEndpoints[:10][]? | "\(.endpoint): ort \(.avgMs)ms, maks \(.maxMs)ms"')
+          API_STATUS=$(echo "$API_DATA" | jq -r '.statusCodes[]? | "\(.code): \(.count)"')
 
-          PROMPT="Sen SecureLend (kiraguvence.com) platformunun Backend Muhendisi ajanisin. NestJS + PostgreSQL + Prisma stack.
+          # ─── Frontend error details ───
+          FE_SUMMARY=$(echo "$FE_DATA" | jq -r '.summary | "Frontend: \(.totalPageViews) goruntuleme, \(.totalErrors) hata"')
+          FE_RECENT_ERRORS=$(echo "$FE_DATA" | jq -r '.recentErrors[:15][]? | "[\(.browser)/\(.device)] \(.page) — \(.errorMessage // "Bilinmeyen")"')
 
-          Son 24 saatteki API hata ve performans verilerini analiz edip cozum onerileri uret.
+          PROMPT="Sen SecureLend (kiraguvence.com) platformunun Backend+Frontend Muhendisi ajanisin. NestJS + Next.js + PostgreSQL + Prisma stack.
 
-          == API OZET ==
-          $SUMMARY
+          Son 24 saatteki TUM hata ve performans verilerini analiz edip cozum onerileri uret.
 
-          == STATUS CODE DAGILIMI ==
-          $STATUS_DIST
+          == API OZETI ==
+          $API_SUMMARY
 
-          == EN COK HATA VEREN ENDPOINT'LER ==
-          $ERROR_ENDPOINTS
+          == API STATUS CODE DAGILIMI ==
+          $API_STATUS
 
-          == SON HATALAR (detay) ==
-          $RECENT_ERRORS
+          == EN COK HATA VEREN API ENDPOINT'LERI ==
+          $API_ERROR_ENDPOINTS
 
-          == EN YAVAS ENDPOINT'LER ==
-          $SLOW_ENDPOINTS
+          == SON API HATALARI ==
+          $API_RECENT_ERRORS
+
+          == EN YAVAS API ENDPOINT'LERI ==
+          $API_SLOW
+
+          == FRONTEND OZETI ==
+          $FE_SUMMARY
+
+          == SON FRONTEND HATALARI ==
+          $FE_RECENT_ERRORS
 
           == MEVCUT ONERILER (TEKRARLAMA!) ==
           $EXISTING_SUGGESTIONS
 
           == GOREV ==
-          Yukaridaki hata verilerini analiz et ve spesifik cozum onerileri uret.
+          Hem API hem frontend hatalarini analiz et. Her hata icin kok neden tahmini yap ve spesifik kod degisikligi oner.
 
           KURALLAR:
           1. TEKRAR YASAGI: Mevcut oneriler listesindeki konulari tekrarlama.
-          2. Her oneri somut bir kod degisikligi veya yapilandirma icerecek.
-          3. Oncelik belirleme:
-             - CRITICAL: 500 hatalar, veri kaybi riski, guvenlik acigi
-             - HIGH: Sik tekrarlanan hatalar (>5/gun), yavas endpoint'ler (>500ms)
+          2. Her oneri somut bir kod degisikligi icerecek — dosya adi, fonksiyon, ne degismeli.
+          3. Oncelik:
+             - CRITICAL: 500 hatalar, veri kaybi, guvenlik acigi
+             - HIGH: Tekrarlayan hatalar (>5/gun), yavas endpoint (>500ms), kullanici etkileyen frontend hatalari
              - MEDIUM: Ara sira olan hatalar, performans iyilestirmeleri
-             - LOW: Kozmetik iyilestirmeler, loglama gelisimi
-          4. Eger hata orani dusukse (%2 alti) ve ciddi hata yoksa, sadece performans iyilestirmeleri oner.
-          5. Hata olmayan durumlarda bos suggestions dizisi dondur.
-          6. Her onerinin description'inda:
-             - Hangi dosya/modul etkilenecek
-             - Kok neden tahmini
-             - Onerilen cozum adimlari
-          7. Maks 5 oneri (kalite > miktar).
+             - LOW: Loglama, kozmetik, edge case
+          4. Hata orani dusukse (%2 alti) sadece performans onerileri ver.
+          5. Maks 5 oneri. Hata yoksa bos suggestions dizisi dondur.
+          6. Her description'da: etkilenen dosya/modul, kok neden tahmini, cozum adimlari.
+          7. Frontend hatalari icin: hangi sayfa, hangi tarayici/cihaz, olasi neden.
 
           == CIKTI FORMATI ==
           Sadece gecerli JSON dondur:
           {
-            \"analysis\": \"<h2>API Saglik Raporu — $TODAY</h2><p>Turkce, kisa ozet, max 300 kelime</p>\",
+            \"analysis\": \"<h2>Saglik Raporu — $TODAY</h2><p>Turkce, API + Frontend ozet, maks 300 kelime</p>\",
             \"suggestions\": [
               {
                 \"title\": \"Kisa baslik (maks 200 karakter)\",
-                \"description\": \"Detayli aciklama — kok neden, etkilenen dosyalar, cozum adimlari\",
+                \"description\": \"Detayli aciklama\",
                 \"priority\": \"LOW|MEDIUM|HIGH|CRITICAL\"
               }
             ]
           }"
 
-          echo "=== Analyzing API Errors ==="
+          echo "=== Analyzing Errors ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
           JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -200)
@@ -161,11 +182,11 @@ jobs:
           fi
 
           echo "$JSON_RESULT" > /tmp/health_report.json
-          echo "=== Analysis Result ==="
-          cat /tmp/health_report.json | jq '.suggestions | length' 2>/dev/null
+          SCOUNT=$(echo "$JSON_RESULT" | jq '[.suggestions[]?] | length' 2>/dev/null || echo "0")
+          echo "::notice::Analysis complete — $SCOUNT suggestions"
           echo "analyze_ok=true" >> $GITHUB_OUTPUT
 
-      - name: Submit suggestions to API
+      - name: Create suggestions as PENDING (auto-approved for dev agent)
         if: steps.analyze.outputs.analyze_ok == 'true'
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
@@ -174,41 +195,47 @@ jobs:
           SUGGESTION_COUNT=$(echo "$REPORT" | jq '[.suggestions[]?] | length')
 
           if [ "$SUGGESTION_COUNT" -eq 0 ] 2>/dev/null; then
-            echo "::notice::No suggestions needed — API is healthy."
+            echo "::notice::No suggestions needed — system healthy."
             exit 0
           fi
 
-          echo "::notice::Submitting $SUGGESTION_COUNT suggestions..."
+          echo "::notice::Creating $SUGGESTION_COUNT auto-approved suggestions..."
 
-          # Submit each suggestion
           SUBMITTED=0
           echo "$REPORT" | jq -c '.suggestions[]?' | while read -r SUGGESTION; do
             TITLE=$(echo "$SUGGESTION" | jq -r '.title')
             DESC=$(echo "$SUGGESTION" | jq -r '.description')
             PRIORITY=$(echo "$SUGGESTION" | jq -r '.priority // "MEDIUM"')
 
-            PAYLOAD=$(jq -n \
-              --arg title "[API Health] $TITLE" \
+            # Step 1: Create suggestion (defaults to REJECTED)
+            CREATE_PAYLOAD=$(jq -n \
+              --arg title "[Health] $TITLE" \
               --arg description "$DESC" \
               --arg priority "$PRIORITY" \
               '{title: $title, description: $description, priority: $priority}')
 
-            RESPONSE=$(curl -s -X POST \
+            CREATE_RESPONSE=$(curl -s -X POST \
               -H "x-api-key: $SERVICE_API_KEY" \
               -H "Content-Type: application/json" \
-              -d "$PAYLOAD" \
+              -d "$CREATE_PAYLOAD" \
               "$API_BASE/api/v1/suggestions")
 
-            if echo "$RESPONSE" | jq -e '.status == "success"' > /dev/null 2>&1; then
-              SID=$(echo "$RESPONSE" | jq -r '.data.id')
-              echo "::notice::Suggestion created: $TITLE (id: $SID)"
+            SID=$(echo "$CREATE_RESPONSE" | jq -r '.data.id // empty')
+
+            if [ -n "$SID" ] && [ "$SID" != "null" ]; then
+              # Step 2: Auto-approve — set status to PENDING for dev agent pickup
+              curl -s -X PATCH \
+                -H "x-api-key: $SERVICE_API_KEY" \
+                -H "Content-Type: application/json" \
+                -d '{"status":"PENDING"}' \
+                "$API_BASE/api/v1/suggestions/$SID" > /dev/null
+
+              echo "::notice::Auto-approved: $TITLE (id: $SID)"
               SUBMITTED=$((SUBMITTED + 1))
             else
-              echo "::warning::Failed to create suggestion: $TITLE"
+              echo "::warning::Failed to create: $TITLE"
             fi
           done
-
-          echo "::notice::$SUBMITTED suggestions submitted."
 
       - name: Complete agent run
         if: always()
@@ -218,26 +245,26 @@ jobs:
           RUN_ID="${{ steps.run.outputs.run_id }}"
           if [ -z "$RUN_ID" ]; then exit 0; fi
 
-          HAS_ERRORS="${{ steps.errors.outputs.has_errors }}"
+          NEEDS="${{ steps.check.outputs.needs_analysis }}"
           ANALYZE_OK="${{ steps.analyze.outputs.analyze_ok }}"
 
-          if [ "$HAS_ERRORS" = "false" ]; then
+          if [ "$NEEDS" = "false" ]; then
             curl -s -X PATCH \
               -H "x-api-key: $SERVICE_API_KEY" \
               -H "Content-Type: application/json" \
-              -d '{"status":"COMPLETED","summary":"No API errors in last 24h. System healthy."}' \
+              -d '{"status":"COMPLETED","summary":"No errors in last 24h. System healthy."}' \
               "$API_BASE/api/v1/agent-runs/$RUN_ID"
           elif [ "$ANALYZE_OK" = "true" ]; then
             SCOUNT=$(cat /tmp/health_report.json | jq '[.suggestions[]?] | length' 2>/dev/null || echo "0")
             curl -s -X PATCH \
               -H "x-api-key: $SERVICE_API_KEY" \
               -H "Content-Type: application/json" \
-              -d "{\"status\":\"COMPLETED\",\"summary\":\"API health analyzed. $SCOUNT fix suggestions created.\"}" \
+              -d "{\"status\":\"COMPLETED\",\"summary\":\"Health analysis done. $SCOUNT auto-approved fix suggestions created.\"}" \
               "$API_BASE/api/v1/agent-runs/$RUN_ID"
           else
             curl -s -X PATCH \
               -H "x-api-key: $SERVICE_API_KEY" \
               -H "Content-Type: application/json" \
-              -d '{"status":"FAILED","errorMessage":"Failed to analyze API errors."}' \
+              -d '{"status":"FAILED","errorMessage":"Failed to analyze errors."}' \
               "$API_BASE/api/v1/agent-runs/$RUN_ID"
           fi
