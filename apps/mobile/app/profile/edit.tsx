@@ -20,14 +20,22 @@ export default function ProfileEditScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const [fullName, setFullName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Determine which identity fields are still empty (editable)
+  const canEditFullName = !user?.fullName;
+  const canEditDateOfBirth = !user?.dateOfBirth;
+
   useEffect(() => {
     if (user) {
+      setFullName(user.fullName || '');
+      setDateOfBirth(user.dateOfBirth || '');
       setEmail(user.email || '');
       setAddress(user.address || '');
     }
@@ -40,6 +48,8 @@ export default function ProfileEditScreen() {
     setSuccessMsg('');
 
     const body: Record<string, string | undefined> = {};
+    if (canEditFullName && fullName.trim() && fullName !== (user?.fullName || '')) body.fullName = fullName.trim();
+    if (canEditDateOfBirth && dateOfBirth.trim() && dateOfBirth !== (user?.dateOfBirth || '')) body.dateOfBirth = dateOfBirth.trim();
     if (email !== (user?.email || '')) body.email = email || undefined;
     if (address !== (user?.address || '')) body.address = address || undefined;
 
@@ -89,19 +99,51 @@ export default function ProfileEditScreen() {
         {error ? <ErrorMessage message={error} onDismiss={() => setError('')} /> : null}
         {successMsg ? <SuccessMessage message={successMsg} onDismiss={() => setSuccessMsg('')} /> : null}
 
-        {/* Non-editable Fields */}
+        {/* Identity Fields - locked if filled, editable if empty */}
         <Text style={styles.sectionLabel}>Kimlik Bilgileri</Text>
-        <Text style={styles.sectionHint}>Bu alanlar kimlik dogrulama gerektirdigindan degistirilemez.</Text>
+        <Text style={styles.sectionHint}>
+          {canEditFullName || canEditDateOfBirth
+            ? 'Bos alanlari doldurabilirsiniz. Dolu alanlar degistirilemez.'
+            : 'Bu alanlar kimlik dogrulama gerektirdigindan degistirilemez.'}
+        </Text>
         <View style={styles.sectionCard}>
-          <DisabledRow icon="person-outline" label="Ad Soyad" value={user?.fullName || ''} />
+          {canEditFullName ? (
+            <View style={styles.inputWrapper}>
+              <Input
+                label="Ad Soyad"
+                value={fullName}
+                onChangeText={setFullName}
+                placeholder="Adiniz ve soyadiniz"
+              />
+            </View>
+          ) : (
+            <DisabledRow icon="person-outline" label="Ad Soyad" value={user?.fullName || ''} />
+          )}
           <DisabledRow icon="id-card-outline" label="TCKN" value={user?.maskedTckn || ''} />
           <DisabledRow icon="call-outline" label="Telefon" value={user?.phone ? `+90 ${user.phone}` : ''} />
-          <DisabledRow
-            icon="calendar-outline"
-            label="Dogum Tarihi"
-            value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'}
-            last
-          />
+          {canEditDateOfBirth ? (
+            <View style={styles.inputWrapper}>
+              <Input
+                label="Dogum Tarihi"
+                value={dateOfBirth}
+                onChangeText={(t: string) => {
+                  // Auto-format: YYYY-MM-DD
+                  const clean = t.replace(/[^0-9-]/g, '');
+                  setDateOfBirth(clean);
+                }}
+                placeholder="YYYY-MM-DD (orn: 1990-05-15)"
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+            </View>
+          ) : (
+            <DisabledRow
+              icon="calendar-outline"
+              label="Dogum Tarihi"
+              value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'}
+              last
+            />
+          )}
         </View>
 
         {/* Editable Fields */}

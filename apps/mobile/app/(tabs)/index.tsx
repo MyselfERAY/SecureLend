@@ -149,7 +149,7 @@ export default function DashboardScreen() {
     { title: 'Mulk Ekle', icon: 'home-outline' as const, color: '#2563eb', bg: '#eff6ff', route: '/(tabs)/properties' },
     { title: 'Sozlesme', icon: 'document-text-outline' as const, color: '#10b981', bg: '#ecfdf5', route: '/(tabs)/contracts' },
     { title: 'KMH', icon: 'card-outline' as const, color: '#f59e0b', bg: '#fffbeb', route: '/kmh/apply' },
-    { title: 'Odeme', icon: 'wallet-outline' as const, color: '#8b5cf6', bg: '#f5f3ff', route: '/(tabs)/payments' },
+    { title: 'Odeme', icon: 'wallet-outline' as const, color: '#8b5cf6', bg: '#f5f3ff', route: '/payments' },
     { title: 'Rehber', icon: 'book-outline' as const, color: '#0891b2', bg: '#ecfeff', route: '/rehber' },
     { title: 'Davet Et', icon: 'gift-outline' as const, color: '#ea580c', bg: '#fff7ed', route: '/referral' },
   ];
@@ -447,59 +447,65 @@ export default function DashboardScreen() {
       )}
 
       {/* Contract Cards - Horizontal */}
-      {activeContracts.length > 0 && (
-        <>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Sozlesmelerim</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/contracts')} activeOpacity={0.7}>
-              <Text style={styles.seeAllText}>Tumunu Gor</Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={activeContracts}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.contractScroll}
-            renderItem={({ item: c }) => (
-              <TouchableOpacity
-                style={styles.contractCard}
-                onPress={() => router.push(`/(tabs)/contracts/${c.id}`)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.contractCardTop}>
-                  <View style={styles.contractIcon}>
-                    <Ionicons name="business-outline" size={18} color="#2563eb" />
-                  </View>
-                  <Badge {...getStatusBadge(c.status)} size="sm" />
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Sozlesmelerim</Text>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/contracts')} activeOpacity={0.7}>
+          <Text style={styles.seeAllText}>Tumunu Gor</Text>
+        </TouchableOpacity>
+      </View>
+      {activeContracts.length > 0 ? (
+        <FlatList
+          data={activeContracts}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.contractScroll}
+          renderItem={({ item: c }) => (
+            <TouchableOpacity
+              style={styles.contractCard}
+              onPress={() => router.push(`/(tabs)/contracts/${c.id}`)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.contractCardTop}>
+                <View style={styles.contractIcon}>
+                  <Ionicons name="business-outline" size={18} color="#2563eb" />
                 </View>
-                <Text style={styles.contractCardTitle} numberOfLines={1}>{c.propertyTitle}</Text>
-                <Text style={styles.contractCardMeta} numberOfLines={1}>{c.tenantName}</Text>
-                <Text style={styles.contractCardAmount}>
-                  {c.monthlyRent.toLocaleString('tr-TR')} TL
-                  <Text style={styles.contractCardPer}>/ay</Text>
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        </>
+                <Badge {...getStatusBadge(c.status)} size="sm" />
+              </View>
+              <Text style={styles.contractCardTitle} numberOfLines={1}>{c.propertyTitle}</Text>
+              <Text style={styles.contractCardMeta} numberOfLines={1}>{c.tenantName}</Text>
+              <Text style={styles.contractCardAmount}>
+                {c.monthlyRent.toLocaleString('tr-TR')} TL
+                <Text style={styles.contractCardPer}>/ay</Text>
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      ) : (
+        <View style={styles.emptySection}>
+          <Ionicons name="document-text-outline" size={24} color={colors.gray[300]} />
+          <Text style={styles.emptySectionText}>Henuz aktif sozlesme yok</Text>
+        </View>
       )}
 
       {/* Upcoming Payments */}
-      {pendingPayments.length > 0 && (
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Yaklasan Odemeler</Text>
+        <TouchableOpacity onPress={() => router.push('/payments')} activeOpacity={0.7}>
+          <Text style={styles.seeAllText}>Tumunu Gor</Text>
+        </TouchableOpacity>
+      </View>
+      {pendingPayments.length > 0 ? (
         <>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Yaklasan Odemeler</Text>
-            <TouchableOpacity onPress={() => router.push('/payments')} activeOpacity={0.7}>
-              <Text style={styles.seeAllText}>Tumunu Gor</Text>
-            </TouchableOpacity>
-          </View>
           {pendingPayments.slice(0, 4).map((p) => (
             <TouchableOpacity
               key={p.id}
               style={styles.paymentRow}
               activeOpacity={0.6}
-              onPress={() => router.push('/(tabs)/payments')}
+              onPress={() => {
+                if (p.contractId) router.push(`/(tabs)/contracts/${p.contractId}`);
+                else router.push('/payments');
+              }}
             >
               <View style={[styles.paymentIcon, { backgroundColor: p.status === 'OVERDUE' ? '#fef2f2' : '#fffbeb' }]}>
                 <Ionicons
@@ -521,6 +527,11 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           ))}
         </>
+      ) : (
+        <View style={styles.emptySection}>
+          <Ionicons name="wallet-outline" size={24} color={colors.gray[300]} />
+          <Text style={styles.emptySectionText}>Bekleyen odeme yok</Text>
+        </View>
       )}
 
       {/* Empty State */}
@@ -1014,5 +1025,21 @@ const styles = StyleSheet.create({
     color: colors.gray[500],
     textAlign: 'center',
     lineHeight: 22,
+  },
+  emptySection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 20,
+    marginHorizontal: 20,
+    marginBottom: 8,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+  },
+  emptySectionText: {
+    fontSize: 14,
+    color: colors.gray[400],
+    fontWeight: '500',
   },
 });

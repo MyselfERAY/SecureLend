@@ -62,23 +62,23 @@ export default function ReferralScreen() {
     setTimeout(() => setCopied(false), 2000);
   }, [info]);
 
+  const shareMessage = info?.referralCode
+    ? `KiraGuvence ile kira odemelerini guvenle yap! Benim davet kodum: ${info.referralCode}\n\n${info.referralLink || 'https://kiraguvence.com'}`
+    : 'KiraGuvence ile kira odemelerini guvenle yap! Hemen kayit ol: https://kiraguvence.com';
+
   const handleShare = useCallback(async () => {
-    if (!info?.referralLink) return;
-    const message = `KiraGuvence ile kira odemelerini guvenle yap! Benim davet kodum: ${info.referralCode}\n\n${info.referralLink}`;
     try {
-      await Share.share({ message });
+      await Share.share({ message: shareMessage });
     } catch { /* cancelled */ }
-  }, [info]);
+  }, [shareMessage]);
 
   const handleWhatsApp = useCallback(async () => {
-    if (!info?.referralLink) return;
-    const message = `KiraGuvence ile kira odemelerini guvenle yap! Benim davet kodum: ${info.referralCode}\n\n${info.referralLink}`;
-    const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+    const url = `whatsapp://send?text=${encodeURIComponent(shareMessage)}`;
     try {
       const { Linking } = require('react-native');
       await Linking.openURL(url);
     } catch { /* WhatsApp not installed */ }
-  }, [info]);
+  }, [shareMessage]);
 
   if (loading) return <LoadingSpinner />;
 
@@ -115,9 +115,9 @@ export default function ReferralScreen() {
         </View>
 
         {/* Referral Code */}
-        {info?.referralCode && (
-          <View style={styles.codeCard}>
-            <Text style={styles.codeLabel}>Davet Kodun</Text>
+        <View style={styles.codeCard}>
+          <Text style={styles.codeLabel}>Davet Kodun</Text>
+          {info?.referralCode ? (
             <View style={styles.codeRow}>
               <Text style={styles.codeValue}>{info.referralCode}</Text>
               <TouchableOpacity style={styles.copyBtn} onPress={handleCopy} activeOpacity={0.7}>
@@ -131,8 +131,10 @@ export default function ReferralScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
-        )}
+          ) : (
+            <Text style={styles.codeEmpty}>Davet kodu henuz olusturulmadi. Asagidaki butonlarla platformumuzu paylasabilirsiniz.</Text>
+          )}
+        </View>
 
         {/* Share Buttons */}
         <View style={styles.shareRow}>
@@ -283,6 +285,9 @@ const styles = StyleSheet.create({
   },
   copyText: {
     fontSize: 13, fontWeight: '600', color: '#2563eb',
+  },
+  codeEmpty: {
+    fontSize: 14, color: colors.gray[500], lineHeight: 20,
   },
 
   // Share
