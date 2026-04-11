@@ -4,6 +4,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   ConflictException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -19,7 +20,7 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { AuthTokens } from './interfaces/auth-tokens.interface';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly logger = new Logger(AuthService.name);
   private readonly refreshSecret: string;
 
@@ -33,6 +34,36 @@ export class AuthService {
     private readonly promoService: PromoService,
   ) {
     this.refreshSecret = this.configService.getOrThrow<string>('JWT_SECRET');
+  }
+
+  async onModuleInit() {
+    try {
+      // Ensure referral_code column exists on users table
+      const colCheck = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'referral_code'
+        ) as exists`;
+
+      if (!colCheck[0]?.exists) {
+        this.logger.warn('referral_code column missing on users — adding via raw SQL...');
+        await this.prisma.$executeRawUnsafe(`ALTER TABLE "users" ADD COLUMN "referral_code" VARCHAR(10) UNIQUE;`);
+        this.logger.log('referral_code column added successfully');
+      }
+
+      // Ensure newsletter_subscribers table exists
+      const nlCheck = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'newsletter_subscribers'
+        ) as exists`;
+
+      if (!nlCheck[0]?.exists) {
+        this.logger.warn('newsletter_subscribers table missing — will be created by NewsletterService');
+      }
+    } catch (err) {
+      this.logger.error(`Auth onModuleInit failed: ${err instanceof Error ? err.message : err}`);
+    }
   }
 
   async register(
