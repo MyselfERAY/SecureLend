@@ -474,9 +474,21 @@ jobs:
 
           echo "COMMIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-          git push origin main
-          echo "push_ok=true" >> $GITHUB_OUTPUT
-          echo "✓ Pushed to main"
+          # Push with retry (handles race condition when another push happened)
+          for attempt in 1 2 3; do
+            if git push origin main 2>/dev/null; then
+              echo "push_ok=true" >> $GITHUB_OUTPUT
+              echo "✓ Pushed to main (attempt $attempt)"
+              break
+            else
+              echo "::warning::Push rejected (attempt $attempt), rebasing..."
+              git pull --rebase origin main
+              if [ $attempt -eq 3 ]; then
+                echo "::error::Push failed after 3 attempts"
+                exit 1
+              fi
+            fi
+          done
 
       # ══════════════════════════════════════════
       # STEP 7: Wait for Deploy + Health Check
