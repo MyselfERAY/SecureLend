@@ -146,22 +146,32 @@ jobs:
           echo "=== Running Claude Code for PO Report ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
-          # Extract JSON from response (handle potential markdown wrapping)
-          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -200)
+          # Robust JSON extraction: brace-depth matching + validation
+          echo "$RESULT" | python3 -c "
+import sys, json
+text = sys.stdin.read()
+start = text.find('{')
+if start < 0: sys.exit(1)
+depth = 0
+for i in range(start, len(text)):
+    if text[i] == '{': depth += 1
+    elif text[i] == '}': depth -= 1
+    if depth == 0:
+        candidate = text[start:i+1]
+        try:
+            json.loads(candidate)
+            print(candidate)
+            sys.exit(0)
+        except: pass
+sys.exit(1)
+" > /tmp/po_report.json 2>/dev/null
 
-          if [ -z "$JSON_RESULT" ]; then
-            # Try extracting from code fences
-            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
-          fi
-
-          if [ -z "$JSON_RESULT" ]; then
-            echo "::error::Failed to extract JSON from Claude response"
+          if [ ! -s /tmp/po_report.json ]; then
+            echo "::error::Failed to extract valid JSON from Claude response"
             echo "$RESULT" | tail -50
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-
-          echo "$JSON_RESULT" > /tmp/po_report.json
           echo "=== Generated Report ==="
           cat /tmp/po_report.json | jq . 2>/dev/null || cat /tmp/po_report.json | head -50
           echo "generate_ok=true" >> $GITHUB_OUTPUT

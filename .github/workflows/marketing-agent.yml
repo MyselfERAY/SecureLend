@@ -155,18 +155,35 @@ jobs:
           echo "=== Generating Daily Strategy ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
-          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -300)
-          if [ -z "$JSON_RESULT" ]; then
-            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
-          fi
+          # Robust JSON extraction: find outermost { } pair and validate
+          echo "$RESULT" | python3 -c "
+import sys, json
+text = sys.stdin.read()
+start = text.find('{')
+if start < 0:
+    sys.exit(1)
+depth = 0
+for i in range(start, len(text)):
+    if text[i] == '{': depth += 1
+    elif text[i] == '}': depth -= 1
+    if depth == 0:
+        candidate = text[start:i+1]
+        try:
+            json.loads(candidate)
+            print(candidate)
+            sys.exit(0)
+        except:
+            pass
+sys.exit(1)
+" > /tmp/marketing_report.json 2>/dev/null
 
-          if [ -z "$JSON_RESULT" ]; then
-            echo "::error::Failed to extract JSON"
+          if [ ! -s /tmp/marketing_report.json ]; then
+            echo "::error::Failed to extract valid JSON from Claude response"
+            echo "$RESULT" | tail -30
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "$JSON_RESULT" > /tmp/marketing_report.json
           echo "generate_ok=true" >> $GITHUB_OUTPUT
 
       - name: Generate research report
@@ -214,18 +231,31 @@ jobs:
           echo "=== Generating Research Report ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
-          JSON_RESULT=$(echo "$RESULT" | sed -n '/^{/,/^}/p' | head -400)
-          if [ -z "$JSON_RESULT" ]; then
-            JSON_RESULT=$(echo "$RESULT" | sed -n '/```json/,/```/p' | grep -v '```')
-          fi
+          echo "$RESULT" | python3 -c "
+import sys, json
+text = sys.stdin.read()
+start = text.find('{')
+if start < 0: sys.exit(1)
+depth = 0
+for i in range(start, len(text)):
+    if text[i] == '{': depth += 1
+    elif text[i] == '}': depth -= 1
+    if depth == 0:
+        candidate = text[start:i+1]
+        try:
+            json.loads(candidate)
+            print(candidate)
+            sys.exit(0)
+        except: pass
+sys.exit(1)
+" > /tmp/marketing_report.json 2>/dev/null
 
-          if [ -z "$JSON_RESULT" ]; then
-            echo "::error::Failed to extract JSON"
+          if [ ! -s /tmp/marketing_report.json ]; then
+            echo "::error::Failed to extract valid JSON"
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "$JSON_RESULT" > /tmp/marketing_report.json
           echo "generate_ok=true" >> $GITHUB_OUTPUT
 
       - name: Submit report to API
