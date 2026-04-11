@@ -23,6 +23,15 @@ interface ContractDetail {
   paymentDayOfMonth: number;
   terms: string | null;
   landlordIban?: string;
+  // Phase D fields
+  rentIncreaseType?: string;
+  rentIncreaseRate?: number;
+  furnitureIncluded?: boolean;
+  petsAllowed?: boolean;
+  sublettingAllowed?: boolean;
+  noticePeriodDays?: number;
+  documentPhotoUrl?: string;
+  documentPhotoKey?: string;
   property: { id: string; title: string; city: string; district: string; addressLine1: string };
   tenant: { id: string; fullName: string; tcknMasked: string };
   landlord: { id: string; fullName: string; tcknMasked: string };
@@ -47,6 +56,7 @@ interface PaymentItem {
 
 const statusColors: Record<string, string> = {
   PENDING_SIGNATURES: 'bg-yellow-500/20 text-yellow-400',
+  PENDING_ACTIVATION: 'bg-blue-500/20 text-blue-400',
   ACTIVE: 'bg-emerald-500/20 text-emerald-400',
   TERMINATED: 'bg-red-500/20 text-red-400',
   EXPIRED: 'bg-slate-500/20 text-slate-400',
@@ -206,6 +216,7 @@ export default function ContractDetailPage() {
 
   const statusLabel: Record<string, string> = {
     PENDING_SIGNATURES: 'Imza Bekliyor',
+    PENDING_ACTIVATION: 'Aktivasyon Bekliyor',
     ACTIVE: 'Aktif',
     TERMINATED: 'Feshedildi',
     EXPIRED: 'Suresi Doldu',
@@ -265,6 +276,65 @@ export default function ContractDetailPage() {
           <div className="text-sm text-slate-500">{contract.tenant.tcknMasked}</div>
         </div>
       </div>
+
+      {/* Contract Conditions (Phase D) */}
+      {(contract.rentIncreaseType || contract.furnitureIncluded != null || contract.petsAllowed != null || contract.sublettingAllowed != null || contract.noticePeriodDays) && (
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+          <h2 className="mb-4 text-lg font-semibold text-white">Sozlesme Kosullari</h2>
+          <div className="divide-y divide-slate-700/50">
+            {contract.rentIncreaseType && (
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-400">Kira Artis Tipi</span>
+                <span className="rounded-lg bg-blue-500/10 px-3 py-1 text-sm font-semibold text-blue-400">
+                  {contract.rentIncreaseType === 'TUFE' ? 'TUFE' : contract.rentIncreaseType === 'FIXED' ? 'Sabit Oran' : contract.rentIncreaseType}
+                  {contract.rentIncreaseRate != null && ` (${contract.rentIncreaseRate}%)`}
+                </span>
+              </div>
+            )}
+            {contract.noticePeriodDays != null && (
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-400">Ihbar Suresi</span>
+                <span className="text-sm font-semibold text-white">{contract.noticePeriodDays} gun</span>
+              </div>
+            )}
+            {contract.furnitureIncluded != null && (
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-400">Esyali</span>
+                <span className={`text-sm font-semibold ${contract.furnitureIncluded ? 'text-emerald-400' : 'text-slate-400'}`}>
+                  {contract.furnitureIncluded ? 'Evet' : 'Hayir'}
+                </span>
+              </div>
+            )}
+            {contract.petsAllowed != null && (
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-400">Evcil Hayvan</span>
+                <span className={`text-sm font-semibold ${contract.petsAllowed ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {contract.petsAllowed ? 'Izinli' : 'Izinsiz'}
+                </span>
+              </div>
+            )}
+            {contract.sublettingAllowed != null && (
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-400">Alt Kiralama</span>
+                <span className={`text-sm font-semibold ${contract.sublettingAllowed ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {contract.sublettingAllowed ? 'Izinli' : 'Izinsiz'}
+                </span>
+              </div>
+            )}
+            {contract.documentPhotoKey && (
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm text-slate-400">Belge</span>
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-blue-400">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Belge yuklendi
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* KMH Account Selection */}
       {isTenant && contract.status === 'PENDING_SIGNATURES' && (

@@ -37,6 +37,7 @@ interface TenantResult {
 const statusMap: Record<string, { text: string; cls: string }> = {
   DRAFT: { text: 'Taslak', cls: 'bg-slate-500/20 text-slate-400' },
   PENDING_SIGNATURES: { text: 'Imza Bekliyor', cls: 'bg-yellow-500/20 text-yellow-400' },
+  PENDING_ACTIVATION: { text: 'Aktivasyon Bekliyor', cls: 'bg-blue-500/20 text-blue-400' },
   ACTIVE: { text: 'Aktif', cls: 'bg-emerald-500/20 text-emerald-400' },
   TERMINATED: { text: 'Feshedildi', cls: 'bg-red-500/20 text-red-400' },
   EXPIRED: { text: 'Suresi Doldu', cls: 'bg-slate-500/20 text-slate-500' },
@@ -44,7 +45,7 @@ const statusMap: Record<string, { text: string; cls: string }> = {
 
 type TabKey = 'active' | 'archive';
 
-const ACTIVE_STATUSES = ['DRAFT', 'PENDING_SIGNATURES', 'ACTIVE'];
+const ACTIVE_STATUSES = ['DRAFT', 'PENDING_SIGNATURES', 'PENDING_ACTIVATION', 'ACTIVE'];
 const ARCHIVE_STATUSES = ['TERMINATED', 'EXPIRED'];
 
 export default function ContractsPage() {

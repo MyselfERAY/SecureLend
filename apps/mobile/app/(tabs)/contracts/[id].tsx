@@ -7,6 +7,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import { File as ExpoFile, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useAuth } from '../../../src/lib/auth-context';
 import { api, extractError } from '../../../src/lib/api';
 import { Button } from '../../../src/components/ui/Button';
@@ -37,6 +39,40 @@ export default function ContractDetailScreen() {
   const [uavtCode, setUavtCode] = useState('');
   const [activating, setActivating] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState('');
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!tokens || !id) return;
+    setDownloadingPdf(true);
+    setError('');
+    try {
+      const apiUrl = 'https://securelend-production.up.railway.app';
+      const dest = new ExpoFile(Paths.cache, `kira-sozlesmesi-${(id as string).slice(0, 8)}.pdf`);
+
+      const downloaded = await ExpoFile.downloadFileAsync(
+        `${apiUrl}/api/v1/contracts/${id}/pdf`,
+        dest,
+        {
+          headers: { Authorization: `Bearer ${tokens.accessToken}` },
+          idempotent: true,
+        },
+      );
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(downloaded.uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Kira Sozlesmesi PDF',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        Alert.alert('Basarili', 'PDF indirildi.');
+      }
+    } catch {
+      setError('PDF indirilirken bir hata olustu.');
+    }
+    setDownloadingPdf(false);
+  };
 
   const loadData = useCallback(async () => {
     if (!tokens || !id) return;
@@ -201,6 +237,17 @@ export default function ContractDetailScreen() {
         <View style={styles.headerSection}>
           <View style={styles.headerBadgeRow}>
             <Badge text={sb.text} variant={sb.variant} />
+            {(contract.status === 'ACTIVE' || contract.status === 'TERMINATED') && (
+              <TouchableOpacity
+                style={styles.pdfBtn}
+                onPress={handleDownloadPdf}
+                activeOpacity={0.7}
+                disabled={downloadingPdf}
+              >
+                <Ionicons name={downloadingPdf ? 'hourglass-outline' : 'document-outline'} size={16} color="#ffffff" />
+                <Text style={styles.pdfBtnText}>{downloadingPdf ? 'Indiriliyor...' : 'PDF'}</Text>
+              </TouchableOpacity>
+            )}
           </View>
           <Text style={styles.propTitle}>{contract.property.title}</Text>
           <View style={styles.addressRow}>
@@ -652,7 +699,24 @@ const styles = StyleSheet.create({
   },
   headerBadgeRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
+    gap: 8,
+  },
+  pdfBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginLeft: 'auto',
+  },
+  pdfBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   propTitle: {
     fontSize: 24,

@@ -42,6 +42,7 @@ export default function AdminContractsPage() {
   const statusLabel: Record<string, { text: string; cls: string }> = {
     DRAFT: { text: 'Taslak', cls: 'bg-gray-100 text-gray-700' },
     PENDING_SIGNATURES: { text: 'Imza Bekliyor', cls: 'bg-yellow-100 text-yellow-700' },
+    PENDING_ACTIVATION: { text: 'Aktivasyon Bekliyor', cls: 'bg-blue-100 text-blue-700' },
     ACTIVE: { text: 'Aktif', cls: 'bg-green-100 text-green-700' },
     TERMINATED: { text: 'Feshedildi', cls: 'bg-red-100 text-red-700' },
     EXPIRED: { text: 'Suresi Doldu', cls: 'bg-gray-100 text-gray-600' },
