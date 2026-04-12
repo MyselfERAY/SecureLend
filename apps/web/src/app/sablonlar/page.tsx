@@ -3,61 +3,61 @@ import Link from 'next/link';
 import SiteNav from '../../components/site-nav';
 
 export const metadata: Metadata = {
-  title: 'Hukuki Sablonlar',
-  description: 'Kira sozlesmesi, tahliye taahhudu, ihtar mektubu ve diger hukuki belge sablonlari. TBK uyumlu, ucretsiz kullanim.',
+  title: 'Hukuki Şablonlar',
+  description: 'Kira sözleşmesi, tahliye taahhüdü, ihtar mektubu ve diğer hukuki belge şablonları. TBK uyumlu, ücretsiz kullanım.',
   openGraph: {
-    title: 'Hukuki Sablonlar | Kira Güvence',
-    description: 'Kira sozlesmesi ornegi, tahliye taahhudu, ihtar mektubu sablonlari. TBK uyumlu.',
+    title: 'Hukuki Şablonlar | Kira Güvence',
+    description: 'Kira sözleşmesi örneği, tahliye taahhüdü, ihtar mektubu şablonları. TBK uyumlu.',
   },
   alternates: { canonical: '/sablonlar' },
 };
 
 const templates = [
   {
-    title: 'Kira Sozlesmesi',
-    description: 'TBK m.299-378 uyumlu, 9 maddeden olusan kapsamli konut kira sozlesmesi. Depozito, odeme kosullari, fesih ve tahliye hukumlerini icerir.',
-    articles: ['Taraf bilgileri', 'Kira bedeli ve artis', 'Depozito', 'Bakim ve onarim', 'Fesih kosullari', 'Islak imza alanlari'],
-    badge: 'Platform Uzerinden',
+    title: 'Kira Sözleşmesi',
+    description: 'TBK m.299-378 uyumlu, 9 maddeden oluşan kapsamlı konut kira sözleşmesi. Depozito, ödeme koşulları, fesih ve tahliye hükümlerini içerir.',
+    articles: ['Taraf bilgileri', 'Kira bedeli ve artış', 'Depozito', 'Bakım ve onarım', 'Fesih koşulları', 'Islak imza alanları'],
+    badge: 'Platform Üzerinden',
     badgeCls: 'bg-blue-500/20 text-blue-400',
     available: true,
   },
   {
     title: 'Tahliye Taahhudu',
-    description: 'TBK m.352/1 kapsaminda, kiracinin belirli bir tarihte kiralananibosaltacagina dair yazili taahhudu. Noter onayina uygun format.',
-    articles: ['Taahhutu veren (kiraci)', 'Tasinmaz bilgileri', 'Tahliye tarihi', 'Cezai sart', 'Taahhut tarihi ve imza'],
-    badge: 'Yakindan',
+    description: 'TBK m.352/1 kapsamında, kiracının belirli bir tarihte kiralananı boşaltacağına dair yazılı taahhüdü. Noter onayına uygun format.',
+    articles: ['Taahhüdü veren (kiracı)', 'Taşınmaz bilgileri', 'Tahliye tarihi', 'Cezai şart', 'Taahhüt tarihi ve imza'],
+    badge: 'Yakından',
     badgeCls: 'bg-amber-500/20 text-amber-400',
     available: false,
   },
   {
-    title: 'Ihtar Mektubu (Kira Odenmemesi)',
-    description: 'TBK m.315 geregi kira bedelini odemeyen kiraciya cekilen ihtar. Konut kiralarinda 30 gun, isyeri kiralarinda 10 gun sure taninir.',
-    articles: ['Gonderen/alici bilgileri', 'Odenmemis kira detaylari', 'Yasal sure bildirimi', 'Sonuclar', 'Teblig bilgileri'],
-    badge: 'Yakindan',
+    title: 'İhtar Mektubu (Kira Ödenmemesi)',
+    description: 'TBK m.315 gereği kira bedelini ödemeyen kiracıya çekilen ihtar. Konut kiralarında 30 gün, işyeri kiralarında 10 gün süre tanınır.',
+    articles: ['Gönderen/alıcı bilgileri', 'Ödenmemiş kira detayları', 'Yasal süre bildirimi', 'Sonuçlar', 'Tebliğ bilgileri'],
+    badge: 'Yakından',
     badgeCls: 'bg-amber-500/20 text-amber-400',
     available: false,
   },
   {
-    title: 'Depozito Iade Talep Yazisi',
-    description: 'Kira sozlesmesinin sona ermesinin ardindan, kiracinin depozito iadesini talep ettigi resmi yazi. Tutar, banka bilgileri ve sure iceriri.',
-    articles: ['Talep eden (kiraci)', 'Sozlesme referansi', 'Depozito tutari', 'Banka/IBAN bilgisi', 'Yasal dayanak'],
-    badge: 'Yakindan',
+    title: 'Depozito İade Talep Yazısı',
+    description: 'Kira sözleşmesinin sona ermesinin ardından, kiracının depozito iadesini talep ettiği resmi yazı. Tutar, banka bilgileri ve süre içerir.',
+    articles: ['Talep eden (kiracı)', 'Sözleşme referansı', 'Depozito tutarı', 'Banka/IBAN bilgisi', 'Yasal dayanak'],
+    badge: 'Yakından',
     badgeCls: 'bg-amber-500/20 text-amber-400',
     available: false,
   },
   {
-    title: 'Kira Artis Bildirimi',
-    description: 'TUFE oranina dayali kira artis bildirimi. TBK m.344 geregi yillik artis oranini kiraya veren yazili olarak bildirir.',
-    articles: ['Mevcut kira bedeli', 'TUFE orani', 'Yeni kira bedeli', 'Gecerlilik tarihi', 'Yasal dayanak'],
-    badge: 'Yakindan',
+    title: 'Kira Artış Bildirimi',
+    description: 'TÜFE oranına dayalı kira artış bildirimi. TBK m.344 gereği yıllık artış oranını kiraya veren yazılı olarak bildirir.',
+    articles: ['Mevcut kira bedeli', 'TÜFE oranı', 'Yeni kira bedeli', 'Geçerlilik tarihi', 'Yasal dayanak'],
+    badge: 'Yakından',
     badgeCls: 'bg-amber-500/20 text-amber-400',
     available: false,
   },
   {
-    title: 'Esya Teslim Tutanagi',
-    description: 'Kiralananin esyali tesliminde, mevcut esya ve durumlarini listeleyen tutanak. Giris ve cikista karsilastirmali kontrol saglar.',
-    articles: ['Esya listesi', 'Durum notu (iyi/orta/hasarli)', 'Fotoraf referansi', 'Taraf imzalari', 'Tarih'],
-    badge: 'Yakindan',
+    title: 'Eşya Teslim Tutanağı',
+    description: 'Kiralananın eşyalı tesliminde, mevcut eşya ve durumlarını listeleyen tutanak. Giriş ve çıkışta karşılaştırmalı kontrol sağlar.',
+    articles: ['Eşya listesi', 'Durum notu (iyi/orta/hasarlı)', 'Fotoğraf referansı', 'Taraf imzaları', 'Tarih'],
+    badge: 'Yakından',
     badgeCls: 'bg-amber-500/20 text-amber-400',
     available: false,
   },
@@ -72,18 +72,18 @@ export default function SablonlarPage() {
       <section className="border-b border-slate-700/50 bg-gradient-to-b from-[#0d1b2a] to-[#0a1628] py-16 text-center">
         <div className="mx-auto max-w-3xl px-4">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">
-            Hukuki Belge Sablonlari
+            Hukuki Belge Şablonları
           </h1>
           <p className="mt-4 text-lg text-slate-400">
-            Turk Borclar Kanunu&apos;na uygun, profesyonel kira hukuku belge sablonlari.
-            Kira Güvence platformunda ucretsiz kullanin.
+            Türk Borçlar Kanunu&apos;na uygun, profesyonel kira hukuku belge şablonları.
+            Kira Güvence platformunda ücretsiz kullanın.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-400">
               TBK Uyumlu
             </span>
             <span className="rounded-full bg-blue-500/15 px-3 py-1 text-xs font-medium text-blue-400">
-              Ucretsiz
+              Ücretsiz
             </span>
             <span className="rounded-full bg-purple-500/15 px-3 py-1 text-xs font-medium text-purple-400">
               Profesyonel Format
@@ -107,7 +107,7 @@ export default function SablonlarPage() {
                     {hero.badge}
                   </span>
                   <span className="inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-400">
-                    Hemen Kullanilabilir
+                    Hemen Kullanılabilir
                   </span>
                 </div>
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">{hero.title}</h2>
@@ -116,12 +116,12 @@ export default function SablonlarPage() {
                   href="/auth/register"
                   className="mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Ucretsiz Hesap Olustur
+                  Ücretsiz Hesap Oluştur
                 </Link>
               </div>
 
               <div className="relative mt-6 md:mt-0 md:w-64 shrink-0">
-                <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Icerik</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">İçerik</div>
                 <ul className="space-y-2">
                   {hero.articles.map((a) => (
                     <li key={a} className="flex items-center gap-2 text-sm text-slate-300">
@@ -140,7 +140,7 @@ export default function SablonlarPage() {
 
       {/* Upcoming Templates Grid */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="mb-6 text-xl font-semibold text-white">Yakinda Eklenecek Sablonlar</h2>
+        <h2 className="mb-6 text-xl font-semibold text-white">Yakında Eklenecek Şablonlar</h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {templates.filter((t) => !t.available).map((t) => (
             <div
@@ -165,7 +165,7 @@ export default function SablonlarPage() {
                 </ul>
               </div>
               <div className="mt-auto rounded-lg border border-slate-700/50 bg-slate-800/30 py-2 text-center text-sm font-medium text-slate-500">
-                Cok Yakinda
+                Çok Yakında
               </div>
             </div>
           ))}
@@ -174,9 +174,9 @@ export default function SablonlarPage() {
         {/* Notification prompt */}
         <div className="mt-8 rounded-xl border border-blue-500/20 bg-blue-500/5 px-6 py-4 text-center">
           <p className="text-sm text-slate-300">
-            Yeni sablonlar eklendikce bildirim almak ister misiniz?{' '}
+            Yeni şablonlar eklendikçe bildirim almak ister misiniz?{' '}
             <Link href="/auth/register" className="font-semibold text-blue-400 hover:text-blue-300 underline underline-offset-2 transition">
-              Ucretsiz kayit olun
+              Ücretsiz kayıt olun
             </Link>
           </p>
         </div>
@@ -184,19 +184,19 @@ export default function SablonlarPage() {
         {/* Info box */}
         <div className="mt-12 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-8 text-center">
           <h2 className="mb-3 text-xl font-semibold text-white">
-            Neden Kira Güvence Sablonlari?
+            Neden Kira Güvence Şablonları?
           </h2>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-slate-400">
-            Tum sablonlarimiz hukuk danismanlari tarafindan hazirlanmis ve 6098 sayili
-            Turk Borclar Kanunu&apos;na uygun olarak duzenlenmistir. Platformumuza kayit olarak
-            sablonlari otomatik doldurma, PDF indirme ve dijital arsivleme ozelliklerinden
+            Tüm şablonlarımız hukuk danışmanları tarafından hazırlanmış ve 6098 sayılı
+            Türk Borçlar Kanunu&apos;na uygun olarak düzenlenmiştir. Platformumuza kayıt olarak
+            şablonları otomatik doldurma, PDF indirme ve dijital arşivleme özelliklerinden
             yararlanabilirsiniz.
           </p>
           <Link
             href="/auth/register"
             className="mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
-            Ucretsiz Hesap Olustur
+            Ücretsiz Hesap Oluştur
           </Link>
         </div>
       </section>

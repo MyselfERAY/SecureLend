@@ -28,19 +28,19 @@ interface PromoStats {
 }
 
 const PROMO_TYPES = [
-  { value: 'FIRST_MONTHS_FREE', label: 'Ilk Aylar Ucretsiz' },
-  { value: 'RENEWAL_DISCOUNT', label: 'Yenileme Indirimi' },
+  { value: 'FIRST_MONTHS_FREE', label: 'İlk Aylar Ücretsiz' },
+  { value: 'RENEWAL_DISCOUNT', label: 'Yenileme İndirimi' },
   { value: 'REFERRAL_BONUS', label: 'Referans Bonusu' },
-  { value: 'LOYALTY_REWARD', label: 'Sadakat Odulu' },
-  { value: 'CUSTOM', label: 'Ozel' },
+  { value: 'LOYALTY_REWARD', label: 'Sadakat Ödülü' },
+  { value: 'CUSTOM', label: 'Özel' },
 ];
 
 const typeLabel: Record<string, string> = {
-  FIRST_MONTHS_FREE: 'Ilk Aylar Ucretsiz',
-  RENEWAL_DISCOUNT: 'Yenileme Indirimi',
+  FIRST_MONTHS_FREE: 'İlk Aylar Ücretsiz',
+  RENEWAL_DISCOUNT: 'Yenileme İndirimi',
   REFERRAL_BONUS: 'Referans Bonusu',
-  LOYALTY_REWARD: 'Sadakat Odulu',
-  CUSTOM: 'Ozel',
+  LOYALTY_REWARD: 'Sadakat Ödülü',
+  CUSTOM: 'Özel',
 };
 
 const typeColor: Record<string, string> = {
@@ -128,14 +128,14 @@ export default function AdminPromosPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Promosyon Yonetimi</h1>
-          <p className="text-sm text-gray-500 mt-1">Sablon olustur, kullanicilara ata, istatistikleri takip et</p>
+          <h1 className="text-2xl font-bold text-gray-900">Promosyon Yönetimi</h1>
+          <p className="text-sm text-gray-500 mt-1">Şablon oluştur, kullanıcılara ata, istatistikleri takip et</p>
         </div>
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
         >
-          {showCreate ? 'Iptal' : '+ Yeni Sablon'}
+          {showCreate ? 'İptal' : '+ Yeni Şablon'}
         </button>
       </div>
 
@@ -143,7 +143,7 @@ export default function AdminPromosPage() {
       {stats && (
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-xs text-gray-500 font-medium">Toplam Sablon</div>
+            <div className="text-xs text-gray-500 font-medium">Toplam Şablon</div>
             <div className="text-2xl font-bold text-gray-900 mt-1">{stats.templates}</div>
           </div>
           <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4">
@@ -151,7 +151,7 @@ export default function AdminPromosPage() {
             <div className="text-2xl font-bold text-emerald-700 mt-1">{stats.totalActive}</div>
           </div>
           <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
-            <div className="text-xs text-blue-600 font-medium">Kullanilmis</div>
+            <div className="text-xs text-blue-600 font-medium">Kullanılmış</div>
             <div className="text-2xl font-bold text-blue-700 mt-1">{stats.totalUsed}</div>
           </div>
         </div>
@@ -160,10 +160,10 @@ export default function AdminPromosPage() {
       {/* Create Form */}
       {showCreate && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Yeni Promosyon Sablonu</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Yeni Promosyon Şablonu</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sablon Adi *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Şablon Adı *</label>
               <input
                 type="text"
                 value={form.name}
@@ -173,7 +173,7 @@ export default function AdminPromosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tur</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tür</label>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
@@ -185,17 +185,17 @@ export default function AdminPromosPage() {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Aciklama</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
               <input
                 type="text"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Promosyon aciklamasi"
+                placeholder="Promosyon açıklaması"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Indirim Orani (%)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">İndirim Oranı (%)</label>
               <input
                 type="number"
                 min="1"
@@ -206,7 +206,7 @@ export default function AdminPromosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sure (Ay)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Süre (Ay)</label>
               <input
                 type="number"
                 min="1"
@@ -217,13 +217,13 @@ export default function AdminPromosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Maks Kullanim (bos = sinirsiz)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Maks Kullanım (boş = sınırsız</label>
               <input
                 type="number"
                 min="0"
                 value={form.maxUsageCount}
                 onChange={(e) => setForm({ ...form, maxUsageCount: e.target.value })}
-                placeholder="Sinirsiz"
+                placeholder="Sınırsız"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
               />
             </div>
@@ -235,10 +235,10 @@ export default function AdminPromosPage() {
                 onChange={(e) => setForm({ ...form, isAutoApply: e.target.checked })}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="autoApply" className="text-sm text-gray-700">Kayit sirasinda otomatik uygula</label>
+              <label htmlFor="autoApply" className="text-sm text-gray-700">Kayıt sırasında otomatik uygula</label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gecerlilik Baslangici</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Geçerlilik Başlangıcı</label>
               <input
                 type="date"
                 value={form.validFrom}
@@ -247,7 +247,7 @@ export default function AdminPromosPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gecerlilik Bitisi</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Geçerlilik Bitişi</label>
               <input
                 type="date"
                 value={form.validUntil}
@@ -262,7 +262,7 @@ export default function AdminPromosPage() {
               disabled={saving || !form.name.trim()}
               className="px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
-              {saving ? 'Olusturuluyor...' : 'Sablon Olustur'}
+              {saving ? 'Oluşturuluyor...' : 'Şablon Oluştur'}
             </button>
           </div>
         </div>
@@ -270,15 +270,15 @@ export default function AdminPromosPage() {
 
       {/* Templates Table */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yukleniyor...</div>
+        <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
       ) : templates.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <p className="text-gray-500">Henuz promosyon sablonu olusturulmamis.</p>
+          <p className="text-gray-500">Henüz promosyon şablonu oluşturulmamış.</p>
           <button
             onClick={() => setShowCreate(true)}
             className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
-            Ilk sablonu olustur
+            İlk şablonu oluştur
           </button>
         </div>
       ) : (
@@ -287,8 +287,8 @@ export default function AdminPromosPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Sablon</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Tur</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Şablon</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Tür</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-600">Indirim</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-600">Sure</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-600">Kullanim</th>

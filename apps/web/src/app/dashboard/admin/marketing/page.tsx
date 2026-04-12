@@ -63,8 +63,8 @@ const reportTypeColor: Record<ReportType, string> = {
 const researchStatusLabel: Record<ResearchStatus, string> = {
   PENDING: 'Bekliyor',
   IN_PROGRESS: 'Devam Ediyor',
-  COMPLETED: 'Tamamlandi',
-  FAILED: 'Basarisiz',
+  COMPLETED: 'Tamamlandı',
+  FAILED: 'Başarısız',
 };
 
 const researchStatusColor: Record<ResearchStatus, string> = {
@@ -77,8 +77,8 @@ const researchStatusColor: Record<ResearchStatus, string> = {
 const taskStatusLabel: Record<TaskStatus, string> = {
   TODO: 'Yapilacak',
   IN_PROGRESS: 'Devam Ediyor',
-  COMPLETED: 'Tamamlandi',
-  CANCELLED: 'Iptal',
+  COMPLETED: 'Tamamlandı',
+  CANCELLED: 'İptal',
 };
 
 const taskStatusColor: Record<TaskStatus, string> = {
@@ -91,7 +91,7 @@ const taskStatusColor: Record<TaskStatus, string> = {
 type FilterType = 'ALL' | ReportType;
 
 const filterOptions: { key: FilterType; label: string }[] = [
-  { key: 'ALL', label: 'Tumu' },
+  { key: 'ALL', label: 'Tümü' },
   { key: 'DAILY_STRATEGY', label: 'Gunluk Strateji' },
   { key: 'MARKET_ANALYSIS', label: 'Pazar Analizi' },
   { key: 'RESEARCH', label: 'Arastirma' },
@@ -273,7 +273,7 @@ export default function MarketingReportsPage() {
         setResearchError(res.message || 'Talep gonderilemedi.');
       }
     } catch {
-      setResearchError('Bir hata olustu. Tekrar deneyin.');
+      setResearchError('Bir hata oluştu. Tekrar deneyin.');
     }
     setResearchLoading(false);
   };
@@ -344,13 +344,13 @@ export default function MarketingReportsPage() {
               disabled={researchLoading}
               className="rounded-xl bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50"
             >
-              {researchLoading ? 'Gonderiliyor...' : 'Gonder'}
+              {researchLoading ? 'Gönderiliyor...' : 'Gonder'}
             </button>
             <button
               onClick={() => setShowResearchForm(false)}
               className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Iptal
+              İptal
             </button>
           </div>
         </div>
@@ -375,17 +375,17 @@ export default function MarketingReportsPage() {
 
       {/* ── Report List + Detail ── */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yukleniyor...</div>
+        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
-          {filterType === 'ALL' ? 'Henuz rapor yok.' : 'Bu turde rapor bulunamadi.'}
+          {filterType === 'ALL' ? 'Henüz rapor yok.' : 'Bu türde rapor bulunamadı.'}
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-5">
           {/* Left: Report list (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             {refreshing && (
-              <div className="text-right text-xs text-slate-400 animate-pulse">Guncelleniyor...</div>
+              <div className="text-right text-xs text-slate-400 animate-pulse">Güncelleniyor...</div>
             )}
             {filtered.map((r) => (
               <button
@@ -495,7 +495,7 @@ export default function MarketingReportsPage() {
                           >
                             {taskActionLoading === task.id
                               ? 'Ekleniyor...'
-                              : 'Gorev Takibine Ekle'}
+                              : 'Görev Takibine Ekle'}
                           </button>
                         </div>
                       </div>
@@ -513,7 +513,7 @@ export default function MarketingReportsPage() {
         <h2 className="text-lg font-bold text-slate-900">Arastirma Talepleri</h2>
         {researchRequests.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 py-8 text-center text-sm text-slate-400">
-            Henuz arastirma talebi yok.
+            Henüz araştırma talebi yok.
           </div>
         ) : (
           <div className="space-y-2">

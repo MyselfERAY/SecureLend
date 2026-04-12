@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cerez Politikasi',
-  description: 'Kira Güvence cerez politikasi. Web sitemizde kullanilan cerezler hakkinda bilgi.',
+  title: 'Çerez Politikası',
+  description: 'Kira Güvence çerez politikası. Web sitemizde kullanılan çerezler hakkında bilgi.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/cerez-politikasi' },
 };

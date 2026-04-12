@@ -52,11 +52,11 @@ interface Transaction {
 type ActiveTab = 'kmh' | 'accounts';
 
 const employmentLabels: Record<string, string> = {
-  EMPLOYED: 'Ucretli Calisan',
+  EMPLOYED: 'Ücretli Çalışan',
   SELF_EMPLOYED: 'Serbest Meslek',
   RETIRED: 'Emekli',
-  STUDENT: 'Ogrenci',
-  UNEMPLOYED: 'Calismayan',
+  STUDENT: 'Öğrenci',
+  UNEMPLOYED: 'Çalışmayan',
 };
 
 export default function BankPage() {
@@ -133,15 +133,15 @@ export default function BankPage() {
       });
       if (res.status === 'success' && res.data) {
         if (res.data.status === 'APPROVED') {
-          setFormSuccess(`KMH basvurunuz ONAYLANDI! Limit: ${Number(res.data.approvedLimit).toLocaleString('tr-TR')} TL. Digital onboarding isleminizi tamamlayin.`);
+          setFormSuccess(`KMH başvurunuz ONAYLANDI! Limit: ${Number(res.data.approvedLimit).toLocaleString('tr-TR')} TL. Digital onboarding işleminizi tamamlayın.`);
         } else {
-          setFormError(`Basvurunuz reddedildi: ${res.data.rejectionReason}`);
+          setFormError(`Başvurunuz reddedildi: ${res.data.rejectionReason}`);
         }
         setShowForm(false);
         setFormEmployment(''); setFormIncome(''); setFormEmployer(''); setFormAddress(''); setFormRent('');
         await loadApplications();
       } else {
-        setFormError((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Hata olustu');
+        setFormError((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Hata oluştu');
       }
     } catch (err: any) { setFormError(err.message); }
     finally { setSubmitting(false); }
@@ -175,8 +175,8 @@ export default function BankPage() {
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
         {[
-          { key: 'kmh' as ActiveTab, label: 'KMH Basvurusu' },
-          { key: 'accounts' as ActiveTab, label: 'Hesaplar & Islemler' },
+          { key: 'kmh' as ActiveTab, label: 'KMH Başvurusu' },
+          { key: 'accounts' as ActiveTab, label: 'Hesaplar & İşlemler' },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -214,7 +214,7 @@ export default function BankPage() {
               <h3 className="mb-2 text-lg font-bold text-yellow-400">Digital Onboarding Bekliyor</h3>
               <p className="mb-3 text-sm text-yellow-300/80">
                 KMH basvurunuz onaylandi. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
-                Hesabinizi aktif hale getirmek icin digital onboarding isleminizi tamamlayin.
+                Hesabınızı aktif hale getirmek için digital onboarding işleminizi tamamlayın.
               </p>
               <p className="mb-4 text-xs text-yellow-400/60">Referans: {pendingOnboarding.bankReferenceNo}</p>
               <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
@@ -225,8 +225,8 @@ export default function BankPage() {
                   <div>
                     <p className="text-sm font-semibold text-blue-300">Mobil Uygulama Gerekli</p>
                     <p className="mt-1 text-sm text-blue-300/80">
-                      Digital onboarding islemi (kimlik dogrulama, selfie, video dogrulama) yalnizca mobil uygulama uzerinden tamamlanabilir.
-                      Lutfen Kira Güvence mobil uygulamasini indirip onboarding isleminizi oradan tamamlayin.
+                      Digital onboarding işlemi (kimlik doğrulama, selfie, video doğrulama) yalnızca mobil uygulama üzerinden tamamlanabilir.
+                      Lutfen Kira Güvence mobil uygulamasini indirip onboarding işleminizi oradan tamamlayın.
                     </p>
                   </div>
                 </div>
@@ -237,44 +237,44 @@ export default function BankPage() {
           {canApply && !showForm && (
             <div className="flex justify-end">
               <button onClick={() => setShowForm(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
-                Yeni KMH Basvurusu
+                Yeni KMH Başvurusu
               </button>
             </div>
           )}
 
           {showForm && (
             <form onSubmit={handleApplyKmh} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-white">KMH Basvurusu</h3>
+              <h3 className="text-lg font-semibold text-white">KMH Başvurusu</h3>
               <p className="text-sm text-slate-400">
-                Kredili Mevduat Hesabi (KMH) basvurusu icin asagidaki bilgileri doldurun.
+                Kredili Mevduat Hesabı (KMH) başvurusu için aşağıdaki bilgileri doldurun.
               </p>
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
-                <strong className="text-amber-200">KVKK Bilgilendirmesi:</strong> Kayit sirasinda
-                verdiginiz acik riza kapsaminda; gelir belgesi, istihdam bilgisi ve kredi gecmisi
-                bu basvuru icin islenecek ve anlasmalı bankalar ile KKB ile paylasilacaktir.{' '}
+                <strong className="text-amber-200">KVKK Bilgilendirmesi:</strong> Kayıt sırasında
+                verdiğiniz açık rıza kapsamında; gelir belgesi, istihdam bilgisi ve kredi geçmişi
+                bu başvuru için işlenecek ve anlaşmalı bankalar ile KKB ile paylaşılacaktır.{' '}
                 <Link href="/acik-riza" target="_blank" className="underline text-amber-200 hover:text-amber-100">
-                  Acik Riza Formu
+                  Açık Rıza Formu
                 </Link>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className={labelCls}>Calisma Durumu *</label>
+                  <label className={labelCls}>Çalışma Durumu *</label>
                   <select value={formEmployment} onChange={(e) => setFormEmployment(e.target.value)} className={inputCls} required>
-                    <option value="">Secin...</option>
-                    <option value="EMPLOYED">Ucretli Calisan</option>
+                    <option value="">Seçin...</option>
+                    <option value="EMPLOYED">Ücretli Çalışan</option>
                     <option value="SELF_EMPLOYED">Serbest Meslek</option>
                     <option value="RETIRED">Emekli</option>
-                    <option value="STUDENT">Ogrenci</option>
-                    <option value="UNEMPLOYED">Calismayan</option>
+                    <option value="STUDENT">Öğrenci</option>
+                    <option value="UNEMPLOYED">Çalışmayan</option>
                   </select>
                 </div>
                 <div>
-                  <label className={labelCls}>Aylik Gelir (TL) *</label>
+                  <label className={labelCls}>Aylık Gelir (TL) *</label>
                   <input type="number" value={formIncome} onChange={(e) => setFormIncome(e.target.value)} placeholder="ornegin: 30000" className={inputCls} required />
                 </div>
                 <div>
-                  <label className={labelCls}>Isveren Adi</label>
+                  <label className={labelCls}>İşveren Adı</label>
                   <input type="text" value={formEmployer} onChange={(e) => setFormEmployer(e.target.value)} placeholder="Opsiyonel" className={inputCls} />
                 </div>
                 <div>
@@ -282,7 +282,7 @@ export default function BankPage() {
                   <input type="number" value={formRent} onChange={(e) => setFormRent(e.target.value)} placeholder="ornegin: 15000" className={inputCls} required />
                 </div>
                 <div className="md:col-span-2">
-                  <label className={labelCls}>Ikamet Adresi *</label>
+                  <label className={labelCls}>İkamet Adresi *</label>
                   <input type="text" value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="Tam adresinizi girin" className={inputCls} required />
                 </div>
               </div>
@@ -290,18 +290,18 @@ export default function BankPage() {
               <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-300">
                 <div className="mb-1 font-medium text-blue-400">Onay Kriterleri</div>
                 <ul className="list-inside list-disc space-y-0.5 text-xs text-blue-300/80">
-                  <li>Aylik geliriniz tahmini kira bedelinin en az 2 kati olmalidir</li>
-                  <li>Onaylanirsa limit: gelirinizin 3 kati (max 500.000 TL)</li>
-                  <li>Onay sonrasi digital onboarding ile hesabiniz acilir</li>
+                  <li>Aylık geliriniz tahmini kira bedelinin en az 2 katı olmalıdır</li>
+                  <li>Onaylanırsa limit: gelirinizin 3 katı (max 500.000 TL)</li>
+                  <li>Onay sonrası digital onboarding ile hesabınız açılır</li>
                 </ul>
               </div>
 
               <div className="flex gap-3">
                 <button type="submit" disabled={submitting} className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
-                  {submitting ? 'Basvuru yapiliyor...' : 'Basvur'}
+                  {submitting ? 'Başvuru yapılıyor...' : 'Basvur'}
                 </button>
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-slate-600 px-6 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
-                  Iptal
+                  İptal
                 </button>
               </div>
             </form>
@@ -310,7 +310,7 @@ export default function BankPage() {
           {/* Application History */}
           {applications.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold text-white">Basvuru Gecmisi</h3>
+              <h3 className="font-semibold text-white">Başvuru Geçmişi</h3>
               {applications.map((app) => (
                 <div key={app.id} className={`rounded-xl border-2 p-5 ${
                   app.status === 'APPROVED' && app.onboardingCompleted ? 'border-emerald-500/30 bg-[#0d1b2a]' :
@@ -335,10 +335,10 @@ export default function BankPage() {
                         )}
                       </div>
                       <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-400">
-                        <div><span className="text-slate-500">Calisma:</span> {employmentLabels[app.employmentStatus] || app.employmentStatus}</div>
+                        <div><span className="text-slate-500">Çalışma:</span> {employmentLabels[app.employmentStatus] || app.employmentStatus}</div>
                         <div><span className="text-slate-500">Gelir:</span> {app.monthlyIncome.toLocaleString('tr-TR')} TL</div>
                         <div><span className="text-slate-500">Tahmini Kira:</span> {app.estimatedRent.toLocaleString('tr-TR')} TL</div>
-                        {app.employerName && <div><span className="text-slate-500">Isveren:</span> {app.employerName}</div>}
+                        {app.employerName && <div><span className="text-slate-500">İşveren:</span> {app.employerName}</div>}
                       </div>
                       {app.rejectionReason && (
                         <div className="mt-1 text-sm text-red-400">Sebep: {app.rejectionReason}</div>
@@ -372,9 +372,9 @@ export default function BankPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
-              <div className="text-lg font-medium text-slate-300">Henuz KMH basvurunuz yok</div>
+              <div className="text-lg font-medium text-slate-300">Henüz KMH başvurunuz yok</div>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-                Kredili Mevduat Hesabi (KMH) ile sozlesme imzalayabilir ve kira odemelerinizi guvence altina alabilirsiniz.
+                Kredili Mevduat Hesabı (KMH) ile sözleşme imzalayabilir ve kira ödemelerinizi güvence altına alabilirsiniz.
               </p>
             </div>
           )}
@@ -391,9 +391,9 @@ export default function BankPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
-              <div className="text-lg font-medium text-slate-300">Henuz banka hesabiniz yok</div>
+              <div className="text-lg font-medium text-slate-300">Henüz banka hesabınız yok</div>
               <p className="mt-2 text-sm text-slate-500">
-                KMH basvurusu yapip onboarding tamamladiktan sonra hesabiniz burada gorunecektir.
+                KMH başvurusu yapıp onboarding tamamladıktan sonra hesabınız burada görünecektir.
               </p>
             </div>
           ) : (
@@ -454,7 +454,7 @@ export default function BankPage() {
 
           {selectedAccount && transactions.length === 0 && (
             <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-8 text-center">
-              <div className="text-slate-500">Bu hesapta henuz islem yok</div>
+              <div className="text-slate-500">Bu hesapta henüz işlem yok</div>
             </div>
           )}
         </>

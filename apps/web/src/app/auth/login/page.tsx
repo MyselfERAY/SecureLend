@@ -31,7 +31,7 @@ export default function LoginPage() {
       await login(tckn, phone);
       router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}`);
     } catch (err: any) {
-      setError(err.message || 'Giris hatasi');
+      setError(err.message || 'Giriş hatası');
     } finally {
       setLoading(false);
     }
@@ -45,27 +45,27 @@ export default function LoginPage() {
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
         <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white sm:p-10">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Secure Access</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight">Hesabiniza guvenli giris yapin</h1>
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight">Hesabınıza güvenli giriş yapın</h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
-            Kimlik dogrulama ve SMS OTP adimlari ile kiralama operasyonunu guvenli sekilde yonetin.
+            Kimlik doğrulama ve SMS OTP adımları ile kiralama operasyonunu güvenli şekilde yönetin.
           </p>
           <div className="mt-8 space-y-3 text-sm text-slate-200">
-            <p>• TCKN bazli kimlik dogrulama</p>
-            <p>• OTP ile ikinci katman guvenlik</p>
-            <p>• Islem kayitlari ve izlenebilir surec</p>
+            <p>• TCKN bazlı kimlik doğrulama</p>
+            <p>• OTP ile ikinci katman güvenlik</p>
+            <p>• İşlem kayıtları ve izlenebilir süreç</p>
           </div>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] sm:p-10">
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900">Giris Yap</h2>
-            <p className="mt-2 text-sm text-slate-600">Devam etmek icin bilgilerinizi girin.</p>
+            <h2 className="text-2xl font-extrabold text-slate-900">Giriş Yap</h2>
+            <p className="mt-2 text-sm text-slate-600">Devam etmek için bilgilerinizi girin.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             {sessionExpired && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                Oturum suresi doldu. Lutfen tekrar giris yapin.
+                Oturum süresi doldu. Lütfen tekrar giriş yapın.
               </div>
             )}
             {error && (
@@ -88,7 +88,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">Telefon Numarasi</label>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">Telefon Numarası</label>
               <div className="flex items-center">
                 <span className="rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 px-3 py-3 text-sm font-semibold text-slate-500">+90</span>
                 <input
@@ -109,20 +109,20 @@ export default function LoginPage() {
               disabled={loading || tckn.length !== 11 || phone.length !== 10}
               className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? 'Giris yapiliyor...' : 'Devam Et'}
+              {loading ? 'Giriş yapılıyor...' : 'Devam Et'}
             </button>
 
             <p className="text-center text-sm text-slate-600">
-              Hesabiniz yok mu?{' '}
+              Hesabınız yok mu?{' '}
               <Link href="/auth/register" className="font-semibold text-blue-700 hover:text-blue-800">
-                Kayit Ol
+                Kayıt Ol
               </Link>
             </p>
 
             <p className="text-center text-sm text-slate-600">
-              Kimlik dogrulama icin{' '}
+              Kimlik doğrulama için{' '}
               <Link href="/kps" className="font-semibold text-blue-700 hover:text-blue-800">
-                KPS Dogrulama
+                KPS Doğrulama
               </Link>
             </p>
           </form>

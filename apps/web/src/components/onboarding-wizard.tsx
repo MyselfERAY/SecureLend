@@ -103,7 +103,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
         });
       }
 
-      const roleLabel = role === 'TENANT' ? 'Kiraci' : role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiraci + Ev Sahibi';
+      const roleLabel = role === 'TENANT' ? 'Kiracı' : role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiracı + Ev Sahibi';
       setSummary((prev) => ({ ...prev, role: roleLabel }));
 
       if (isLandlordFlow) {
@@ -113,7 +113,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
         setCurrentStep(2);
       }
     } catch {
-      setError('Rol atamasinda bir hata olustu. Lutfen tekrar deneyin.');
+      setError('Rol atamasında bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }
@@ -147,10 +147,10 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
         setSummary((prev) => ({ ...prev, property: propertyForm.title }));
         setCurrentStep(3);
       } else {
-        setError((res as any).data?.message || 'Mulk eklenirken bir hata olustu.');
+        setError((res as any).data?.message || 'Mülk eklenirken bir hata oluştu.');
       }
     } catch {
-      setError('Mulk eklenirken bir hata olustu. Lutfen tekrar deneyin.');
+      setError('Mülk eklenirken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }
@@ -158,7 +158,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
   const handleTenantSearch = async () => {
     if (!phoneSearch || !/^5\d{9}$/.test(phoneSearch)) {
-      setError('Gecerli bir telefon numarasi girin (5XXXXXXXXX)');
+      setError('Geçerli bir telefon numarası girin (5XXXXXXXXX)');
       return;
     }
     setLoading(true);
@@ -175,7 +175,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
       }
       setSearchDone(true);
     } catch {
-      setError('Arama sirasinda bir hata olustu.');
+      setError('Arama sırasında bir hata oluştu.');
     } finally {
       setLoading(false);
     }
@@ -204,7 +204,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
     return (
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-400">Adim {step} / {totalSteps}</span>
+          <span className="text-sm text-slate-400">Adım {step} / {totalSteps}</span>
         </div>
         <div className="h-2 w-full rounded-full bg-slate-700/50">
           <div
@@ -218,8 +218,8 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
   const renderRoleSelection = () => (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Hosgeldiniz, {userName}!</h2>
-      <p className="text-slate-400 mb-8">Rolunuzu secin</p>
+      <h2 className="text-2xl font-bold text-white mb-2">Hoşgeldiniz, {userName}!</h2>
+      <p className="text-slate-400 mb-8">Rolünüzü seçin</p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Kiraci */}
@@ -239,8 +239,8 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
-          <div className="font-semibold text-white text-lg mb-1">Kiraciyim</div>
-          <p className="text-sm text-slate-400">Kira odemelerimi yonetmek istiyorum</p>
+          <div className="font-semibold text-white text-lg mb-1">Kiracıyım</div>
+          <p className="text-sm text-slate-400">Kira ödemelerimi yönetmek istiyorum</p>
         </button>
 
         {/* Ev Sahibi */}
@@ -261,7 +261,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
             </svg>
           </div>
           <div className="font-semibold text-white text-lg mb-1">Ev Sahibiyim</div>
-          <p className="text-sm text-slate-400">Mulklerimi ve kiracilari yonetmek istiyorum</p>
+          <p className="text-sm text-slate-400">Mülklerimi ve kiracıları yönetmek istiyorum</p>
         </button>
 
         {/* Ikisi de */}
@@ -281,8 +281,8 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
             </svg>
           </div>
-          <div className="font-semibold text-white text-lg mb-1">Ikisi de</div>
-          <p className="text-sm text-slate-400">Hem kiraci hem ev sahibiyim</p>
+          <div className="font-semibold text-white text-lg mb-1">İkisi de</div>
+          <p className="text-sm text-slate-400">Hem kiracı hem ev sahibiyim</p>
         </button>
       </div>
 
@@ -303,17 +303,17 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
   const renderPropertyForm = () => (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Ilk mulkunuzu ekleyin</h2>
-      <p className="text-slate-400 mb-8">Mulk bilgilerinizi girin</p>
+      <h2 className="text-2xl font-bold text-white mb-2">İlk mülkünüzü ekleyin</h2>
+      <p className="text-slate-400 mb-8">Mülk bilgilerinizi girin</p>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1.5">Mulk Adi</label>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">Mülk Adı</label>
           <input
             type="text"
             value={propertyForm.title}
             onChange={(e) => setPropertyForm((prev) => ({ ...prev, title: e.target.value }))}
-            placeholder="Orn: Kadikoy 2+1 Daire"
+            placeholder="Örn: Kadıköy 2+1 Daire"
             className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
@@ -331,25 +331,25 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Sehir</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Şehir</label>
             <select
               value={propertyForm.city}
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, city: e.target.value, district: '' }))}
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="">Secin</option>
+              <option value="">Seçin</option>
               {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Ilce</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">İlçe</label>
             <select
               value={propertyForm.district}
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, district: e.target.value }))}
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               disabled={!propertyForm.city}
             >
-              <option value="">Secin</option>
+              <option value="">Seçin</option>
               {(DISTRICTS[propertyForm.city] || []).map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
@@ -357,27 +357,27 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Mulk Tipi</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Mülk Tipi</label>
             <select
               value={propertyForm.propertyType}
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, propertyType: e.target.value }))}
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="APARTMENT">Daire</option>
-              <option value="HOUSE">Mustakil Ev</option>
+              <option value="HOUSE">Müstakil Ev</option>
               <option value="VILLA">Villa</option>
               <option value="COMMERCIAL">Ticari</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Oda Sayisi</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Oda Sayısı</label>
             <select
               value={propertyForm.roomCount}
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, roomCount: e.target.value }))}
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="">Secin</option>
-              <option value="1+0">1+0 (Studyo)</option>
+              <option value="">Seçin</option>
+              <option value="1+0">1+0 (Stüdyo)</option>
               <option value="1+1">1+1</option>
               <option value="2+1">2+1</option>
               <option value="3+1">3+1</option>
@@ -392,7 +392,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Brut m2</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Brüt m2</label>
             <input
               type="number"
               value={propertyForm.areaM2}
@@ -402,7 +402,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Bulundugu Kat</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Bulunduğu Kat</label>
             <input
               type="number"
               value={propertyForm.floor}
@@ -425,7 +425,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Aylik Kira (TL)</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Aylık Kira (TL)</label>
             <input
               type="number"
               value={propertyForm.monthlyRent}
@@ -471,7 +471,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
             disabled={loading || !propertyForm.title || !propertyForm.addressLine1 || !propertyForm.city || !propertyForm.district || !propertyForm.monthlyRent}
             className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Ekleniyor...' : 'Mulk Ekle'}
+            {loading ? 'Ekleniyor...' : 'Mülk Ekle'}
           </button>
         </div>
       </div>
@@ -480,12 +480,12 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
   const renderTenantInvite = () => (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Kiracinizi davet edin</h2>
-      <p className="text-slate-400 mb-8">Kiracinizin telefon numarasini girerek sisteme davet edin</p>
+      <h2 className="text-2xl font-bold text-white mb-2">Kiracınızı davet edin</h2>
+      <p className="text-slate-400 mb-8">Kiracınızın telefon numarasını girerek sisteme davet edin</p>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1.5">Telefon Numarasi</label>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">Telefon Numarası</label>
           <div className="flex gap-3">
             <div className="flex items-center rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-slate-400">
               +90
@@ -509,7 +509,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               disabled={loading || phoneSearch.length !== 10}
               className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Araniyor...' : 'Ara'}
+              {loading ? 'Aranıyor...' : 'Ara'}
             </button>
           </div>
         </div>
@@ -539,7 +539,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <p className="text-slate-400 text-sm">Kullanici bulunamadi. Kiraciniz henuz kayit olmamis olabilir.</p>
+            <p className="text-slate-400 text-sm">Kullanıcı bulunamadı. Kiracınız henüz kayıt olmamış olabilir.</p>
           </div>
         )}
       </div>
@@ -581,8 +581,8 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h2 className="text-2xl font-bold text-white mb-2">Tebrikler! Hazirsiniz</h2>
-      <p className="text-slate-400 mb-8">Hesabiniz basariyla ayarlandi</p>
+      <h2 className="text-2xl font-bold text-white mb-2">Tebrikler! Hazırsınız</h2>
+      <p className="text-slate-400 mb-8">Hesabınız başarıyla ayarlandı</p>
 
       <div className="mx-auto max-w-md rounded-2xl border border-slate-700/50 bg-[#0a1628] p-6 text-left space-y-3">
         <div className="flex items-center gap-3">
@@ -601,7 +601,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-white">Mulk: <span className="text-emerald-400">{summary.property}</span></span>
+            <span className="text-white">Mülk: <span className="text-emerald-400">{summary.property}</span></span>
           </div>
         )}
 
@@ -612,13 +612,13 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-white">Kiraci: <span className="text-emerald-400">{summary.tenant}</span></span>
+            <span className="text-white">Kiracı: <span className="text-emerald-400">{summary.tenant}</span></span>
           </div>
         )}
 
         {role === 'TENANT' && !summary.property && (
           <p className="text-sm text-slate-400 pt-2">
-            Ev sahibiniz sozlesme olusturdugunda burada gorunecek.
+            Ev sahibiniz sözleşme oluşturduğunda burada görünecek.
           </p>
         )}
       </div>
@@ -630,7 +630,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
           disabled={loading}
           className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? 'Yukleniyor...' : 'Panele Git'}
+          {loading ? 'Yükleniyor...' : 'Panele Git'}
         </button>
       </div>
     </div>

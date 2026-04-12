@@ -31,49 +31,49 @@ export default function AdminDashboardPage() {
       .finally(() => setLoading(false));
   }, [tokens?.accessToken]);
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Yükleniyor...</div>;
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Admin Paneli</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform yonetim ve komisyon takibi</p>
+        <p className="text-sm text-gray-500 mt-1">Platform yönetim ve komisyon takibi</p>
       </div>
 
       {stats && (
         <>
           {/* Genel Istatistikler */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard title="Kullanicilar" value={stats.totalUsers} color="blue" />
-            <StatCard title="Aktif Sozlesme" value={stats.activeContracts} color="green" />
-            <StatCard title="Toplam Sozlesme" value={stats.totalContracts} color="gray" />
-            <StatCard title="Tamamlanan Odeme" value={stats.completedPayments} color="purple" />
+            <StatCard title="Kullanıcılar" value={stats.totalUsers} color="blue" />
+            <StatCard title="Aktif Sözleşme" value={stats.activeContracts} color="green" />
+            <StatCard title="Toplam Sözleşme" value={stats.totalContracts} color="gray" />
+            <StatCard title="Tamamlanan Ödeme" value={stats.completedPayments} color="purple" />
           </div>
 
-          {/* Finansal Ozet */}
+          {/* Finansal Özet */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Finansal Ozet</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Finansal Özet</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <div className="text-sm text-gray-500">Toplam Islem Hacmi</div>
+                <div className="text-sm text-gray-500">Toplam İşlem Hacmi</div>
                 <div className="text-2xl font-bold text-gray-900 mt-1">
                   {stats.totalRevenue.toLocaleString('tr-TR')} TL
                 </div>
-                <div className="text-xs text-gray-400 mt-1">{stats.commissionCount} islem</div>
+                <div className="text-xs text-gray-400 mt-1">{stats.commissionCount} işlem</div>
               </div>
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200 p-5">
                 <div className="text-sm text-yellow-700">Platform Komisyonu (%1)</div>
                 <div className="text-2xl font-bold text-yellow-800 mt-1">
                   {stats.totalCommission.toLocaleString('tr-TR')} TL
                 </div>
-                <div className="text-xs text-yellow-600 mt-1">Toplam kazanc</div>
+                <div className="text-xs text-yellow-600 mt-1">Toplam kazanç</div>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <div className="text-sm text-gray-500">Ev Sahibi Odemeleri</div>
+                <div className="text-sm text-gray-500">Ev Sahibi Ödemeleri</div>
                 <div className="text-2xl font-bold text-green-700 mt-1">
                   {stats.totalLandlordPayouts.toLocaleString('tr-TR')} TL
                 </div>
-                <div className="text-xs text-gray-400 mt-1">Net ev sahibi odemesi</div>
+                <div className="text-xs text-gray-400 mt-1">Net ev sahibi ödemesi</div>
               </div>
             </div>
           </div>
@@ -82,22 +82,22 @@ export default function AdminDashboardPage() {
 
       {/* Hizli Erisim */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Yonetim</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Yönetim</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <AdminLink href="/dashboard/admin/users" title="Kullanicilar" desc="Tum kullanicilari listele" icon="U" />
-          <AdminLink href="/dashboard/admin/contracts" title="Sozlesmeler" desc="Tum sozlesmeleri goruntule" icon="S" />
-          <AdminLink href="/dashboard/admin/payments" title="Odemeler" desc="Odeme gecmisi ve detaylar" icon="O" />
-          <AdminLink href="/dashboard/admin/commissions" title="Komisyon Raporu" desc="Gelir ve komisyon detaylari" icon="K" />
-          <AdminLink href="/dashboard/admin/support" title="Destek Mesajlari" desc="Kullanici destek talepleri" icon="D" />
-          <AdminLink href="/dashboard/admin/articles" title="Makaleler" desc="AI taslaklar, incele ve yayinla (Sali+Pers)" icon="M" />
+          <AdminLink href="/dashboard/admin/users" title="Kullanıcılar" desc="Tüm kullanıcıları listele" icon="U" />
+          <AdminLink href="/dashboard/admin/contracts" title="Sözleşmeler" desc="Tüm sözleşmeleri görüntüle" icon="S" />
+          <AdminLink href="/dashboard/admin/payments" title="Ödemeler" desc="Ödeme geçmişi ve detaylar" icon="O" />
+          <AdminLink href="/dashboard/admin/commissions" title="Komisyon Raporu" desc="Gelir ve komisyon detayları" icon="K" />
+          <AdminLink href="/dashboard/admin/support" title="Destek Mesajları" desc="Kullanıcı destek talepleri" icon="D" />
+          <AdminLink href="/dashboard/admin/articles" title="Makaleler" desc="AI taslaklar, incele ve yayınla (Salı+Perş)" icon="M" />
           <AdminLink href="/dashboard/admin/suggestions" title="Geliştirme Önerileri" desc="Developer Agent görev listesi" icon="G" />
-          <AdminLink href="/dashboard/admin/po" title="PO Gunlugu" desc="Gunluk urun raporu ve oneriler" icon="P" />
-          <AdminLink href="/dashboard/admin/marketing" title="Pazarlama & Strateji" desc="Pazarlama raporlari ve arastirma" icon="R" />
-          <AdminLink href="/dashboard/admin/tasks" title="Gorev Takibi" desc="Tum gorevler ve son tarihler" icon="T" />
-          <AdminLink href="/dashboard/admin/agents" title="Agent KPI" desc="Agent performansi ve calisma gecmisi" icon="A" />
-          <AdminLink href="/dashboard/admin/promos" title="Promosyonlar" desc="Sablon olustur, ata ve takip et" icon="F" />
-          <AdminLink href="/dashboard/admin/analytics" title="Site Analitigi" desc="Sayfa goruntulemesi, cihaz, hata takibi" icon="A" />
-          <AdminLink href="/dashboard/admin/newsletter" title="Bulten Aboneleri" desc="Newsletter aboneleri ve istatistikler" icon="B" />
+          <AdminLink href="/dashboard/admin/po" title="PO Günlüğü" desc="Günlük ürün raporu ve öneriler" icon="P" />
+          <AdminLink href="/dashboard/admin/marketing" title="Pazarlama & Strateji" desc="Pazarlama raporları ve araştırma" icon="R" />
+          <AdminLink href="/dashboard/admin/tasks" title="Görev Takibi" desc="Tüm görevler ve son tarihler" icon="T" />
+          <AdminLink href="/dashboard/admin/agents" title="Agent KPI" desc="Agent performansı ve çalışma geçmişi" icon="A" />
+          <AdminLink href="/dashboard/admin/promos" title="Promosyonlar" desc="Şablon oluştur, ata ve takip et" icon="F" />
+          <AdminLink href="/dashboard/admin/analytics" title="Site Analitiği" desc="Sayfa görüntülemesi, cihaz, hata takibi" icon="A" />
+          <AdminLink href="/dashboard/admin/newsletter" title="Bülten Aboneleri" desc="Newsletter aboneleri ve istatistikler" icon="B" />
         </div>
       </div>
     </div>

@@ -73,7 +73,7 @@ function VerifyOtpContent() {
       await verifyOtp(phone, otpCode);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'OTP dogrulama hatasi');
+      setError(err.message || 'OTP doğrulama hatası');
       setCode(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {
@@ -90,18 +90,18 @@ function VerifyOtpContent() {
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
         <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white sm:p-10">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Second Factor</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight">SMS dogrulama</h1>
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight">SMS doğrulama</h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
-            Tek kullanimlik kod ile hesabiniza sadece size ait cihazdan erisim saglayin.
+            Tek kullanımlık kod ile hesabınıza sadece size ait cihazdan erişim sağlayın.
           </p>
           <div className="mt-8 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3 text-sm text-slate-200">
-            Gonderilen numara: <span className="font-semibold">{maskedPhone || '-'}</span>
+            Gönderilen numara: <span className="font-semibold">{maskedPhone || '-'}</span>
           </div>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] sm:p-10">
           <h2 className="text-2xl font-extrabold text-slate-900">OTP Kodu</h2>
-          <p className="mt-2 text-sm text-slate-600">6 haneli kodu girerek girisi tamamlayin.</p>
+          <p className="mt-2 text-sm text-slate-600">6 haneli kodu girerek girişi tamamlayın.</p>
 
           <div className="mt-6 space-y-6">
             {error && (
@@ -127,11 +127,11 @@ function VerifyOtpContent() {
             </div>
 
             {loading && (
-              <div className="text-center text-sm font-medium text-slate-500">Dogrulaniyor...</div>
+              <div className="text-center text-sm font-medium text-slate-500">Doğrulanıyor...</div>
             )}
 
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              <strong>Mock SMS:</strong> OTP kodu sunucu loglarinda goruntulenir. <code className="text-xs">tail -f /tmp/securelend-api.log</code>
+              <strong>Mock SMS:</strong> OTP kodu sunucu loglarında görüntülenir. <code className="text-xs">tail -f /tmp/securelend-api.log</code>
             </div>
           </div>
         </section>

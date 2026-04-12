@@ -159,11 +159,11 @@ export default function AdminAnalyticsPage() {
   }, [days]);
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
+    return <div className="text-center py-12 text-gray-500">Yükleniyor...</div>;
   }
 
   if (!data) {
-    return <div className="text-center py-12 text-gray-500">Veri yuklenemedi.</div>;
+    return <div className="text-center py-12 text-gray-500">Veri yüklenemedi.</div>;
   }
 
   const maxDailyView = Math.max(...data.dailyViews.map((d) => d.count), 1);
@@ -173,25 +173,25 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Site Analitigi</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Site Analitiği</h1>
         <select
           value={days}
           onChange={(e) => setDays(Number(e.target.value))}
           className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
         >
-          <option value={7}>Son 7 gun</option>
-          <option value={14}>Son 14 gun</option>
-          <option value={30}>Son 30 gun</option>
-          <option value={90}>Son 90 gun</option>
+          <option value={7}>Son 7 gün</option>
+          <option value={14}>Son 14 gün</option>
+          <option value={30}>Son 30 gün</option>
+          <option value={90}>Son 90 gün</option>
         </select>
       </div>
 
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
-          { label: 'Sayfa Goruntulemesi', value: data.summary.totalPageViews, color: 'text-blue-600' },
+          { label: 'Sayfa Görüntülemesi', value: data.summary.totalPageViews, color: 'text-blue-600' },
           { label: 'Benzersiz Oturum', value: data.summary.uniqueSessions, color: 'text-emerald-600' },
-          { label: 'Girisli Kullanici', value: data.summary.uniqueUsers, color: 'text-purple-600' },
+          { label: 'Girişli Kullanıcı', value: data.summary.uniqueUsers, color: 'text-purple-600' },
           { label: 'Ort. Sayfa/Oturum', value: data.summary.avgPagesPerSession, color: 'text-amber-600' },
           { label: 'Toplam Hata', value: data.summary.totalErrors, color: data.summary.totalErrors > 0 ? 'text-red-600' : 'text-gray-400' },
         ].map((card) => (
@@ -205,12 +205,12 @@ export default function AdminAnalyticsPage() {
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1 overflow-x-auto">
         {([
-          { key: 'overview', label: 'Genel Bakis' },
+          { key: 'overview', label: 'Genel Bakış' },
           { key: 'pages', label: 'Sayfalar' },
           { key: 'errors', label: `Hatalar (${data.summary.totalErrors})` },
           { key: 'api', label: 'API' },
           { key: 'metrics', label: 'Metrikler' },
-          { key: 'funnel', label: 'Aktivasyon Hunisi' },
+          { key: 'funnel', label: 'Aktivasyon Hünisi' },
         ] as const).map((tab) => (
           <button
             key={tab.key}
@@ -229,7 +229,7 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-6">
           {data.dailyViews.length > 0 && (
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-semibold text-gray-700">Gunluk Sayfa Goruntulemesi</h3>
+              <h3 className="mb-4 text-sm font-semibold text-gray-700">Gunluk Sayfa Görüntülemesi</h3>
               <div className="flex items-end gap-1" style={{ height: 160 }}>
                 {data.dailyViews.map((d) => (
                   <div key={d.day} className="group relative flex flex-1 flex-col items-center">
@@ -251,9 +251,9 @@ export default function AdminAnalyticsPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-semibold text-gray-700">Cihaz Dagilimi</h3>
+              <h3 className="mb-4 text-sm font-semibold text-gray-700">Cihaz Dağılımı</h3>
               {data.devices.length === 0 ? (
-                <p className="text-sm text-gray-400">Henuz veri yok</p>
+                <p className="text-sm text-gray-400">Henüz veri yok</p>
               ) : (
                 <div className="space-y-3">
                   {data.devices.map((d) => {
@@ -275,9 +275,9 @@ export default function AdminAnalyticsPage() {
             </div>
 
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-semibold text-gray-700">Tarayici Dagilimi</h3>
+              <h3 className="mb-4 text-sm font-semibold text-gray-700">Tarayıcı Dağılımı</h3>
               {data.browsers.length === 0 ? (
-                <p className="text-sm text-gray-400">Henuz veri yok</p>
+                <p className="text-sm text-gray-400">Henüz veri yok</p>
               ) : (
                 <div className="space-y-3">
                   {data.browsers.map((b) => {
@@ -306,18 +306,18 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-6">
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700">Sayfa Goruntulemesi (Toplam)</h3>
+              <h3 className="text-sm font-semibold text-gray-700">Sayfa Görüntülemesi (Toplam)</h3>
             </div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-6 py-3 text-left font-semibold text-gray-600">Sayfa</th>
-                  <th className="px-6 py-3 text-right font-semibold text-gray-600">Goruntuleme</th>
+                  <th className="px-6 py-3 text-right font-semibold text-gray-600">Görüntüleme</th>
                 </tr>
               </thead>
               <tbody>
                 {data.pageViews.length === 0 ? (
-                  <tr><td colSpan={2} className="px-6 py-8 text-center text-gray-400">Henuz veri yok</td></tr>
+                  <tr><td colSpan={2} className="px-6 py-8 text-center text-gray-400">Henüz veri yok</td></tr>
                 ) : data.pageViews.map((p) => (
                   <tr key={p.page} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-6 py-3 font-mono text-sm text-gray-900">{p.page}</td>
@@ -330,19 +330,19 @@ export default function AdminAnalyticsPage() {
 
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700">Ortalama Sayfa Suresi</h3>
+              <h3 className="text-sm font-semibold text-gray-700">Ortalama Sayfa Süresi</h3>
             </div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-6 py-3 text-left font-semibold text-gray-600">Sayfa</th>
-                  <th className="px-6 py-3 text-right font-semibold text-gray-600">Ort. Sure</th>
-                  <th className="px-6 py-3 text-right font-semibold text-gray-600">Orneklem</th>
+                  <th className="px-6 py-3 text-right font-semibold text-gray-600">Ort. Süre</th>
+                  <th className="px-6 py-3 text-right font-semibold text-gray-600">Örneklem</th>
                 </tr>
               </thead>
               <tbody>
                 {data.avgDurations.length === 0 ? (
-                  <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-400">Henuz veri yok</td></tr>
+                  <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-400">Henüz veri yok</td></tr>
                 ) : data.avgDurations.map((p) => {
                   const mins = Math.floor(p.avgSeconds / 60);
                   const secs = p.avgSeconds % 60;
@@ -365,7 +365,7 @@ export default function AdminAnalyticsPage() {
       {activeTab === 'errors' && (
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-700">Son Frontend Hatalari</h3>
+            <h3 className="text-sm font-semibold text-gray-700">Son Frontend Hataları</h3>
           </div>
           {data.recentErrors.length === 0 ? (
             <div className="px-6 py-12 text-center text-gray-400">
@@ -375,7 +375,7 @@ export default function AdminAnalyticsPage() {
                 </svg>
               </div>
               <div className="font-medium text-gray-600">Hata yok!</div>
-              <p className="mt-1 text-sm">Son {days} gunde hicbir frontend hatasi raporlanmadi.</p>
+              <p className="mt-1 text-sm">Son {days} gunde hiçbir frontend hatası raporlanmadı.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -426,8 +426,8 @@ export default function AdminAnalyticsPage() {
 // ═══════════════════════════════════════════════════════════════
 
 function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loading: boolean; days: number }) {
-  if (loading) return <div className="text-center py-12 text-gray-500">API verileri yukleniyor...</div>;
-  if (!data) return <div className="text-center py-12 text-gray-500">API verisi yuklenemedi.</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">API verileri yükleniyor...</div>;
+  if (!data) return <div className="text-center py-12 text-gray-500">API verisi yüklenemedi.</div>;
 
   const maxDaily = Math.max(...data.dailyRequests.map((d) => d.count), ...data.dailyErrors.map((d) => d.count), 1);
   const totalMethods = data.methods.reduce((s, m) => s + m.count, 0) || 1;
@@ -451,7 +451,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="text-3xl font-bold text-blue-600">{data.summary.totalRequests.toLocaleString('tr-TR')}</div>
-          <div className="mt-1 text-sm text-gray-500">Toplam Istek</div>
+          <div className="mt-1 text-sm text-gray-500">Toplam İstek</div>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className={`text-3xl font-bold ${data.summary.totalErrors > 0 ? 'text-red-600' : 'text-gray-400'}`}>
@@ -463,11 +463,11 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
           <div className={`text-3xl font-bold ${data.summary.errorRate > 5 ? 'text-red-600' : data.summary.errorRate > 1 ? 'text-amber-600' : 'text-emerald-600'}`}>
             %{data.summary.errorRate}
           </div>
-          <div className="mt-1 text-sm text-gray-500">Hata Orani</div>
+          <div className="mt-1 text-sm text-gray-500">Hata Oranı</div>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="text-3xl font-bold text-purple-600">{data.summary.avgResponseTime}ms</div>
-          <div className="mt-1 text-sm text-gray-500">Ort. Yanit Suresi</div>
+          <div className="mt-1 text-sm text-gray-500">Ort. Yanıt Süresi</div>
         </div>
       </div>
 
@@ -475,7 +475,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       {dailyMerged.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-700">Gunluk API Trafigi</h3>
+            <h3 className="text-sm font-semibold text-gray-700">Günlük API Trafiği</h3>
             <div className="flex items-center gap-4 text-xs text-gray-500">
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-blue-500 inline-block" /> Istek</span>
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-red-400 inline-block" /> Hata</span>
@@ -511,9 +511,9 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       {/* Method & Status Code Distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">HTTP Method Dagilimi</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-700">HTTP Method Dağılımı</h3>
           {data.methods.length === 0 ? (
-            <p className="text-sm text-gray-400">Henuz veri yok</p>
+            <p className="text-sm text-gray-400">Henüz veri yok</p>
           ) : (
             <div className="space-y-3">
               {data.methods.map((m) => {
@@ -539,9 +539,9 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">Status Code Dagilimi</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-700">Status Code Dağılımı</h3>
           {data.statusCodes.length === 0 ? (
-            <p className="text-sm text-gray-400">Henuz veri yok</p>
+            <p className="text-sm text-gray-400">Henüz veri yok</p>
           ) : (
             <div className="space-y-3">
               {data.statusCodes.map((s) => {
@@ -568,19 +568,19 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       {/* Top Endpoints */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700">En Cok Kullanilan Endpoint&apos;ler</h3>
+          <h3 className="text-sm font-semibold text-gray-700">En Çok Kullanılan Endpoint&apos;ler</h3>
         </div>
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-3 text-left font-semibold text-gray-600">Endpoint</th>
               <th className="px-6 py-3 text-right font-semibold text-gray-600">Istek</th>
-              <th className="px-6 py-3 text-right font-semibold text-gray-600">Ort. Yanit</th>
+              <th className="px-6 py-3 text-right font-semibold text-gray-600">Ort. Yanıt</th>
             </tr>
           </thead>
           <tbody>
             {data.topEndpoints.length === 0 ? (
-              <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-400">Henuz veri yok</td></tr>
+              <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-400">Henüz veri yok</td></tr>
             ) : data.topEndpoints.map((e) => (
               <tr key={e.endpoint} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="px-6 py-3 font-mono text-sm text-gray-900">{e.endpoint}</td>
@@ -599,7 +599,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       {/* Slowest Endpoints */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700">En Yavas Endpoint&apos;ler</h3>
+          <h3 className="text-sm font-semibold text-gray-700">En Yavaş Endpoint&apos;ler</h3>
         </div>
         <table className="w-full text-sm">
           <thead>
@@ -607,12 +607,12 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
               <th className="px-6 py-3 text-left font-semibold text-gray-600">Endpoint</th>
               <th className="px-6 py-3 text-right font-semibold text-gray-600">Ort.</th>
               <th className="px-6 py-3 text-right font-semibold text-gray-600">Maks.</th>
-              <th className="px-6 py-3 text-right font-semibold text-gray-600">Orneklem</th>
+              <th className="px-6 py-3 text-right font-semibold text-gray-600">Örneklem</th>
             </tr>
           </thead>
           <tbody>
             {data.slowEndpoints.length === 0 ? (
-              <tr><td colSpan={4} className="px-6 py-8 text-center text-gray-400">Henuz veri yok</td></tr>
+              <tr><td colSpan={4} className="px-6 py-8 text-center text-gray-400">Henüz veri yok</td></tr>
             ) : data.slowEndpoints.map((s) => (
               <tr key={s.endpoint} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="px-6 py-3 font-mono text-sm text-gray-900">{s.endpoint}</td>
@@ -633,7 +633,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-700">En Cok Hata Veren Endpoint&apos;ler</h3>
+            <h3 className="text-sm font-semibold text-gray-700">En Çok Hata Veren Endpoint&apos;ler</h3>
           </div>
           {data.errorEndpoints.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-400">Hata yok</div>
@@ -659,7 +659,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
 
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden max-h-96 overflow-y-auto">
           <div className="px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-            <h3 className="text-sm font-semibold text-gray-700">Son API Hatalari</h3>
+            <h3 className="text-sm font-semibold text-gray-700">Son API Hataları</h3>
           </div>
           {data.recentErrors.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-400">Hata yok</div>
@@ -692,14 +692,14 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
 // ═══════════════════════════════════════════════════════════════
 
 function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | null; loading: boolean; days: number }) {
-  if (loading) return <div className="text-center py-12 text-gray-500">Metrikler yukleniyor...</div>;
-  if (!data) return <div className="text-center py-12 text-gray-500">Metrik verisi yuklenemedi.</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Metrikler yükleniyor...</div>;
+  if (!data) return <div className="text-center py-12 text-gray-500">Metrik verisi yüklenemedi.</div>;
 
   const funnelMax = Math.max(data.funnel.landing, 1);
   const funnelSteps = [
     { key: 'landing', label: 'Ana Sayfa', count: data.funnel.landing, color: 'bg-blue-500' },
-    { key: 'register', label: 'Kayit Sayfasi', count: data.funnel.register, color: 'bg-emerald-500' },
-    { key: 'otp', label: 'OTP Dogrulama', count: data.funnel.otp, color: 'bg-amber-500' },
+    { key: 'register', label: 'Kayıt Sayfası', count: data.funnel.register, color: 'bg-emerald-500' },
+    { key: 'otp', label: 'OTP Doğrulama', count: data.funnel.otp, color: 'bg-amber-500' },
     { key: 'dashboard', label: 'Dashboard', count: data.funnel.dashboard, color: 'bg-purple-500' },
   ];
 
@@ -715,28 +715,28 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
           <div className={`text-3xl font-bold ${data.bounceRate.rate > 70 ? 'text-red-600' : data.bounceRate.rate > 50 ? 'text-amber-600' : 'text-emerald-600'}`}>
             %{data.bounceRate.rate}
           </div>
-          <div className="mt-1 text-sm text-gray-500">Bounce Rate (Hemen Cikma)</div>
+          <div className="mt-1 text-sm text-gray-500">Bounce Rate (Hemen Çıkma)</div>
           <div className="mt-0.5 text-xs text-gray-400">{data.bounceRate.bounced} / {data.bounceRate.total} oturum</div>
         </div>
 
         {/* Conversion Rate */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="text-3xl font-bold text-purple-600">%{data.conversionRate.rate}</div>
-          <div className="mt-1 text-sm text-gray-500">Donusum Orani</div>
+          <div className="mt-1 text-sm text-gray-500">Dönüşüm Oranı</div>
           <div className="mt-0.5 text-xs text-gray-400">{data.conversionRate.registered} kayitli / {data.conversionRate.visitors} ziyaretci</div>
         </div>
 
         {/* Total CTA Clicks */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="text-3xl font-bold text-blue-600">{data.ctaClicks.reduce((s, c) => s + c.count, 0)}</div>
-          <div className="mt-1 text-sm text-gray-500">CTA Tiklama</div>
-          <div className="mt-0.5 text-xs text-gray-400">{data.ctaClicks.length} farkli CTA</div>
+          <div className="mt-1 text-sm text-gray-500">CTA Tıklama</div>
+          <div className="mt-0.5 text-xs text-gray-400">{data.ctaClicks.length} farklı CTA</div>
         </div>
       </div>
 
       {/* Funnel */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">Kayit Akisi (Funnel)</h3>
+        <h3 className="mb-4 text-sm font-semibold text-gray-700">Kayıt Akışı (Funnel)</h3>
         <div className="space-y-4">
           {funnelSteps.map((step, idx) => {
             const pct = Math.round((step.count / funnelMax) * 100);
@@ -774,9 +774,9 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Referrer Categories */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">Trafik Kaynaklari</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-700">Trafik Kaynakları</h3>
           {data.referrers.categories.length === 0 ? (
-            <p className="text-sm text-gray-400">Henuz veri yok</p>
+            <p className="text-sm text-gray-400">Henüz veri yok</p>
           ) : (
             <div className="space-y-3">
               {data.referrers.categories.map((c) => {
@@ -804,7 +804,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
           {/* Top sources */}
           {data.referrers.topSources.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <h4 className="text-xs font-semibold text-gray-500 mb-2">En Yuksek Kaynaklar</h4>
+              <h4 className="text-xs font-semibold text-gray-500 mb-2">En Yüksek Kaynaklar</h4>
               <div className="space-y-1.5">
                 {data.referrers.topSources.slice(0, 8).map((s, i) => (
                   <div key={i} className="flex justify-between text-xs">
@@ -819,9 +819,9 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
 
         {/* Scroll Depth */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-gray-700">Scroll Derinligi</h3>
+          <h3 className="mb-4 text-sm font-semibold text-gray-700">Scroll Derinliği</h3>
           {data.scrollDepth.length === 0 ? (
-            <p className="text-sm text-gray-400">Henuz veri yok</p>
+            <p className="text-sm text-gray-400">Henüz veri yok</p>
           ) : (
             <div className="space-y-4">
               {data.scrollDepth.map((d) => {
@@ -847,14 +847,14 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
       {data.ctaClicks.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-700">CTA Tiklamalari</h3>
+            <h3 className="text-sm font-semibold text-gray-700">CTA Tıklamalari</h3>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="px-6 py-3 text-left font-semibold text-gray-600">Sayfa</th>
                 <th className="px-6 py-3 text-left font-semibold text-gray-600">CTA</th>
-                <th className="px-6 py-3 text-right font-semibold text-gray-600">Tiklama</th>
+                <th className="px-6 py-3 text-right font-semibold text-gray-600">Tıklama</th>
               </tr>
             </thead>
             <tbody>
@@ -915,8 +915,8 @@ function fmt(iso: string | null) {
 }
 
 function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | null; loading: boolean; days: number }) {
-  if (loading) return <div className="text-center py-12 text-gray-500">Huni verisi yukleniyor...</div>;
-  if (!data) return <div className="text-center py-12 text-gray-500">Huni verisi yuklenemedi.</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Huni verisi yükleniyor...</div>;
+  if (!data) return <div className="text-center py-12 text-gray-500">Huni verisi yüklenemedi.</div>;
 
   const maxCount = Math.max(...data.steps.map((s) => s.count), 1);
 
@@ -924,13 +924,13 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
     <div className="space-y-6">
       {/* Period info */}
       <p className="text-sm text-gray-500">
-        Son <span className="font-semibold">{days} gun</span> icinde kayit olan kullanicilarin aktivasyon hunisi.
+        Son <span className="font-semibold">{days} gun</span> içinde kayıt olan kullanıcıların aktivasyon hunisi.
         {' '}Toplam <span className="font-semibold">{data.steps[0].count}</span> kayit.
       </p>
 
       {/* Funnel bars */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Adim Bazinda Donusum</h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Adım Bazında Dönüşüm</h3>
         {data.steps.map((step, idx) => {
           const barWidth = maxCount > 0 ? Math.max((step.count / maxCount) * 100, step.count > 0 ? 4 : 0) : 0;
           const dropOff = idx > 0 ? data.steps[idx - 1].count - step.count : 0;
@@ -942,7 +942,7 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
                 </span>
                 <div className="flex items-center gap-3">
                   {idx > 0 && dropOff > 0 && (
-                    <span className="text-xs text-red-500">-{dropOff} kullanici terketti</span>
+                    <span className="text-xs text-red-500">-{dropOff} kullanıcı terketti</span>
                   )}
                   <span className="font-semibold text-gray-900">{step.count}</span>
                   <span className={`w-12 text-right font-bold ${STEP_TEXT_COLORS[idx]}`}>%{step.rate}</span>
@@ -973,22 +973,22 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
       {/* Per-user table */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-sm font-semibold text-gray-700">Kullanici Bazinda Huni Durumu</h3>
+          <h3 className="text-sm font-semibold text-gray-700">Kullanıcı Bazında Huni Durumu</h3>
         </div>
         {data.users.length === 0 ? (
-          <div className="px-6 py-10 text-center text-gray-400 text-sm">Bu donemde kayit yok.</div>
+          <div className="px-6 py-10 text-center text-gray-400 text-sm">Bu dönemde kayıt yok.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-4 py-3 text-left font-semibold text-gray-600">Kullanici</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Mevcut Adim</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Mevcut Adım</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">Kayit</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">KYC</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Sozlesme</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Imza</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Ilk Odeme</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Sözleşme</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">İmza</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">İlk Ödeme</th>
                 </tr>
               </thead>
               <tbody>

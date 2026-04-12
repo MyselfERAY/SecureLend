@@ -3,12 +3,12 @@ import { TcknForm } from '../../components/tckn-form';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Kredi Uygunluk Kontrolu',
+  title: 'Kredi Uygunluk Kontrolü',
   description:
-    'TCKN ile kredi uygunluk kontrolu yapin. Kira Güvence uzerinden kira odeme uygunlugunuzu ve KMH limitinizi hizlica ogrenin.',
+    'TCKN ile kredi uygunluk kontrolü yapın. Kira Güvence üzerinden kira ödeme uygunluğunuzu ve KMH limitinizi hızlıca öğrenin.',
   openGraph: {
-    title: 'Kredi Uygunluk Kontrolu | Kira Güvence',
-    description: 'TCKN ile kredi uygunluk kontrolu yapin. Kira odeme uygunlugunuzu ogrenin.',
+    title: 'Kredi Uygunluk Kontrolü | Kira Güvence',
+    description: 'TCKN ile kredi uygunluk kontrolü yapın. Kira ödeme uygunluğunuzu öğrenin.',
   },
 };
 
@@ -22,11 +22,11 @@ export default function CreditCheckPage() {
             Ana Sayfa
           </Link>
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Kredi Uygunluk Kontrolu
+            Kredi Uygunluk Kontrolü
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Kimlik bilginizi kullanarak on degerlendirme sonucu alin. Sonuc ekraninda limit ve risk kararini
-            kurumsal formatta goruntuleyebilirsiniz.
+            Kimlik bilginizi kullanarak ön değerlendirme sonucu alın. Sonuç ekranında limit ve risk kararını
+            kurumsal formatta görüntüleyebilirsiniz.
           </p>
         </div>
 

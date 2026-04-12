@@ -39,7 +39,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => { load(page); }, [tokens?.accessToken, page]);
 
-  const roleLabel: Record<string, string> = { TENANT: 'Kiraci', LANDLORD: 'Ev Sahibi', ADMIN: 'Admin' };
+  const roleLabel: Record<string, string> = { TENANT: 'Kiracı', LANDLORD: 'Ev Sahibi', ADMIN: 'Admin' };
   const kycLabel: Record<string, { text: string; cls: string }> = {
     PENDING: { text: 'Bekliyor', cls: 'bg-yellow-100 text-yellow-700' },
     COMPLETED: { text: 'Tamam', cls: 'bg-green-100 text-green-700' },
@@ -51,12 +51,12 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Kullanicilar</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Kullanıcılar</h1>
         <span className="text-sm text-gray-500">{total} kullanici</span>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yukleniyor...</div>
+        <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -68,7 +68,7 @@ export default function AdminUsersPage() {
                   <th className="text-left px-4 py-3 font-medium text-gray-600">TCKN</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Roller</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">KYC</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Sozlesme</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Sözleşme</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Kayit</th>
                 </tr>
               </thead>
@@ -108,7 +108,7 @@ export default function AdminUsersPage() {
 
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 py-3 border-t">
-              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Onceki</button>
+              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Önceki</button>
               <span className="px-3 py-1 text-sm text-gray-500">{page} / {totalPages}</span>
               <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Sonraki</button>
             </div>

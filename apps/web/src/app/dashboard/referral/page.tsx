@@ -50,7 +50,7 @@ export default function ReferralPage() {
 
   const shareWhatsApp = () => {
     if (!info?.referralLink) return;
-    const text = `Kira Güvence ile kira odemelerini guvence altina al! Davet linkimle kayit ol, ikimiz de 1 ay komisyonsuz kullanalim: ${info.referralLink}`;
+    const text = `Kira Güvence ile kira ödemelerini guvence altina al! Davet linkimle kayit ol, ikimiz de 1 ay komisyonsuz kullanalim: ${info.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -65,7 +65,7 @@ export default function ReferralPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm text-slate-400">Yukleniyor...</span>
+          <span className="text-sm text-slate-400">Yükleniyor...</span>
         </div>
       </div>
     );
@@ -73,10 +73,10 @@ export default function ReferralPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Arkadasini Getir</h1>
+      <h1 className="text-2xl font-bold text-white">Arkadaşını Getir</h1>
       <p className="text-sm text-slate-400">
-        Davet kodunuzu paylasarak arkadaslarinizi Kira Güvence&apos;ye davet edin.
-        Hem siz hem arkadasiniz 1 ay komisyonsuz kullanim kazanin!
+        Davet kodunuzu paylaşarak arkadaşlarınızı Kira Güvence&apos;ye davet edin.
+        Hem siz hem arkadaşınız 1 ay komisyonsuz kullanım kazanın!
       </p>
 
       {/* Referral Code & Link */}
@@ -96,7 +96,7 @@ export default function ReferralPage() {
                 onClick={() => copyToClipboard(info.referralCode!, 'code')}
                 className="shrink-0 rounded-lg border border-slate-600 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50"
               >
-                {copied === 'code' ? 'Kopyalandi!' : 'Kopyala'}
+                {copied === 'code' ? 'Kopyalandı!' : 'Kopyala'}
               </button>
             </div>
 
@@ -110,7 +110,7 @@ export default function ReferralPage() {
                   onClick={() => copyToClipboard(info.referralLink!, 'link')}
                   className="shrink-0 rounded-lg border border-slate-600 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50"
                 >
-                  {copied === 'link' ? 'Kopyalandi!' : 'Linki Kopyala'}
+                  {copied === 'link' ? 'Kopyalandı!' : 'Linki Kopyala'}
                 </button>
               </div>
             )}
@@ -139,19 +139,19 @@ export default function ReferralPage() {
           </>
         ) : (
           <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-400">
-            Davet kodunuz henuz olusturulmamis. Lutfen destek ile iletisime gecin.
+            Davet kodunuz henüz oluşturulmamış. Lütfen destek ile iletişime geçin.
           </div>
         )}
       </div>
 
       {/* How it works */}
       <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-        <h2 className="mb-4 text-lg font-semibold text-white">Nasil Calisir?</h2>
+        <h2 className="mb-4 text-lg font-semibold text-white">Nasıl Çalışır?</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            { step: '1', title: 'Kodunuzu Paylasin', desc: 'Davet kodunuzu veya linkinizi arkadaslarinizla paylasin.' },
-            { step: '2', title: 'Arkadasiniz Kayit Olsun', desc: 'Arkadasiniz kayit sirasinda davet kodunuzu girsin.' },
-            { step: '3', title: 'Birlikte Kazanin', desc: 'Hem siz hem arkadasiniz 1 ay komisyonsuz kullanim kazanin!' },
+            { step: '1', title: 'Kodunuzu Paylasin', desc: 'Davet kodunuzu veya linkinizi arkadaşlarınızla paylaşın.' },
+            { step: '2', title: 'Arkadasiniz Kayit Olsun', desc: 'Arkadaşınız kayıt sırasında davet kodunuzu girsin.' },
+            { step: '3', title: 'Birlikte Kazanin', desc: 'Hem siz hem arkadaşınız 1 ay komisyonsuz kullanım kazanın!' },
           ].map((item) => (
             <div key={item.step} className="rounded-lg border border-slate-700/30 bg-[#0a1628]/50 p-4 text-center">
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600/20 text-lg font-bold text-blue-400">
@@ -183,7 +183,7 @@ export default function ReferralPage() {
       {/* Referral history */}
       {info && info.referrals.length > 0 && (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">Davet Gecmisi</h2>
+          <h2 className="mb-4 text-lg font-semibold text-white">Davet Geçmişi</h2>
           <div className="space-y-3">
             {info.referrals.map((r, idx) => (
               <div key={idx} className="flex items-center justify-between rounded-lg border border-slate-700/30 bg-[#0a1628]/50 p-4">
