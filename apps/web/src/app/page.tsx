@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { fixTurkish } from '../lib/fix-turkish';
 import { useAuth } from '../lib/auth-context';
 import Logo from '../components/logo';
 
@@ -80,6 +81,7 @@ interface LatestArticle {
   audience: 'TENANT' | 'LANDLORD' | 'BOTH';
   publishedAt: string;
 }
+
 
 export default function HomePage() {
   const { tokens, isLoading } = useAuth();
@@ -433,7 +435,7 @@ export default function HomePage() {
                     className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-blue-200"
                   >
                     <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                      {article.category}
+                      {fixTurkish(article.category)}
                     </span>
                     <h3 className="mt-3 text-sm font-bold text-slate-900 leading-snug group-hover:text-blue-700 transition line-clamp-2">
                       {article.title}
