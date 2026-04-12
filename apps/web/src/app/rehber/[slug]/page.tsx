@@ -40,7 +40,7 @@ const audienceColor: Record<string, string> = {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = await getArticle(slug);
-  if (!article) return { title: 'Makale Bulunamadi' };
+  if (!article) return { title: 'Makale Bulunamadı' };
   return {
     title: `${article.title} | Kira Güvence Rehber`,
     description: article.summary,

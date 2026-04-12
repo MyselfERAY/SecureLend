@@ -30,7 +30,7 @@ export default function RegisterPage() {
       ]);
       router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}`);
     } catch (err: any) {
-      setError(err.message || 'Kayit hatasi');
+      setError(err.message || 'Kayıt hatası');
     } finally {
       setLoading(false);
     }
@@ -44,21 +44,21 @@ export default function RegisterPage() {
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
         <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white sm:p-10">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Account Setup</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight">Platforma guvenli kayit</h1>
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight">Platforma güvenli kayıt</h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
-            Bilgileriniz dogrulandiktan sonra taraf rolunuzle panel ekranlarina erisirsiniz.
+            Bilgileriniz doğrulandıktan sonra taraf rolünüzle panel ekranlarına erişirsiniz.
           </p>
           <div className="mt-8 space-y-3 text-sm text-slate-200">
-            <p>• Rol bazli yetkilendirme</p>
-            <p>• Dogrulanmis kullanici profili</p>
-            <p>• Sozlesme ve odeme akislari icin hazir altyapi</p>
+            <p>• Rol bazlı yetkilendirme</p>
+            <p>• Doğrulanmış kullanıcı profili</p>
+            <p>• Sözleşme ve ödeme akışları için hazır altyapı</p>
           </div>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] sm:p-10">
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900">Kayit Ol</h2>
-            <p className="mt-2 text-sm text-slate-600">Hesap olusturmak icin bilgilerinizi girin.</p>
+            <h2 className="text-2xl font-extrabold text-slate-900">Kayıt Ol</h2>
+            <p className="mt-2 text-sm text-slate-600">Hesap oluşturmak için bilgilerinizi girin.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
@@ -111,7 +111,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">Dogum Tarihi</label>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">Doğum Tarihi</label>
               <input
                 type="date"
                 value={dateOfBirth}
@@ -133,9 +133,9 @@ export default function RegisterPage() {
                 />
                 <span className="text-sm text-slate-700 leading-snug">
                   <Link href="/kvkk" target="_blank" className="font-semibold text-blue-700 hover:underline">
-                    KVKK Aydinlatma Metni
+                    KVKK Aydınlatma Metni
                   </Link>
-                  &apos;ni okudum, kisisel verilerimin islenmesine iliskin bilgilendirildim.{' '}
+                  &apos;ni okudum, kişisel verilerimin işlenmesine ilişkin bilgilendirildim.{' '}
                   <span className="text-rose-600 font-semibold">*</span>
                 </span>
               </label>
@@ -149,10 +149,10 @@ export default function RegisterPage() {
                   required
                 />
                 <span className="text-sm text-slate-700 leading-snug">
-                  T.C. Kimlik No, IBAN, gelir belgesi, istihdam bilgisi ve kredi gecmisimin KMH
-                  basvurusu kapsaminda islenip anlasmali bankalar ve KKB ile paylasilmasina{' '}
+                  T.C. Kimlik No, IBAN, gelir belgesi, istihdam bilgisi ve kredi geçmişimin KMH
+                  başvurusu kapsamında işlenip anlaşmalı bankalar ve KKB ile paylaşılmasına{' '}
                   <Link href="/acik-riza" target="_blank" className="font-semibold text-blue-700 hover:underline">
-                    acik riza
+                    açık rıza
                   </Link>{' '}
                   veriyorum.{' '}
                   <span className="text-rose-600 font-semibold">*</span>
@@ -166,13 +166,13 @@ export default function RegisterPage() {
               disabled={loading || tckn.length !== 11 || phone.length !== 10 || fullName.length < 3 || !dateOfBirth || !kvkkOnayladi || !acikRizaOnayladi}
               className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? 'Kayit yapiliyor...' : 'Kaydi Tamamla'}
+              {loading ? 'Kayıt yapılıyor...' : 'Kaydı Tamamla'}
             </button>
 
             <p className="text-center text-sm text-slate-600">
-              Zaten hesabiniz var mi?{' '}
+              Zaten hesabınız var mı?{' '}
               <Link href="/auth/login" className="font-semibold text-blue-700 hover:text-blue-800">
-                Giris Yap
+                Giriş Yap
               </Link>
             </p>
           </form>

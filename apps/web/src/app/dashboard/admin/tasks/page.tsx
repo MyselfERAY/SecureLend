@@ -26,8 +26,8 @@ interface Task {
 const statusLabel: Record<TaskStatus, string> = {
   TODO: 'Yapilacak',
   IN_PROGRESS: 'Devam Ediyor',
-  COMPLETED: 'Tamamlandi',
-  CANCELLED: 'Iptal',
+  COMPLETED: 'Tamamlandı',
+  CANCELLED: 'İptal',
 };
 
 const statusColor: Record<TaskStatus, string> = {
@@ -45,11 +45,11 @@ const sourceColor: Record<TaskSource, string> = {
 type FilterStatus = 'ALL' | TaskStatus;
 
 const filterOptions: { key: FilterStatus; label: string }[] = [
-  { key: 'ALL', label: 'Tumu' },
+  { key: 'ALL', label: 'Tümü' },
   { key: 'TODO', label: 'Yapilacak' },
   { key: 'IN_PROGRESS', label: 'Devam Ediyor' },
-  { key: 'COMPLETED', label: 'Tamamlandi' },
-  { key: 'CANCELLED', label: 'Iptal' },
+  { key: 'COMPLETED', label: 'Tamamlandı' },
+  { key: 'CANCELLED', label: 'İptal' },
 ];
 
 function formatDate(dateStr: string): string {
@@ -186,7 +186,7 @@ export default function TaskTrackingPage() {
     <div className="space-y-6">
       {/* ── Header ── */}
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Gorev Takibi</h1>
+        <h1 className="text-2xl font-extrabold text-slate-900">Görev Takibi</h1>
         <p className="mt-1 text-sm text-slate-500">Pazarlama ve PO gorevleri</p>
       </div>
 
@@ -274,15 +274,15 @@ export default function TaskTrackingPage() {
 
       {/* ── Task List ── */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yukleniyor...</div>
+        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
       ) : tasks.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
-          {filterStatus === 'ALL' ? 'Henuz gorev yok.' : 'Bu durumda gorev bulunamadi.'}
+          {filterStatus === 'ALL' ? 'Henüz görev yok.' : 'Bu durumda görev bulunamadı.'}
         </div>
       ) : (
         <div className="space-y-3">
           {refreshing && (
-            <div className="text-right text-xs text-slate-400 animate-pulse">Guncelleniyor...</div>
+            <div className="text-right text-xs text-slate-400 animate-pulse">Güncelleniyor...</div>
           )}
           {tasks.map((task) => (
             <div
@@ -344,8 +344,8 @@ export default function TaskTrackingPage() {
                   >
                     <option value="TODO">Yapilacak</option>
                     <option value="IN_PROGRESS">Devam Ediyor</option>
-                    <option value="COMPLETED">Tamamlandi</option>
-                    <option value="CANCELLED">Iptal</option>
+                    <option value="COMPLETED">Tamamlandı</option>
+                    <option value="CANCELLED">İptal</option>
                   </select>
 
                   {/* Responsible inline edit */}

@@ -59,13 +59,13 @@ export async function api<T = unknown>(
       });
       if (retryRes.status === 401) {
         handleSessionExpired();
-        return { status: 'fail', data: { message: 'Oturum suresi doldu.' } as any };
+        return { status: 'fail', data: { message: 'Oturum süresi doldu.' } as any };
       }
       return retryRes.json();
     }
 
     handleSessionExpired();
-    return { status: 'fail', data: { message: 'Oturum suresi doldu.' } as any };
+    return { status: 'fail', data: { message: 'Oturum süresi doldu.' } as any };
   }
 
   return res.json();

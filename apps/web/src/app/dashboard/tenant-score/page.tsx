@@ -92,7 +92,7 @@ export default function TenantScorePage() {
           setError((res as any).data?.message || res.message || 'Skor yuklenemedi');
         }
       })
-      .catch((err: any) => setError(err.message || 'Baglanti hatasi'))
+      .catch((err: any) => setError(err.message || 'Bağlantı hatası'))
       .finally(() => setLoading(false));
   }, [tokens?.accessToken]);
 

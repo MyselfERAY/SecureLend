@@ -100,7 +100,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm text-slate-400">Veriler yukleniyor...</span>
+          <span className="text-sm text-slate-400">Veriler yükleniyor...</span>
         </div>
       </div>
     );
@@ -146,12 +146,12 @@ export default function DashboardPage() {
       {/* Welcome */}
       <div>
         <h1 className="text-2xl font-bold text-white sm:text-3xl">
-          Hos geldiniz, {user?.fullName}
+          Hoş geldiniz, {user?.fullName}
         </h1>
         <p className="mt-1 text-sm text-slate-400">
           {user?.roles.length ? user.roles.map(r =>
-            r === 'TENANT' ? 'Kiraci' : r === 'LANDLORD' ? 'Ev Sahibi' : r === 'ADMIN' ? 'Yonetici' : r
-          ).join(' / ') : 'Henuz rol atanmadi'}
+            r === 'TENANT' ? 'Kiracı' : r === 'LANDLORD' ? 'Ev Sahibi' : r === 'ADMIN' ? 'Yönetici' : r
+          ).join(' / ') : 'Henüz rol atanmadı'}
           {' '}&middot; Kira Güvence Kontrol Paneli
         </p>
       </div>
@@ -159,7 +159,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Aktif Sozlesme"
+          title="Aktif Sözleşme"
           value={stats.activeContracts}
           icon={
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,7 +169,7 @@ export default function DashboardPage() {
           color="blue"
         />
         <StatCard
-          title="Bekleyen Odeme"
+          title="Bekleyen Ödeme"
           value={stats.pendingPayments}
           icon={
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,7 +179,7 @@ export default function DashboardPage() {
           color="yellow"
         />
         <StatCard
-          title="Geciken Odeme"
+          title="Geciken Ödeme"
           value={stats.overduePayments}
           icon={
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         />
         {isLandlord ? (
           <StatCard
-            title="Mulk Sayisi"
+            title="Mülk Sayısı"
             value={stats.properties}
             icon={
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,7 +201,7 @@ export default function DashboardPage() {
           />
         ) : (
           <StatCard
-            title="Toplam Sozlesme"
+            title="Toplam Sözleşme"
             value={stats.totalContracts}
             icon={
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -217,8 +217,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <QuickAction
           href="/dashboard/properties"
-          title="Mulk Yonetimi"
-          desc="Mulklerinizi ekleyin ve yonetin"
+          title="Mülk Yönetimi"
+          desc="Mülklerinizi ekleyin ve yönetin"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -227,8 +227,8 @@ export default function DashboardPage() {
         />
         <QuickAction
           href="/dashboard/contracts"
-          title="Sozlesmeler"
-          desc="Kira sozlesmelerinizi goruntuleyin"
+          title="Sözleşmeler"
+          desc="Kira sözleşmelerinizi görüntüleyin"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -237,8 +237,8 @@ export default function DashboardPage() {
         />
         <QuickAction
           href="/dashboard/bank"
-          title="Banka Hesaplari"
-          desc="KMH hesabi acin ve yonetin"
+          title="Banka Hesapları"
+          desc="KMH hesabı açın ve yönetin"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -251,9 +251,9 @@ export default function DashboardPage() {
       {activeContracts.length > 0 && (
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Aktif Sozlesmeler</h2>
+            <h2 className="text-lg font-semibold text-white">Aktif Sözleşmeler</h2>
             <Link href="/dashboard/contracts" className="text-sm font-medium text-blue-400 hover:text-blue-300">
-              Tumunu Gor &rarr;
+              Tümünü Gör &rarr;
             </Link>
           </div>
           <div className="space-y-3">
@@ -267,7 +267,7 @@ export default function DashboardPage() {
                   <div>
                     <div className="font-medium text-white">{c.propertyTitle}</div>
                     <div className="mt-1 text-sm text-slate-400">
-                      {isTenant ? `Ev Sahibi: ${c.landlordName}` : `Kiraci: ${c.tenantName}`}
+                      {isTenant ? `Ev Sahibi: ${c.landlordName}` : `Kiracı: ${c.tenantName}`}
                     </div>
                   </div>
                   <div className="text-right">
@@ -289,9 +289,9 @@ export default function DashboardPage() {
       {upcomingPayments.length > 0 && (
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Yaklasan Odemeler</h2>
+            <h2 className="text-lg font-semibold text-white">Yaklaşan Ödemeler</h2>
             <Link href="/dashboard/payments" className="text-sm font-medium text-blue-400 hover:text-blue-300">
-              Tumunu Gor &rarr;
+              Tümünü Gör &rarr;
             </Link>
           </div>
           <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
@@ -327,13 +327,13 @@ export default function DashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <div className="text-lg font-medium text-slate-300">Henuz sozlesmeniz yok</div>
+          <div className="text-lg font-medium text-slate-300">Henüz sözleşmeniz yok</div>
           <p className="mt-2 text-sm text-slate-500">
             {isLandlord
               ? stats.properties > 0
-                ? 'Mulkunuz var ancak henuz sozlesme olusturmamissiniz.'
-                : 'Once mulk ekleyin, sonra sozlesme olusturun.'
-              : 'Ev sahibiniz sozlesme olusturdugunda burada gorunecektir.'}
+                ? 'Mülkünüz var ancak henüz sözleşme oluşturmamışsınız.'
+                : 'Önce mülk ekleyin, sonra sözleşme oluşturun.'
+              : 'Ev sahibiniz sözleşme oluşturduğunda burada görünecektir.'}
           </p>
           {isLandlord && (
             <div className="mt-4 flex items-center justify-center gap-3">
@@ -342,7 +342,7 @@ export default function DashboardPage() {
                   href="/dashboard/properties"
                   className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Mulk Ekle
+                  Mülk Ekle
                 </Link>
               )}
               {stats.properties > 0 && (
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                   href="/dashboard/contracts"
                   className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Sozlesme Olustur
+                  Sözleşme Oluştur
                 </Link>
               )}
             </div>

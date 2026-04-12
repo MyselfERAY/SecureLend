@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Kira Güvence - Dijital Kira Odeme Platformu';
+export const alt = 'Kira Güvence - Dijital Kira Ödeme Platformu';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -97,12 +97,12 @@ export default function OGImage() {
             marginBottom: 40,
           }}
         >
-          Dijital Kira Odeme Platformu
+          Dijital Kira Ödeme Platformu
         </div>
 
         {/* Feature pills */}
         <div style={{ display: 'flex', gap: 16 }}>
-          {['Dijital Sozlesme', 'Otomatik Odeme', 'KPS Dogrulama', 'KMH Destegi'].map(
+          {['Dijital Sözleşme', 'Otomatik Ödeme', 'KPS Doğrulama', 'KMH Desteği'].map(
             (text) => (
               <div
                 key={text}

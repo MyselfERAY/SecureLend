@@ -129,14 +129,14 @@ export default function AdminSupportPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-white">Destek Mesajlari</h1>
+      <h1 className="text-2xl font-bold text-white">Destek Mesajları</h1>
 
       <div className="flex gap-4" style={{ height: 'calc(100vh - 180px)' }}>
         {/* Room List */}
         <div className="w-80 flex-shrink-0 overflow-y-auto rounded-xl border border-slate-700/50 bg-[#0d1b2a]">
           {rooms.length === 0 ? (
             <div className="py-16 text-center text-sm text-slate-500">
-              Henuz destek talebi yok
+              Henüz destek talebi yok
             </div>
           ) : (
             rooms.map((room) => (
@@ -182,7 +182,7 @@ export default function AdminSupportPage() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.length === 0 && (
                   <div className="py-8 text-center text-sm text-slate-500">
-                    Henuz mesaj yok
+                    Henüz mesaj yok
                   </div>
                 )}
                 {messages.map((msg) => {

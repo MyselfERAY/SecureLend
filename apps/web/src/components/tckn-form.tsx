@@ -54,12 +54,12 @@ export function TcknForm() {
         router.push(`/result?id=${result.data.applicationId}`);
       } else if (result.status === 'fail') {
         const messages = Object.values(result.data || {}).join(', ');
-        setError(messages || 'Dogrulama hatasi');
+        setError(messages || 'Doğrulama hatası');
       } else {
-        setError(result.message || 'Bir hata olustu');
+        setError(result.message || 'Bir hata oluştu');
       }
     } catch {
-      setError('Baglanti hatasi. Lutfen tekrar deneyin.');
+      setError('Bağlantı hatası. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +74,7 @@ export function TcknForm() {
           type="text"
           inputMode="numeric"
           maxLength={11}
-          placeholder="11 haneli kimlik numarasi"
+          placeholder="11 haneli kimlik numarası"
           autoComplete="off"
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 placeholder:text-slate-400 disabled:opacity-50"
           disabled={isLoading}

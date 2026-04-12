@@ -19,7 +19,7 @@ const sidebarLinks = [
   },
   {
     href: '/dashboard/contracts',
-    label: 'Sozlesmeler',
+    label: 'Sözleşmeler',
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -28,7 +28,7 @@ const sidebarLinks = [
   },
   {
     href: '/dashboard/payments',
-    label: 'Odemeler',
+    label: 'Ödemeler',
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -37,7 +37,7 @@ const sidebarLinks = [
   },
   {
     href: '/dashboard/properties',
-    label: 'Mulkler',
+    label: 'Mülkler',
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -133,7 +133,7 @@ export default function DashboardLayout({
       <div className="flex min-h-screen items-center justify-center bg-[#0a1628]">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm font-medium text-slate-400">Yukleniyor...</span>
+          <span className="text-sm font-medium text-slate-400">Yükleniyor...</span>
         </div>
       </div>
     );

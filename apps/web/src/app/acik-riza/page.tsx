@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Acik Riza Formu',
-  description: 'Kira Güvence acik riza formu. KVKK kapsaminda kisisel veri isleme onayi.',
+  title: 'Açık Rıza Formu',
+  description: 'Kira Güvence açık rıza formu. KVKK kapsamında kişisel veri işleme onayı.',
   alternates: { canonical: '/acik-riza' },
 };
 

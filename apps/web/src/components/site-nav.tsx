@@ -57,10 +57,10 @@ export default function SiteNav({ variant = 'light' }: SiteNavProps) {
             Rehber
           </Link>
           <Link href="/fiyatlandirma" className={linkCls}>
-            Fiyatlandirma
+            Fiyatlandırma
           </Link>
           <Link href="/sablonlar" className={linkCls}>
-            Sablonlar
+            Şablonlar
           </Link>
           <Link href="/#iletisim" className={linkCls}>
             İletişim
@@ -99,8 +99,8 @@ export default function SiteNav({ variant = 'light' }: SiteNavProps) {
           <div className="flex flex-col gap-3">
             <Link href="/#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>Nasıl Çalışır?</Link>
             <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>Rehber</Link>
-            <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>Fiyatlandirma</Link>
-            <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>Sablonlar</Link>
+            <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>Fiyatlandırma</Link>
+            <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>Şablonlar</Link>
             <Link href="/#iletisim" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>İletişim</Link>
             <hr className={hrCls} />
             <Link href="/auth/login" className={mobileLoginCls}>Giriş Yap</Link>

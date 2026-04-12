@@ -42,8 +42,8 @@ interface Article {
 const agentLabel: Record<string, string> = {
   PO: 'PO Agent',
   MARKETING: 'Pazarlama Agent',
-  DEV: 'Gelistirici Agent',
-  HEALTH: 'Saglik Agent',
+  DEV: 'Geliştirici Agent',
+  HEALTH: 'Sağlık Agent',
   ARTICLE: 'Makale Agent',
 };
 
@@ -78,20 +78,20 @@ const statusBadge: Record<string, string> = {
 };
 
 const statusLabel: Record<string, string> = {
-  COMPLETED: 'Basarili',
-  FAILED: 'Basarisiz',
-  RUNNING: 'Calisiyor',
+  COMPLETED: 'Başarılı',
+  FAILED: 'Başarısız',
+  RUNNING: 'Çalışıyor',
 };
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'az once';
-  if (mins < 60) return `${mins} dk once`;
+  if (mins < 1) return 'az önce';
+  if (mins < 60) return `${mins} dk önce`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} saat once`;
+  if (hours < 24) return `${hours} saat önce`;
   const days = Math.floor(hours / 24);
-  return `${days} gun once`;
+  return `${days} gün önce`;
 }
 
 function formatDuration(startedAt: string, completedAt: string | null): string {
@@ -153,7 +153,7 @@ export default function AgentKPIDashboardPage() {
 
       setLastRefresh(new Date());
     } catch {
-      setError('Veriler yuklenirken bir hata olustu.');
+      setError('Veriler yüklenirken bir hata oluştu.');
     } finally {
       if (!background) setLoading(false);
     }
@@ -224,12 +224,12 @@ export default function AgentKPIDashboardPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">Agent KPI Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Otonom agent performansi ve calisma metrikleri
+            Otonom agent performansı ve çalışma metrikleri
           </p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-400">
-            Son guncelleme: {lastRefresh.toLocaleTimeString('tr-TR')}
+            Son güncelleme: {lastRefresh.toLocaleTimeString('tr-TR')}
           </span>
           <button
             onClick={() => fetchAll(true)}
@@ -250,23 +250,23 @@ export default function AgentKPIDashboardPage() {
       {/* ── Section 1: Top Stats Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <div className="text-xs font-medium text-blue-600">Bu Ay Toplam Calisma</div>
+          <div className="text-xs font-medium text-blue-600">Bu Ay Toplam Çalışma</div>
           <div className="text-2xl font-bold text-blue-800 mt-1">
             {stats?.totalThisMonth ?? 0}
           </div>
-          <div className="text-xs text-blue-500 mt-1">agent calisma sayisi</div>
+          <div className="text-xs text-blue-500 mt-1">agent çalışma sayısı</div>
         </div>
 
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <div className="text-xs font-medium text-emerald-600">Genel Basari Orani</div>
+          <div className="text-xs font-medium text-emerald-600">Genel Başarı Oranı</div>
           <div className={`text-2xl font-bold mt-1 ${successRateColor(overallSuccessRate)}`}>
             %{overallSuccessRate}
           </div>
-          <div className="text-xs text-emerald-500 mt-1">ortalama basari</div>
+          <div className="text-xs text-emerald-500 mt-1">ortalama başarı</div>
         </div>
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <div className="text-xs font-medium text-amber-600">Aktif Gelistirme Onerileri</div>
+          <div className="text-xs font-medium text-amber-600">Aktif Geliştirme Önerileri</div>
           <div className="text-2xl font-bold text-amber-800 mt-1">
             {activeSuggestions}
           </div>
@@ -274,7 +274,7 @@ export default function AgentKPIDashboardPage() {
         </div>
 
         <div className="rounded-xl border border-purple-200 bg-purple-50 p-4">
-          <div className="text-xs font-medium text-purple-600">Yayinlanan Makale</div>
+          <div className="text-xs font-medium text-purple-600">Yayınlanan Makale</div>
           <div className="text-2xl font-bold text-purple-800 mt-1">
             {publishedArticles}
           </div>
@@ -284,7 +284,7 @@ export default function AgentKPIDashboardPage() {
 
       {/* ── Section 2: Per-Agent Performance Cards ── */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Agent Performansi</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Agent Performansı</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {agentTypes.map((type) => {
             const totalRuns = stats?.runsPerType[type] ?? 0;
@@ -306,11 +306,11 @@ export default function AgentKPIDashboardPage() {
                   <div>
                     <div className="font-bold text-gray-900">{agentLabel[type]}</div>
                     <div className="text-xs text-gray-500">
-                      {type === 'PO' && 'Gunluk urun raporu'}
+                      {type === 'PO' && 'Günlük ürün raporu'}
                       {type === 'MARKETING' && 'Pazarlama stratejisi'}
-                      {type === 'DEV' && 'Otomatik gelistirme'}
-                      {type === 'HEALTH' && 'Hata analizi ve fix onerileri'}
-                      {type === 'ARTICLE' && 'SEO blog makale uretimi'}
+                      {type === 'DEV' && 'Otomatik geliştirme'}
+                      {type === 'HEALTH' && 'Hata analizi ve fix önerileri'}
+                      {type === 'ARTICLE' && 'SEO blog makale üretimi'}
                     </div>
                   </div>
                 </div>
@@ -318,12 +318,12 @@ export default function AgentKPIDashboardPage() {
                 {/* Metrics */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">Toplam Calisma</span>
+                    <span className="text-xs text-gray-500">Toplam Çalışma</span>
                     <span className="text-sm font-bold text-gray-900">{totalRuns}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">Basari Orani</span>
+                    <span className="text-xs text-gray-500">Başarı Oranı</span>
                     <span className={`text-sm font-bold ${successRateColor(rate)}`}>
                       %{rate}
                     </span>
@@ -341,7 +341,7 @@ export default function AgentKPIDashboardPage() {
                   <div className="pt-2 border-t border-gray-200/60">
                     {lastRun ? (
                       <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-500">Son Calisma</span>
+                        <span className="text-xs text-gray-500">Son Çalışma</span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-600">
                             {timeAgo(lastRun.startedAt)}
@@ -355,7 +355,7 @@ export default function AgentKPIDashboardPage() {
                       </div>
                     ) : (
                       <div className="text-xs text-gray-400 text-center">
-                        Henuz calisma yok
+                        Henüz çalışma yok
                       </div>
                     )}
                   </div>
@@ -368,11 +368,11 @@ export default function AgentKPIDashboardPage() {
 
       {/* ── Section 3: Recent Agent Runs Table ── */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Son Agent Calismalari</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Son Agent Çalışmaları</h2>
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {runs.length === 0 ? (
             <div className="py-12 text-center text-gray-400 text-sm">
-              Henuz agent calismasi bulunmuyor.
+              Henüz agent çalışması bulunmuyor.
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -386,13 +386,13 @@ export default function AgentKPIDashboardPage() {
                       Durum
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Baslangic
+                      Başlangıç
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       Sure
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Ozet
+                      Özet
                     </th>
                   </tr>
                 </thead>
@@ -442,7 +442,7 @@ export default function AgentKPIDashboardPage() {
 
       {/* ── Section 4: Dev Agent Pipeline ── */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Gelistirici Agent Pipeline</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Geliştirici Agent Pipeline</h2>
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
           {/* Status Counts */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -453,13 +453,13 @@ export default function AgentKPIDashboardPage() {
               </div>
             </div>
             <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-center">
-              <div className="text-xs font-medium text-blue-600">Gelistiriliyor</div>
+              <div className="text-xs font-medium text-blue-600">Geliştiriliyor</div>
               <div className="text-xl font-bold text-blue-800 mt-1">
                 {suggestionCounts.IN_PROGRESS}
               </div>
             </div>
             <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-center">
-              <div className="text-xs font-medium text-emerald-600">Tamamlandi</div>
+              <div className="text-xs font-medium text-emerald-600">Tamamlandı</div>
               <div className="text-xl font-bold text-emerald-800 mt-1">
                 {suggestionCounts.DONE}
               </div>
@@ -490,14 +490,14 @@ export default function AgentKPIDashboardPage() {
                   <div
                     className="bg-blue-400 transition-all duration-500"
                     style={{ width: `${(suggestionCounts.IN_PROGRESS / totalSuggestions) * 100}%` }}
-                    title={`Gelistiriliyor: ${suggestionCounts.IN_PROGRESS}`}
+                    title={`Geliştiriliyor: ${suggestionCounts.IN_PROGRESS}`}
                   />
                 )}
                 {suggestionCounts.DONE > 0 && (
                   <div
                     className="bg-emerald-400 transition-all duration-500"
                     style={{ width: `${(suggestionCounts.DONE / totalSuggestions) * 100}%` }}
-                    title={`Tamamlandi: ${suggestionCounts.DONE}`}
+                    title={`Tamamlandı: ${suggestionCounts.DONE}`}
                   />
                 )}
                 {suggestionCounts.REJECTED > 0 && (
@@ -516,11 +516,11 @@ export default function AgentKPIDashboardPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-                  <span className="text-xs text-gray-500">Gelistiriliyor</span>
+                  <span className="text-xs text-gray-500">Geliştiriliyor</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                  <span className="text-xs text-gray-500">Tamamlandi</span>
+                  <span className="text-xs text-gray-500">Tamamlandı</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
@@ -530,7 +530,7 @@ export default function AgentKPIDashboardPage() {
             </div>
           ) : (
             <div className="py-4 text-center text-gray-400 text-sm">
-              Henuz gelistirme onerisi bulunmuyor.
+              Henüz geliştirme önerisi bulunmuyor.
             </div>
           )}
         </div>

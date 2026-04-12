@@ -35,7 +35,7 @@ export default function ProfilePage() {
       if (email !== (user?.email || '')) body.email = email;
 
       if (Object.keys(body).length === 0) {
-        setSaveMsg('Degisiklik yok.');
+        setSaveMsg('Değişiklik yok.');
         setSaving(false);
         return;
       }
@@ -45,11 +45,11 @@ export default function ProfilePage() {
       });
 
       if (res.status === 'success') {
-        setSaveMsg('Profil guncellendi.');
+        setSaveMsg('Profil güncellendi.');
         setEditing(false);
         await refreshUser();
       } else {
-        setSaveMsg((res as any).data?.message || 'Hata olustu');
+        setSaveMsg((res as any).data?.message || 'Hata oluştu');
       }
     } catch (err: any) {
       setSaveMsg(err.message);
@@ -69,10 +69,10 @@ export default function ProfilePage() {
       });
 
       if (res.status === 'success') {
-        setRoleMsg(`${role === 'TENANT' ? 'Kiraci' : 'Ev Sahibi'} rolu eklendi.`);
+        setRoleMsg(`${role === 'TENANT' ? 'Kiracı' : 'Ev Sahibi'} rolü eklendi.`);
         await refreshUser();
       } else {
-        setRoleMsg((res as any).data?.message || 'Hata olustu');
+        setRoleMsg((res as any).data?.message || 'Hata oluştu');
       }
     } catch (err: any) {
       setRoleMsg(err.message);
@@ -91,10 +91,10 @@ export default function ProfilePage() {
       });
 
       if (res.status === 'success') {
-        setKycMsg('KYC dogrulamasi tamamlandi.');
+        setKycMsg('KYC doğrulaması tamamlandı.');
         await refreshUser();
       } else {
-        setKycMsg((res as any).data?.message || 'Hata olustu');
+        setKycMsg((res as any).data?.message || 'Hata oluştu');
       }
     } catch (err: any) {
       setKycMsg(err.message);
@@ -113,12 +113,12 @@ export default function ProfilePage() {
 
   const kycStatusLabel: Record<string, { text: string; cls: string }> = {
     PENDING: { text: 'Bekliyor', cls: 'bg-yellow-500/20 text-yellow-400' },
-    VERIFIED: { text: 'Dogrulandi', cls: 'bg-emerald-500/20 text-emerald-400' },
+    VERIFIED: { text: 'Doğrulandı', cls: 'bg-emerald-500/20 text-emerald-400' },
     REJECTED: { text: 'Reddedildi', cls: 'bg-red-500/20 text-red-400' },
   };
 
   const roleLabel: Record<string, string> = {
-    TENANT: 'Kiraci',
+    TENANT: 'Kiracı',
     LANDLORD: 'Ev Sahibi',
     ADMIN: 'Yonetici',
   };
@@ -132,13 +132,13 @@ export default function ProfilePage() {
       {/* Profile Info */}
       <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="mb-6 flex items-start justify-between">
-          <h2 className="text-lg font-semibold text-white">Kisisel Bilgiler</h2>
+          <h2 className="text-lg font-semibold text-white">Kişisel Bilgiler</h2>
           {!editing && (
             <button
               onClick={() => { setEditing(true); setSaveMsg(''); }}
               className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-600/30"
             >
-              Duzenle
+              Düzenle
             </button>
           )}
         </div>
@@ -154,7 +154,7 @@ export default function ProfilePage() {
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@email.com" className={inputCls} />
             </div>
             {saveMsg && (
-              <div className={`rounded-lg p-2 text-sm ${saveMsg.includes('guncellendi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+              <div className={`rounded-lg p-2 text-sm ${saveMsg.includes('güncellendi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                 {saveMsg}
               </div>
             )}
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                 {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
               <button onClick={() => { setEditing(false); setFullName(user.fullName); setEmail(user.email || ''); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
-                Iptal
+                İptal
               </button>
             </div>
           </div>
@@ -193,13 +193,13 @@ export default function ProfilePage() {
             ))}
           </div>
         ) : (
-          <p className="mb-4 text-sm text-slate-400">Henuz bir rolunuz yok. Asagidan rol ekleyebilirsiniz.</p>
+          <p className="mb-4 text-sm text-slate-400">Henüz bir rolünüz yok. Aşağıdan rol ekleyebilirsiniz.</p>
         )}
 
         <div className="flex gap-3">
           {!user.roles.includes('TENANT') && (
             <button onClick={() => handleAddRole('TENANT')} disabled={addingRole} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50">
-              {addingRole ? 'Ekleniyor...' : 'Kiraci Rolu Ekle'}
+              {addingRole ? 'Ekleniyor...' : 'Kiracı Rolü Ekle'}
             </button>
           )}
           {!user.roles.includes('LANDLORD') && (
@@ -208,7 +208,7 @@ export default function ProfilePage() {
             </button>
           )}
           {user.roles.includes('TENANT') && user.roles.includes('LANDLORD') && (
-            <span className="text-sm text-slate-500">Tum roller mevcut.</span>
+            <span className="text-sm text-slate-500">Tüm roller mevcut.</span>
           )}
         </div>
 
@@ -222,7 +222,7 @@ export default function ProfilePage() {
       {/* KYC */}
       <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Kimlik Dogrulama (KYC)</h2>
+          <h2 className="text-lg font-semibold text-white">Kimlik Doğrulama (KYC)</h2>
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${kycStatusLabel[user.kycStatus]?.cls || 'bg-slate-500/20 text-slate-400'}`}>
             {kycStatusLabel[user.kycStatus]?.text || user.kycStatus}
           </span>
@@ -231,20 +231,20 @@ export default function ProfilePage() {
         {user.kycStatus === 'PENDING' ? (
           <div>
             <p className="mb-3 text-sm text-slate-400">
-              KYC dogrulamasini tamamlayarak tum ozelliklere erisim saglayabilirsiniz.
+              KYC doğrulamasını tamamlayarak tüm özelliklere erişim sağlayabilirsiniz.
             </p>
             <button onClick={handleKyc} disabled={kycLoading} className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-700 disabled:opacity-50">
-              {kycLoading ? 'Dogrulaniyor...' : 'KYC Dogrulamasini Baslat'}
+              {kycLoading ? 'Doğrulanıyor...' : 'KYC Doğrulamasını Başlat'}
             </button>
           </div>
         ) : user.kycStatus === 'VERIFIED' ? (
-          <p className="text-sm text-emerald-400">Kimlik dogrulamaniz tamamlanmistir.</p>
+          <p className="text-sm text-emerald-400">Kimlik doğrulamanız tamamlanmıştır.</p>
         ) : (
-          <p className="text-sm text-red-400">Kimlik dogrulamaniz reddedilmistir. Destek ile iletisime gecin.</p>
+          <p className="text-sm text-red-400">Kimlik doğrulamanız reddedilmiştir. Destek ile iletişime geçin.</p>
         )}
 
         {kycMsg && (
-          <div className={`mt-3 rounded-lg p-2 text-sm ${kycMsg.includes('tamamlandi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+          <div className={`mt-3 rounded-lg p-2 text-sm ${kycMsg.includes('tamamlandı') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
             {kycMsg}
           </div>
         )}

@@ -41,11 +41,11 @@ export default function AdminContractsPage() {
 
   const statusLabel: Record<string, { text: string; cls: string }> = {
     DRAFT: { text: 'Taslak', cls: 'bg-gray-100 text-gray-700' },
-    PENDING_SIGNATURES: { text: 'Imza Bekliyor', cls: 'bg-yellow-100 text-yellow-700' },
+    PENDING_SIGNATURES: { text: 'İmza Bekliyor', cls: 'bg-yellow-100 text-yellow-700' },
     PENDING_ACTIVATION: { text: 'Aktivasyon Bekliyor', cls: 'bg-blue-100 text-blue-700' },
     ACTIVE: { text: 'Aktif', cls: 'bg-green-100 text-green-700' },
     TERMINATED: { text: 'Feshedildi', cls: 'bg-red-100 text-red-700' },
-    EXPIRED: { text: 'Suresi Doldu', cls: 'bg-gray-100 text-gray-600' },
+    EXPIRED: { text: 'Süresi Doldu', cls: 'bg-gray-100 text-gray-600' },
   };
 
   const totalPages = Math.ceil(total / 20);
@@ -53,25 +53,25 @@ export default function AdminContractsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Sozlesmeler</h1>
-        <span className="text-sm text-gray-500">{total} sozlesme</span>
+        <h1 className="text-2xl font-bold text-gray-900">Sözleşmeler</h1>
+        <span className="text-sm text-gray-500">{total} sözleşme</span>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yukleniyor...</div>
+        <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Mulk</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Kiraci</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Mülk</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Kiracı</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Ev Sahibi</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Kira</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Durum</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Tarih</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Odeme</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Ödeme</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -100,7 +100,7 @@ export default function AdminContractsPage() {
           </div>
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 py-3 border-t">
-              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Onceki</button>
+              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Önceki</button>
               <span className="px-3 py-1 text-sm text-gray-500">{page} / {totalPages}</span>
               <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Sonraki</button>
             </div>

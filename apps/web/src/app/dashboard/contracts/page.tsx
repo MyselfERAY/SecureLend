@@ -36,11 +36,11 @@ interface TenantResult {
 
 const statusMap: Record<string, { text: string; cls: string }> = {
   DRAFT: { text: 'Taslak', cls: 'bg-slate-500/20 text-slate-400' },
-  PENDING_SIGNATURES: { text: 'Imza Bekliyor', cls: 'bg-yellow-500/20 text-yellow-400' },
+  PENDING_SIGNATURES: { text: 'İmza Bekliyor', cls: 'bg-yellow-500/20 text-yellow-400' },
   PENDING_ACTIVATION: { text: 'Aktivasyon Bekliyor', cls: 'bg-blue-500/20 text-blue-400' },
   ACTIVE: { text: 'Aktif', cls: 'bg-emerald-500/20 text-emerald-400' },
   TERMINATED: { text: 'Feshedildi', cls: 'bg-red-500/20 text-red-400' },
-  EXPIRED: { text: 'Suresi Doldu', cls: 'bg-slate-500/20 text-slate-500' },
+  EXPIRED: { text: 'Süresi Doldu', cls: 'bg-slate-500/20 text-slate-500' },
 };
 
 type TabKey = 'active' | 'archive';
@@ -118,7 +118,7 @@ export default function ContractsPage() {
 
   const searchTenant = async () => {
     if (!tenantSearch || !/^5\d{9}$/.test(tenantSearch)) {
-      setTenantError('Gecerli telefon numarasi girin (5XXXXXXXXX)');
+      setTenantError('Geçerli telefon numarası girin (5XXXXXXXXX)');
       return;
     }
     setTenantSearching(true);
@@ -131,10 +131,10 @@ export default function ContractsPage() {
       if (res.status === 'success' && res.data) {
         setTenantResult(res.data);
       } else {
-        setTenantError('Kullanici bulunamadi');
+        setTenantError('Kullanıcı bulunamadı');
       }
     } catch {
-      setTenantError('Arama hatasi');
+      setTenantError('Arama hatası');
     } finally {
       setTenantSearching(false);
     }
@@ -142,9 +142,9 @@ export default function ContractsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantResult) { setFormError('Kiraci secmeniz gerekiyor'); return; }
-    if (!formData.propertyId) { setFormError('Mulk secmeniz gerekiyor'); return; }
-    if (!/^TR\d{24}$/.test(formData.landlordIban)) { setFormError('Gecerli bir IBAN giriniz (TR + 24 rakam)'); return; }
+    if (!tenantResult) { setFormError('Kiracı seçmeniz gerekiyor'); return; }
+    if (!formData.propertyId) { setFormError('Mülk seçmeniz gerekiyor'); return; }
+    if (!/^TR\d{24}$/.test(formData.landlordIban)) { setFormError('Geçerli bir IBAN giriniz (TR + 24 rakam)'); return; }
     setFormError('');
     setSubmitting(true);
 
@@ -171,7 +171,7 @@ export default function ContractsPage() {
         resetForm();
         await loadContracts();
       } else {
-        setFormError((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Hata olustu');
+        setFormError((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Hata oluştu');
       }
     } catch (err: any) {
       setFormError(err.message);
@@ -196,7 +196,7 @@ export default function ContractsPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm text-slate-400">Yukleniyor...</span>
+          <span className="text-sm text-slate-400">Yükleniyor...</span>
         </div>
       </div>
     );
@@ -212,7 +212,7 @@ export default function ContractsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Sozlesmelerim</h1>
+        <h1 className="text-2xl font-bold text-white">Sözleşmelerim</h1>
         {isLandlord && (
           <button
             onClick={() => { setShowForm(!showForm); if (showForm) resetForm(); }}
@@ -222,7 +222,7 @@ export default function ContractsPage() {
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
-            {showForm ? 'Iptal' : 'Yeni Sozlesme'}
+            {showForm ? 'İptal' : 'Yeni Sözleşme'}
           </button>
         )}
       </div>
@@ -238,7 +238,7 @@ export default function ContractsPage() {
                 : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/30'
             }`}
           >
-            Aktif Sozlesmeler
+            Aktif Sözleşmeler
             {activeContracts.length > 0 && (
               <span className="ml-2 rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-semibold text-blue-400">{activeContracts.length}</span>
             )}
@@ -251,7 +251,7 @@ export default function ContractsPage() {
                 : 'text-slate-400 hover:text-slate-300 hover:bg-slate-700/30'
             }`}
           >
-            Arsiv
+            Arşiv
             {archiveContracts.length > 0 && (
               <span className="ml-2 rounded-full bg-slate-500/20 px-2 py-0.5 text-xs font-semibold text-slate-400">{archiveContracts.length}</span>
             )}
@@ -262,7 +262,7 @@ export default function ContractsPage() {
       {/* Create Form */}
       {showForm && (
         <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-5">
-          <h3 className="text-lg font-semibold text-white">Yeni Kira Sozlesmesi</h3>
+          <h3 className="text-lg font-semibold text-white">Yeni Kira Sözleşmesi</h3>
 
           {formError && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{formError}</div>
@@ -270,7 +270,7 @@ export default function ContractsPage() {
 
           {/* Tenant search */}
           <div className="rounded-lg border border-slate-700/50 bg-[#0a1628]/50 p-4 space-y-3">
-            <label className={labelCls}>Kiraci Ara (Telefon Numarasi)</label>
+            <label className={labelCls}>Kiracı Ara (Telefon Numarası)</label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -285,13 +285,13 @@ export default function ContractsPage() {
                 disabled={tenantSearching}
                 className="shrink-0 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 disabled:opacity-50"
               >
-                {tenantSearching ? 'Araniyor...' : 'Ara'}
+                {tenantSearching ? 'Aranıyor...' : 'Ara'}
               </button>
             </div>
             {tenantError && <p className="text-sm text-red-400">{tenantError}</p>}
             {tenantResult && (
               <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-                <div className="text-sm font-medium text-emerald-400">Kiraci Bulundu</div>
+                <div className="text-sm font-medium text-emerald-400">Kiracı Bulundu</div>
                 <div className="mt-1 text-sm text-emerald-300/80">
                   <span className="font-medium">{tenantResult.fullName}</span>
                   <span className="ml-2 text-emerald-400/60">({tenantResult.maskedTckn})</span>
@@ -303,14 +303,14 @@ export default function ContractsPage() {
 
           {/* Property select */}
           <div>
-            <label className={labelCls}>Mulk *</label>
+            <label className={labelCls}>Mülk *</label>
             <select
               value={formData.propertyId}
               onChange={(e) => handlePropertySelect(e.target.value)}
               className={inputCls}
               required
             >
-              <option value="">Mulk secin...</option>
+              <option value="">Mülk seçin...</option>
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.title} — {p.monthlyRent.toLocaleString('tr-TR')} TL/ay
@@ -319,7 +319,7 @@ export default function ContractsPage() {
             </select>
             {properties.length === 0 && (
               <p className="mt-1 text-xs text-yellow-400">
-                Henuz aktif mulkunuz yok. Once Mulkler sayfasindan mulk ekleyin.
+                Henüz aktif mülkünüz yok. Önce Mülkler sayfasından mülk ekleyin.
               </p>
             )}
           </div>
@@ -327,15 +327,15 @@ export default function ContractsPage() {
           {/* Date and rent fields */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className={labelCls}>Baslangic Tarihi *</label>
+              <label className={labelCls}>Başlangıç Tarihi *</label>
               <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className={inputCls} required />
             </div>
             <div>
-              <label className={labelCls}>Bitis Tarihi *</label>
+              <label className={labelCls}>Bitiş Tarihi *</label>
               <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className={inputCls} required />
             </div>
             <div>
-              <label className={labelCls}>Aylik Kira (TL) *</label>
+              <label className={labelCls}>Aylık Kira (TL) *</label>
               <input type="number" value={formData.monthlyRent} onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })} className={inputCls} required />
             </div>
             <div>
@@ -343,7 +343,7 @@ export default function ContractsPage() {
               <input type="number" value={formData.depositAmount} onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Odeme Gunu (1-28) *</label>
+              <label className={labelCls}>Ödeme Günü (1-28) *</label>
               <input type="number" min="1" max="28" value={formData.paymentDayOfMonth} onChange={(e) => setFormData({ ...formData, paymentDayOfMonth: e.target.value })} className={inputCls} required />
             </div>
           </div>
@@ -363,33 +363,33 @@ export default function ContractsPage() {
               className={`${inputCls} font-mono`}
               required
             />
-            <p className="mt-1 text-xs text-slate-500">TR ile baslamali, 26 karakter</p>
+            <p className="mt-1 text-xs text-slate-500">TR ile başlamalı, 26 karakter</p>
             {formData.landlordIban && !/^TR\d{24}$/.test(formData.landlordIban) && (
-              <p className="mt-1 text-xs text-red-400">IBAN TR ile baslamali ve toplam 26 karakter olmalidir</p>
+              <p className="mt-1 text-xs text-red-400">IBAN TR ile başlamalı ve toplam 26 karakter olmalıdır</p>
             )}
           </div>
 
           {/* Terms */}
           <div>
-            <label className={labelCls}>Sozlesme Sartlari</label>
-            <textarea value={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.value })} rows={3} placeholder="Genel sozlesme sartlari..." className={`${inputCls} resize-none`} />
+            <label className={labelCls}>Sözleşme Şartları</label>
+            <textarea value={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.value })} rows={3} placeholder="Genel sözleşme şartları..." className={`${inputCls} resize-none`} />
           </div>
           <div>
-            <label className={labelCls}>Ozel Maddeler</label>
-            <textarea value={formData.specialClauses} onChange={(e) => setFormData({ ...formData, specialClauses: e.target.value })} rows={2} placeholder="Ozel maddeler..." className={`${inputCls} resize-none`} />
+            <label className={labelCls}>Özel Maddeler</label>
+            <textarea value={formData.specialClauses} onChange={(e) => setFormData({ ...formData, specialClauses: e.target.value })} rows={2} placeholder="Özel maddeler..." className={`${inputCls} resize-none`} />
           </div>
 
           {/* Summary */}
           {formData.propertyId && tenantResult && (
             <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm">
-              <div className="mb-2 font-medium text-blue-400">Sozlesme Ozeti</div>
+              <div className="mb-2 font-medium text-blue-400">Sözleşme Özeti</div>
               <div className="space-y-1 text-blue-300/80">
-                <div>Mulk: {properties.find((p) => p.id === formData.propertyId)?.title}</div>
-                <div>Kiraci: {tenantResult.fullName}</div>
+                <div>Mülk: {properties.find((p) => p.id === formData.propertyId)?.title}</div>
+                <div>Kiracı: {tenantResult.fullName}</div>
                 <div>Kira: {Number(formData.monthlyRent || 0).toLocaleString('tr-TR')} TL/ay</div>
                 {formData.depositAmount && <div>Depozito: {Number(formData.depositAmount).toLocaleString('tr-TR')} TL</div>}
                 <div>Sure: {formData.startDate} — {formData.endDate}</div>
-                <div>Odeme Gunu: Her ayin {formData.paymentDayOfMonth}. gunu</div>
+                <div>Ödeme Günü: Her ayın {formData.paymentDayOfMonth}. gunu</div>
                 {formData.landlordIban && <div>IBAN: {formData.landlordIban}</div>}
               </div>
             </div>
@@ -400,7 +400,7 @@ export default function ContractsPage() {
             disabled={submitting || !tenantResult || !formData.propertyId}
             className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
           >
-            {submitting ? 'Olusturuluyor...' : 'Sozlesme Olustur'}
+            {submitting ? 'Oluşturuluyor...' : 'Sözleşme Oluştur'}
           </button>
         </form>
       )}
@@ -413,10 +413,10 @@ export default function ContractsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <div className="text-lg font-medium text-slate-300">Henuz sozlesmeniz yok</div>
+          <div className="text-lg font-medium text-slate-300">Henüz sözleşmeniz yok</div>
           {isLandlord && (
             <p className="mt-2 text-sm text-slate-500">
-              Yeni Sozlesme butonuna tiklayarak kira sozlesmesi olusturabilirsiniz.
+              Yeni Sözleşme butonuna tıklayarak kira sözleşmesi oluşturabilirsiniz.
             </p>
           )}
         </div>
@@ -434,12 +434,12 @@ export default function ContractsPage() {
             )}
           </div>
           <div className="text-base font-medium text-slate-300">
-            {activeTab === 'archive' ? 'Arsivde sozlesme yok' : 'Aktif sozlesmeniz yok'}
+            {activeTab === 'archive' ? 'Arşivde sözleşme yok' : 'Aktif sözleşmeniz yok'}
           </div>
           <p className="mt-1 text-sm text-slate-500">
             {activeTab === 'archive'
-              ? 'Feshedilen veya suresi dolan sozlesmeler burada gorunecektir.'
-              : 'Aktif, taslak veya imza bekleyen sozlesmeleriniz burada gorunecektir.'}
+              ? 'Feshedilen veya süresi dolan sözleşmeler burada görünecektir.'
+              : 'Aktif, taslak veya imza bekleyen sözleşmeleriniz burada görünecektir.'}
           </p>
         </div>
       ) : (
@@ -459,7 +459,7 @@ export default function ContractsPage() {
                     </span>
                   </div>
                   <div className="mt-1 text-sm text-slate-400">
-                    Kiraci: {c.tenantName} &middot; Ev Sahibi: {c.landlordName}
+                    Kiracı: {c.tenantName} &middot; Ev Sahibi: {c.landlordName}
                   </div>
                   <div className="mt-1 text-sm text-slate-500">
                     {c.startDate} — {c.endDate}
@@ -470,7 +470,7 @@ export default function ContractsPage() {
                     {c.monthlyRent.toLocaleString('tr-TR')} TL
                   </div>
                   <div className="mt-1 text-xs text-slate-500">
-                    Imza: {c.signatureCount}/2 {c.isSigned ? '(Imzaladim)' : ''}
+                    İmza: {c.signatureCount}/2 {c.isSigned ? '(İmzaladım)' : ''}
                   </div>
                 </div>
               </div>

@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Kullanim Kosullari',
-  description: 'Kira Güvence kullanim kosullari ve hizmet sartlari.',
+  title: 'Kullanım Koşulları',
+  description: 'Kira Güvence kullanım koşulları ve hizmet şartları.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/kullanim-kosullari' },
 };

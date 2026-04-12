@@ -6,16 +6,16 @@ import { AnalyticsProvider } from '../components/analytics-provider';
 export const metadata: Metadata = {
   metadataBase: new URL('https://kiraguvence.com'),
   title: {
-    default: 'Kira Güvence - Dijital Kira Odeme Platformu | Guvenli Kira Yonetimi',
+    default: 'Kira Güvence - Dijital Kira Ödeme Platformu | Güvenli Kira Yönetimi',
     template: '%s | Kira Güvence',
   },
   description:
-    'Kira Güvence ile kefil ve Findeks derdi bitti. Banka guvencesiyle kira odeyin, dijital sozlesmeyle hizla kontrat kurun. Ev sahibi ve kiraci icin guvenli kira yonetim platformu.',
+    'Kira Güvence ile kefil ve Findeks derdi bitti. Banka güvencesiyle kira ödeyin, dijital sözleşmeyle hızla kontrat kurun. Ev sahibi ve kiracı için güvenli kira yönetim platformu.',
   keywords: [
-    'kira odeme',
+    'kira ödeme',
     'dijital kira',
-    'kira guvence',
-    'kiraci',
+    'kira güvence',
+    'kiracı',
     'ev sahibi',
     'KMH',
     'kira garantisi',
@@ -23,19 +23,19 @@ export const metadata: Metadata = {
     'kefil olmadan ev kiralama',
     'findeks',
     'kira kefil',
-    'banka guvencesi kira',
+    'banka güvencesi kira',
     'fintech',
-    'kira yonetimi',
+    'kira yönetimi',
     'Kira Güvence',
     'kiraguvence',
-    'kira sozlesmesi',
-    'dijital kira sozlesmesi',
-    'online kira odeme',
+    'kira sözleşmesi',
+    'dijital kira sözleşmesi',
+    'online kira ödeme',
     'kira takip sistemi',
-    'KPS kimlik dogrulama',
-    'guvenli kira platformu',
-    'kira sigortasi',
-    'kiracı guvencesi',
+    'KPS kimlik doğrulama',
+    'güvenli kira platformu',
+    'kira sigortası',
+    'kiracı güvencesi',
   ],
   authors: [{ name: 'Kira Güvence' }],
   creator: 'Kira Güvence',
@@ -46,13 +46,13 @@ export const metadata: Metadata = {
     siteName: 'Kira Güvence',
     title: 'Kira Güvence - Kefil Derdi Biten Kira Platformu',
     description:
-      'Banka guvencesiyle kira odeyin, kefil ve Findeks derdi bitsin. Dijital sozlesme, otomatik odeme takibi — ev sahibi ve kiraci icin.',
+      'Banka güvencesiyle kira ödeyin, kefil ve Findeks derdi bitsin. Dijital sözleşme, otomatik ödeme takibi — ev sahibi ve kiracı için.',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Kira Güvence - Kefil Derdi Biten Kira Platformu',
     description:
-      'Banka guvencesiyle kira odeyin, kefil ve Findeks derdi bitsin.',
+      'Banka güvencesiyle kira ödeyin, kefil ve Findeks derdi bitsin.',
   },
   robots: {
     index: true,
@@ -82,13 +82,13 @@ const jsonLd = {
   url: 'https://kiraguvence.com',
   logo: 'https://kiraguvence.com/opengraph-image',
   description:
-    'Dijital kira odeme platformu. Kiraci, ev sahibi ve banka arasindaki sureci tek merkezde yonetir.',
+    'Dijital kira ödeme platformu. Kiracı, ev sahibi ve banka arasındaki süreci tek merkezde yönetir.',
   foundingDate: '2024',
   areaServed: {
     '@type': 'Country',
     name: 'Turkey',
   },
-  serviceType: ['Dijital Kira Yonetimi', 'KMH Finansman', 'KPS Kimlik Dogrulama'],
+  serviceType: ['Dijital Kira Yönetimi', 'KMH Finansman', 'KPS Kimlik Doğrulama'],
   contactPoint: [
     {
       '@type': 'ContactPoint',
@@ -121,20 +121,20 @@ const webAppJsonLd = {
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Web, iOS, Android',
   description:
-    'Kiraci, ev sahibi ve banka arasindaki kira odeme surecini dijital ortamda guvenle yonetin.',
+    'Kiracı, ev sahibi ve banka arasındaki kira ödeme sürecini dijital ortamda güvenle yönetin.',
   featureList: [
-    'Dijital kira sozlesmesi',
-    'Otomatik kira odeme takibi',
-    'KPS kimlik dogrulama',
-    'KMH (Kredili Mevduat Hesabi) basvurusu',
+    'Dijital kira sözleşmesi',
+    'Otomatik kira ödeme takibi',
+    'KPS kimlik doğrulama',
+    'KMH (Kredili Mevduat Hesabı) başvurusu',
     'Anlık bildirimler',
-    'Mulk yonetimi',
+    'Mülk yönetimi',
   ],
   offers: {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'TRY',
-    description: 'Ucretsiz kayit ve temel ozellikler',
+    description: 'Ücretsiz kayıt ve temel özellikler',
   },
   aggregateRating: {
     '@type': 'AggregateRating',
@@ -153,7 +153,7 @@ const faqJsonLd = {
       name: 'Kira Güvence nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz.',
+        text: 'Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldıran, banka güvenceli dijital kira yönetim platformudur. Ev sahibi kirasını garanti altına alır, kiracı kefil bulmak zorunda kalmaz.',
       },
     },
     {
@@ -161,31 +161,31 @@ const faqJsonLd = {
       name: 'Kefil olmadan ev kiralayabilir miyim?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Evet. Kira Güvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder.',
+        text: 'Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiracı ödemelerini garanti eder.',
       },
     },
     {
       '@type': 'Question',
-      name: 'KMH (Kredili Mevduat Hesabi) nedir?',
+      name: 'KMH (Kredili Mevduat Hesabı) nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'KMH, kira odemeleri icin banka tarafindan saglanan bir guvence hesabidir. Kiraci gecici bir aksaklik yasarsa bile kira banka tarafindan ev sahibine odenir, kiraci sadece birkaç gunluk faiz oder.',
+        text: 'KMH, kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Ev sahibi icin maliyet nedir?',
+      name: 'Ev sahibi için maliyet nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Ucretsiz planda komisyon %1.5, ucretli planlarda %0.5-1 arasindadir. Bu, noter masrafi + Findeks ucreti + kefil riskinden cok daha ekonomiktir.',
+        text: 'Ücretsiz planda komisyon %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Dijital sozlesme mahkemede gecerli mi?',
+      name: 'Dijital sözleşme mahkemede geçerli mi?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Evet. Kira Güvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir.',
+        text: 'Evet. Kira Güvence sözleşmeleri TBK (Türk Borçlar Kanunu) uyumludur. Tüm ödeme kayıtları ve sözleşme geçmişi zaman damgalı olarak saklanır ve hukuki delil olarak kullanılabilir.',
       },
     },
   ],

@@ -38,12 +38,12 @@ export default function AdminNewsletterPage() {
   }, [tokens?.accessToken]);
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Yukleniyor...</div>;
+    return <div className="text-center py-12 text-gray-500">Yükleniyor...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Bulten Aboneleri</h1>
+      <h1 className="text-2xl font-bold text-gray-900">Bülten Aboneleri</h1>
 
       {/* Stats */}
       {stats && (
@@ -58,7 +58,7 @@ export default function AdminNewsletterPage() {
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-5 text-center shadow-sm">
             <div className="text-3xl font-bold text-red-500">{stats.unsubscribed}</div>
-            <div className="mt-1 text-sm text-gray-500">Iptal Edilmis</div>
+            <div className="mt-1 text-sm text-gray-500">İptal Edilmis</div>
           </div>
         </div>
       )}
@@ -92,7 +92,7 @@ export default function AdminNewsletterPage() {
           <tbody>
             {subscribers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">Henuz abone yok</td>
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">Henüz abone yok</td>
               </tr>
             ) : (
               subscribers.map((s) => (
@@ -105,7 +105,7 @@ export default function AdminNewsletterPage() {
                   <td className="px-4 py-3 text-gray-500">{new Date(s.createdAt).toLocaleDateString('tr-TR')}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                      {s.isActive ? 'Aktif' : 'Iptal'}
+                      {s.isActive ? 'Aktif' : 'İptal'}
                     </span>
                   </td>
                 </tr>

@@ -37,10 +37,10 @@ const audienceColor: Record<string, string> = {
 
 export const metadata = {
   title: 'Rehber',
-  description: 'Kiracilar ve ev sahipleri icin kira sozlesmesi, kefil, Findeks, kira artisi, depozito ve hukuk konularinda aydinlatici rehber yazilar.',
+  description: 'Kiracılar ve ev sahipleri için kira sözleşmesi, kefil, Findeks, kira artışı, depozito ve hukuk konularında aydınlatıcı rehber yazılar.',
   openGraph: {
     title: 'Kira Rehberi | Kira Güvence',
-    description: 'Kira sozlesmesi, kefil haklari, kira artis orani ve daha fazlasi.',
+    description: 'Kira sözleşmesi, kefil hakları, kira artış oranı ve daha fazlası.',
   },
   alternates: { canonical: '/rehber' },
 };

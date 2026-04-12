@@ -32,9 +32,9 @@ function getDisplayStatus(s: Suggestion): DisplayStatus {
 
 const displayStatusLabel: Record<DisplayStatus, string> = {
   NEW: 'Yeni',
-  APPROVED: 'Onaylandi',
-  IN_PROGRESS: 'Gelistiriliyor',
-  DONE: 'Tamamlandi',
+  APPROVED: 'Onaylandı',
+  IN_PROGRESS: 'Geliştiriliyor',
+  DONE: 'Tamamlandı',
   REJECTED: 'Reddedildi',
 };
 
@@ -55,9 +55,9 @@ const displayStatusBorder: Record<DisplayStatus, string> = {
 };
 
 const priorityLabel: Record<Priority, string> = {
-  LOW: 'Dusuk',
+  LOW: 'Düşük',
   MEDIUM: 'Orta',
-  HIGH: 'Yuksek',
+  HIGH: 'Yüksek',
   CRITICAL: 'Kritik',
 };
 
@@ -71,12 +71,12 @@ const priorityColor: Record<Priority, string> = {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'az once';
-  if (mins < 60) return `${mins} dk once`;
+  if (mins < 1) return 'az önce';
+  if (mins < 60) return `${mins} dk önce`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} saat once`;
+  if (hours < 24) return `${hours} saat önce`;
   const days = Math.floor(hours / 24);
-  return `${days} gun once`;
+  return `${days} gün önce`;
 }
 
 function formatDate(dateStr: string): string {
@@ -158,7 +158,7 @@ export default function AdminSuggestionsPage() {
   const handleCreate = async () => {
     if (!tokens?.accessToken) return;
     if (!form.title.trim() || !form.description.trim()) {
-      setFormError('Baslik ve aciklama zorunludur.');
+      setFormError('Başlık ve açıklama zorunludur.');
       return;
     }
     setFormError(null);
@@ -171,10 +171,10 @@ export default function AdminSuggestionsPage() {
       if (res.status === 'success') {
         setForm({ title: '', description: '', priority: 'HIGH' }); setShowForm(false); fetchSuggestions(true);
       } else {
-        setFormError(res.message || 'Kaydetme basarisiz oldu.');
+        setFormError(res.message || 'Kaydetme başarısız oldu.');
       }
     } catch {
-      setFormError('Bir hata olustu. Tekrar deneyin.');
+      setFormError('Bir hata oluştu. Tekrar deneyin.');
     }
     setFormLoading(false);
   };
@@ -234,17 +234,17 @@ export default function AdminSuggestionsPage() {
       {showForm && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 space-y-4">
           <h2 className="text-sm font-bold text-slate-900">Yeni Gelistirme Onerisi</h2>
-          <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Baslik"
+          <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Başlık"
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none" />
           <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Detayli aciklama... (ne yapilacagini, hangi dosyalarin etkilenecegini, beklenen davranisi yazin)" rows={5}
+            placeholder="Detaylı açıklama... (ne yapilacagini, hangi dosyalarin etkilenecegini, beklenen davranisi yazin)" rows={5}
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none" />
           <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })}
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none">
             <option value="CRITICAL">Kritik</option>
-            <option value="HIGH">Yuksek</option>
+            <option value="HIGH">Yüksek</option>
             <option value="MEDIUM">Orta</option>
-            <option value="LOW">Dusuk</option>
+            <option value="LOW">Düşük</option>
           </select>
           {formError && (
             <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-sm text-rose-600 font-medium">
@@ -258,7 +258,7 @@ export default function AdminSuggestionsPage() {
             </button>
             <button onClick={() => setShowForm(false)}
               className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-              Iptal
+              İptal
             </button>
           </div>
         </div>
@@ -266,17 +266,17 @@ export default function AdminSuggestionsPage() {
 
       {/* ── List + Detail ── */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yukleniyor...</div>
+        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
-          {filterStatus === 'ALL' ? 'Henuz oneri yok. Yukaridaki butona tiklayarak ekleyin.' : 'Bu durumda oneri yok.'}
+          {filterStatus === 'ALL' ? 'Henüz öneri yok. Yukarıdaki butona tıklayarak ekleyin.' : 'Bu durumda öneri yok.'}
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {/* List */}
           <div className="space-y-3">
             {refreshing && (
-              <div className="text-right text-xs text-slate-400 animate-pulse">Guncelleniyor...</div>
+              <div className="text-right text-xs text-slate-400 animate-pulse">Güncelleniyor...</div>
             )}
             {filtered.map((s) => {
               const ds = getDisplayStatus(s);
@@ -324,11 +324,11 @@ export default function AdminSuggestionsPage() {
                 {/* Metadata */}
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Olusturulma</span>
+                    <span className="text-slate-500">Oluşturulma</span>
                     <span className="font-medium text-slate-700">{formatDate(selected.createdAt)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Son Guncelleme</span>
+                    <span className="text-slate-500">Son Güncelleme</span>
                     <span className="font-medium text-slate-700">{formatDate(selected.updatedAt)}</span>
                   </div>
                   {selected.status === 'DONE' && (
@@ -362,7 +362,7 @@ export default function AdminSuggestionsPage() {
                     <div className="flex gap-2">
                       <button onClick={() => handleApprove(selected.id)} disabled={actionLoading === selected.id}
                         className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
-                        {actionLoading === selected.id ? 'Isleniyor...' : 'Onayla'}
+                        {actionLoading === selected.id ? 'İşleniyor...' : 'Onayla'}
                       </button>
                       <button onClick={() => handleReject(selected.id)} disabled={actionLoading === selected.id}
                         className="flex-1 rounded-xl border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
@@ -379,7 +379,7 @@ export default function AdminSuggestionsPage() {
                       </div>
                       <button onClick={() => handleReject(selected.id)} disabled={actionLoading === selected.id}
                         className="rounded-xl border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
-                        Iptal
+                        İptal
                       </button>
                     </div>
                   )}
@@ -394,7 +394,7 @@ export default function AdminSuggestionsPage() {
                   {/* DONE → Show success */}
                   {getDisplayStatus(selected) === 'DONE' && (
                     <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-center text-sm font-medium text-emerald-700">
-                      Tamamlandi ve deploy edildi
+                      Tamamlandı ve deploy edildi
                     </div>
                   )}
 

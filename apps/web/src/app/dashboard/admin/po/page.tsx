@@ -48,9 +48,9 @@ const categoryLabel: Record<ItemCategory, string> = {
   UX_IMPROVEMENT: 'UX',
   COMPETITOR_ANALYSIS: 'Rakip Analizi',
   REGULATION_COMPLIANCE: 'Regulasyon',
-  FEATURE_SUGGESTION: 'Ozellik',
+  FEATURE_SUGGESTION: 'Özellik',
   BUG_REPORT: 'Bug',
-  METRIC_SUMMARY: 'Metrik Ozeti',
+  METRIC_SUMMARY: 'Metrik Özeti',
 };
 
 const categoryColor: Record<ItemCategory, string> = {
@@ -75,8 +75,8 @@ const categoryBorder: Record<ItemCategory, string> = {
 
 const itemStatusLabel: Record<ItemStatus, string> = {
   ACTIVE: 'Aktif',
-  MOVED_TO_DEV: 'Gelistirmede',
-  DISMISSED: 'Kapatildi',
+  MOVED_TO_DEV: 'Geliştirmede',
+  DISMISSED: 'Kapatıldı',
 };
 
 const itemStatusColor: Record<ItemStatus, string> = {
@@ -87,9 +87,9 @@ const itemStatusColor: Record<ItemStatus, string> = {
 
 const devStatusLabel: Record<DevSuggestionStatus, string> = {
   NEW: 'Yeni',
-  APPROVED: 'Onaylandi',
-  IN_PROGRESS: 'Gelistiriliyor',
-  DONE: 'Tamamlandi',
+  APPROVED: 'Onaylandı',
+  IN_PROGRESS: 'Geliştiriliyor',
+  DONE: 'Tamamlandı',
   REJECTED: 'Reddedildi',
 };
 
@@ -102,9 +102,9 @@ const devStatusColor: Record<DevSuggestionStatus, string> = {
 };
 
 const priorityLabel: Record<Priority, string> = {
-  LOW: 'Dusuk',
+  LOW: 'Düşük',
   MEDIUM: 'Orta',
-  HIGH: 'Yuksek',
+  HIGH: 'Yüksek',
   CRITICAL: 'Kritik',
 };
 
@@ -116,15 +116,15 @@ const priorityColor: Record<Priority, string> = {
 };
 
 const metricsLabel: Record<string, string> = {
-  totalUsers: 'Toplam Kullanici',
-  activeContracts: 'Aktif Sozlesme',
-  monthlyPayments: 'Aylik Odeme',
-  pendingSuggestions: 'Bekleyen Oneri',
-  'users.total': 'Toplam Kullanici',
-  'users.lastSevenDays': 'Son 7 Gun (Kullanici)',
-  'contracts.lastSevenDays': 'Son 7 Gun (Sozlesme)',
+  totalUsers: 'Toplam Kullanıcı',
+  activeContracts: 'Aktif Sözleşme',
+  monthlyPayments: 'Aylık Ödeme',
+  pendingSuggestions: 'Bekleyen Öneri',
+  'users.total': 'Toplam Kullanıcı',
+  'users.lastSevenDays': 'Son 7 Gün (Kullanici)',
+  'contracts.lastSevenDays': 'Son 7 Gün (Sözleşme)',
   total: 'Toplam',
-  lastSevenDays: 'Son 7 Gun',
+  lastSevenDays: 'Son 7 Gün',
 };
 
 // ── Helpers ──
@@ -132,13 +132,13 @@ const metricsLabel: Record<string, string> = {
 type FilterKey = 'ALL' | ItemCategory;
 
 const filterChips: { key: FilterKey; label: string }[] = [
-  { key: 'ALL', label: 'Tumu' },
+  { key: 'ALL', label: 'Tümü' },
   { key: 'UX_IMPROVEMENT', label: 'UX' },
   { key: 'COMPETITOR_ANALYSIS', label: 'Rakip Analizi' },
   { key: 'REGULATION_COMPLIANCE', label: 'Regulasyon' },
-  { key: 'FEATURE_SUGGESTION', label: 'Ozellik' },
+  { key: 'FEATURE_SUGGESTION', label: 'Özellik' },
   { key: 'BUG_REPORT', label: 'Bug' },
-  { key: 'METRIC_SUMMARY', label: 'Metrik Ozeti' },
+  { key: 'METRIC_SUMMARY', label: 'Metrik Özeti' },
 ];
 
 const chipActiveColor: Record<FilterKey, string> = {
@@ -308,7 +308,7 @@ export default function PoJournalPage() {
   const handleCreateItem = async () => {
     if (!tokens?.accessToken) return;
     if (!form.title.trim() || !form.description.trim()) {
-      setFormError('Baslik ve aciklama zorunludur.');
+      setFormError('Başlık ve açıklama zorunludur.');
       return;
     }
     setFormError(null);
@@ -336,10 +336,10 @@ export default function PoJournalPage() {
         setShowForm(false);
         fetchReports(true);
       } else {
-        setFormError(res.message || 'Kaydetme basarisiz oldu.');
+        setFormError(res.message || 'Kaydetme başarısız oldu.');
       }
     } catch {
-      setFormError('Bir hata olustu. Tekrar deneyin.');
+      setFormError('Bir hata oluştu. Tekrar deneyin.');
     }
     setFormLoading(false);
   };
@@ -361,10 +361,10 @@ export default function PoJournalPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">
-            PO Gunlugu
+            PO Günlüğü
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Gunluk urun raporu ve oneriler
+            Günlük ürün raporu ve öneriler
           </p>
         </div>
         <button
@@ -407,23 +407,23 @@ export default function PoJournalPage() {
             <option value="UX_IMPROVEMENT">UX</option>
             <option value="COMPETITOR_ANALYSIS">Rakip Analizi</option>
             <option value="REGULATION_COMPLIANCE">Regulasyon</option>
-            <option value="FEATURE_SUGGESTION">Ozellik</option>
+            <option value="FEATURE_SUGGESTION">Özellik</option>
             <option value="BUG_REPORT">Bug</option>
-            <option value="METRIC_SUMMARY">Metrik Ozeti</option>
+            <option value="METRIC_SUMMARY">Metrik Özeti</option>
           </select>
 
           <input
             type="text"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="Baslik"
+            placeholder="Başlık"
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
           />
 
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Detayli aciklama..."
+            placeholder="Detaylı açıklama..."
             rows={4}
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none"
           />
@@ -436,9 +436,9 @@ export default function PoJournalPage() {
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
           >
             <option value="CRITICAL">Kritik</option>
-            <option value="HIGH">Yuksek</option>
+            <option value="HIGH">Yüksek</option>
             <option value="MEDIUM">Orta</option>
-            <option value="LOW">Dusuk</option>
+            <option value="LOW">Düşük</option>
           </select>
 
           <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
@@ -450,7 +450,7 @@ export default function PoJournalPage() {
               }
               className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
             />
-            Gelistirme gorevi (Dev Task)
+            Geliştirme görevi (Dev Task)
           </label>
 
           {formError && (
@@ -471,7 +471,7 @@ export default function PoJournalPage() {
               onClick={() => setShowForm(false)}
               className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Iptal
+              İptal
             </button>
           </div>
         </div>
@@ -479,21 +479,21 @@ export default function PoJournalPage() {
 
       {/* ── Content ── */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yukleniyor...</div>
+        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
       ) : reports.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center">
           <div className="text-slate-400 text-sm">
-            Henuz PO raporu yok.
+            Henüz PO raporu yok.
           </div>
           <p className="mt-2 text-xs text-slate-400">
-            PO Agent gunluk rapor olusturdugunda burada gorunecek.
+            PO Agent günlük rapor oluşturduğunda burada görünecek.
           </p>
         </div>
       ) : (
         <div className="space-y-8">
           {refreshing && (
             <div className="text-right text-xs text-slate-400 animate-pulse">
-              Guncelleniyor...
+              Güncelleniyor...
             </div>
           )}
 
@@ -513,7 +513,7 @@ export default function PoJournalPage() {
                 {report.summary && (
                   <div className="rounded-2xl border border-slate-200 bg-white p-5">
                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                      Ozet
+                      Özet
                     </p>
                     <div
                       className="text-sm text-slate-700 leading-relaxed prose prose-sm max-w-none"
@@ -597,7 +597,7 @@ export default function PoJournalPage() {
                                 item.devSuggestionStatus && (
                                   <div className="mt-3 flex items-center gap-2">
                                     <span className="text-xs text-slate-500">
-                                      Gelistirme durumu:
+                                      Geliştirme durumu:
                                     </span>
                                     <span
                                       className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${devStatusColor[item.devSuggestionStatus]}`}
@@ -616,8 +616,8 @@ export default function PoJournalPage() {
                                     className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
                                   >
                                     {actionLoading === 'dev-' + item.id
-                                      ? 'Gonderiliyor...'
-                                      : 'Gelistirmeye Gonder'}
+                                      ? 'Gönderiliyor...'
+                                      : 'Geliştirmeye Gönder'}
                                   </button>
                                   <button
                                     onClick={() => handleSendToTasks(item.id)}
@@ -625,8 +625,8 @@ export default function PoJournalPage() {
                                     className="rounded-xl border border-blue-300 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
                                   >
                                     {actionLoading === 'task-' + item.id
-                                      ? 'Gonderiliyor...'
-                                      : 'Gorev Takibine Gonder'}
+                                      ? 'Gönderiliyor...'
+                                      : 'Görev Takibine Gonder'}
                                   </button>
                                   <button
                                     onClick={() => handleDismiss(item.id)}
@@ -634,8 +634,8 @@ export default function PoJournalPage() {
                                     className="rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
                                   >
                                     {actionLoading === 'dismiss-' + item.id
-                                      ? 'Kapatiliyor...'
-                                      : 'Iptal Et'}
+                                      ? 'Kapatılıyor...'
+                                      : 'İptal Et'}
                                   </button>
                                 </div>
                               )}

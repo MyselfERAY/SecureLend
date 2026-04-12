@@ -121,7 +121,7 @@ export default function NotificationsPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm text-slate-400">Yukleniyor...</span>
+          <span className="text-sm text-slate-400">Yükleniyor...</span>
         </div>
       </div>
     );
@@ -135,7 +135,7 @@ export default function NotificationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Bildirimler</h1>
           {unreadCount > 0 && (
-            <p className="mt-1 text-sm text-slate-400">{unreadCount} okunmamis bildirim</p>
+            <p className="mt-1 text-sm text-slate-400">{unreadCount} okunmamış bildirim</p>
           )}
         </div>
         {unreadCount > 0 && (
@@ -143,7 +143,7 @@ export default function NotificationsPage() {
             onClick={markAllAsRead}
             className="rounded-lg border border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50"
           >
-            Tumunu Okundu Isaretle
+            Tümünü Okundu İşaretle
           </button>
         )}
       </div>
@@ -155,8 +155,8 @@ export default function NotificationsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </div>
-          <div className="text-lg font-medium text-slate-300">Henuz bildiriminiz yok</div>
-          <p className="mt-2 text-sm text-slate-500">Odeme ve sozlesme bildirimleri burada gorunecektir.</p>
+          <div className="text-lg font-medium text-slate-300">Henüz bildiriminiz yok</div>
+          <p className="mt-2 text-sm text-slate-500">Ödeme ve sözleşme bildirimleri burada görünecektir.</p>
         </div>
       ) : (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">

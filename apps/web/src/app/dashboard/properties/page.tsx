@@ -123,7 +123,7 @@ export default function PropertiesPage() {
         await loadProperties();
         if (!editingId) await refreshUser();
       } else {
-        setFormError((res as any).data?.validation?.[0] || (res as any).data?.message || 'Hata olustu');
+        setFormError((res as any).data?.validation?.[0] || (res as any).data?.message || 'Hata oluştu');
       }
     } catch (err: any) {
       setFormError(err.message);
@@ -142,7 +142,7 @@ export default function PropertiesPage() {
       setDeleteTarget(null);
       await loadProperties();
     } catch (err: any) {
-      alert('Silme hatasi: ' + err.message);
+      alert('Silme hatası: ' + err.message);
     } finally {
       setDeleting(false);
     }
@@ -155,7 +155,7 @@ export default function PropertiesPage() {
   };
 
   const propertyTypeLabel: Record<string, string> = {
-    APARTMENT: 'Daire', HOUSE: 'Mustakil Ev', OFFICE: 'Ofis', SHOP: 'Dukkan',
+    APARTMENT: 'Daire', HOUSE: 'Müstakil Ev', OFFICE: 'Ofis', SHOP: 'Dükkan',
   };
 
   const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
@@ -164,7 +164,7 @@ export default function PropertiesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Mulklerim</h1>
+        <h1 className="text-2xl font-bold text-white">Mülklerim</h1>
         <button
           onClick={() => showForm ? (setShowForm(false), setEditingId(null)) : openCreateForm()}
           className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
@@ -173,7 +173,7 @@ export default function PropertiesPage() {
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {showForm ? 'Iptal' : 'Mulk Ekle'}
+          {showForm ? 'İptal' : 'Mülk Ekle'}
         </button>
       </div>
 
@@ -181,14 +181,14 @@ export default function PropertiesPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">
-            {editingId ? 'Mulku Duzenle' : 'Yeni Mulk Ekle'}
+            {editingId ? 'Mülkü Düzenle' : 'Yeni Mülk Ekle'}
           </h2>
           {formError && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{formError}</div>
           )}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className={labelCls}>Baslik *</label>
+              <label className={labelCls}>Başlık *</label>
               <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className={inputCls} required />
             </div>
             <div>
@@ -196,19 +196,19 @@ export default function PropertiesPage() {
               <input type="text" value={formData.addressLine1} onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })} className={inputCls} required />
             </div>
             <div>
-              <label className={labelCls}>Sehir *</label>
+              <label className={labelCls}>Şehir *</label>
               <select
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value, district: '' })}
                 className={inputCls}
                 required
               >
-                <option value="">Secin</option>
+                <option value="">Seçin</option>
                 {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Ilce *</label>
+              <label className={labelCls}>İlçe *</label>
               <select
                 value={formData.district}
                 onChange={(e) => setFormData({ ...formData, district: e.target.value })}
@@ -216,17 +216,17 @@ export default function PropertiesPage() {
                 required
                 disabled={!formData.city}
               >
-                <option value="">Secin</option>
+                <option value="">Seçin</option>
                 {(DISTRICTS[formData.city] || []).map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Tur</label>
+              <label className={labelCls}>Tür</label>
               <select value={formData.propertyType} onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })} className={inputCls}>
                 <option value="APARTMENT">Daire</option>
-                <option value="HOUSE">Mustakil Ev</option>
+                <option value="HOUSE">Müstakil Ev</option>
                 <option value="OFFICE">Ofis</option>
-                <option value="SHOP">Dukkan</option>
+                <option value="SHOP">Dükkan</option>
               </select>
             </div>
             <div>
@@ -246,7 +246,7 @@ export default function PropertiesPage() {
               <input type="number" value={formData.totalFloors} onChange={(e) => setFormData({ ...formData, totalFloors: e.target.value })} className={inputCls} />
             </div>
             <div>
-              <label className={labelCls}>Aylik Kira (TL) *</label>
+              <label className={labelCls}>Aylık Kira (TL) *</label>
               <input type="number" value={formData.monthlyRent} onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })} className={inputCls} required />
             </div>
             <div>
@@ -256,7 +256,7 @@ export default function PropertiesPage() {
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={submitting} className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
-              {submitting ? 'Kaydediliyor...' : editingId ? 'Guncelle' : 'Kaydet'}
+              {submitting ? 'Kaydediliyor...' : editingId ? 'Güncelle' : 'Kaydet'}
             </button>
             <button type="button" onClick={() => { setShowForm(false); setEditingId(null); }} className="rounded-lg border border-slate-600 px-6 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
               Vazgec
@@ -277,8 +277,8 @@ export default function PropertiesPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <div className="text-lg font-medium text-slate-300">Henuz mulkunuz yok</div>
-          <p className="mt-2 text-sm text-slate-500">Mulk ekleyerek baslayabilirsiniz.</p>
+          <div className="text-lg font-medium text-slate-300">Henüz mülkünüz yok</div>
+          <p className="mt-2 text-sm text-slate-500">Mülk ekleyerek başlayabilirsiniz.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -308,7 +308,7 @@ export default function PropertiesPage() {
               {p.status !== 'RENTED' && (
                 <div className="mt-4 flex gap-2 border-t border-slate-700/30 pt-3">
                   <button onClick={() => openEditForm(p)} className="rounded-lg bg-blue-600/20 px-3 py-1.5 text-xs font-medium text-blue-400 transition hover:bg-blue-600/30">
-                    Duzenle
+                    Düzenle
                   </button>
                   {p.status === 'ACTIVE' && (
                     <button onClick={() => setDeleteTarget(p)} className="rounded-lg bg-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400 transition hover:bg-red-500/30">
@@ -326,12 +326,12 @@ export default function PropertiesPage() {
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="mx-4 w-full max-w-sm rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-            <h3 className="mb-2 text-lg font-semibold text-white">Mulku Sil</h3>
+            <h3 className="mb-2 text-lg font-semibold text-white">Mülkü Sil</h3>
             <p className="mb-1 text-sm text-slate-300">
-              <strong>{deleteTarget.title}</strong> mulkunu silmek istediginize emin misiniz?
+              <strong>{deleteTarget.title}</strong> mülkünü silmek istediğinize emin misiniz?
             </p>
             <p className="mb-4 text-xs text-red-400">
-              Bu islem mulku pasif yapacaktir. Aktif sozlesmesi olan mulkler silinemez.
+              Bu işlem mülkü pasif yapacaktır. Aktif sözleşmesi olan mülkler silinemez.
             </p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setDeleteTarget(null)} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700/50">

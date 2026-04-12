@@ -103,7 +103,7 @@ export default function ContractDetailPage() {
   const handleSign = async () => {
     const amTenant = contract?.tenant.id === user?.id;
     if (amTenant && !selectedKmhAccountId) {
-      setError('Lutfen sozlesme icin kullanilacak KMH hesabini secin');
+      setError('Lütfen sözleşme için kullanılacak KMH hesabını seçin');
       return;
     }
     setSigning(true);
@@ -125,7 +125,7 @@ export default function ContractDetailPage() {
           if (pRes.status === 'success' && pRes.data) setPayments(pRes.data);
         }
       } else {
-        setError((res as any).data?.message || res.message || 'Imzalama hatasi');
+        setError((res as any).data?.message || res.message || 'İmzalama hatası');
       }
     } catch (err: any) {
       setError(err.message);
@@ -147,7 +147,7 @@ export default function ContractDetailPage() {
         setShowTerminate(false);
         setTerminateReason('');
       } else {
-        setError((res as any).data?.message || res.message || 'Fesih hatasi');
+        setError((res as any).data?.message || res.message || 'Fesih hatası');
       }
     } catch (err: any) {
       setError(err.message);
@@ -164,12 +164,12 @@ export default function ContractDetailPage() {
       const res = await fetch(`${apiUrl}/api/v1/contracts/${contractId}/pdf`, {
         headers: { Authorization: `Bearer ${tokens.accessToken}` },
       });
-      if (!res.ok) throw new Error('PDF olusturulamadi');
+      if (!res.ok) throw new Error('PDF oluşturulamadı');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `kira-sozlesmesi-${contractId.slice(0, 8)}.pdf`;
+      a.download = `kira-sözleşmesi-${contractId.slice(0, 8)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -186,7 +186,7 @@ export default function ContractDetailPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm text-slate-400">Yukleniyor...</span>
+          <span className="text-sm text-slate-400">Yükleniyor...</span>
         </div>
       </div>
     );
@@ -195,8 +195,8 @@ export default function ContractDetailPage() {
   if (!contract) {
     return (
       <div className="py-20 text-center">
-        <div className="text-lg font-medium text-slate-300">Sozlesme bulunamadi</div>
-        <button onClick={() => router.back()} className="mt-4 text-sm text-blue-400 hover:text-blue-300">&larr; Geri Don</button>
+        <div className="text-lg font-medium text-slate-300">Sözleşme bulunamadı</div>
+        <button onClick={() => router.back()} className="mt-4 text-sm text-blue-400 hover:text-blue-300">&larr; Geri Dön</button>
       </div>
     );
   }
@@ -215,11 +215,11 @@ export default function ContractDetailPage() {
   const canTerminate = contract.status === 'ACTIVE';
 
   const statusLabel: Record<string, string> = {
-    PENDING_SIGNATURES: 'Imza Bekliyor',
+    PENDING_SIGNATURES: 'İmza Bekliyor',
     PENDING_ACTIVATION: 'Aktivasyon Bekliyor',
     ACTIVE: 'Aktif',
     TERMINATED: 'Feshedildi',
-    EXPIRED: 'Suresi Doldu',
+    EXPIRED: 'Süresi Doldu',
     DRAFT: 'Taslak',
   };
 
@@ -245,7 +245,7 @@ export default function ContractDetailPage() {
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              {downloadingPdf ? 'Hazirlaniyor...' : 'PDF Indir'}
+              {downloadingPdf ? 'Hazırlanıyor...' : 'PDF İndir'}
             </button>
             <span className={`rounded-full px-3 py-1.5 text-sm font-semibold ${statusColors[contract.status] || 'bg-slate-500/20 text-slate-400'}`}>
               {statusLabel[contract.status] || contract.status}
@@ -254,11 +254,11 @@ export default function ContractDetailPage() {
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-          <InfoField label="Aylik Kira" value={`${contract.monthlyRent.toLocaleString('tr-TR')} TL`} />
+          <InfoField label="Aylık Kira" value={`${contract.monthlyRent.toLocaleString('tr-TR')} TL`} />
           {contract.depositAmount && <InfoField label="Depozito" value={`${contract.depositAmount.toLocaleString('tr-TR')} TL`} />}
-          <InfoField label="Baslangic" value={contract.startDate} />
-          <InfoField label="Bitis" value={contract.endDate} />
-          <InfoField label="Odeme Gunu" value={`Her ayin ${contract.paymentDayOfMonth}. gunu`} />
+          <InfoField label="Başlangıç" value={contract.startDate} />
+          <InfoField label="Bitiş" value={contract.endDate} />
+          <InfoField label="Ödeme Günü" value={`Her ayın ${contract.paymentDayOfMonth}. günü`} />
           {contract.landlordIban && <InfoField label="Ev Sahibi IBAN" value={contract.landlordIban} />}
         </div>
       </div>
@@ -271,7 +271,7 @@ export default function ContractDetailPage() {
           <div className="text-sm text-slate-500">{contract.landlord.tcknMasked}</div>
         </div>
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
-          <h3 className="text-sm font-medium text-slate-400 mb-2">Kiraci</h3>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">Kiracı</h3>
           <div className="font-semibold text-white">{contract.tenant.fullName}</div>
           <div className="text-sm text-slate-500">{contract.tenant.tcknMasked}</div>
         </div>
@@ -280,11 +280,11 @@ export default function ContractDetailPage() {
       {/* Contract Conditions (Phase D) */}
       {(contract.rentIncreaseType || contract.furnitureIncluded != null || contract.petsAllowed != null || contract.sublettingAllowed != null || contract.noticePeriodDays) && (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">Sozlesme Kosullari</h2>
+          <h2 className="mb-4 text-lg font-semibold text-white">Sözleşme Koşulları</h2>
           <div className="divide-y divide-slate-700/50">
             {contract.rentIncreaseType && (
               <div className="flex items-center justify-between py-3">
-                <span className="text-sm text-slate-400">Kira Artis Tipi</span>
+                <span className="text-sm text-slate-400">Kira Artış Tipi</span>
                 <span className="rounded-lg bg-blue-500/10 px-3 py-1 text-sm font-semibold text-blue-400">
                   {contract.rentIncreaseType === 'TUFE' ? 'TUFE' : contract.rentIncreaseType === 'FIXED' ? 'Sabit Oran' : contract.rentIncreaseType}
                   {contract.rentIncreaseRate != null && ` (${contract.rentIncreaseRate}%)`}
@@ -293,15 +293,15 @@ export default function ContractDetailPage() {
             )}
             {contract.noticePeriodDays != null && (
               <div className="flex items-center justify-between py-3">
-                <span className="text-sm text-slate-400">Ihbar Suresi</span>
+                <span className="text-sm text-slate-400">İhbar Süresi</span>
                 <span className="text-sm font-semibold text-white">{contract.noticePeriodDays} gun</span>
               </div>
             )}
             {contract.furnitureIncluded != null && (
               <div className="flex items-center justify-between py-3">
-                <span className="text-sm text-slate-400">Esyali</span>
+                <span className="text-sm text-slate-400">Eşyalı</span>
                 <span className={`text-sm font-semibold ${contract.furnitureIncluded ? 'text-emerald-400' : 'text-slate-400'}`}>
-                  {contract.furnitureIncluded ? 'Evet' : 'Hayir'}
+                  {contract.furnitureIncluded ? 'Evet' : 'Hayır'}
                 </span>
               </div>
             )}
@@ -309,7 +309,7 @@ export default function ContractDetailPage() {
               <div className="flex items-center justify-between py-3">
                 <span className="text-sm text-slate-400">Evcil Hayvan</span>
                 <span className={`text-sm font-semibold ${contract.petsAllowed ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {contract.petsAllowed ? 'Izinli' : 'Izinsiz'}
+                  {contract.petsAllowed ? 'İzinli' : 'İzinsiz'}
                 </span>
               </div>
             )}
@@ -317,7 +317,7 @@ export default function ContractDetailPage() {
               <div className="flex items-center justify-between py-3">
                 <span className="text-sm text-slate-400">Alt Kiralama</span>
                 <span className={`text-sm font-semibold ${contract.sublettingAllowed ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {contract.sublettingAllowed ? 'Izinli' : 'Izinsiz'}
+                  {contract.sublettingAllowed ? 'İzinli' : 'İzinsiz'}
                 </span>
               </div>
             )}
@@ -328,7 +328,7 @@ export default function ContractDetailPage() {
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Belge yuklendi
+                  Belge yüklendi
                 </span>
               </div>
             )}
@@ -345,11 +345,11 @@ export default function ContractDetailPage() {
               ? 'border-yellow-500/30 bg-yellow-500/10'
               : 'border-slate-700/50 bg-[#0d1b2a]'
         }`}>
-          <h3 className="text-sm font-semibold text-white mb-3">KMH Hesabi Secimi</h3>
+          <h3 className="text-sm font-semibold text-white mb-3">KMH Hesabı Seçimi</h3>
 
           {kmhAccounts.length === 0 ? (
             <p className="text-sm text-red-400">
-              Aktif KMH hesabiniz bulunamadi. Sozlesmeyi imzalayabilmek icin once Banka sayfasindan KMH basvurusu yapmaniz ve onay almaniz gerekiyor.
+              Aktif KMH hesabınız bulunamadı. Sözleşmeyi imzalayabilmek için önce Banka sayfasından KMH başvurusu yapmanız ve onay almanız gerekiyor.
             </p>
           ) : (
             <div className="space-y-2">
@@ -381,7 +381,7 @@ export default function ContractDetailPage() {
                       <div className="text-sm font-medium font-mono text-white">{acc.accountNumber}</div>
                       <div className="mt-0.5 text-xs text-slate-400">
                         Limit: {acc.creditLimit.toLocaleString('tr-TR')} TL
-                        {isBound && <span className="ml-2 text-yellow-400">(Baska sozlesmeye bagli)</span>}
+                        {isBound && <span className="ml-2 text-yellow-400">(Baska sözleşmeye bagli)</span>}
                         {!isEligible && !isBound && (
                           <span className="ml-2 text-red-400">
                             (Yetersiz — Gereken: {contract.monthlyRent.toLocaleString('tr-TR')} TL)
@@ -397,7 +397,7 @@ export default function ContractDetailPage() {
               })}
               {eligibleKmhAccounts.length === 0 && (
                 <p className="mt-2 text-sm text-yellow-400">
-                  Hicbir KMH hesabinizin limiti kira bedelini ({contract.monthlyRent.toLocaleString('tr-TR')} TL) karsilamiyor.
+                  Hiçbir KMH hesabınızın limiti kira bedelini ({contract.monthlyRent.toLocaleString('tr-TR')} TL) karşılamıyor.
                 </p>
               )}
             </div>
@@ -407,10 +407,10 @@ export default function ContractDetailPage() {
 
       {/* Signatures */}
       <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-        <h2 className="mb-4 text-lg font-semibold text-white">Imzalar</h2>
+        <h2 className="mb-4 text-lg font-semibold text-white">İmzalar</h2>
         <div className="space-y-3">
           {contract.signatures.length === 0 && (
-            <p className="text-sm text-slate-500">Henuz imza yok</p>
+            <p className="text-sm text-slate-500">Henüz imza yok</p>
           )}
           {contract.signatures.map((s, i) => (
             <div key={i} className="flex items-center gap-3">
@@ -418,7 +418,7 @@ export default function ContractDetailPage() {
                 &#10003;
               </div>
               <div>
-                <div className="font-medium text-white">{s.signedByName} ({s.role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiraci'})</div>
+                <div className="font-medium text-white">{s.signedByName} ({s.role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiracı'})</div>
                 <div className="text-xs text-slate-500">{new Date(s.signedAt).toLocaleString('tr-TR')}</div>
               </div>
             </div>
@@ -434,20 +434,20 @@ export default function ContractDetailPage() {
               disabled={signing}
               className="mt-4 rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
             >
-              {signing ? 'Imzalaniyor...' : 'Sozlesmeyi Imzala'}
+              {signing ? 'İmzalanıyor...' : 'Sözleşmeyi İmzala'}
             </button>
           ) : isTenant && !kmhOk ? (
             <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
               <p className="text-sm font-medium text-yellow-400">
                 {kmhAccounts.length === 0
-                  ? 'Sozlesmeyi imzalayabilmek icin aktif bir KMH hesabiniz olmalidir.'
+                  ? 'Sözleşmeyi imzalayabilmek için aktif bir KMH hesabınız olmalıdır.'
                   : eligibleKmhAccounts.length === 0
-                    ? 'Mevcut KMH hesaplarinizin limiti kira bedelini karsilamiyor.'
-                    : 'Lutfen yukaridaki listeden bir KMH hesabi secin.'}
+                    ? 'Mevcut KMH hesaplarınızın limiti kira bedelini karşılamıyor.'
+                    : 'Lütfen yukarıdaki listeden bir KMH hesabı seçin.'}
               </p>
               {kmhAccounts.length === 0 && (
                 <p className="mt-1 text-xs text-yellow-500/70">
-                  Banka sayfasindan KMH basvurusu yapin ve dijital onboarding&apos;i tamamlayin.
+                  Banka sayfasından KMH başvurusu yapın ve dijital onboarding&apos;i tamamlayin.
                 </p>
               )}
             </div>
@@ -459,14 +459,14 @@ export default function ContractDetailPage() {
             onClick={() => setShowTerminate(true)}
             className="mt-4 ml-3 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
           >
-            Sozlesmeyi Feshet
+            Sözleşmeyi Feshet
           </button>
         )}
 
         {showTerminate && (
           <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 space-y-3">
-            <div className="font-medium text-red-400">Sozlesme Fesih</div>
-            <p className="text-sm text-red-400/80">Bu islem geri alinamaz. Sozlesme feshedilecektir.</p>
+            <div className="font-medium text-red-400">Sözleşme Fesih</div>
+            <p className="text-sm text-red-400/80">Bu işlem geri alınamaz. Sözleşme feshedilecektir.</p>
             <textarea
               value={terminateReason}
               onChange={(e) => setTerminateReason(e.target.value)}
@@ -486,7 +486,7 @@ export default function ContractDetailPage() {
                 onClick={() => { setShowTerminate(false); setTerminateReason(''); }}
                 className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50"
               >
-                Iptal
+                İptal
               </button>
             </div>
           </div>
@@ -496,12 +496,12 @@ export default function ContractDetailPage() {
       {/* Payment Schedule */}
       {payments.length > 0 && (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">Odeme Takvimi</h2>
+          <h2 className="mb-4 text-lg font-semibold text-white">Ödeme Takvimi</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-700/50 text-left text-slate-400">
-                  <th className="pb-3 font-medium">Donem</th>
+                  <th className="pb-3 font-medium">Dönem</th>
                   <th className="pb-3 font-medium">Vade</th>
                   <th className="pb-3 font-medium text-right">Tutar</th>
                   <th className="pb-3 font-medium text-right">Durum</th>
@@ -519,7 +519,7 @@ export default function ContractDetailPage() {
                         p.status === 'OVERDUE' ? 'bg-red-500/20 text-red-400' :
                         'bg-yellow-500/20 text-yellow-400'
                       }`}>
-                        {p.status === 'COMPLETED' ? 'Odendi' :
+                        {p.status === 'COMPLETED' ? 'Ödendi' :
                          p.status === 'OVERDUE' ? 'Gecikti' : 'Bekliyor'}
                       </span>
                     </td>

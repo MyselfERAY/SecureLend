@@ -34,19 +34,19 @@ const steps = [
 const trustBadges = [
   {
     icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-    title: "Turkiye'nin Ilk Dijital Kira Güvence Platformu",
+    title: "Türkiye'nin İlk Dijital Kira Güvence Platformu",
   },
   {
     icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
-    title: 'KVKK Uyumlu, Banka Duzeyinde Guvenlik',
+    title: 'KVKK Uyumlu, Banka Düzeyinde Güvenlik',
   },
   {
     icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    title: '5 Dakikada Dijital Sozlesme',
+    title: '5 Dakikada Dijital Sözleşme',
   },
   {
     icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-    title: 'BDDK Uyumlu Odeme Modeli',
+    title: 'BDDK Uyumlu Ödeme Modeli',
   },
 ];
 
@@ -117,10 +117,10 @@ export default function HomePage() {
               Rehber
             </Link>
             <Link href="/fiyatlandirma" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              Fiyatlandirma
+              Fiyatlandırma
             </Link>
             <Link href="/sablonlar" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              Sablonlar
+              Şablonlar
             </Link>
             <a href="#iletisim" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               İletişim
@@ -163,8 +163,8 @@ export default function HomePage() {
             <div className="flex flex-col gap-3">
               <a href="#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Nasıl Çalışır?</a>
               <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Rehber</Link>
-              <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Fiyatlandirma</Link>
-              <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Sablonlar</Link>
+              <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Fiyatlandırma</Link>
+              <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Şablonlar</Link>
               <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">İletişim</a>
               <hr className="border-slate-200" />
               <Link href="/auth/login" className="min-h-[44px] flex items-center text-sm font-semibold text-slate-700">Giriş Yap</Link>
@@ -199,13 +199,13 @@ export default function HomePage() {
                     data-cta="hero-ucretsiz-basla"
                     className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
                   >
-                    Ucretsiz Hesap Olustur
+                    Ücretsiz Hesap Oluştur
                   </Link>
                   <a
                     href="#nasil-calisir"
                     className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
-                    Nasil Calisir?
+                    Nasıl Çalışır?
                   </a>
                 </div>
 
@@ -248,11 +248,11 @@ export default function HomePage() {
                     {/* Stats row */}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="rounded-xl bg-blue-50 p-3">
-                        <div className="text-[10px] font-medium text-blue-600">Aktif Sozlesme</div>
+                        <div className="text-[10px] font-medium text-blue-600">Aktif Sözleşme</div>
                         <div className="mt-0.5 text-lg font-extrabold text-blue-900">24</div>
                       </div>
                       <div className="rounded-xl bg-emerald-50 p-3">
-                        <div className="text-[10px] font-medium text-emerald-600">Odeme Basarisi</div>
+                        <div className="text-[10px] font-medium text-emerald-600">Ödeme Başarısı</div>
                         <div className="mt-0.5 text-lg font-extrabold text-emerald-900">%99.8</div>
                       </div>
                       <div className="rounded-xl bg-amber-50 p-3">
@@ -263,7 +263,7 @@ export default function HomePage() {
                     {/* Table mockup */}
                     <div className="rounded-xl border border-slate-100">
                       <div className="grid grid-cols-4 gap-2 border-b border-slate-100 px-3 py-2 text-[10px] font-semibold text-slate-400 uppercase">
-                        <span>Kiraci</span><span>Tutar</span><span>Tarih</span><span>Durum</span>
+                        <span>Kiracı</span><span>Tutar</span><span>Tarih</span><span>Durum</span>
                       </div>
                       {[
                         { name: 'Ahmet Y.', amount: '8,500 TL', date: '01 Nis', color: 'emerald' },
@@ -277,7 +277,7 @@ export default function HomePage() {
                           <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             row.color === 'emerald' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                           }`}>
-                            {row.color === 'emerald' ? 'Odendi' : 'Bekliyor'}
+                            {row.color === 'emerald' ? 'Ödendi' : 'Bekliyor'}
                           </span>
                         </div>
                       ))}
@@ -319,9 +319,9 @@ export default function HomePage() {
         <section className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanitim</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kira Güvence Nasil Calisir?</h2>
-              <p className="mt-3 text-base text-slate-500">Platform tanitimini adim adim inceleyin.</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanıtım</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kira Güvence Nasıl Çalışır?</h2>
+              <p className="mt-3 text-base text-slate-500">Platform tanıtımını adım adım inceleyin.</p>
             </div>
             <div className="mt-10">
               <a
@@ -337,27 +337,27 @@ export default function HomePage() {
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </div>
-                    <p className="mt-5 text-lg font-bold text-slate-900">Platform Tanitim Sunumu</p>
-                    <p className="mt-1.5 text-sm text-slate-500">9 adimda Kira Güvence&apos;yi kesfet</p>
+                    <p className="mt-5 text-lg font-bold text-slate-900">Platform Tanıtım Sunumu</p>
+                    <p className="mt-1.5 text-sm text-slate-500">9 adımda Kira Güvence&apos;yi keşfet</p>
                     <div className="mt-4 flex items-center gap-6 text-xs text-slate-400">
                       <span className="flex items-center gap-1.5">
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        Nasil Calisir
+                        Nasıl Çalışır
                       </span>
                       <span className="flex items-center gap-1.5">
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                        Guvenlik
+                        Güvenlik
                       </span>
                       <span className="flex items-center gap-1.5">
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-                        Fiyatlandirma
+                        Fiyatlandırma
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white px-6 py-3 text-center border-t border-slate-100">
                   <span className="text-sm font-medium text-blue-600 group-hover:text-blue-700 transition">
-                    Sunumu goruntule &rarr;
+                    Sunumu görüntüle &rarr;
                   </span>
                 </div>
               </a>
@@ -406,7 +406,7 @@ export default function HomePage() {
                 href="/auth/register"
                 className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
               >
-                Ucretsiz Hesap Olustur
+                Ücretsiz Hesap Oluştur
               </Link>
             </div>
           </div>
@@ -475,13 +475,13 @@ export default function HomePage() {
                 data-cta="cta-band-ucretsiz-basla"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
               >
-                Ucretsiz Hesap Olustur
+                Ücretsiz Hesap Oluştur
               </Link>
               <Link
                 href="/auth/login"
                 className="inline-flex items-center justify-center rounded-xl border border-blue-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
               >
-                Giris Yap
+                Giriş Yap
               </Link>
             </div>
           </div>
@@ -490,12 +490,12 @@ export default function HomePage() {
         {/* ── NEWSLETTER ── */}
         <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Bulten</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Bülten</p>
             <h2 className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl">
-              Kira Rehberi Bulteni
+              Kira Rehberi Bülteni
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Kiraci haklari, ev sahibi rehberleri, KMH bilgileri ve emlak piyasasi analizlerini her hafta e-posta kutunuzda alin.
+              Kiracı hakları, ev sahibi rehberleri, KMH bilgileri ve emlak piyasası analizlerini her hafta e-posta kutunuzda alın.
             </p>
             <form
               onSubmit={async (e) => {
@@ -516,13 +516,13 @@ export default function HomePage() {
                   );
                   const data = await res.json();
                   if (data.status === 'success') {
-                    btn.textContent = 'Kayit Basarili!';
+                    btn.textContent = 'Kayıt Başarılı!';
                     (form.elements.namedItem('nlEmail') as HTMLInputElement).value = '';
                   } else {
-                    btn.textContent = data.message || 'Hata olustu';
+                    btn.textContent = data.message || 'Hata oluştu';
                   }
                 } catch {
-                  btn.textContent = 'Hata olustu';
+                  btn.textContent = 'Hata oluştu';
                 }
                 setTimeout(() => { btn.textContent = 'Abone Ol'; btn.disabled = false; }, 3000);
               }}
@@ -543,7 +543,7 @@ export default function HomePage() {
               </button>
             </form>
             <p className="mt-3 text-xs text-slate-400">
-              Aboneliginizi istediginiz zaman iptal edebilirsiniz. Verileriniz KVKK kapsaminda korunmaktadir.
+              Aboneliğinizi istediğiniz zaman iptal edebilirsiniz. Verileriniz KVKK kapsamında korunmaktadır.
             </p>
           </div>
         </section>
@@ -553,29 +553,29 @@ export default function HomePage() {
           <div className="mx-auto max-w-3xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">SSS</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-white">Sikca Sorulan Sorular</h2>
-              <p className="mt-3 text-base text-slate-400">En cok merak edilen sorularin yanitlari.</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-white">Sıkça Sorulan Sorular</h2>
+              <p className="mt-3 text-base text-slate-400">En çok merak edilen soruların yanıtları.</p>
             </div>
             <div className="mt-10 divide-y divide-slate-700/50 rounded-2xl border border-slate-700/50 bg-[#0d1b2a]">
               <FaqItem
                 question="Kira Güvence nedir?"
-                answer="Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz."
+                answer="Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldıran, banka güvenceli dijital kira yönetim platformudur. Ev sahibi kirasını garanti altına alır, kiracı kefil bulmak zorunda kalmaz."
               />
               <FaqItem
                 question="Kefil olmadan ev kiralayabilir miyim?"
-                answer="Evet. Kira Güvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder."
+                answer="Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiracı ödemelerini garanti eder."
               />
               <FaqItem
-                question="KMH (Kredili Mevduat Hesabi) nedir?"
-                answer="KMH, kira odemeleri icin banka tarafindan saglanan bir guvence hesabidir. Kiraci gecici bir aksaklik yasarsa bile kira banka tarafindan ev sahibine odenir, kiraci sadece birkac gunluk faiz oder."
+                question="KMH (Kredili Mevduat Hesabı) nedir?"
+                answer="KMH, kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder."
               />
               <FaqItem
-                question="Ev sahibi icin maliyet nedir?"
-                answer="Ucretsiz planda komisyon %1.5, ucretli planlarda %0.5-1 arasindadir. Bu, noter masrafi + Findeks ucreti + kefil riskinden cok daha ekonomiktir."
+                question="Ev sahibi için maliyet nedir?"
+                answer="Ücretsiz planda komisyon %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir."
               />
               <FaqItem
-                question="Dijital sozlesme mahkemede gecerli mi?"
-                answer="Evet. Kira Güvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir."
+                question="Dijital sözleşme mahkemede geçerli mi?"
+                answer="Evet. Kira Güvence sözleşmeleri TBK (Türk Borçlar Kanunu) uyumludur. Tüm ödeme kayıtları ve sözleşme geçmişi zaman damgalı olarak saklanır ve hukuki delil olarak kullanılabilir."
               />
             </div>
           </div>
@@ -599,7 +599,7 @@ export default function HomePage() {
               <ul className="mt-4 space-y-2">
                 <li><a href="#nasil-calisir" className="text-sm text-slate-400 hover:text-white transition">Nasıl Çalışır?</a></li>
                 <li><Link href="/rehber" className="text-sm text-slate-400 hover:text-white transition">Rehber</Link></li>
-                <li><Link href="/fiyatlandirma" className="text-sm text-slate-400 hover:text-white transition">Fiyatlandirma</Link></li>
+                <li><Link href="/fiyatlandirma" className="text-sm text-slate-400 hover:text-white transition">Fiyatlandırma</Link></li>
                 <li><Link href="/auth/register" className="text-sm text-slate-400 hover:text-white transition">Hesap Oluştur</Link></li>
                 <li><Link href="/auth/login" className="text-sm text-slate-400 hover:text-white transition">Giriş Yap</Link></li>
               </ul>
@@ -662,7 +662,7 @@ function FeatureCard({ icon, title, desc, highlighted }: { icon: string; title: 
     }`}>
       {highlighted && (
         <span className="absolute -top-3 right-4 inline-flex items-center rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
-          En Onemli
+          En Önemli
         </span>
       )}
       <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${highlighted ? 'bg-blue-100' : 'bg-blue-50'}`}>

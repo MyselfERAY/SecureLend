@@ -18,7 +18,7 @@ interface PaymentItem {
 const statusConfig: Record<string, { text: string; cls: string }> = {
   PENDING: { text: 'Bekliyor', cls: 'bg-yellow-500/20 text-yellow-400' },
   OVERDUE: { text: 'Gecikti', cls: 'bg-red-500/20 text-red-400' },
-  COMPLETED: { text: 'Odendi', cls: 'bg-emerald-500/20 text-emerald-400' },
+  COMPLETED: { text: 'Ödendi', cls: 'bg-emerald-500/20 text-emerald-400' },
 };
 
 export default function PaymentsPage() {
@@ -37,10 +37,10 @@ export default function PaymentsPage() {
       if (res.status === 'success' && res.data) {
         setPayments(res.data);
       } else {
-        setError((res as any).data?.message || res.message || 'Odemeler yuklenemedi');
+        setError((res as any).data?.message || res.message || 'Ödemeler yüklenemedi');
       }
     } catch (err: any) {
-      setError(err.message || 'Baglanti hatasi');
+      setError(err.message || 'Bağlantı hatası');
     }
     setLoading(false);
   };
@@ -60,13 +60,13 @@ export default function PaymentsPage() {
         method: 'POST', token: tokens!.accessToken,
       });
       if (res.status === 'success') {
-        setSuccessMsg('Odeme basariyla gerceklestirildi!');
+        setSuccessMsg('Ödeme başarıyla gerçekleştirildi!');
         await loadPayments();
       } else {
-        setError((res as any).data?.message || res.message || 'Odeme islemi basarisiz');
+        setError((res as any).data?.message || res.message || 'Ödeme işlemi başarısız');
       }
     } catch (err: any) {
-      setError(err.message || 'Odeme sirasinda hata olustu');
+      setError(err.message || 'Ödeme sırasında hata oluştu');
     }
     setProcessing(null);
   };
@@ -76,7 +76,7 @@ export default function PaymentsPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-          <span className="text-sm text-slate-400">Yukleniyor...</span>
+          <span className="text-sm text-slate-400">Yükleniyor...</span>
         </div>
       </div>
     );
@@ -88,7 +88,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Odemelerim</h1>
+      <h1 className="text-2xl font-bold text-white">Ödemelerim</h1>
 
       {/* Messages */}
       {error && (
@@ -108,14 +108,14 @@ export default function PaymentsPage() {
       {confirmPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="mx-4 w-full max-w-md rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-white">Odeme Onayi</h3>
+            <h3 className="text-lg font-semibold text-white">Ödeme Onayı</h3>
             <div className="rounded-lg border border-slate-700/50 bg-[#0a1628] p-4 text-sm space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-400">Mulk:</span>
+                <span className="text-slate-400">Mülk:</span>
                 <span className="font-medium text-white">{confirmPayment.propertyTitle}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Donem:</span>
+                <span className="text-slate-400">Dönem:</span>
                 <span className="font-medium text-white">{confirmPayment.periodLabel}</span>
               </div>
               <div className="flex justify-between">
@@ -127,20 +127,20 @@ export default function PaymentsPage() {
                 <span className="text-lg font-bold text-emerald-400">{confirmPayment.amount.toLocaleString('tr-TR')} TL</span>
               </div>
             </div>
-            <p className="text-sm text-slate-400">Bu odemeyi onayliyor musunuz? Islem KMH hesabinizdan gerceklestirilecektir.</p>
+            <p className="text-sm text-slate-400">Bu ödemeyi onaylıyor musunuz? İşlem KMH hesabınızdan gerçekleştirilecektir.</p>
             <div className="flex gap-3">
               <button
                 onClick={() => handleProcess(confirmPayment.id)}
                 disabled={processing === confirmPayment.id}
                 className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
               >
-                {processing === confirmPayment.id ? 'Isleniyor...' : 'Odemeyi Onayla'}
+                {processing === confirmPayment.id ? 'İşleniyor...' : 'Ödemeyi Onayla'}
               </button>
               <button
                 onClick={() => setConfirmPayment(null)}
                 className="rounded-lg border border-slate-600 px-4 py-2.5 font-medium text-slate-300 transition hover:bg-slate-700/50"
               >
-                Iptal
+                İptal
               </button>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function PaymentsPage() {
       {/* Pending payments */}
       {pending.length > 0 && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-white">Bekleyen Odemeler</h2>
+          <h2 className="mb-3 text-lg font-semibold text-white">Bekleyen Ödemeler</h2>
           <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
             {pending.map((p) => (
               <div key={p.id} className="flex items-center justify-between p-4">
@@ -184,7 +184,7 @@ export default function PaymentsPage() {
       {/* Completed payments */}
       {completed.length > 0 && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-white">Tamamlanan Odemeler</h2>
+          <h2 className="mb-3 text-lg font-semibold text-white">Tamamlanan Ödemeler</h2>
           <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
             {completed.map((p) => (
               <div key={p.id} className="flex items-center justify-between p-4">
@@ -194,7 +194,7 @@ export default function PaymentsPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
-                    Odendi
+                    Ödendi
                   </span>
                   <span className="font-semibold text-white">
                     {p.amount.toLocaleString('tr-TR')} TL
@@ -214,8 +214,8 @@ export default function PaymentsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          <div className="text-lg font-medium text-slate-300">Henuz odemeniz yok</div>
-          <p className="mt-2 text-sm text-slate-500">Aktif sozlesmeniz oldugunda odemeler burada gorunecektir.</p>
+          <div className="text-lg font-medium text-slate-300">Henüz ödemeniz yok</div>
+          <p className="mt-2 text-sm text-slate-500">Aktif sözleşmeniz olduğunda ödemeler burada görünecektir.</p>
         </div>
       )}
     </div>
