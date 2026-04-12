@@ -7,9 +7,9 @@ import { useAuth } from '../lib/auth-context';
 
 const mainLinks = [
   { href: '/dashboard', label: 'Panel' },
-  { href: '/dashboard/properties', label: 'Mulkler' },
-  { href: '/dashboard/contracts', label: 'Sozlesmeler' },
-  { href: '/dashboard/payments', label: 'Odemeler' },
+  { href: '/dashboard/properties', label: 'Mülkler' },
+  { href: '/dashboard/contracts', label: 'Sözleşmeler' },
+  { href: '/dashboard/payments', label: 'Ödemeler' },
   { href: '/dashboard/bank', label: 'Banka' },
 ];
 
@@ -56,20 +56,20 @@ export function Navbar() {
               <Link href="/dashboard/profile" className="hidden rounded-lg px-2 py-1 text-right transition hover:bg-slate-50 sm:block">
                 <div className="text-sm font-semibold text-slate-900">{user.fullName}</div>
                 <div className="text-xs font-medium text-slate-500">
-                  {user.roles.length > 0 ? user.roles.join(', ') : 'Kullanici'}
+                  {user.roles.length > 0 ? user.roles.join(', ') : 'Kullanıcı'}
                 </div>
               </Link>
               <button
                 onClick={handleLogout}
                 className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                Cikis
+                Çıkış
               </button>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 sm:hidden"
-                aria-label="Menuyu ac"
+                aria-label="Menüyü aç"
                 aria-expanded={mobileMenuOpen}
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
