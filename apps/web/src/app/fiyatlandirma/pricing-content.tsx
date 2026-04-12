@@ -27,7 +27,7 @@ const plans = [
       'KVKK uyumlu altyapi',
       'Temel e-posta destegi',
     ],
-    cta: 'Ucretsiz Basla',
+    cta: 'Ucretsiz Hesap Olustur',
     highlighted: false,
   },
   {
@@ -49,7 +49,7 @@ const plans = [
       'KVKK uyumlu altyapi',
       'Standart destek (24 saat)',
     ],
-    cta: 'Coklu Mulk Planina Gec',
+    cta: 'Ucretsiz Hesap Olustur',
     highlighted: true,
   },
   {
@@ -73,7 +73,7 @@ const plans = [
       'API erisimi',
       'Coklu kullanici yonetimi',
     ],
-    cta: 'Portfoy Planina Gec',
+    cta: 'Ucretsiz Hesap Olustur',
     highlighted: false,
   },
 ];
@@ -81,18 +81,18 @@ const plans = [
 /* ── SÜRE İNDİRİMİ ─────────────────────────────── */
 
 const durationDiscounts = [
-  { label: '1-6 ay', months: '1-6', discount: 0, note: 'Standart komisyon' },
-  { label: '6-12 ay', months: '6-12', discount: 10, note: 'Komisyonda %10 indirim' },
-  { label: '12+ ay', months: '12+', discount: 20, note: 'Komisyonda %20 indirim' },
+  { label: '1-6 ay', months: '1-6', discount: 0, note: 'Standart garanti ucreti' },
+  { label: '6-12 ay', months: '6-12', discount: 10, note: 'Garanti ucretinde %10 indirim' },
+  { label: '12+ ay', months: '12+', discount: 20, note: 'Garanti ucretinde %20 indirim' },
 ];
 
 /* ── KIRA TUTARI ARALIKLARI ────────────────────── */
 
 const rentTiers = [
-  { range: '0 - 10.000 TL', label: 'Dusuk', note: 'Standart komisyon orani' },
-  { range: '10.000 - 25.000 TL', label: 'Orta', note: 'Standart komisyon orani' },
-  { range: '25.000 - 50.000 TL', label: 'Yuksek', note: 'Komisyonda %15 indirim (Coklu Mulk+)' },
-  { range: '50.000 TL+', label: 'Premium', note: 'Komisyonda %25 indirim (Portfoy)' },
+  { range: '0 - 10.000 TL', label: 'Dusuk', note: 'Standart garanti ucreti orani' },
+  { range: '10.000 - 25.000 TL', label: 'Orta', note: 'Standart garanti ucreti orani' },
+  { range: '25.000 - 50.000 TL', label: 'Yuksek', note: 'Garanti ucretinde %15 indirim (Coklu Mulk+)' },
+  { range: '50.000 TL+', label: 'Premium', note: 'Garanti ucretinde %25 indirim (Portfoy)' },
 ];
 
 /* ── PROMO TYPES ────────────────────────────────── */
@@ -115,10 +115,10 @@ const promoTypeIcon: Record<string, string> = {
 };
 
 const fallbackPromotions = [
-  { name: 'Ilk 3 Ay Komisyonsuz', type: 'FIRST_MONTHS_FREE', description: 'Yeni kayit tesviki. Ilk 3 ay hicbir komisyon odemeyin.', discountPercent: 100, durationMonths: 3 },
-  { name: '12. Ay Komisyonsuz', type: 'LOYALTY_REWARD', description: '1 yil boyunca platformu kullanin, 12. ay hediye.', discountPercent: 100, durationMonths: 1 },
-  { name: '2. Yil Yenileme Indirimi', type: 'RENEWAL_DISCOUNT', description: 'Sozlesme yenileyen kullanicilara komisyon oraninda %25 indirim.', discountPercent: 25, durationMonths: 12 },
-  { name: 'Arkadasini Getir', type: 'REFERRAL_BONUS', description: 'Davet ettiginiz kisi kaydolsun, ikiniz de 1 ay komisyonsuz.', discountPercent: 100, durationMonths: 1 },
+  { name: 'Ilk 3 Ay Garanti Ucretsiz', type: 'FIRST_MONTHS_FREE', description: 'Yeni kayit tesviki. Ilk 3 ay hicbir garanti ucreti odemeyin.', discountPercent: 100, durationMonths: 3 },
+  { name: '12. Ay Garanti Ucretsiz', type: 'LOYALTY_REWARD', description: '1 yil boyunca platformu kullanin, 12. ay hediye.', discountPercent: 100, durationMonths: 1 },
+  { name: '2. Yil Yenileme Indirimi', type: 'RENEWAL_DISCOUNT', description: 'Sozlesme yenileyen kullanicilara garanti ucretinde %25 indirim.', discountPercent: 25, durationMonths: 12 },
+  { name: 'Arkadasini Getir', type: 'REFERRAL_BONUS', description: 'Davet ettiginiz kisi kaydolsun, ikiniz de 1 ay garanti ucretsiz.', discountPercent: 100, durationMonths: 1 },
 ];
 
 /* ── ICONS ──────────────────────────────────────── */
@@ -147,8 +147,8 @@ const faqItems = [
     a: 'Evet. KMH entegrasyonu platformumuzun temel deger onermesidir ve tum planlarda — ucretsiz plan dahil — standart olarak sunulur.',
   },
   {
-    q: 'Komisyon nasil hesaplaniyor?',
-    a: 'Komisyon, aylik kira bedelinin plan bazinda belirlenen orani kadardir. Uzun sureli sozlesmelerde ek indirimler uygulanir (6-12 ay %10, 12+ ay %20 komisyon indirimi).',
+    q: 'Kira garanti ucreti nasil hesaplaniyor?',
+    a: 'Garanti ucreti, aylik kira bedelinin plan bazinda belirlenen orani kadardir. Uzun sureli sozlesmelerde ek indirimler uygulanir (6-12 ay %10, 12+ ay %20 garanti ucreti indirimi).',
   },
   {
     q: 'Mulk sayisini nasil arttirabilirim?',
@@ -159,12 +159,12 @@ const faqItems = [
     a: 'Hayir. KiraGuvence bir odeme aracisi degildir. Tum odemeler banka duzenli odeme talimati (KMH) uzerinden gerceklesir. Platform odeme araciligi yapmadigi icin BDDK duzenleme kapsaminda degildir.',
   },
   {
-    q: '"Ilk 3 ay komisyonsuz" nasil calisiyor?',
-    a: 'Yeni kayit olan tum kullanicilar icin ilk 3 ayda hicbir komisyon alinmaz. 4. aydan itibaren planiniza gore normal komisyon orani uygulanir.',
+    q: '"Ilk 3 ay garanti ucretsiz" nasil calisiyor?',
+    a: 'Yeni kayit olan tum kullanicilar icin ilk 3 ayda hicbir garanti ucreti alinmaz. 4. aydan itibaren planiniza gore normal garanti ucreti orani uygulanir.',
   },
   {
-    q: 'Sozlesme suresi komisyonu etkiler mi?',
-    a: 'Evet. 6-12 ay arasi sozlesmelerde komisyon oraninda %10, 12 ay ve uzeri sozlesmelerde %20 indirim uygulanir. Uzun sureli sozlesmeler hem siz hem kiraciniz icin daha avantajli.',
+    q: 'Sozlesme suresi garanti ucretini etkiler mi?',
+    a: 'Evet. 6-12 ay arasi sozlesmelerde garanti ucretinde %10, 12 ay ve uzeri sozlesmelerde %20 indirim uygulanir. Uzun sureli sozlesmeler hem siz hem kiraciniz icin daha avantajli.',
   },
   {
     q: 'Iptal edebilir miyim?',
@@ -288,7 +288,7 @@ export default function PricingContent() {
                   <div className="mt-3 space-y-1.5">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-semibold text-blue-600">{plan.commission}</span>
-                      <span className="text-slate-500">komisyon</span>
+                      <span className="text-slate-500">garanti ucreti</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
                       <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -346,14 +346,150 @@ export default function PricingContent() {
           </div>
         </section>
 
-        {/* ── SÜRE İNDİRİMİ ── */}
+        {/* ── MALİYET KARŞILAŞTIRMASI ── */}
         <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Karsilastirma</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Geleneksel Yontem vs KiraGuvence</h2>
+              <p className="mt-3 text-base text-slate-500">
+                Kira surecindeki gizli maliyetleri ve zaman kaybini ortadan kaldirin.
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2">
+              {/* Traditional */}
+              <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
+                    <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">Geleneksel Yontem</h3>
+                </div>
+                <ul className="mt-5 space-y-4">
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Noter masrafi</span>
+                      <span className="ml-2 inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">~500-1.000 TL</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Her sozlesme icin tekrarlayan masraf</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Findeks raporu</span>
+                      <span className="ml-2 inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">~100-200 TL</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Her kiraci icin ayri ucret</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Kefil bulma riski</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Kefil bulmak zor, guvensiz ve hukuki sorunlara acik</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Zaman kaybi</span>
+                      <span className="ml-2 inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">Gunler</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Randevu, belge toplama, noter ziyareti</p>
+                    </div>
+                  </li>
+                </ul>
+                <div className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-center">
+                  <span className="text-sm font-semibold text-red-700">Toplam: 600 - 1.200+ TL + gunlerce ugras</span>
+                </div>
+              </div>
+
+              {/* KiraGuvence */}
+              <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm ring-2 ring-emerald-100">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
+                    <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">KiraGuvence</h3>
+                </div>
+                <ul className="mt-5 space-y-4">
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Garanti ucreti</span>
+                      <span className="ml-2 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">Kiranin %0.5-1.5&apos;i</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Plana gore dusen oranlar, 15.000 TL kira icin sadece 75-225 TL</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Dijital sozlesme</span>
+                      <span className="ml-2 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">Ucretsiz</span>
+                      <p className="mt-0.5 text-xs text-slate-500">TBK uyumlu, noter gerektirmeyen dijital kira sozlesmesi</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">Banka guvencesi (KMH)</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Kira odenmeme riski sifir, banka otomatik odeme garantisi</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900">5 dakikada kurulum</span>
+                      <p className="mt-0.5 text-xs text-slate-500">Online kayit, aninda baslama, randevu gereksiz</p>
+                    </div>
+                  </li>
+                </ul>
+                <div className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-center">
+                  <span className="text-sm font-semibold text-emerald-700">Toplam: Sadece garanti ucreti + 5 dakika</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom summary */}
+            <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 px-6 py-5 text-center">
+              <p className="text-sm font-semibold text-blue-800">
+                KiraGuvence ile noter masrafi, Findeks ucreti ve kefil derdinden kurtulun.
+              </p>
+              <p className="mt-1 text-sm text-blue-600">
+                Geleneksel yontemde her sozlesme icin 600-1.200+ TL masraf + gunlerce ugras varken, KiraGuvence&apos;de sadece kiranizin %0.5-1.5&apos;i garanti ucreti odersiniz.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SÜRE İNDİRİMİ ── */}
+        <section className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Sure Avantaji</p>
               <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Uzun Sureli Sozlesme Indirimi</h2>
               <p className="mt-3 text-base text-slate-500">
-                Sozlesme suresine gore komisyon oraninda ek indirim kazanin.
+                Sozlesme suresine gore garanti ucretinde ek indirim kazanin.
               </p>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -376,13 +512,13 @@ export default function PricingContent() {
         </section>
 
         {/* ── KİRA TUTARI ARALIKLARI ── */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Kira Tutari</p>
               <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kira Tutarina Gore Avantajlar</h2>
               <p className="mt-3 text-base text-slate-500">
-                Yuksek kira tutarlarinda ek komisyon indirimleri uygulanir.
+                Yuksek kira tutarlarinda ek garanti ucreti indirimleri uygulanir.
               </p>
             </div>
             <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -411,7 +547,7 @@ export default function PricingContent() {
         </section>
 
         {/* ── COMMISSION CALCULATOR ── */}
-        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+        <section className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-5xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Hesaplayici</p>
@@ -508,7 +644,7 @@ export default function PricingContent() {
                     </thead>
                     <tbody>
                       <tr className="border-b border-slate-100">
-                        <td className="px-4 py-3 font-medium text-slate-600">Komisyon orani</td>
+                        <td className="px-4 py-3 font-medium text-slate-600">Garanti ucreti orani</td>
                         {calcResults.map((r) => (
                           <td key={r.name} className="px-4 py-3 text-center text-slate-700">
                             {r.commissionLabel}
@@ -517,7 +653,7 @@ export default function PricingContent() {
                         ))}
                       </tr>
                       <tr className="border-b border-slate-100">
-                        <td className="px-4 py-3 font-medium text-slate-600">Aylik komisyon</td>
+                        <td className="px-4 py-3 font-medium text-slate-600">Aylik garanti ucreti</td>
                         {calcResults.map((r) => (
                           <td key={r.name} className="px-4 py-3 text-center text-slate-700">
                             {durationDiscount > 0 ? (
@@ -583,7 +719,7 @@ export default function PricingContent() {
         </section>
 
         {/* ── PROMOTIONS ── */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Firsatlar</p>
@@ -604,7 +740,7 @@ export default function PricingContent() {
                   <p className="mt-2 text-sm leading-6 text-slate-500">{promo.description}</p>
                   {promo.discountPercent === 100 ? (
                     <span className="mt-3 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                      {promo.durationMonths} ay komisyonsuz
+                      {promo.durationMonths} ay garanti ucretsiz
                     </span>
                   ) : (
                     <span className="mt-3 inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
@@ -640,7 +776,7 @@ export default function PricingContent() {
                 data-cta="pricing-14-gun-ucretsiz"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-blue-700 shadow-lg transition hover:bg-blue-50"
               >
-                14 Gun Ucretsiz Basla
+                Ucretsiz Hesap Olustur
               </Link>
               <div className="flex items-center gap-6 text-sm text-blue-200">
                 <span className="flex items-center gap-1">
@@ -707,7 +843,7 @@ export default function PricingContent() {
                 data-cta="pricing-footer-ucretsiz-basla"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
               >
-                Ucretsiz Basla
+                Ucretsiz Hesap Olustur
               </Link>
               <Link
                 href="/auth/login"

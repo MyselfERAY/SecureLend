@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet, Platform,
-  Modal,
+  Modal, SafeAreaView,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
@@ -14,9 +14,15 @@ import { Badge, getStatusBadge } from '../../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../../src/components/ui/LoadingSpinner';
 import { ErrorMessage } from '../../../src/components/ui/ErrorMessage';
 import { SuccessMessage } from '../../../src/components/ui/ErrorMessage';
-import { BottomSheet } from '../../../src/components/ui/Modal';
 import { colors } from '../../../src/theme/colors';
 import { ContractSummary, Property } from '../../../src/types';
+
+const WIZARD_STEPS = [
+  { key: 0, label: 'Taraflar' },
+  { key: 1, label: 'Tarih ve Tutar' },
+  { key: 2, label: 'Kosullar' },
+  { key: 3, label: 'Ozet ve Onay' },
+] as const;
 
 interface TenantResult {
   id: string;
@@ -71,7 +77,73 @@ export default function ContractsListScreen() {
   const [sublettingAllowed, setSublettingAllowed] = useState(false);
   const [noticePeriodDays, setNoticePeriodDays] = useState('30');
 
+  // Wizard step tracking
+  const [wizardStep, setWizardStep] = useState(0);
+  const [stepErrors, setStepErrors] = useState<Record<number, string>>({});
+
   const isLandlord = user?.roles.includes('LANDLORD');
+
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 0: // Taraflar
+        if (!tenantResult) {
+          setStepErrors((prev) => ({ ...prev, 0: 'Kiraci secimi zorunludur. Telefon numarasi ile arama yapin.' }));
+          return false;
+        }
+        if (!selectedPropertyId) {
+          setStepErrors((prev) => ({ ...prev, 0: 'Bir mulk secmeniz gerekmektedir.' }));
+          return false;
+        }
+        setStepErrors((prev) => { const n = { ...prev }; delete n[0]; return n; });
+        return true;
+      case 1: // Tarih ve Tutar
+        if (!startDate) {
+          setStepErrors((prev) => ({ ...prev, 1: 'Baslangic tarihi zorunludur.' }));
+          return false;
+        }
+        if (!endDate) {
+          setStepErrors((prev) => ({ ...prev, 1: 'Bitis tarihi zorunludur.' }));
+          return false;
+        }
+        if (!monthlyRent || Number(monthlyRent) <= 0) {
+          setStepErrors((prev) => ({ ...prev, 1: 'Aylik kira tutari zorunludur.' }));
+          return false;
+        }
+        if (!landlordIban || !/^TR\d{24}$/.test(landlordIban)) {
+          setStepErrors((prev) => ({ ...prev, 1: 'Gecerli bir IBAN giriniz (TR + 24 rakam).' }));
+          return false;
+        }
+        const day = Number(paymentDay);
+        if (!day || day < 1 || day > 28) {
+          setStepErrors((prev) => ({ ...prev, 1: 'Odeme gunu 1-28 arasi olmalidir.' }));
+          return false;
+        }
+        setStepErrors((prev) => { const n = { ...prev }; delete n[1]; return n; });
+        return true;
+      case 2: // Kosullar — optional fields, always valid
+        if (rentIncreaseType === 'FIXED_RATE' && (!rentIncreaseRate || Number(rentIncreaseRate) <= 0)) {
+          setStepErrors((prev) => ({ ...prev, 2: 'Sabit artis orani secildi, oran giriniz.' }));
+          return false;
+        }
+        setStepErrors((prev) => { const n = { ...prev }; delete n[2]; return n; });
+        return true;
+      case 3: // Ozet — final check
+        return true;
+      default:
+        return true;
+    }
+  };
+
+  const goNextStep = () => {
+    if (validateStep(wizardStep)) {
+      setWizardStep((s) => Math.min(s + 1, 3));
+    }
+  };
+
+  const goPrevStep = () => {
+    setStepErrors((prev) => { const n = { ...prev }; delete n[wizardStep]; return n; });
+    setWizardStep((s) => Math.max(s - 1, 0));
+  };
 
   const formatDateDisplay = (d: Date) => {
     return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
@@ -149,6 +221,7 @@ export default function ContractsListScreen() {
     setPaymentDay('1'); setLandlordIban(''); setTerms(''); setSpecialClauses('');
     setRentIncreaseType('TUFE'); setRentIncreaseRate(''); setFurnitureIncluded(false);
     setPetsAllowed(false); setSublettingAllowed(false); setNoticePeriodDays('30');
+    setWizardStep(0); setStepErrors({});
   };
 
   const selectProperty = (p: Property) => {
@@ -210,7 +283,9 @@ export default function ContractsListScreen() {
             <Text style={styles.emptyTitle}>
               {contracts.length === 0 ? 'Henuz sozlesmeniz yok' : 'Bu filtrede sozlesme bulunamadi'}
             </Text>
-            <Text style={styles.emptySubtitle}>Sozlesme olusturarak kiralama surecini baslatin.</Text>
+            <Text style={styles.emptySubtitle}>
+              {contracts.length === 0 ? 'Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika' : 'Farkli bir filtre deneyin.'}
+            </Text>
             {isLandlord && contracts.length === 0 && (
               <Button title="Sozlesme Olustur" onPress={() => setShowForm(true)} style={{ marginTop: 20, width: 220 }} />
             )}
@@ -293,242 +368,467 @@ export default function ContractsListScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Create Form - Bottom Sheet */}
-      <BottomSheet
+      {/* Create Form - Multi-Step Wizard Modal */}
+      <Modal
         visible={showForm}
-        onClose={() => { setShowForm(false); resetForm(); }}
-        title="Yeni Sozlesme"
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => { setShowForm(false); resetForm(); }}
       >
-        <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 600 }} keyboardShouldPersistTaps="handled">
-          {formError ? <ErrorMessage message={formError} /> : null}
-
-          {/* Tenant Search */}
-          <Text style={styles.pickLabel}>Kiraci Ara (Telefon)</Text>
-          <View style={styles.searchRow}>
-            <View style={{ flex: 1 }}>
-              <Input
-                prefix="+90"
-                placeholder="5XXXXXXXXX"
-                value={tenantPhone}
-                onChangeText={(t) => setTenantPhone(t.replace(/\D/g, '').slice(0, 10))}
-                keyboardType="phone-pad"
-                maxLength={10}
-              />
-            </View>
-            <Button title="Ara" onPress={searchTenant} loading={tenantSearching} size="sm" style={{ height: 48, marginBottom: 20 }} />
+        <SafeAreaView style={styles.wizardContainer}>
+          {/* Wizard Header */}
+          <View style={styles.wizardHeader}>
+            <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }} style={styles.wizardCloseBtn}>
+              <Ionicons name="close" size={24} color={colors.gray[600]} />
+            </TouchableOpacity>
+            <Text style={styles.wizardTitle}>Yeni Sozlesme</Text>
+            <View style={{ width: 40 }} />
           </View>
-          {tenantError ? <Text style={styles.errorSmall}>{tenantError}</Text> : null}
-          {tenantResult && (
-            <View style={styles.tenantFound}>
-              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              <View style={{ marginLeft: 10, flex: 1 }}>
-                <Text style={styles.tenantName}>{tenantResult.fullName}</Text>
-                <Text style={styles.tenantTckn}>TCKN: {tenantResult.maskedTckn}</Text>
-              </View>
-            </View>
-          )}
 
-          {/* Property Selector */}
-          <Text style={styles.pickLabel}>Mulk Sec</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-            {properties.map((p) => (
-              <TouchableOpacity key={p.id} onPress={() => selectProperty(p)} activeOpacity={0.7}>
-                <View style={[styles.propPill, selectedPropertyId === p.id && styles.propPillActive]}>
-                  <Ionicons name="business" size={16} color={selectedPropertyId === p.id ? '#2563eb' : colors.gray[400]} />
-                  <Text style={[styles.propPillTitle, selectedPropertyId === p.id && { color: '#1d4ed8' }]}>{p.title}</Text>
-                  <Text style={styles.propPillRent}>{p.monthlyRent.toLocaleString('tr-TR')} TL</Text>
+          {/* Stepper / Progress Indicator */}
+          <View style={styles.stepperContainer}>
+            {WIZARD_STEPS.map((step, idx) => {
+              const isActive = wizardStep === idx;
+              const isCompleted = wizardStep > idx;
+              return (
+                <View key={step.key} style={styles.stepperItem}>
+                  <View style={styles.stepperDotRow}>
+                    {idx > 0 && (
+                      <View style={[styles.stepperLine, (isActive || isCompleted) && styles.stepperLineActive]} />
+                    )}
+                    <View style={[
+                      styles.stepperDot,
+                      isActive && styles.stepperDotActive,
+                      isCompleted && styles.stepperDotCompleted,
+                    ]}>
+                      {isCompleted ? (
+                        <Ionicons name="checkmark" size={12} color="#ffffff" />
+                      ) : (
+                        <Text style={[
+                          styles.stepperDotText,
+                          isActive && styles.stepperDotTextActive,
+                        ]}>
+                          {idx + 1}
+                        </Text>
+                      )}
+                    </View>
+                    {idx < WIZARD_STEPS.length - 1 && (
+                      <View style={[styles.stepperLine, isCompleted && styles.stepperLineActive]} />
+                    )}
+                  </View>
+                  <Text style={[
+                    styles.stepperLabel,
+                    isActive && styles.stepperLabelActive,
+                    isCompleted && styles.stepperLabelCompleted,
+                  ]} numberOfLines={1}>
+                    {step.label}
+                  </Text>
                 </View>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
+          </View>
+
+          {/* Step Content */}
+          <ScrollView
+            style={styles.wizardContent}
+            contentContainerStyle={styles.wizardContentInner}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {formError ? <ErrorMessage message={formError} /> : null}
+            {stepErrors[wizardStep] ? <ErrorMessage message={stepErrors[wizardStep]} /> : null}
+
+            {/* ========== STEP 0: Taraflar ========== */}
+            {wizardStep === 0 && (
+              <>
+                <Text style={styles.stepTitle}>Taraflar</Text>
+                <Text style={styles.stepDescription}>Kiraci ve mulk bilgilerini secin.</Text>
+
+                {/* Tenant Search */}
+                <Text style={styles.pickLabel}>Kiraci Ara (Telefon)</Text>
+                <View style={styles.searchRow}>
+                  <View style={{ flex: 1 }}>
+                    <Input
+                      prefix="+90"
+                      placeholder="5XXXXXXXXX"
+                      value={tenantPhone}
+                      onChangeText={(t) => setTenantPhone(t.replace(/\D/g, '').slice(0, 10))}
+                      keyboardType="phone-pad"
+                      maxLength={10}
+                    />
+                  </View>
+                  <Button title="Ara" onPress={searchTenant} loading={tenantSearching} size="sm" style={{ height: 48, marginBottom: 20 }} />
+                </View>
+                {tenantError ? <Text style={styles.errorSmall}>{tenantError}</Text> : null}
+                {tenantResult && (
+                  <View style={styles.tenantFound}>
+                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                    <View style={{ marginLeft: 10, flex: 1 }}>
+                      <Text style={styles.tenantName}>{tenantResult.fullName}</Text>
+                      <Text style={styles.tenantTckn}>TCKN: {tenantResult.maskedTckn}</Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Property Selector */}
+                <Text style={styles.pickLabel}>Mulk Sec</Text>
+                {properties.length === 0 ? (
+                  <View style={styles.emptyPropMsg}>
+                    <Ionicons name="alert-circle-outline" size={18} color={colors.gray[400]} />
+                    <Text style={styles.emptyPropText}>Aktif mulkunuz bulunmuyor.</Text>
+                  </View>
+                ) : (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                    {properties.map((p) => (
+                      <TouchableOpacity key={p.id} onPress={() => selectProperty(p)} activeOpacity={0.7}>
+                        <View style={[styles.propPill, selectedPropertyId === p.id && styles.propPillActive]}>
+                          <Ionicons name="business" size={16} color={selectedPropertyId === p.id ? '#2563eb' : colors.gray[400]} />
+                          <Text style={[styles.propPillTitle, selectedPropertyId === p.id && { color: '#1d4ed8' }]}>{p.title}</Text>
+                          <Text style={styles.propPillRent}>{p.monthlyRent.toLocaleString('tr-TR')} TL</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </>
+            )}
+
+            {/* ========== STEP 1: Tarih ve Tutar ========== */}
+            {wizardStep === 1 && (
+              <>
+                <Text style={styles.stepTitle}>Tarih ve Tutar</Text>
+                <Text style={styles.stepDescription}>Sozlesme tarihlerini, kira tutarini ve odeme bilgilerini girin.</Text>
+
+                {/* Dates */}
+                <View style={styles.formRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.pickLabel}>Baslangic *</Text>
+                    <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowStartPicker(true)} activeOpacity={0.7}>
+                      <Ionicons name="calendar-outline" size={18} color={startDate ? colors.brand.dark : colors.gray[400]} />
+                      <Text style={[styles.datePickerText, !startDate && styles.datePickerPlaceholder]}>
+                        {startDate ? formatDateDisplay(startDate) : 'Tarih sec'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.pickLabel}>Bitis *</Text>
+                    <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowEndPicker(true)} activeOpacity={0.7}>
+                      <Ionicons name="calendar-outline" size={18} color={endDate ? colors.brand.dark : colors.gray[400]} />
+                      <Text style={[styles.datePickerText, !endDate && styles.datePickerPlaceholder]}>
+                        {endDate ? formatDateDisplay(endDate) : 'Tarih sec'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Date Pickers */}
+                {Platform.OS === 'ios' ? (
+                  <>
+                    <Modal visible={showStartPicker} transparent animationType="slide">
+                      <View style={styles.dateModalOverlay}>
+                        <View style={styles.dateModalContent}>
+                          <View style={styles.dateModalHeader}>
+                            <TouchableOpacity onPress={() => setShowStartPicker(false)}>
+                              <Text style={styles.dateModalCancel}>Iptal</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.dateModalTitle}>Baslangic Tarihi</Text>
+                            <TouchableOpacity onPress={() => { if (!startDate) setStartDate(new Date()); setShowStartPicker(false); }}>
+                              <Text style={styles.dateModalDone}>Tamam</Text>
+                            </TouchableOpacity>
+                          </View>
+                          <DateTimePicker
+                            value={startDate || new Date()}
+                            mode="date"
+                            display="spinner"
+                            minimumDate={new Date()}
+                            onChange={(_, selected) => { if (selected) setStartDate(selected); }}
+                            locale="tr"
+                            themeVariant="light"
+                            style={{ height: 200 }}
+                          />
+                        </View>
+                      </View>
+                    </Modal>
+                    <Modal visible={showEndPicker} transparent animationType="slide">
+                      <View style={styles.dateModalOverlay}>
+                        <View style={styles.dateModalContent}>
+                          <View style={styles.dateModalHeader}>
+                            <TouchableOpacity onPress={() => setShowEndPicker(false)}>
+                              <Text style={styles.dateModalCancel}>Iptal</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.dateModalTitle}>Bitis Tarihi</Text>
+                            <TouchableOpacity onPress={() => {
+                              if (!endDate) {
+                                const defaultEnd = startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000);
+                                setEndDate(defaultEnd);
+                              }
+                              setShowEndPicker(false);
+                            }}>
+                              <Text style={styles.dateModalDone}>Tamam</Text>
+                            </TouchableOpacity>
+                          </View>
+                          <DateTimePicker
+                            value={endDate || (startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000))}
+                            mode="date"
+                            display="spinner"
+                            minimumDate={startDate || new Date()}
+                            onChange={(_, selected) => { if (selected) setEndDate(selected); }}
+                            locale="tr"
+                            themeVariant="light"
+                            style={{ height: 200 }}
+                          />
+                        </View>
+                      </View>
+                    </Modal>
+                  </>
+                ) : (
+                  <>
+                    {showStartPicker && (
+                      <DateTimePicker
+                        value={startDate || new Date()}
+                        mode="date"
+                        display="default"
+                        minimumDate={new Date()}
+                        onChange={(_, selected) => { setShowStartPicker(false); if (selected) setStartDate(selected); }}
+                      />
+                    )}
+                    {showEndPicker && (
+                      <DateTimePicker
+                        value={endDate || (startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000))}
+                        mode="date"
+                        display="default"
+                        minimumDate={startDate || new Date()}
+                        onChange={(_, selected) => { setShowEndPicker(false); if (selected) setEndDate(selected); }}
+                      />
+                    )}
+                  </>
+                )}
+
+                <View style={styles.formRow}>
+                  <View style={{ flex: 1 }}><Input label="Kira (TL) *" value={monthlyRent} onChangeText={(t) => setMonthlyRent(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
+                  <View style={{ flex: 1 }}><Input label="Depozito" value={depositAmount} onChangeText={(t) => setDepositAmount(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
+                </View>
+
+                <Input label="Odeme Gunu (1-28)" value={paymentDay} onChangeText={(t) => setPaymentDay(t.replace(/\D/g, '').slice(0, 2))} keyboardType="number-pad" />
+
+                <Input
+                  label="Ev Sahibi IBAN *"
+                  placeholder="TR + 24 rakam"
+                  value={landlordIban}
+                  onChangeText={(t) => setLandlordIban(t.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 26))}
+                  maxLength={26}
+                  error={landlordIban.length > 0 && !/^TR\d{24}$/.test(landlordIban) ? 'TR + 24 rakam olmali' : undefined}
+                />
+              </>
+            )}
+
+            {/* ========== STEP 2: Kosullar ========== */}
+            {wizardStep === 2 && (
+              <>
+                <Text style={styles.stepTitle}>Kosullar</Text>
+                <Text style={styles.stepDescription}>Sozlesme sartlarini ve ozel maddeleri belirleyin.</Text>
+
+                <Input label="Sozlesme Sartlari" value={terms} onChangeText={setTerms} multiline numberOfLines={3} />
+                <Input label="Ozel Sartlar" value={specialClauses} onChangeText={setSpecialClauses} multiline numberOfLines={2} />
+
+                {/* Rent Increase Type */}
+                <Text style={styles.pickLabel}>Kira Artis Tipi</Text>
+                <View style={styles.increaseRow}>
+                  {([['TUFE', 'TUFE'], ['FIXED_RATE', 'Sabit Oran'], ['NONE', 'Artis Yok']] as const).map(([val, label]) => (
+                    <TouchableOpacity
+                      key={val}
+                      style={[styles.increaseChip, rentIncreaseType === val && styles.increaseChipActive]}
+                      onPress={() => setRentIncreaseType(val)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.increaseChipText, rentIncreaseType === val && styles.increaseChipTextActive]}>{label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                {rentIncreaseType === 'FIXED_RATE' && (
+                  <Input
+                    label="Yillik Artis Orani (%)"
+                    value={rentIncreaseRate}
+                    onChangeText={(t) => setRentIncreaseRate(t.replace(/[^\d.]/g, '').slice(0, 5))}
+                    keyboardType="decimal-pad"
+                    placeholder="ornek: 25"
+                  />
+                )}
+
+                <Input
+                  label="Ihbar Suresi (gun)"
+                  value={noticePeriodDays}
+                  onChangeText={(t) => setNoticePeriodDays(t.replace(/\D/g, '').slice(0, 3))}
+                  keyboardType="number-pad"
+                  placeholder="30"
+                />
+
+                <Text style={styles.pickLabel}>Ek Kosullar</Text>
+                <View style={styles.toggleSection}>
+                  <TouchableOpacity style={styles.toggleRow} onPress={() => setFurnitureIncluded((p) => !p)} activeOpacity={0.7}>
+                    <View style={[styles.toggleBox, furnitureIncluded && styles.toggleBoxChecked]}>
+                      {furnitureIncluded && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+                    </View>
+                    <Text style={styles.toggleLabel}>Esyali kiralama</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.toggleRow} onPress={() => setPetsAllowed((p) => !p)} activeOpacity={0.7}>
+                    <View style={[styles.toggleBox, petsAllowed && styles.toggleBoxChecked]}>
+                      {petsAllowed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+                    </View>
+                    <Text style={styles.toggleLabel}>Evcil hayvana izin</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.toggleRow} onPress={() => setSublettingAllowed((p) => !p)} activeOpacity={0.7}>
+                    <View style={[styles.toggleBox, sublettingAllowed && styles.toggleBoxChecked]}>
+                      {sublettingAllowed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
+                    </View>
+                    <Text style={styles.toggleLabel}>Alt kiralama izni</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
+            {/* ========== STEP 3: Ozet ve Onay ========== */}
+            {wizardStep === 3 && (
+              <>
+                <Text style={styles.stepTitle}>Ozet ve Onay</Text>
+                <Text style={styles.stepDescription}>Tum bilgileri kontrol edip sozlesmeyi olusturun.</Text>
+
+                {/* Taraflar Summary */}
+                <View style={styles.summarySection}>
+                  <View style={styles.summarySectionHeader}>
+                    <Ionicons name="people" size={18} color="#2563eb" />
+                    <Text style={styles.summarySectionTitle}>Taraflar</Text>
+                    <TouchableOpacity onPress={() => setWizardStep(0)} style={styles.summaryEditBtn}>
+                      <Ionicons name="pencil" size={14} color="#2563eb" />
+                      <Text style={styles.summaryEditText}>Duzenle</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Kiraci</Text>
+                    <Text style={styles.summaryValue}>{tenantResult?.fullName || '-'}</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Mulk</Text>
+                    <Text style={styles.summaryValue}>{properties.find((p) => p.id === selectedPropertyId)?.title || '-'}</Text>
+                  </View>
+                </View>
+
+                {/* Tarih ve Tutar Summary */}
+                <View style={styles.summarySection}>
+                  <View style={styles.summarySectionHeader}>
+                    <Ionicons name="calendar" size={18} color="#2563eb" />
+                    <Text style={styles.summarySectionTitle}>Tarih ve Tutar</Text>
+                    <TouchableOpacity onPress={() => setWizardStep(1)} style={styles.summaryEditBtn}>
+                      <Ionicons name="pencil" size={14} color="#2563eb" />
+                      <Text style={styles.summaryEditText}>Duzenle</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Baslangic</Text>
+                    <Text style={styles.summaryValue}>{startDate ? formatDateDisplay(startDate) : '-'}</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Bitis</Text>
+                    <Text style={styles.summaryValue}>{endDate ? formatDateDisplay(endDate) : '-'}</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Aylik Kira</Text>
+                    <Text style={[styles.summaryValue, styles.summaryValueBold]}>{monthlyRent ? `${Number(monthlyRent).toLocaleString('tr-TR')} TL` : '-'}</Text>
+                  </View>
+                  {depositAmount ? (
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.summaryLabel}>Depozito</Text>
+                      <Text style={styles.summaryValue}>{Number(depositAmount).toLocaleString('tr-TR')} TL</Text>
+                    </View>
+                  ) : null}
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Odeme Gunu</Text>
+                    <Text style={styles.summaryValue}>Her ayin {paymentDay}. gunu</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>IBAN</Text>
+                    <Text style={styles.summaryValue} numberOfLines={1}>{landlordIban || '-'}</Text>
+                  </View>
+                </View>
+
+                {/* Kosullar Summary */}
+                <View style={styles.summarySection}>
+                  <View style={styles.summarySectionHeader}>
+                    <Ionicons name="document-text" size={18} color="#2563eb" />
+                    <Text style={styles.summarySectionTitle}>Kosullar</Text>
+                    <TouchableOpacity onPress={() => setWizardStep(2)} style={styles.summaryEditBtn}>
+                      <Ionicons name="pencil" size={14} color="#2563eb" />
+                      <Text style={styles.summaryEditText}>Duzenle</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Artis Tipi</Text>
+                    <Text style={styles.summaryValue}>
+                      {rentIncreaseType === 'TUFE' ? 'TUFE' : rentIncreaseType === 'FIXED_RATE' ? `Sabit %${rentIncreaseRate}` : 'Artis Yok'}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Ihbar Suresi</Text>
+                    <Text style={styles.summaryValue}>{noticePeriodDays} gun</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Esyali</Text>
+                    <Text style={styles.summaryValue}>{furnitureIncluded ? 'Evet' : 'Hayir'}</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Evcil Hayvan</Text>
+                    <Text style={styles.summaryValue}>{petsAllowed ? 'Izinli' : 'Izin Yok'}</Text>
+                  </View>
+                  <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>Alt Kiralama</Text>
+                    <Text style={styles.summaryValue}>{sublettingAllowed ? 'Izinli' : 'Izin Yok'}</Text>
+                  </View>
+                  {terms ? (
+                    <View style={styles.summaryRowFull}>
+                      <Text style={styles.summaryLabel}>Sartlar</Text>
+                      <Text style={styles.summaryValueSmall}>{terms}</Text>
+                    </View>
+                  ) : null}
+                  {specialClauses ? (
+                    <View style={styles.summaryRowFull}>
+                      <Text style={styles.summaryLabel}>Ozel Maddeler</Text>
+                      <Text style={styles.summaryValueSmall}>{specialClauses}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              </>
+            )}
+
+            <View style={{ height: 20 }} />
           </ScrollView>
 
-          {/* Dates */}
-          <View style={styles.formRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.pickLabel}>Baslangic *</Text>
-              <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowStartPicker(true)} activeOpacity={0.7}>
-                <Ionicons name="calendar-outline" size={18} color={startDate ? colors.brand.dark : colors.gray[400]} />
-                <Text style={[styles.datePickerText, !startDate && styles.datePickerPlaceholder]}>
-                  {startDate ? formatDateDisplay(startDate) : 'Tarih sec'}
-                </Text>
+          {/* Wizard Footer Navigation */}
+          <View style={styles.wizardFooter}>
+            {wizardStep > 0 ? (
+              <TouchableOpacity style={styles.wizardBackBtn} onPress={goPrevStep} activeOpacity={0.7}>
+                <Ionicons name="arrow-back" size={18} color={colors.gray[600]} />
+                <Text style={styles.wizardBackText}>Geri</Text>
               </TouchableOpacity>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.pickLabel}>Bitis *</Text>
-              <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowEndPicker(true)} activeOpacity={0.7}>
-                <Ionicons name="calendar-outline" size={18} color={endDate ? colors.brand.dark : colors.gray[400]} />
-                <Text style={[styles.datePickerText, !endDate && styles.datePickerPlaceholder]}>
-                  {endDate ? formatDateDisplay(endDate) : 'Tarih sec'}
-                </Text>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+
+            {wizardStep < 3 ? (
+              <TouchableOpacity style={styles.wizardNextBtn} onPress={goNextStep} activeOpacity={0.7}>
+                <Text style={styles.wizardNextText}>Ileri</Text>
+                <Ionicons name="arrow-forward" size={18} color="#ffffff" />
               </TouchableOpacity>
-            </View>
+            ) : (
+              <Button
+                title="Sozlesme Olustur"
+                onPress={handleCreate}
+                loading={submitting}
+                style={{ flex: 1.5 }}
+              />
+            )}
           </View>
-
-          {/* Date Pickers */}
-          {Platform.OS === 'ios' ? (
-            <>
-              <Modal visible={showStartPicker} transparent animationType="slide">
-                <View style={styles.dateModalOverlay}>
-                  <View style={styles.dateModalContent}>
-                    <View style={styles.dateModalHeader}>
-                      <TouchableOpacity onPress={() => setShowStartPicker(false)}>
-                        <Text style={styles.dateModalCancel}>Iptal</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.dateModalTitle}>Baslangic Tarihi</Text>
-                      <TouchableOpacity onPress={() => { if (!startDate) setStartDate(new Date()); setShowStartPicker(false); }}>
-                        <Text style={styles.dateModalDone}>Tamam</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <DateTimePicker
-                      value={startDate || new Date()}
-                      mode="date"
-                      display="spinner"
-                      minimumDate={new Date()}
-                      onChange={(_, selected) => { if (selected) setStartDate(selected); }}
-                      locale="tr"
-                      themeVariant="light"
-                      style={{ height: 200 }}
-                    />
-                  </View>
-                </View>
-              </Modal>
-              <Modal visible={showEndPicker} transparent animationType="slide">
-                <View style={styles.dateModalOverlay}>
-                  <View style={styles.dateModalContent}>
-                    <View style={styles.dateModalHeader}>
-                      <TouchableOpacity onPress={() => setShowEndPicker(false)}>
-                        <Text style={styles.dateModalCancel}>Iptal</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.dateModalTitle}>Bitis Tarihi</Text>
-                      <TouchableOpacity onPress={() => {
-                        if (!endDate) {
-                          const defaultEnd = startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000);
-                          setEndDate(defaultEnd);
-                        }
-                        setShowEndPicker(false);
-                      }}>
-                        <Text style={styles.dateModalDone}>Tamam</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <DateTimePicker
-                      value={endDate || (startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000))}
-                      mode="date"
-                      display="spinner"
-                      minimumDate={startDate || new Date()}
-                      onChange={(_, selected) => { if (selected) setEndDate(selected); }}
-                      locale="tr"
-                      themeVariant="light"
-                      style={{ height: 200 }}
-                    />
-                  </View>
-                </View>
-              </Modal>
-            </>
-          ) : (
-            <>
-              {showStartPicker && (
-                <DateTimePicker
-                  value={startDate || new Date()}
-                  mode="date"
-                  display="default"
-                  minimumDate={new Date()}
-                  onChange={(_, selected) => { setShowStartPicker(false); if (selected) setStartDate(selected); }}
-                />
-              )}
-              {showEndPicker && (
-                <DateTimePicker
-                  value={endDate || (startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000))}
-                  mode="date"
-                  display="default"
-                  minimumDate={startDate || new Date()}
-                  onChange={(_, selected) => { setShowEndPicker(false); if (selected) setEndDate(selected); }}
-                />
-              )}
-            </>
-          )}
-
-          <View style={styles.formRow}>
-            <View style={{ flex: 1 }}><Input label="Kira (TL) *" value={monthlyRent} onChangeText={(t) => setMonthlyRent(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
-            <View style={{ flex: 1 }}><Input label="Depozito" value={depositAmount} onChangeText={(t) => setDepositAmount(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
-          </View>
-
-          <Input label="Odeme Gunu (1-28)" value={paymentDay} onChangeText={(t) => setPaymentDay(t.replace(/\D/g, '').slice(0, 2))} keyboardType="number-pad" />
-
-          <Input
-            label="Ev Sahibi IBAN *"
-            placeholder="TR + 24 rakam"
-            value={landlordIban}
-            onChangeText={(t) => setLandlordIban(t.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 26))}
-            maxLength={26}
-            error={landlordIban.length > 0 && !/^TR\d{24}$/.test(landlordIban) ? 'TR + 24 rakam olmali' : undefined}
-          />
-
-          <Input label="Sozlesme Sartlari" value={terms} onChangeText={setTerms} multiline numberOfLines={3} />
-          <Input label="Ozel Sartlar" value={specialClauses} onChangeText={setSpecialClauses} multiline numberOfLines={2} />
-
-          {/* Phase D: TBK Template Fields */}
-          <Text style={styles.pickLabel}>Kira Artis Tipi</Text>
-          <View style={styles.increaseRow}>
-            {([['TUFE', 'TUFE'], ['FIXED_RATE', 'Sabit Oran'], ['NONE', 'Artis Yok']] as const).map(([val, label]) => (
-              <TouchableOpacity
-                key={val}
-                style={[styles.increaseChip, rentIncreaseType === val && styles.increaseChipActive]}
-                onPress={() => setRentIncreaseType(val)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.increaseChipText, rentIncreaseType === val && styles.increaseChipTextActive]}>{label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {rentIncreaseType === 'FIXED_RATE' && (
-            <Input
-              label="Yillik Artis Orani (%)"
-              value={rentIncreaseRate}
-              onChangeText={(t) => setRentIncreaseRate(t.replace(/[^\d.]/g, '').slice(0, 5))}
-              keyboardType="decimal-pad"
-              placeholder="ornek: 25"
-            />
-          )}
-
-          <Input
-            label="Ihbar Suresi (gun)"
-            value={noticePeriodDays}
-            onChangeText={(t) => setNoticePeriodDays(t.replace(/\D/g, '').slice(0, 3))}
-            keyboardType="number-pad"
-            placeholder="30"
-          />
-
-          <Text style={styles.pickLabel}>Ek Kosullar</Text>
-          <View style={styles.toggleSection}>
-            <TouchableOpacity style={styles.toggleRow} onPress={() => setFurnitureIncluded((p) => !p)} activeOpacity={0.7}>
-              <View style={[styles.toggleBox, furnitureIncluded && styles.toggleBoxChecked]}>
-                {furnitureIncluded && <Ionicons name="checkmark" size={14} color="#ffffff" />}
-              </View>
-              <Text style={styles.toggleLabel}>Esyali kiralama</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.toggleRow} onPress={() => setPetsAllowed((p) => !p)} activeOpacity={0.7}>
-              <View style={[styles.toggleBox, petsAllowed && styles.toggleBoxChecked]}>
-                {petsAllowed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
-              </View>
-              <Text style={styles.toggleLabel}>Evcil hayvana izin</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.toggleRow} onPress={() => setSublettingAllowed((p) => !p)} activeOpacity={0.7}>
-              <View style={[styles.toggleBox, sublettingAllowed && styles.toggleBoxChecked]}>
-                {sublettingAllowed && <Ionicons name="checkmark" size={14} color="#ffffff" />}
-              </View>
-              <Text style={styles.toggleLabel}>Alt kiralama izni</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Button
-            title="Sozlesme Olustur"
-            onPress={handleCreate}
-            loading={submitting}
-            disabled={!tenantResult || !selectedPropertyId || !monthlyRent || !startDate || !endDate || !landlordIban || !/^TR\d{24}$/.test(landlordIban)}
-            style={{ marginBottom: 16 }}
-          />
-        </ScrollView>
-      </BottomSheet>
+        </SafeAreaView>
+      </Modal>
     </>
   );
 }
@@ -888,5 +1188,284 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: colors.gray[700],
+  },
+
+  // Wizard Modal
+  wizardContainer: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  wizardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  wizardCloseBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.gray[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wizardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0a1628',
+  },
+
+  // Stepper
+  stepperContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  stepperItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  stepperDotRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    height: 28,
+  },
+  stepperDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.gray[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.gray[200],
+  },
+  stepperDotActive: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#2563eb',
+  },
+  stepperDotCompleted: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  stepperDotText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.gray[400],
+  },
+  stepperDotTextActive: {
+    color: '#2563eb',
+  },
+  stepperLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: colors.gray[200],
+    minWidth: 8,
+  },
+  stepperLineActive: {
+    backgroundColor: '#2563eb',
+  },
+  stepperLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: colors.gray[400],
+    textAlign: 'center',
+  },
+  stepperLabelActive: {
+    color: '#2563eb',
+    fontWeight: '700',
+  },
+  stepperLabelCompleted: {
+    color: '#0a1628',
+    fontWeight: '600',
+  },
+
+  // Wizard Content
+  wizardContent: {
+    flex: 1,
+  },
+  wizardContentInner: {
+    padding: 24,
+    paddingBottom: 40,
+  },
+  stepTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0a1628',
+    marginBottom: 6,
+  },
+  stepDescription: {
+    fontSize: 14,
+    color: colors.gray[500],
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+
+  // Wizard Footer
+  wizardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[100],
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+      },
+      android: { elevation: 8 },
+    }),
+  },
+  wizardBackBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: colors.gray[100],
+  },
+  wizardBackText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.gray[600],
+  },
+  wizardNextBtn: {
+    flex: 1.5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#2563eb',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  wizardNextText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
+  // Empty property message
+  emptyPropMsg: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 16,
+    backgroundColor: colors.gray[50],
+    borderRadius: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+  },
+  emptyPropText: {
+    fontSize: 14,
+    color: colors.gray[500],
+    fontWeight: '500',
+  },
+
+  // Summary (Step 4)
+  summarySection: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.gray[100],
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0a1628',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  summarySectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  summarySectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0a1628',
+    flex: 1,
+  },
+  summaryEditBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#eff6ff',
+  },
+  summaryEditText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.gray[100],
+  },
+  summaryRowFull: {
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.gray[100],
+  },
+  summaryLabel: {
+    fontSize: 13,
+    color: colors.gray[500],
+    fontWeight: '500',
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: '#0a1628',
+    fontWeight: '500',
+    maxWidth: '60%',
+    textAlign: 'right',
+  },
+  summaryValueBold: {
+    fontWeight: '700',
+    color: '#2563eb',
+    fontSize: 16,
+  },
+  summaryValueSmall: {
+    fontSize: 13,
+    color: colors.gray[700],
+    lineHeight: 18,
+    marginTop: 4,
   },
 });

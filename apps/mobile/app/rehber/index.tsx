@@ -27,7 +27,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'Hukuki Bilgi': '#dc2626',
   'Emlak Piyasasi': '#ea580c',
   'Dijital Donusum': '#2563eb',
-  'KMH Rehberi': '#0d9488',
+  'Guvence Hesabi Rehberi': '#0d9488',
   'Depozito ve Teminat': '#ca8a04',
   'Vergi ve Muhasebe': '#4f46e5',
   'Tasinma Rehberi': '#0284c7',

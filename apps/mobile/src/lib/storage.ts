@@ -66,6 +66,22 @@ export async function setTutorialSeen(userId: string): Promise<void> {
   await SecureStore.setItemAsync(`${TUTORIAL_KEY_PREFIX}${userId}`, '1');
 }
 
+// Onboarding — shown once on first app launch (not per user)
+const ONBOARDING_KEY = 'securelend_onboarding_seen';
+
+export async function hasOnboardingBeenSeen(): Promise<boolean> {
+  try {
+    const val = await SecureStore.getItemAsync(ONBOARDING_KEY);
+    return val === '1';
+  } catch {
+    return false;
+  }
+}
+
+export async function setOnboardingSeen(): Promise<void> {
+  await SecureStore.setItemAsync(ONBOARDING_KEY, '1');
+}
+
 // Profile Photo — stored per user to prevent cross-user leakage
 const PHOTO_KEY_PREFIX = 'securelend_profile_photo_';
 

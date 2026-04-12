@@ -66,7 +66,7 @@ export default function KmhCompleteScreen() {
         </View>
         <Text style={styles.headerTitle}>Hesabiniz Acildi!</Text>
         <Text style={styles.headerSubtitle}>
-          KMH hesabiniz basariyla olusturuldu
+          Banka Guvence Hesabiniz basariyla olusturuldu
         </Text>
 
         {/* Step indicator */}
@@ -115,7 +115,7 @@ export default function KmhCompleteScreen() {
           <View style={styles.detailGrid}>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Hesap Tipi</Text>
-              <Text style={styles.detailValue}>{account?.accountType || 'KMH'}</Text>
+              <Text style={styles.detailValue}>{account?.accountType === 'KMH' ? 'Guvence Hesabi' : (account?.accountType || 'Guvence Hesabi')}</Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Kredi Limiti</Text>

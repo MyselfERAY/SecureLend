@@ -3,7 +3,7 @@ import PricingContent from './pricing-content';
 
 export const metadata: Metadata = {
   title: 'Fiyatlandirma',
-  description: 'Kira Guvence fiyatlandirma planlari. Ucretsiz baslayicidan Pro plana kadar seffaf komisyon oranlari. Kira guvence ucreti, noter ve kefil masrafindan daha hesapli.',
+  description: 'Kira Guvence fiyatlandirma planlari. Ucretsiz baslayicidan Portfoy plana kadar seffaf garanti ucreti oranlari. Kira garanti ucreti, noter ve kefil masrafindan daha hesapli.',
   openGraph: {
     title: 'Fiyatlandirma | Kira Guvence',
     description: 'Kira Guvence fiyatlandirma planlari. Noter ve kefil masrafindan daha hesapli kira guvence sistemi.',

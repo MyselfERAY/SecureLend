@@ -338,7 +338,7 @@ export default function ProfileScreen() {
             <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
               <Ionicons name="shield-outline" size={18} color={colors.gray[600]} />
             </View>
-            <Text style={styles.menuText}>KMH Acik Riza Metni</Text>
+            <Text style={styles.menuText}>Guvence Hesabi Acik Riza Metni</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
         </View>

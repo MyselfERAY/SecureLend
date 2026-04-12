@@ -110,7 +110,7 @@ export default function ReferralScreen() {
           </View>
           <Text style={styles.heroTitle}>Arkadaslarini Davet Et</Text>
           <Text style={styles.heroSubtitle}>
-            Her basarili davet icin sen ve arkadasin ozel indirimlerden yararlanin.
+            Arkadaslarin da kefil derdinden kurtulsun — her basarili davette ikinize de ilk ay ucretsiz
           </Text>
         </View>
 
@@ -166,9 +166,9 @@ export default function ReferralScreen() {
         <View style={styles.howCard}>
           <Text style={styles.howTitle}>Nasil Calisir?</Text>
           {[
-            { step: '1', icon: 'share-social' as const, text: 'Davet kodunu arkadaslarinla paylas' },
-            { step: '2', icon: 'person-add' as const, text: 'Arkadasin kayit olurken kodunu girer' },
-            { step: '3', icon: 'gift' as const, text: 'Ikiniz de ozel indirimlerden yararlanin' },
+            { step: '1', icon: 'share-social' as const, text: 'Davet kodunu kefil arayan arkadaslarinla paylas' },
+            { step: '2', icon: 'person-add' as const, text: 'Arkadasin kayit olurken kodunu girer, kefil derdi biter' },
+            { step: '3', icon: 'gift' as const, text: 'Ikinize de ilk ay ucretsiz — kefil yerine banka guvencesi' },
           ].map((item) => (
             <View key={item.step} style={styles.howStep}>
               <View style={styles.howStepNumber}>

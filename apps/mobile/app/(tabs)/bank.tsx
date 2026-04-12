@@ -81,7 +81,7 @@ export default function BankScreen() {
           onPress={() => setTab('kmh')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.segmentText, tab === 'kmh' && styles.segmentTextActive]}>KMH Basvurulari</Text>
+          <Text style={[styles.segmentText, tab === 'kmh' && styles.segmentTextActive]}>Guvence Basvurulari</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.segment, tab === 'accounts' && styles.segmentActive]}
@@ -102,7 +102,7 @@ export default function BankScreen() {
                   <Ionicons name="checkmark-circle" size={24} color="#10b981" />
                 </View>
                 <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.onboardingTitle}>KMH Basvurunuz Onaylandi!</Text>
+                  <Text style={styles.onboardingTitle}>Guvence Basvurunuz Onaylandi!</Text>
                   <Text style={styles.onboardingLimit}>
                     Onaylanan Limit: {needsOnboarding.approvedLimit?.toLocaleString('tr-TR')} TL
                   </Text>
@@ -134,7 +134,7 @@ export default function BankScreen() {
                 <Ionicons name="add-circle" size={24} color="#2563eb" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.applyTitle}>Yeni KMH Basvurusu</Text>
+                <Text style={styles.applyTitle}>Banka Guvence Hesabi Ac</Text>
                 <Text style={styles.applySubtitle}>Kira guvence hesabi olusturun</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.gray[300]} />
@@ -148,7 +148,8 @@ export default function BankScreen() {
               <View style={styles.emptyIcon}>
                 <Ionicons name="card-outline" size={40} color={colors.gray[300]} />
               </View>
-              <Text style={styles.emptyTitle}>Henuz KMH basvurunuz yok</Text>
+              <Text style={styles.emptyTitle}>Henuz guvence basvurunuz yok</Text>
+              <Text style={styles.emptySubtitle}>Banka guvencesi kefil yerine gecer — hemen basvurun</Text>
             </View>
           ) : (
             applications.map((app) => {
@@ -214,7 +215,7 @@ export default function BankScreen() {
                 <Ionicons name="wallet-outline" size={40} color={colors.gray[300]} />
               </View>
               <Text style={styles.emptyTitle}>Henuz banka hesabiniz yok</Text>
-              <Text style={styles.emptySubtitle}>KMH basvurusu yaparak hesap olusturun.</Text>
+              <Text style={styles.emptySubtitle}>Guvence hesabi acarak kira odemelerinizi garanti altina alin</Text>
             </View>
           ) : (
             accounts.map((acc) => (

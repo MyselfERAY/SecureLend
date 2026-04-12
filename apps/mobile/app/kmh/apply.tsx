@@ -106,8 +106,8 @@ export default function KmhApplyScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>KMH Basvurusu</Text>
-            <Text style={styles.headerSubtitle}>Kredili Mevduat Hesabi</Text>
+            <Text style={styles.headerTitle}>Banka Guvence Basvurusu</Text>
+            <Text style={styles.headerSubtitle}>Banka Guvence Hesabi (KMH)</Text>
           </View>
           <View style={styles.stepBadge}>
             <Text style={styles.stepText}>1/4</Text>
@@ -225,7 +225,7 @@ export default function KmhApplyScreen() {
               )}
             </View>
             <Text style={styles.consentText}>
-              KMH basvurusu icin finansal verilerimin islenmesine acik riza veriyorum
+              Banka Guvence Hesabi basvurusu icin finansal verilerimin islenmesine acik riza veriyorum
             </Text>
             <TouchableOpacity
               onPress={() => { setConsentScrolledToBottom(false); setShowConsentModal(true); }}
@@ -263,7 +263,7 @@ export default function KmhApplyScreen() {
               <Ionicons name="close" size={22} color="#ffffff" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
-              <Text style={styles.headerTitle}>KMH Acik Riza</Text>
+              <Text style={styles.headerTitle}>Guvence Hesabi Acik Riza</Text>
               <Text style={styles.headerSubtitle}>Finansal veri isleme onayi</Text>
             </View>
             <View style={styles.consentIconWrap}>
@@ -279,11 +279,11 @@ export default function KmhApplyScreen() {
           >
             <View style={styles.consentTextBox}>
               <Text style={styles.consentBodyText}>
-{`KMH BASVURUSU ACIK RIZA BEYANI
+{`BANKA GUVENCE HESABI BASVURUSU ACIK RIZA BEYANI
 
 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kira Guvence Teknoloji A.S. ("Sirket") tarafindan hazirlanan Aydinlatma Metnini okudum ve anladim.
 
-KMH (Kredili Mevduat Hesabi) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
+Banka Guvence Hesabi (KMH) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
 
 1. ISLENEN FINANSAL VERILER
 

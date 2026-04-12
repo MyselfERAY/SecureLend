@@ -60,7 +60,7 @@ const STEP_CONFIGS: StepConfig[] = [
   {
     key: 'agreements',
     label: 'Sozlesme Onaylari',
-    description: 'KMH, KVKK ve diger sozlesmeler',
+    description: 'Guvence Hesabi, KVKK ve diger sozlesmeler',
     icon: 'document-text',
     buttonLabel: 'Onayla',
     processIcon: 'document-text',
@@ -360,8 +360,8 @@ export default function KmhOnboardingScreen() {
 
   const AGREEMENT_TEXTS: Record<string, { title: string; subtitle: string; body: string }> = {
     kmh: {
-      title: 'KMH Sozlesmesi',
-      subtitle: 'Kredili Mevduat Hesabi kosullari',
+      title: 'Banka Guvence Hesabi Sozlesmesi',
+      subtitle: 'Banka Guvence Hesabi (KMH) kosullari',
       body: `KREDILI MEVDUAT HESABI (KMH) SOZLESMESI
 
 Sozlesme No: [Otomatik atanacaktir]
@@ -683,7 +683,7 @@ Kira Guvence Teknoloji A.S.`,
               {agreementChecks.kmh && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.checkLabel}>KMH Sozlesmesini okudum ve kabul ediyorum</Text>
+              <Text style={styles.checkLabel}>Banka Guvence Hesabi Sozlesmesini okudum ve kabul ediyorum</Text>
               {!agreementChecks.kmh && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
             </View>
             {!agreementChecks.kmh && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}

@@ -198,13 +198,13 @@ export default function HomePage() {
                     data-cta="hero-ucretsiz-basla"
                     className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
                   >
-                    Ücretsiz Başla
+                    Ucretsiz Hesap Olustur
                   </Link>
                   <a
                     href="#nasil-calisir"
                     className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
-                    Nasıl Çalışır?
+                    Nasil Calisir?
                   </a>
                 </div>
 
@@ -405,7 +405,7 @@ export default function HomePage() {
                 href="/auth/register"
                 className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
               >
-                Hemen Başla
+                Ucretsiz Hesap Olustur
               </Link>
             </div>
           </div>
@@ -474,13 +474,13 @@ export default function HomePage() {
                 data-cta="cta-band-ucretsiz-basla"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
               >
-                Ücretsiz Başla
+                Ucretsiz Hesap Olustur
               </Link>
               <Link
                 href="/auth/login"
                 className="inline-flex items-center justify-center rounded-xl border border-blue-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
               >
-                Giriş Yap
+                Giris Yap
               </Link>
             </div>
           </div>
@@ -544,6 +544,39 @@ export default function HomePage() {
             <p className="mt-3 text-xs text-slate-400">
               Aboneliginizi istediginiz zaman iptal edebilirsiniz. Verileriniz KVKK kapsaminda korunmaktadir.
             </p>
+          </div>
+        </section>
+
+        {/* ── SSS / FAQ ── */}
+        <section className="bg-[#0a1628] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl">
+            <div className="text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">SSS</p>
+              <h2 className="mt-2 text-3xl font-extrabold text-white">Sikca Sorulan Sorular</h2>
+              <p className="mt-3 text-base text-slate-400">En cok merak edilen sorularin yanitlari.</p>
+            </div>
+            <div className="mt-10 divide-y divide-slate-700/50 rounded-2xl border border-slate-700/50 bg-[#0d1b2a]">
+              <FaqItem
+                question="Kira Guvence nedir?"
+                answer="Kira Guvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz."
+              />
+              <FaqItem
+                question="Kefil olmadan ev kiralayabilir miyim?"
+                answer="Evet. Kira Guvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder."
+              />
+              <FaqItem
+                question="KMH (Kredili Mevduat Hesabi) nedir?"
+                answer="KMH, kira odemeleri icin banka tarafindan saglanan bir guvence hesabidir. Kiraci gecici bir aksaklik yasarsa bile kira banka tarafindan ev sahibine odenir, kiraci sadece birkac gunluk faiz oder."
+              />
+              <FaqItem
+                question="Ev sahibi icin maliyet nedir?"
+                answer="Ucretsiz planda komisyon %1.5, ucretli planlarda %0.5-1 arasindadir. Bu, noter masrafi + Findeks ucreti + kefil riskinden cok daha ekonomiktir."
+              />
+              <FaqItem
+                question="Dijital sozlesme mahkemede gecerli mi?"
+                answer="Evet. Kira Guvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir."
+              />
+            </div>
           </div>
         </section>
 
@@ -630,6 +663,25 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
       <h2 className="mt-4 text-base font-bold text-slate-900">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-500">{desc}</p>
     </article>
+  );
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  return (
+    <details className="group">
+      <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-left transition hover:bg-slate-800/30 list-none [&::-webkit-details-marker]:hidden">
+        <span className="text-sm font-semibold text-white">{question}</span>
+        <svg
+          className="h-5 w-5 flex-shrink-0 text-slate-400 transition-transform group-open:rotate-180"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </summary>
+      <div className="px-6 pb-5">
+        <p className="text-sm leading-6 text-slate-400">{answer}</p>
+      </div>
+    </details>
   );
 }
 

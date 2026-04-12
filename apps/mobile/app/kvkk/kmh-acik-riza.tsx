@@ -129,7 +129,7 @@ export default function KmhAcikRizaScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>KMH Acik Riza</Text>
+            <Text style={styles.headerTitle}>Guvence Hesabi Acik Riza</Text>
             <Text style={styles.headerSubtitle}>Finansal veri isleme onay</Text>
           </View>
           <View style={styles.iconWrap}>

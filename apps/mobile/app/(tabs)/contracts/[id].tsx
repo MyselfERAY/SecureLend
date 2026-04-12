@@ -372,12 +372,12 @@ export default function ContractDetailScreen() {
         {/* KMH Selection (Tenant only, pending signatures) */}
         {isTenant && contract.status === 'PENDING_SIGNATURES' && (
           <>
-            <Text style={styles.sectionTitle}>KMH Hesap Secimi</Text>
+            <Text style={styles.sectionTitle}>Guvence Hesabi Secimi</Text>
             <View style={styles.sectionCard}>
               {kmhAccounts.length === 0 ? (
                 <View style={styles.alertBox}>
                   <Ionicons name="alert-circle" size={20} color="#ef4444" />
-                  <Text style={styles.alertText}>Aktif KMH hesabiniz bulunmuyor. Banka sayfasindan KMH basvurusu yapin.</Text>
+                  <Text style={styles.alertText}>Aktif guvence hesabiniz bulunmuyor. Banka sayfasindan Banka Guvence Hesabi basvurusu yapin.</Text>
                 </View>
               ) : (
                 kmhAccounts.map((acc) => {
@@ -469,9 +469,9 @@ export default function ContractDetailScreen() {
             <Ionicons name="information-circle" size={20} color="#f59e0b" />
             <Text style={styles.warningText}>
               {kmhAccounts.length === 0
-                ? 'Imzalamak icin aktif KMH hesabi gereklidir.'
+                ? 'Imzalamak icin aktif guvence hesabi gereklidir.'
                 : !selectedKmhId
-                  ? 'Lutfen bir KMH hesabi secin.'
+                  ? 'Lutfen bir guvence hesabi secin.'
                   : 'Secilen hesabin limiti yetersiz.'}
             </Text>
           </View>
@@ -507,7 +507,7 @@ export default function ContractDetailScreen() {
                 {kmhAccounts.length > 1 && (
                   <>
                     <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[700], marginBottom: 6, marginTop: 12 }}>
-                      KMH Hesabi Secin
+                      Guvence Hesabi Secin
                     </Text>
                     {kmhAccounts.map((acc) => {
                       const isEligible = acc.creditLimit >= contract.monthlyRent;

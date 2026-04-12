@@ -42,9 +42,9 @@ const slides: TutorialSlide[] = [
     icon: 'card-outline',
     iconColor: '#f59e0b',
     iconBg: '#fefce8',
-    title: 'KMH ile Guvenli Odeme',
+    title: 'Banka Guvence Hesabi ile Guvenli Odeme',
     description:
-      'Kredili Mevduat Hesabi (KMH) basvurusu yapin. Kira odeleriniz otomatik olarak takip edilsin.',
+      'Banka Guvence Hesabi (KMH) basvurusu yapin. Kira odeleriniz otomatik olarak takip edilsin.',
   },
   {
     icon: 'chatbubbles-outline',

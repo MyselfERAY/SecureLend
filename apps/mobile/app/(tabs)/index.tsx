@@ -148,7 +148,7 @@ export default function DashboardScreen() {
   const quickActions = [
     { title: 'Mulk Ekle', icon: 'home-outline' as const, color: '#2563eb', bg: '#eff6ff', route: '/(tabs)/properties' },
     { title: 'Sozlesme', icon: 'document-text-outline' as const, color: '#10b981', bg: '#ecfdf5', route: '/(tabs)/contracts' },
-    { title: 'KMH', icon: 'card-outline' as const, color: '#f59e0b', bg: '#fffbeb', route: '/kmh/apply' },
+    { title: 'Guvence', icon: 'card-outline' as const, color: '#f59e0b', bg: '#fffbeb', route: '/kmh/apply' },
     { title: 'Odeme', icon: 'wallet-outline' as const, color: '#8b5cf6', bg: '#f5f3ff', route: '/payments' },
     { title: 'Rehber', icon: 'book-outline' as const, color: '#0891b2', bg: '#ecfeff', route: '/rehber' },
     { title: 'Davet Et', icon: 'gift-outline' as const, color: '#ea580c', bg: '#fff7ed', route: '/referral' },
@@ -201,7 +201,7 @@ export default function DashboardScreen() {
         borderColor: '#10b981',
         icon: 'checkmark-circle',
         iconColor: '#10b981',
-        title: 'KMH Aktif',
+        title: 'Guvence Hesabi Aktif',
         subtitle: kmhLimit ? `Limit: ${kmhLimit.toLocaleString('tr-TR')} TL` : 'Hesabiniz aktif',
         route: '/(tabs)/bank',
       };
@@ -211,7 +211,7 @@ export default function DashboardScreen() {
         borderColor: '#f59e0b',
         icon: 'time',
         iconColor: '#f59e0b',
-        title: 'KMH Basvuru Bekliyor',
+        title: 'Guvence Basvurusu Bekliyor',
         subtitle: 'Basvurunuz inceleniyor',
         route: '/(tabs)/bank',
       };
@@ -221,7 +221,7 @@ export default function DashboardScreen() {
         borderColor: '#ef4444',
         icon: 'close-circle',
         iconColor: '#ef4444',
-        title: 'KMH Reddedildi',
+        title: 'Guvence Basvurusu Reddedildi',
         subtitle: 'Yeni basvuru yapabilirsiniz',
         route: '/(tabs)/bank',
       };
@@ -231,8 +231,8 @@ export default function DashboardScreen() {
         borderColor: '#2563eb',
         icon: 'card-outline',
         iconColor: '#2563eb',
-        title: 'KMH Basvurusu Yap',
-        subtitle: 'Kira odeme kolayligi icin basvurun',
+        title: 'Banka Guvence Hesabi Ac',
+        subtitle: 'Kefil yerine banka guvencesi — hemen basvurun',
         route: '/kmh/apply',
       };
     }
@@ -541,7 +541,7 @@ export default function DashboardScreen() {
             <Ionicons name="document-text-outline" size={48} color={colors.gray[300]} />
           </View>
           <Text style={styles.emptyTitle}>Henuz sozlesmeniz yok</Text>
-          <Text style={styles.emptySubtitle}>Mulk ekleyerek veya bir sozlesmeye dahil olarak baslayabilirsiniz.</Text>
+          <Text style={styles.emptySubtitle}>Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika</Text>
         </View>
       )}
 

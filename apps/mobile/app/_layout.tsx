@@ -19,8 +19,9 @@ function AuthGate() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inOnboarding = segments[0] === 'onboarding';
 
-    if (!tokens && !inAuthGroup) {
+    if (!tokens && !inAuthGroup && !inOnboarding) {
       router.replace('/(auth)/login');
     } else if (tokens && inAuthGroup) {
       router.replace('/(tabs)');
@@ -60,6 +61,7 @@ function AuthGate() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="chat" options={{ headerShown: false }} />

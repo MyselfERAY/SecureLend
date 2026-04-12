@@ -82,7 +82,7 @@ export default function SablonlarPage() {
               href="/auth/register"
               className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition"
             >
-              Ucretsiz Baslat
+              Ucretsiz Hesap Olustur
             </Link>
           </nav>
         </div>
@@ -153,7 +153,7 @@ export default function SablonlarPage() {
                   href="/auth/register"
                   className="mt-auto block rounded-lg bg-blue-600 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Platformda Kullan
+                  Ucretsiz Hesap Olustur
                 </Link>
               ) : (
                 <div className="mt-auto rounded-lg border border-slate-700/50 bg-slate-800/30 py-2.5 text-center text-sm font-medium text-slate-500">
