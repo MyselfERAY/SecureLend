@@ -29,6 +29,7 @@ import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { PromoModule } from './modules/promo/promo.module';
 import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { TenantScoreModule } from './modules/tenant-score/tenant-score.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -91,6 +92,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     PromoModule,
     NewsletterModule,
     AnalyticsModule,
+    TenantScoreModule,
     HealthModule,
   ],
   providers: [
