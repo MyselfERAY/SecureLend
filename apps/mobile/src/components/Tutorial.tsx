@@ -26,33 +26,33 @@ const slides: TutorialSlide[] = [
     icon: 'shield-checkmark',
     iconColor: colors.primary[600],
     iconBg: colors.primary[50],
-    title: 'Kira Guvence\'ye Hosgeldiniz',
+    title: 'Kira Güvence\'ye Hoşgeldiniz',
     description:
-      'Kira odeme sureclerinizi guvenle yonetin. Dijital sozlesme, otomatik odeme takibi ve daha fazlasi tek platformda.',
+      'Kira ödeme süreçlerinizi güvenle yönetin. Dijital sözleşme, otomatik ödeme takibi ve daha fazlası tek platformda.',
   },
   {
     icon: 'document-text-outline',
     iconColor: '#10b981',
     iconBg: '#f0fdf4',
-    title: 'Dijital Sozlesme',
+    title: 'Dijital Sözleşme',
     description:
-      'Mulk ekleyin, kiraci davet edin ve dijital sozlesme olusturun. Her iki taraf mobil uzerinden imzalayabilir.',
+      'Mülk ekleyin, kiracı davet edin ve dijital sözleşme oluşturun. Her iki taraf mobil üzerinden imzalayabilir.',
   },
   {
     icon: 'card-outline',
     iconColor: '#f59e0b',
     iconBg: '#fefce8',
-    title: 'Banka Guvence Hesabi ile Guvenli Odeme',
+    title: 'Banka Güvence Hesabı ile Güvenli Ödeme',
     description:
-      'Banka Guvence Hesabi (KMH) basvurusu yapin. Kira odeleriniz otomatik olarak takip edilsin.',
+      'Banka Güvence Hesabı (KMH) başvurusu yapın. Kira ödeleriniz otomatik olarak takip edilsin.',
   },
   {
     icon: 'chatbubbles-outline',
     iconColor: '#8b5cf6',
     iconBg: '#f5f3ff',
-    title: 'Mesajlasma ve Destek',
+    title: 'Mesajlaşma ve Destek',
     description:
-      'Ev sahibi veya kiraci ile dogrudan mesajlasin. Teknik destek ekibimize ulasmak da cok kolay.',
+      'Ev sahibi veya kiracı ile doğrudan mesajlaşın. Teknik destek ekibimize ulaşmak da çok kolay.',
   },
 ];
 
@@ -126,9 +126,9 @@ export default function Tutorial({ onComplete }: TutorialProps) {
         ))}
       </View>
 
-      {/* Next / Baslayalim button */}
+      {/* Next / Başlayalım button */}
       <TouchableOpacity style={styles.nextButton} onPress={goNext} activeOpacity={0.8}>
-        <Text style={styles.nextText}>{isLast ? 'Baslayalim' : 'Devam'}</Text>
+        <Text style={styles.nextText}>{isLast ? 'Başlayalım' : 'Devam'}</Text>
         <Ionicons
           name={isLast ? 'checkmark' : 'arrow-forward'}
           size={20}

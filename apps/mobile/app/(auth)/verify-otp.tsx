@@ -62,7 +62,7 @@ export default function VerifyOtpScreen() {
         }
         router.replace('/(tabs)');
       } catch (e: any) {
-        setError(e.message || 'OTP dogrulama basarisiz');
+        setError(e.message || 'OTP doğrulama başarısız');
         setHasError(true);
       } finally {
         setLoading(false);
@@ -116,14 +116,14 @@ export default function VerifyOtpScreen() {
           <View style={styles.lockIcon}>
             <Ionicons name="lock-closed" size={36} color={colors.white} />
           </View>
-          <Text style={styles.headerTitle}>Dogrulama</Text>
+          <Text style={styles.headerTitle}>Doğrulama</Text>
         </View>
       </View>
 
       {/* White Card */}
       <View style={styles.card}>
         <Text style={styles.cardSubtitle}>
-          6 haneli dogrulama kodunu girin
+          6 haneli doğrulama kodunu girin
         </Text>
         <Text style={styles.phoneText}>{maskedPhone}</Text>
 
@@ -144,7 +144,7 @@ export default function VerifyOtpScreen() {
         {loading && (
           <View style={styles.loadingRow}>
             <ActivityIndicator size="small" color={colors.primary[600]} />
-            <Text style={styles.loadingText}>Dogrulaniyor...</Text>
+            <Text style={styles.loadingText}>Doğrulanıyor...</Text>
           </View>
         )}
 
@@ -162,8 +162,8 @@ export default function VerifyOtpScreen() {
             ]}
           >
             {resendTimer > 0
-              ? `Tekrar gonder (${resendTimer}s)`
-              : 'Tekrar gonder'}
+              ? `Tekrar gönder (${resendTimer}s)`
+              : 'Tekrar gönder'}
           </Text>
         </TouchableOpacity>
       </View>

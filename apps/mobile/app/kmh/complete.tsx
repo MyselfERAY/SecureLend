@@ -55,7 +55,7 @@ export default function KmhCompleteScreen() {
     });
   }, [tokens, applicationId]);
 
-  if (loading) return <LoadingSpinner text="Hesap bilgileri yukleniyor..." />;
+  if (loading) return <LoadingSpinner text="Hesap bilgileri yükleniyor..." />;
 
   return (
     <View style={styles.container}>
@@ -64,9 +64,9 @@ export default function KmhCompleteScreen() {
         <View style={styles.celebrationIconWrap}>
           <Ionicons name="checkmark-done-circle" size={56} color="#10b981" />
         </View>
-        <Text style={styles.headerTitle}>Hesabiniz Acildi!</Text>
+        <Text style={styles.headerTitle}>Hesabınız Açıldı!</Text>
         <Text style={styles.headerSubtitle}>
-          Banka Guvence Hesabiniz basariyla olusturuldu
+          Banka Güvence Hesabınız başarıyla oluşturuldu
         </Text>
 
         {/* Step indicator */}
@@ -93,7 +93,7 @@ export default function KmhCompleteScreen() {
               <Ionicons name="card" size={22} color="#ffffff" />
             </View>
             <View>
-              <Text style={styles.accountTypeLabel}>Kredili Mevduat Hesabi</Text>
+              <Text style={styles.accountTypeLabel}>Kredili Mevduat Hesabı</Text>
               <View style={styles.statusPill}>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusLabel}>Aktif</Text>
@@ -103,7 +103,7 @@ export default function KmhCompleteScreen() {
 
           {/* IBAN */}
           <View style={styles.ibanRow}>
-            <Text style={styles.ibanLabel}>Hesap Numarasi</Text>
+            <Text style={styles.ibanLabel}>Hesap Numarası</Text>
             <Text style={styles.ibanValue}>
               {account?.iban || account?.accountNumber || '-'}
             </Text>
@@ -115,7 +115,7 @@ export default function KmhCompleteScreen() {
           <View style={styles.detailGrid}>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Hesap Tipi</Text>
-              <Text style={styles.detailValue}>{account?.accountType === 'KMH' ? 'Guvence Hesabi' : (account?.accountType || 'Guvence Hesabi')}</Text>
+              <Text style={styles.detailValue}>{account?.accountType === 'KMH' ? 'Güvence Hesabı' : (account?.accountType || 'Güvence Hesabı')}</Text>
             </View>
             <View style={styles.detailItem}>
               <Text style={styles.detailLabel}>Kredi Limiti</Text>
@@ -124,7 +124,7 @@ export default function KmhCompleteScreen() {
               </Text>
             </View>
             <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Faiz Orani</Text>
+              <Text style={styles.detailLabel}>Faiz Oranı</Text>
               <Text style={styles.detailValue}>
                 %{account?.interestRate?.toFixed(2) || '0.00'}
               </Text>
@@ -140,13 +140,13 @@ export default function KmhCompleteScreen() {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={18} color="#2563eb" />
           <Text style={styles.infoText}>
-            Hesabinizi bir kira sozlesmesine baglayarak odeme guvenceleme hizmetinden yararlanabilirsiniz.
+            Hesabınızı bir kira sözleşmesine bağlayarak ödeme güvenceleme hizmetinden yararlanabilirsiniz.
           </Text>
         </View>
 
         {/* Actions */}
         <Button
-          title="Sozlesmeye Bagla"
+          title="Sözleşmeye Bağla"
           onPress={() => router.replace('/(tabs)/contracts')}
           size="lg"
           variant="success"
@@ -154,7 +154,7 @@ export default function KmhCompleteScreen() {
         />
 
         <Button
-          title="Ana Sayfaya Don"
+          title="Ana Sayfaya Dön"
           onPress={() => router.replace('/(tabs)')}
           variant="secondary"
           size="lg"

@@ -17,110 +17,110 @@ import { markConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
-const GIZLILIK_POLITIKASI = `GIZLILIK POLITIKASI
+const GIZLILIK_POLITIKASI = `GİZLİLİK POLİTİKASI
 
-Son Guncelleme: 01.04.2026
+Son Güncelleme: 01.04.2026
 
-Kira Guvence Teknoloji A.S. ("Kira Guvence") olarak kullanicilarimizin gizliligine onem veriyoruz. Bu politika, platformumuz uzerinden toplanan kisisel verilerin nasil kullanildigini, paylasildigini ve korundugrunu aciklamaktadir.
+Kira Güvence Teknoloji A.Ş. ("Kira Güvence") olarak kullanıcılarımızın gizliliğine önem veriyoruz. Bu politika, platformumuz üzerinden toplanan kişisel verilerin nasıl kullanıldığını, paylaşıldığını ve korunduğunu açıklamaktadır.
 
-TOPLANAN BILGILER
+TOPLANAN BİLGİLER
 
-Hesap Olusturma Sirasinda:
+Hesap Oluşturma Sırasında:
 - Ad soyad
-- T.C. Kimlik Numarasi (TCKN)
-- Telefon numarasi
-- Dogum tarihi
+- T.C. Kimlik Numarası (TCKN)
+- Telefon numarası
+- Doğum tarihi
 
-KMH Basvurusu Sirasinda:
-- Istihdam durumu ve isveren bilgisi
-- Aylik gelir bilgisi
-- Ikamet adresi
-- Tahmini kira tutari
+KMH Başvurusu Sırasında:
+- İstihdam durumu ve işveren bilgisi
+- Aylık gelir bilgisi
+- İkamet adresi
+- Tahmini kira tutarı
 
-Platform Kullanimi Sirasinda:
-- Odeme islem bilgileri
-- Sozlesme detaylari
-- Cihaz ve tarayici bilgileri
-- IP adresi ve erisim loglarit
-- Konum bilgileri (izin verildiginde)
+Platform Kullanımı Sırasında:
+- Ödeme işlem bilgileri
+- Sözleşme detayları
+- Cihaz ve tarayıcı bilgileri
+- IP adresi ve erişim logları
+- Konum bilgileri (izin verildiğinde)
 
 KULLANIMI
 
-Toplanan bilgileriniz asagidaki amaclarla kullanilmaktadir:
+Toplanan bilgileriniz aşağıdaki amaçlarla kullanılmaktadır:
 
-1. Hesap Yonetimi: Kullanici hesabinizin olusturulmasi, dogrulanmasi ve yonetimi
-2. Hizmet Sunumu: KMH basvurusu, kira odeme islemleri ve sozlesme yonetimi
-3. Kimlik Dogrulama: KYC surecleri ve MASAK uyumlulugu
-4. Guvenlik: Dolandiricilik tespiti, yetkisiz erisim onleme
-5. Iletisim: Islem bildirimleri, odeme hatirlatalari, hizmet guncellemeleri
-6. Yasal Uyumluluk: BDDK, MASAK ve diger duzenlayici kurumlarin gerekliliklerinin karsilanmasi
-7. Hizmet Iyilestirme: Kullanici deneyiminin analizi ve platform gelistirme
+1. Hesap Yönetimi: Kullanıcı hesabınızın oluşturulması, doğrulanması ve yönetimi
+2. Hizmet Sunumu: KMH başvurusu, kira ödeme işlemleri ve sözleşme yönetimi
+3. Kimlik Doğrulama: KYC süreçleri ve MASAK uyumluluğu
+4. Güvenlik: Dolandırıcılık tespiti, yetkisiz erişim önleme
+5. İletişim: İşlem bildirimleri, ödeme hatırlatıcıları, hizmet güncellemeleri
+6. Yasal Uyumluluk: BDDK, MASAK ve diğer düzenleyici kurumların gerekliliklerinin karşılanması
+7. Hizmet İyileştirme: Kullanıcı deneyiminin analizi ve platform geliştirme
 
-PAYLASILMASI
+PAYLAŞILMASI
 
-Kisisel verileriniz asagidaki durumlarda ucuncu taraflarla paylasilabilir:
+Kişisel verileriniz aşağıdaki durumlarda üçüncü taraflarla paylaşılabilir:
 
-Banka ve Finans Kuruluslari: KMH hesap islemleri ve odeme sureclerinin yurutulmesi icin
-Odeme Altyapi Saglayicilari: Kira odeme islemlerinin gerceklestirilmesi icin
-Bulut Hizmet Saglayicilari: Verilerin guvenli bir sekilde saklanmasi icin
-Yetkili Kamu Kurumlari: Yasal zorunluluklar geregi (BDDK, MASAK, mahkeme kararlari)
-Hukuk Musavirleri: Hukuki sureclerin yurutulmesi icin
+Banka ve Finans Kuruluşları: KMH hesap işlemleri ve ödeme süreçlerinin yürütülmesi için
+Ödeme Altyapı Sağlayıcıları: Kira ödeme işlemlerinin gerçekleştirilmesi için
+Bulut Hizmet Sağlayıcıları: Verilerin güvenli bir şekilde saklanması için
+Yetkili Kamu Kurumları: Yasal zorunluluklar gereği (BDDK, MASAK, mahkeme kararları)
+Hukuk Müşavirleri: Hukuki süreçlerin yürütülmesi için
 
-Verileriniz, ticari amaclarla ucuncu taraflara satilmaz veya kiralanmaz.
+Verileriniz, ticari amaçlarla üçüncü taraflara satılmaz veya kiralanmaz.
 
-GUVENLIK
+GÜVENLİK
 
-Kisisel verilerinizin guvenligini saglamak icin asagidaki onlemleri almaktayiz:
+Kişisel verilerinizin güvenliğini sağlamak için aşağıdaki önlemleri almaktayız:
 
-- SSL/TLS sifreleme ile veri iletimi
-- Veritabaninda sifrelenmis saklama (TCKN hashleme dahil)
-- Erisim kontrolleri ve yetkilendirme mekanizmalari
-- Duzenli guvenlik denetimleri ve penetrasyon testleri
-- Calisanlara yonelik bilgi guvenligi egitimleri
-- OWASP standartlarina uygun uygulama guvenligi
-- JWT tabanli kimlik dogrulama ve oturum yonetimi
-- Rate limiting ve DDoS korumasi
+- SSL/TLS şifreleme ile veri iletimi
+- Veritabanında şifrelenmiş saklama (TCKN hashleme dahil)
+- Erişim kontrolleri ve yetkilendirme mekanizmaları
+- Düzenli güvenlik denetimleri ve penetrasyon testleri
+- Çalışanlara yönelik bilgi güvenliği eğitimleri
+- OWASP standartlarına uygun uygulama güvenliği
+- JWT tabanlı kimlik doğrulama ve oturum yönetimi
+- Rate limiting ve DDoS koruması
 
-CEREZLER VE IZLEME
+ÇEREZLER VE İZLEME
 
-Mobil uygulamamizda:
-- Oturum yonetimi icin guvenli token saklama kullanilmaktadir
-- Analitik amacli anonim kullanim verileri toplanabilir
-- Ucuncu taraf izleme araclari kullanilmamaktadir
+Mobil uygulamamızda:
+- Oturum yönetimi için güvenli token saklama kullanılmaktadır
+- Analitik amaçlı anonim kullanım verileri toplanabilir
+- Üçüncü taraf izleme araçları kullanılmamaktadır
 
-COCUKLARIN GIZLILIGI
+ÇOCUKLARIN GİZLİLİĞİ
 
-Platformumuz 18 yasindan kucuk bireylere yonelik degildir. Bilerek 18 yasindan kucuk bireylerden kisisel veri toplamamaktayiz.
+Platformumuz 18 yaşından küçük bireylere yönelik değildir. Bilerek 18 yaşından küçük bireylerden kişisel veri toplamamaktayız.
 
 HAKLARINIZ
 
-6698 sayili KVKK kapsaminda asagidaki haklara sahipsiniz:
+6698 sayılı KVKK kapsamında aşağıdaki haklara sahipsiniz:
 
-1. Kisisel verilerinizin islenip islenmedigini ogrenme
-2. Islenmisse bilgi talep etme
-3. Islenme amacini ve amacina uygun kullanilip kullanilmadigini ogrenme
-4. Aktarildigi ucuncu kisileri bilme
-5. Eksik veya yanlis islenmesi halinde duzeltilmesini isteme
+1. Kişisel verilerinizin işlenip işlenmediğini öğrenme
+2. İşlenmişse bilgi talep etme
+3. İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme
+4. Aktarıldığı üçüncü kişileri bilme
+5. Eksik veya yanlış işlenmesi halinde düzeltilmesini isteme
 6. Silinmesini veya yok edilmesini isteme
-7. Aktarildigi ucuncu kisilere bildirilmesini isteme
+7. Aktarıldığı üçüncü kişilere bildirilmesini isteme
 8. Otomatik analiz sonucu aleyhinize bir sonuca itiraz etme
-9. Kanuna aykiri isleme nedeniyle zararin giderilmesini talep etme
+9. Kanuna aykırı işleme nedeniyle zararın giderilmesini talep etme
 
-HESAP SILME
+HESAP SİLME
 
-Hesabinizi ve iliskili verilerinizi silmek istemeniz durumunda info@kiraguvence.com adresine basvurabilirsiniz. Yasal saklama yukumluluklerine tabi veriler haric, tum verileriniz 30 gun icinde silinir.
+Hesabınızı ve ilişkili verilerinizi silmek istemeniz durumunda info@kiraguvence.com adresine başvurabilirsiniz. Yasal saklama yükümlülüklerine tabi veriler hariç, tüm verileriniz 30 gün içinde silinir.
 
-POLITIKA GUNCELLEMELERI
+POLİTİKA GÜNCELLEMELERİ
 
-Bu gizlilik politikasi zaman zaman guncellenebilir. Onemli degisiklikler yapildiginda uygulama icinden ve/veya e-posta yoluyla bilgilendirilirsiniz.
+Bu gizlilik politikası zaman zaman güncellenebilir. Önemli değişiklikler yapıldığında uygulama içinden ve/veya e-posta yoluyla bilgilendirilirsiniz.
 
-ILETISIM
+İLETİŞİM
 
-Gizlilik ile ilgili sorulariniz icin:
+Gizlilik ile ilgili sorularınız için:
 E-posta: info@kiraguvence.com
 Web: https://kiraguvence.com
 
-Kira Guvence Teknoloji A.S.`;
+Kira Güvence Teknoloji A.Ş.`;
 
 export default function GizlilikPolitikasiScreen() {
   const router = useRouter();
@@ -154,7 +154,7 @@ export default function GizlilikPolitikasiScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Gizlilik Politikasi</Text>
+            <Text style={styles.headerTitle}>Gizlilik Politikası</Text>
             <Text style={styles.headerSubtitle}>Veri koruma ve gizlilik</Text>
           </View>
           <View style={styles.iconWrap}>

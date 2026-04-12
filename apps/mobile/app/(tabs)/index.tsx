@@ -51,11 +51,11 @@ function formatTimeAgo(dateStr: string): string {
   const diffHour = Math.floor(diffMs / 3600000);
   const diffDay = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return 'Az once';
-  if (diffMin < 60) return `${diffMin} dk once`;
-  if (diffHour < 24) return `${diffHour} saat once`;
-  if (diffDay === 1) return 'Dun';
-  if (diffDay < 30) return `${diffDay} gun once`;
+  if (diffMin < 1) return 'Az önce';
+  if (diffMin < 60) return `${diffMin} dk önce`;
+  if (diffHour < 24) return `${diffHour} saat önce`;
+  if (diffDay === 1) return 'Dün';
+  if (diffDay < 30) return `${diffDay} gün önce`;
   return new Date(dateStr).toLocaleDateString('tr-TR');
 }
 
@@ -151,16 +151,16 @@ export default function DashboardScreen() {
   const isNewUser = contracts.length === 0 && totalProperties === 0 && metricActiveContracts === 0 && metricMonthlyRent === 0 && metricPendingCount === 0;
 
   const firstStepActions = [
-    { title: 'Mulk Ekle', subtitle: 'Mulkunuzu platforma ekleyin', icon: 'home-outline' as const, route: '/(tabs)/properties' },
-    { title: 'Guvence Hesabi Ac', subtitle: 'Banka guvencesi ile basvurun', icon: 'card-outline' as const, route: '/kmh/apply' },
-    { title: 'Sozlesme Olustur', subtitle: 'Ilk kontratinizi olusturun', icon: 'document-text-outline' as const, route: '/(tabs)/contracts' },
+    { title: 'Mülk Ekle', subtitle: 'Mülkünüzü platforma ekleyin', icon: 'home-outline' as const, route: '/(tabs)/properties' },
+    { title: 'Güvence Hesabı Aç', subtitle: 'Banka güvencesi ile başvurun', icon: 'card-outline' as const, route: '/kmh/apply' },
+    { title: 'Sözleşme Oluştur', subtitle: 'İlk kontratınızı oluşturun', icon: 'document-text-outline' as const, route: '/(tabs)/contracts' },
   ];
 
   const quickActions = [
-    { title: 'Mulk Ekle', icon: 'home-outline' as const, color: '#2563eb', bg: '#eff6ff', route: '/(tabs)/properties' },
-    { title: 'Sozlesme', icon: 'document-text-outline' as const, color: '#10b981', bg: '#ecfdf5', route: '/(tabs)/contracts' },
-    { title: 'Guvence', icon: 'card-outline' as const, color: '#f59e0b', bg: '#fffbeb', route: '/kmh/apply' },
-    { title: 'Odeme', icon: 'wallet-outline' as const, color: '#8b5cf6', bg: '#f5f3ff', route: '/payments' },
+    { title: 'Mülk Ekle', icon: 'home-outline' as const, color: '#2563eb', bg: '#eff6ff', route: '/(tabs)/properties' },
+    { title: 'Sözleşme', icon: 'document-text-outline' as const, color: '#10b981', bg: '#ecfdf5', route: '/(tabs)/contracts' },
+    { title: 'Güvence', icon: 'card-outline' as const, color: '#f59e0b', bg: '#fffbeb', route: '/kmh/apply' },
+    { title: 'Ödeme', icon: 'wallet-outline' as const, color: '#8b5cf6', bg: '#f5f3ff', route: '/payments' },
     { title: 'Rehber', icon: 'book-outline' as const, color: '#0891b2', bg: '#ecfeff', route: '/rehber' },
     { title: 'Davet Et', icon: 'gift-outline' as const, color: '#ea580c', bg: '#fff7ed', route: '/referral' },
   ];
@@ -173,7 +173,7 @@ export default function DashboardScreen() {
       icon: p.status === 'OVERDUE' ? 'alert-circle' : 'time-outline',
       iconColor: p.status === 'OVERDUE' ? '#ef4444' : '#f59e0b',
       iconBg: p.status === 'OVERDUE' ? '#fef2f2' : '#fffbeb',
-      title: p.status === 'OVERDUE' ? 'Odeme gecikti' : 'Odeme bekleniyor',
+      title: p.status === 'OVERDUE' ? 'Ödeme gecikti' : 'Ödeme bekleniyor',
       subtitle: p.propertyTitle,
       rightText: `${p.amount.toLocaleString('tr-TR')} TL`,
       rightColor: p.status === 'OVERDUE' ? '#ef4444' : colors.gray[900],
@@ -185,7 +185,7 @@ export default function DashboardScreen() {
       icon: 'create-outline',
       iconColor: '#2563eb',
       iconBg: '#eff6ff',
-      title: 'Imza bekleniyor',
+      title: 'İmza bekleniyor',
       subtitle: c.propertyTitle,
     });
   });
@@ -195,7 +195,7 @@ export default function DashboardScreen() {
       icon: 'checkmark-circle',
       iconColor: '#10b981',
       iconBg: '#ecfdf5',
-      title: 'Sozlesme aktif',
+      title: 'Sözleşme aktif',
       subtitle: c.propertyTitle,
     });
   });
@@ -212,8 +212,8 @@ export default function DashboardScreen() {
         borderColor: '#10b981',
         icon: 'checkmark-circle',
         iconColor: '#10b981',
-        title: 'Guvence Hesabi Aktif',
-        subtitle: kmhLimit ? `Limit: ${kmhLimit.toLocaleString('tr-TR')} TL` : 'Hesabiniz aktif',
+        title: 'Güvence Hesabı Aktif',
+        subtitle: kmhLimit ? `Limit: ${kmhLimit.toLocaleString('tr-TR')} TL` : 'Hesabınız aktif',
         route: '/(tabs)/bank',
       };
     } else if (kmhStatus === 'PENDING') {
@@ -222,8 +222,8 @@ export default function DashboardScreen() {
         borderColor: '#f59e0b',
         icon: 'time',
         iconColor: '#f59e0b',
-        title: 'Guvence Basvurusu Bekliyor',
-        subtitle: 'Basvurunuz inceleniyor',
+        title: 'Güvence Başvurusu Bekliyor',
+        subtitle: 'Başvurunuz inceleniyor',
         route: '/(tabs)/bank',
       };
     } else if (kmhStatus === 'REJECTED') {
@@ -232,8 +232,8 @@ export default function DashboardScreen() {
         borderColor: '#ef4444',
         icon: 'close-circle',
         iconColor: '#ef4444',
-        title: 'Guvence Basvurusu Reddedildi',
-        subtitle: 'Yeni basvuru yapabilirsiniz',
+        title: 'Güvence Başvurusu Reddedildi',
+        subtitle: 'Yeni başvuru yapabilirsiniz',
         route: '/(tabs)/bank',
       };
     } else {
@@ -242,8 +242,8 @@ export default function DashboardScreen() {
         borderColor: '#2563eb',
         icon: 'card-outline',
         iconColor: '#2563eb',
-        title: 'Banka Guvence Hesabi Ac',
-        subtitle: 'Kefil yerine banka guvencesi — hemen basvurun',
+        title: 'Banka Güvence Hesabı Aç',
+        subtitle: 'Kefil yerine banka güvencesi — hemen başvurun',
         route: '/kmh/apply',
       };
     }
@@ -268,7 +268,7 @@ export default function DashboardScreen() {
         <View style={styles.headerTop}>
           <View style={styles.headerLeft}>
             <View style={styles.logoDot} />
-            <Text style={styles.logoText}>Kira Guvence</Text>
+            <Text style={styles.logoText}>Kira Güvence</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity
@@ -305,8 +305,8 @@ export default function DashboardScreen() {
 
         <Text style={styles.heroGreeting}>
           {contracts.length === 0
-            ? `Hos geldiniz, ${firstName}! Kefil aramadan ilk kontratinizi olusturun.`
-            : `Hos geldiniz, ${firstName}`}
+            ? `Hoş geldiniz, ${firstName}! Kefil aramadan ilk kontratınızı oluşturun.`
+            : `Hoş geldiniz, ${firstName}`}
         </Text>
 
         {/* Tenant Metric Pills - hidden for new users */}
@@ -334,7 +334,7 @@ export default function DashboardScreen() {
           <View style={[styles.metricRow, { marginTop: 12 }]}>
             <View style={styles.metricPill}>
               <Text style={styles.metricValue}>{landlordMetrics.totalProperties}</Text>
-              <Text style={styles.metricLabel}>Mulk</Text>
+              <Text style={styles.metricLabel}>Mülk</Text>
             </View>
             <View style={styles.metricPill}>
               <Text style={styles.metricValue}>
@@ -358,8 +358,8 @@ export default function DashboardScreen() {
               <Ionicons name="rocket-outline" size={22} color="#2563eb" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.firstStepsTitle}>Baslayalim!</Text>
-              <Text style={styles.firstStepsSubtitle}>Ilk adimlarinizi tamamlayin</Text>
+              <Text style={styles.firstStepsTitle}>Başlayalım!</Text>
+              <Text style={styles.firstStepsSubtitle}>İlk adımlarınızı tamamlayın</Text>
             </View>
           </View>
           {firstStepActions.map((action, i) => (
@@ -396,7 +396,7 @@ export default function DashboardScreen() {
           {(!kmhStatus || kmhStatus === 'NOT_APPLIED') && (
             <View style={styles.kmhBadge}>
               <Ionicons name="star" size={10} color="#ffffff" />
-              <Text style={styles.kmhBadgeText}>Onerilen</Text>
+              <Text style={styles.kmhBadgeText}>Önerilen</Text>
             </View>
           )}
           <View style={[styles.kmhIconCircle, { backgroundColor: kmhCard.borderColor + '20' }]}>
@@ -421,7 +421,7 @@ export default function DashboardScreen() {
             <Ionicons name="calendar-outline" size={22} color="#8b5cf6" />
           </View>
           <View style={styles.nextPaymentContent}>
-            <Text style={styles.nextPaymentLabel}>Sonraki Odeme</Text>
+            <Text style={styles.nextPaymentLabel}>Sonraki Ödeme</Text>
             <Text style={styles.nextPaymentDate}>
               {new Date(nextPaymentDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
             </Text>
@@ -433,7 +433,7 @@ export default function DashboardScreen() {
       )}
 
       {/* Quick Actions */}
-      <Text style={styles.sectionTitle}>Hizli Islemler</Text>
+      <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
       <View style={styles.quickGrid}>
         {quickActions.map((action) => (
           <TouchableOpacity
@@ -456,7 +456,7 @@ export default function DashboardScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Bildirimler</Text>
             <TouchableOpacity onPress={() => router.push('/notifications')} activeOpacity={0.7}>
-              <Text style={styles.seeAllText}>Tumunu Gor</Text>
+              <Text style={styles.seeAllText}>Tümünü Gör</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.notificationsCard}>
@@ -487,7 +487,7 @@ export default function DashboardScreen() {
       {/* Activity Feed */}
       {activityItems.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Son Islemler</Text>
+          <Text style={styles.sectionTitle}>Son İşlemler</Text>
           <View style={styles.activityCard}>
             {activityItems.map((item, i) => (
               <View key={i} style={[styles.activityItem, i < activityItems.length - 1 && styles.activityBorder]}>
@@ -511,9 +511,9 @@ export default function DashboardScreen() {
 
       {/* Contract Cards - Horizontal */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Sozlesmelerim</Text>
+        <Text style={styles.sectionTitle}>Sözleşmelerim</Text>
         <TouchableOpacity onPress={() => router.push('/(tabs)/contracts')} activeOpacity={0.7}>
-          <Text style={styles.seeAllText}>Tumunu Gor</Text>
+          <Text style={styles.seeAllText}>Tümünü Gör</Text>
         </TouchableOpacity>
       </View>
       {activeContracts.length > 0 ? (
@@ -547,15 +547,15 @@ export default function DashboardScreen() {
       ) : (
         <View style={styles.emptySection}>
           <Ionicons name="document-text-outline" size={24} color={colors.gray[400]} />
-          <Text style={styles.emptySectionText}>Henuz aktif sozlesme yok</Text>
+          <Text style={styles.emptySectionText}>Henüz aktif sözleşme yok</Text>
         </View>
       )}
 
       {/* Upcoming Payments */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Yaklasan Odemeler</Text>
+        <Text style={styles.sectionTitle}>Yaklaşan Ödemeler</Text>
         <TouchableOpacity onPress={() => router.push('/payments')} activeOpacity={0.7}>
-          <Text style={styles.seeAllText}>Tumunu Gor</Text>
+          <Text style={styles.seeAllText}>Tümünü Gör</Text>
         </TouchableOpacity>
       </View>
       {pendingPayments.length > 0 ? (
@@ -593,7 +593,7 @@ export default function DashboardScreen() {
       ) : (
         <View style={styles.emptySection}>
           <Ionicons name="wallet-outline" size={24} color={colors.gray[400]} />
-          <Text style={styles.emptySectionText}>Bekleyen odeme yok</Text>
+          <Text style={styles.emptySectionText}>Bekleyen ödeme yok</Text>
         </View>
       )}
 
@@ -601,8 +601,8 @@ export default function DashboardScreen() {
       {contracts.length === 0 && (
         <EmptyState
           icon="document-text-outline"
-          title="Henuz sozlesmeniz yok"
-          subtitle="Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika"
+          title="Henüz sözleşmeniz yok"
+          subtitle="Kefil aramadan ilk kontratınızı oluşturun — sadece 5 dakika"
         />
       )}
 

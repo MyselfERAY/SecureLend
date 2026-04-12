@@ -76,7 +76,7 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setError('');
     if (!dateOfBirth) {
-      setError('Dogum tarihi zorunludur');
+      setError('Doğum tarihi zorunludur');
       return;
     }
     setLoading(true);
@@ -87,7 +87,7 @@ export default function RegisterScreen() {
       ]);
       router.push({ pathname: '/(auth)/verify-otp', params: { phone } });
     } catch (e: any) {
-      setError(e.message || 'Kayit basarisiz');
+      setError(e.message || 'Kayıt başarısız');
     } finally {
       setLoading(false);
     }
@@ -133,16 +133,16 @@ export default function RegisterScreen() {
               <View style={styles.iconWrapper}>
                 <Ionicons name="person-add" size={44} color={colors.white} />
               </View>
-              <Text style={styles.brandName}>Kira Guvence</Text>
-              <Text style={styles.brandTagline}>Yeni hesap olusturun</Text>
+              <Text style={styles.brandName}>Kira Güvence</Text>
+              <Text style={styles.brandTagline}>Yeni hesap oluşturun</Text>
             </View>
           </View>
 
           {/* White Card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Kayit Ol</Text>
+            <Text style={styles.cardTitle}>Kayıt Ol</Text>
             <Text style={styles.cardSubtitle}>
-              Hesabinizi olusturmak icin bilgilerinizi girin
+              Hesabınızı oluşturmak için bilgilerinizi girin
             </Text>
 
             {error ? (
@@ -177,7 +177,7 @@ export default function RegisterScreen() {
             />
 
             {/* Date of Birth */}
-            <Text style={styles.inputLabel}>Dogum Tarihi</Text>
+            <Text style={styles.inputLabel}>Doğum Tarihi</Text>
             <TouchableOpacity
               style={styles.dateButton}
               onPress={() => setShowDatePicker(true)}
@@ -185,7 +185,7 @@ export default function RegisterScreen() {
             >
               <Ionicons name="calendar-outline" size={20} color={dateOfBirth ? colors.brand.dark : colors.gray[400]} />
               <Text style={[styles.dateText, !dateOfBirth && styles.datePlaceholder]}>
-                {dateOfBirth ? formatDate(dateOfBirth) : 'Dogum tarihinizi secin'}
+                {dateOfBirth ? formatDate(dateOfBirth) : 'Doğum tarihinizi seçin'}
               </Text>
             </TouchableOpacity>
 
@@ -195,9 +195,9 @@ export default function RegisterScreen() {
                   <View style={styles.dateModalContent}>
                     <View style={styles.dateModalHeader}>
                       <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                        <Text style={styles.dateModalCancel}>Iptal</Text>
+                        <Text style={styles.dateModalCancel}>İptal</Text>
                       </TouchableOpacity>
-                      <Text style={styles.dateModalTitle}>Dogum Tarihi</Text>
+                      <Text style={styles.dateModalTitle}>Doğum Tarihi</Text>
                       <TouchableOpacity onPress={() => setShowDatePicker(false)}>
                         <Text style={styles.dateModalDone}>Tamam</Text>
                       </TouchableOpacity>
@@ -253,7 +253,7 @@ export default function RegisterScreen() {
                   )}
                 </View>
                 <Text style={styles.consentText}>
-                  Aydinlatma Metnini okudum ve anladim
+                  Aydınlatma Metnini okudum ve anladım
                 </Text>
                 <TouchableOpacity
                   onPress={() => openConsentModal('aydinlatma')}
@@ -281,7 +281,7 @@ export default function RegisterScreen() {
                   )}
                 </View>
                 <Text style={styles.consentText}>
-                  Kisisel verilerimin islenmesine acik riza veriyorum
+                  Kişisel verilerimin işlenmesine açık rıza veriyorum
                 </Text>
                 <TouchableOpacity
                   onPress={() => openConsentModal('acik_riza')}
@@ -298,7 +298,7 @@ export default function RegisterScreen() {
               <View style={styles.consentModalContainer}>
                 <View style={styles.consentModalHeader}>
                   <Text style={styles.consentModalTitle}>
-                    {consentModal === 'aydinlatma' ? 'Aydinlatma Metni' : 'Acik Riza Metni'}
+                    {consentModal === 'aydinlatma' ? 'Aydınlatma Metni' : 'Açık Rıza Metni'}
                   </Text>
                   <TouchableOpacity onPress={() => setConsentModal(null)}>
                     <Ionicons name="close" size={24} color={colors.gray[600]} />
@@ -335,7 +335,7 @@ export default function RegisterScreen() {
             </Modal>
 
             <Button
-              title="Kayit Ol"
+              title="Kayıt Ol"
               onPress={handleRegister}
               loading={loading}
               disabled={!isValid}
@@ -344,13 +344,13 @@ export default function RegisterScreen() {
             />
 
             <View style={styles.linkRow}>
-              <Text style={styles.linkText}>Zaten hesabiniz var mi?  </Text>
+              <Text style={styles.linkText}>Zaten hesabınız var mı?  </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
-                  <Text style={styles.linkBold}>Giris Yap</Text>
+                  <Text style={styles.linkBold}>Giriş Yap</Text>
                 </TouchableOpacity>
               </Link>
             </View>

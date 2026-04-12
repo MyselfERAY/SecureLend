@@ -17,94 +17,94 @@ import { markConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
-const AYDINLATMA_METNI = `KISISEL VERILERIN ISLENMESINE ILISKIN AYDINLATMA METNI
+const AYDINLATMA_METNI = `KİŞİSEL VERİLERİN İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ
 
-Son Guncelleme: 01.04.2026
+Son Güncelleme: 01.04.2026
 
-VERI SORUMLUSU
+VERİ SORUMLUSU
 
-Kira Guvence Teknoloji A.S. ("Kira Guvence" veya "Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri aydinlatmak istiyoruz.
+Kira Güvence Teknoloji A.Ş. ("Kira Güvence" veya "Şirket") olarak, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında veri sorumlusu sıfatıyla sizleri aydınlatmak istiyoruz.
 
-Adres: Istanbul, Turkiye
+Adres: İstanbul, Türkiye
 E-posta: info@kiraguvence.com
 Web: https://kiraguvence.com
 
-ISLENEN KISISEL VERILER
+İŞLENEN KİŞİSEL VERİLER
 
-Platformumuz uzerinden asagidaki kisisel verileriniz islenmektedir:
+Platformumuz üzerinden aşağıdaki kişisel verileriniz işlenmektedir:
 
-Kimlik Bilgileri: Ad soyad, T.C. Kimlik Numarasi (TCKN), dogum tarihi
-Iletisim Bilgileri: Telefon numarasi, e-posta adresi
-Finansal Bilgiler: Aylik gelir, istihdam durumu, isveren bilgisi, kira tutari, banka hesap bilgileri
-Konum Bilgileri: Ikamet adresi
-Islem Bilgileri: Odeme gecmisi, sozlesme detaylari, KMH basvuru bilgileri
+Kimlik Bilgileri: Ad soyad, T.C. Kimlik Numarası (TCKN), doğum tarihi
+İletişim Bilgileri: Telefon numarası, e-posta adresi
+Finansal Bilgiler: Aylık gelir, istihdam durumu, işveren bilgisi, kira tutarı, banka hesap bilgileri
+Konum Bilgileri: İkamet adresi
+İşlem Bilgileri: Ödeme geçmişi, sözleşme detayları, KMH başvuru bilgileri
 Dijital Kimlik Bilgileri: Cihaz bilgileri, IP adresi, oturum bilgileri
 
-ISLENME AMACI
+İŞLENME AMACI
 
-Kisisel verileriniz asagidaki amaclarla islenmektedir:
+Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:
 
-1. Uyelik ve hesap islemlerinin yurutulmesi
-2. Kimlik dogrulama ve KYC (Know Your Customer) sureclerinin tamamlanmasi
-3. Kredili Mevduat Hesabi (KMH) basvuru ve degerlendirme sureclerinin yurutulmesi
-4. Kira odeme islemlerinin gerceklestirilmesi ve takibi
-5. Sozlesme sureclerinin yurutulmesi
-6. Yasal yukumluluklerin yerine getirilmesi (BDDK, MASAK, SPK mevzuati)
-7. Risk degerlendirmesi ve kredi skorlama
-8. Musteriye ozel hizmet ve urun onerileri sunulmasi
-9. Platform guvenliginin saglanmasi ve dolandiricilik onleme
-10. Istatistiksel analizler ve hizmet iyilestirme
+1. Üyelik ve hesap işlemlerinin yürütülmesi
+2. Kimlik doğrulama ve KYC (Know Your Customer) süreçlerinin tamamlanması
+3. Kredili Mevduat Hesabı (KMH) başvuru ve değerlendirme süreçlerinin yürütülmesi
+4. Kira ödeme işlemlerinin gerçekleştirilmesi ve takibi
+5. Sözleşme süreçlerinin yürütülmesi
+6. Yasal yükümlülüklerin yerine getirilmesi (BDDK, MASAK, SPK mevzuatı)
+7. Risk değerlendirmesi ve kredi skorlama
+8. Müşteriye özel hizmet ve ürün önerileri sunulması
+9. Platform güvenliğinin sağlanması ve dolandırıcılık önleme
+10. İstatistiksel analizler ve hizmet iyileştirme
 
-HUKUKI SEBEPLER
+HUKUKİ SEBEPLER
 
-Kisisel verileriniz asagidaki hukuki sebeplere dayanilarak islenmektedir:
+Kişisel verileriniz aşağıdaki hukuki sebeplere dayanılarak işlenmektedir:
 
-- Bir sozlesmenin kurulmasi veya ifasi (KVKK m.5/2-c)
-- Veri sorumlusunun hukuki yukumlulugu (KVKK m.5/2-c)
-- Bir hakkin tesisi, kullanilmasi veya korunmasi (KVKK m.5/2-e)
-- Veri sorumlusunun mesru menfaati (KVKK m.5/2-f)
-- Acik rizaniz (KVKK m.5/1)
+- Bir sözleşmenin kurulması veya ifası (KVKK m.5/2-c)
+- Veri sorumlusunun hukuki yükümlülüğü (KVKK m.5/2-c)
+- Bir hakkın tesisi, kullanılması veya korunması (KVKK m.5/2-e)
+- Veri sorumlusunun meşru menfaati (KVKK m.5/2-f)
+- Açık rızanız (KVKK m.5/1)
 
 AKTARIM
 
-Kisisel verileriniz, yukaridaki amaclar dogrultusunda:
+Kişisel verileriniz, yukarıdaki amaçlar doğrultusunda:
 
-- Is ortaklari ve hizmet saglayicilarla (odeme altyapisi, bulut hizmetleri)
-- Bankalar ve finansal kuruluslarla (KMH islemleri kapsaminda)
-- Yasal zorunluluklar geregi yetkili kamu kurum ve kuruluslariyla (BDDK, MASAK, mahkemeler)
-- Hukuk musavirleri ve denetcilerle
+- İş ortakları ve hizmet sağlayıcılarla (ödeme altyapısı, bulut hizmetleri)
+- Bankalar ve finansal kuruluşlarla (KMH işlemleri kapsamında)
+- Yasal zorunluluklar gereği yetkili kamu kurum ve kuruluşlarıyla (BDDK, MASAK, mahkemeler)
+- Hukuk müşavirleri ve denetçilerle
 
-paylasilabilmektedir. Verileriniz yurt disina aktarilmasi durumunda KVKK m.9 hukumleri uygulanir.
+paylaşılabilmektedir. Verileriniz yurt dışına aktarılması durumunda KVKK m.9 hükümleri uygulanır.
 
-SAKLAMA SURESI
+SAKLAMA SÜRESİ
 
-Kisisel verileriniz, isleme amacinin gerektirdigi sure boyunca ve yasal saklama surelerince muhafaza edilir:
+Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve yasal saklama sürellerince muhafaza edilir:
 
-- Hesap bilgileri: Uyelik devam ettigi surece + 10 yil
-- Finansal islem kayitlari: 10 yil (TTK ve vergi mevzuati)
-- KYC/Kimlik dogrulama verileri: 10 yil (MASAK mevzuati)
-- Iletisim kayitlari: 3 yil
-- Log kayitlari: 2 yil
+- Hesap bilgileri: Üyelik devam ettiği sürece + 10 yıl
+- Finansal işlem kayıtları: 10 yıl (TTK ve vergi mevzuatı)
+- KYC/Kimlik doğrulama verileri: 10 yıl (MASAK mevzuatı)
+- İletişim kayıtları: 3 yıl
+- Log kayıtları: 2 yıl
 
-Saklama suresi sona erdikten sonra verileriniz silinir, yok edilir veya anonim hale getirilir.
+Saklama süresi sona erdikten sonra verileriniz silinir, yok edilir veya anonim hale getirilir.
 
 HAKLARINIZ
 
-KVKK'nin 11. maddesi uyarinca asagidaki haklara sahipsiniz:
+KVKK'nin 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:
 
-a) Kisisel verilerinizin islenip islenmedigini ogrenme
-b) Kisisel verileriniz islenmisse buna iliskin bilgi talep etme
-c) Kisisel verilerinizin islenme amacini ve bunlarin amacina uygun kullanilip kullanilmadigini ogrenme
-d) Yurt icinde veya yurt disinda kisisel verilerin aktarildigi ucuncu kisileri bilme
-e) Kisisel verilerin eksik veya yanlis islenmesi halinde bunlarin duzeltilmesini isteme
-f) KVKK'nin 7. maddesinde ongotrulen kosullar cercevesinde kisisel verilerin silinmesini veya yok edilmesini isteme
-g) Yapilan islemlerin, kisisel verilerin aktarildigi ucuncu kisilere bildirilmesini isteme
-h) Islenen verilerin munhasiran otomatik sistemler vasitasiyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya cikmasina itiraz etme
-i) Kisisel verilerin kanuna aykiri olarak islenmesi sebebiyle zarara ugramaniz halinde zararin giderilmesini talep etme
+a) Kişisel verilerinizin işlenip işlenmediğini öğrenme
+b) Kişisel verileriniz işlenmişse buna ilişkin bilgi talep etme
+c) Kişisel verilerinizin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme
+d) Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme
+e) Kişisel verilerin eksik veya yanlış işlenmesi halinde bunların düzeltilmesini isteme
+f) KVKK'nin 7. maddesinde öngörülen koşullar çerçevesinde kişisel verilerin silinmesini veya yok edilmesini isteme
+g) Yapılan işlemlerin, kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme
+h) İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme
+i) Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme
 
-Haklarinizi kullanmak icin info@kiraguvence.com adresine yazili olarak basvurabilirsiniz.
+Haklarınızı kullanmak için info@kiraguvence.com adresine yazılı olarak başvurabilirsiniz.
 
-Kira Guvence Teknoloji A.S.`;
+Kira Güvence Teknoloji A.Ş.`;
 
 export default function AydinlatmaMetniScreen() {
   const router = useRouter();
@@ -138,8 +138,8 @@ export default function AydinlatmaMetniScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Aydinlatma Metni</Text>
-            <Text style={styles.headerSubtitle}>KVKK 6698 Sayili Kanun</Text>
+            <Text style={styles.headerTitle}>Aydınlatma Metni</Text>
+            <Text style={styles.headerSubtitle}>KVKK 6698 Sayılı Kanun</Text>
           </View>
           <View style={styles.iconWrap}>
             <Ionicons name="shield-checkmark" size={22} color="#93c5fd" />

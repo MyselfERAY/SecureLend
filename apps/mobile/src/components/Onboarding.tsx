@@ -29,23 +29,23 @@ const slides: OnboardingSlide[] = [
     iconBg: colors.primary[50],
     title: 'Kefil Derdi Bitti',
     subtitle:
-      'Banka guvencesi kefil yerine gecer. Artik kefil aramak, ev sahibinin kefil sormasi gerekmiyor.',
+      'Banka güvencesi kefil yerine geçer. Artık kefil aramak, ev sahibinin kefil sorması gerekmiyor.',
   },
   {
     icon: 'document-text',
     iconColor: '#10b981',
     iconBg: '#f0fdf4',
-    title: '5 Dakikada Dijital Sozlesme',
+    title: '5 Dakikada Dijital Sözleşme',
     subtitle:
-      'Noter masrafi yok, bekleme yok. TBK uyumlu dijital sozlesmeyle aninda kontrat kurun.',
+      'Noter masrafı yok, bekleme yok. TBK uyumlu dijital sözleşmeyle anında kontrat kurun.',
   },
   {
     icon: 'business',
     iconColor: '#f59e0b',
     iconBg: '#fefce8',
-    title: 'Kiraniz Guvence Altinda',
+    title: 'Kiranız Güvence Altında',
     subtitle:
-      'Otomatik kira takibi, banka guvenceli odeme. Ev sahibi kiradan emin, kiraci huzurlu.',
+      'Otomatik kira takibi, banka güvenceli ödeme. Ev sahibi kiradan emin, kiracı huzurlu.',
   },
 ];
 
@@ -143,7 +143,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         >
           {isLast ? (
             <>
-              <Text style={styles.ctaText}>Hemen Basla</Text>
+              <Text style={styles.ctaText}>Hemen Başla</Text>
               <Ionicons name="arrow-forward" size={20} color={colors.white} />
             </>
           ) : (

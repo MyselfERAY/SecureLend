@@ -22,10 +22,10 @@ function getScoreColor(score: number): string {
 }
 
 function getScoreLabel(score: number): string {
-  if (score >= 800) return 'Cok Iyi';
-  if (score >= 700) return 'Iyi';
+  if (score >= 800) return 'Çok İyi';
+  if (score >= 700) return 'İyi';
   if (score >= 500) return 'Yeterli';
-  return 'Dusuk';
+  return 'Düşük';
 }
 
 function getImpactIcon(impact: string): { name: string; color: string } {
@@ -54,7 +54,7 @@ export default function KmhResultScreen() {
       if (res.status === 'success' && res.data) {
         const d = res.data;
         const score = d.creditScore ?? 0;
-        const scoreLabel = score >= 800 ? 'Cok Iyi' : score >= 700 ? 'Iyi' : score >= 600 ? 'Yeterli' : 'Dusuk';
+        const scoreLabel = score >= 800 ? 'Çok İyi' : score >= 700 ? 'İyi' : score >= 600 ? 'Yeterli' : 'Düşük';
         // evaluationDetails is a JSONB field with { factors, ... }
         const factors = d.evaluationDetails?.factors ?? d.evaluationFactors ?? [];
 
@@ -93,19 +93,19 @@ export default function KmhResultScreen() {
         setError(extractError(res));
       }
     } catch {
-      setError('Bir hata olustu');
+      setError('Bir hata oluştu');
     }
     setAccepting(false);
   };
 
-  if (loading) return <LoadingSpinner text="Degerlendirme sonucu yukleniyor..." />;
+  if (loading) return <LoadingSpinner text="Değerlendirme sonucu yükleniyor..." />;
 
   if (!result) {
     return (
       <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || 'Sonuc bulunamadi'}</Text>
-          <Button title="Geri Don" variant="secondary" onPress={() => router.back()} style={{ marginTop: 16 }} />
+          <Text style={styles.errorText}>{error || 'Sonuç bulunamadı'}</Text>
+          <Button title="Geri Dön" variant="secondary" onPress={() => router.back()} style={{ marginTop: 16 }} />
         </View>
       </View>
     );
@@ -130,7 +130,7 @@ export default function KmhResultScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Degerlendirme Sonucu</Text>
+            <Text style={styles.headerTitle}>Değerlendirme Sonucu</Text>
           </View>
           <View style={styles.stepBadge}>
             <Text style={styles.stepText}>2/4</Text>
@@ -156,7 +156,7 @@ export default function KmhResultScreen() {
             />
           </View>
           <Text style={[styles.statusTitle, { color: isApproved ? '#059669' : '#dc2626' }]}>
-            {isApproved ? 'Basvurunuz Onaylandi!' : 'Basvurunuz Uygun Bulunmadi'}
+            {isApproved ? 'Başvurunuz Onaylandı!' : 'Başvurunuz Uygun Bulunmadı'}
           </Text>
           {result.bankReferenceNo && (
             <Text style={styles.refNo}>Referans: {result.bankReferenceNo}</Text>
@@ -201,19 +201,19 @@ export default function KmhResultScreen() {
                   </Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Faiz Orani</Text>
+                  <Text style={styles.detailLabel}>Faiz Oranı</Text>
                   <Text style={styles.detailValue}>
                     %{result.interestRate?.toFixed(2)}
                   </Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Aylik Taksit</Text>
+                  <Text style={styles.detailLabel}>Aylık Taksit</Text>
                   <Text style={styles.detailValue}>
                     {result.monthlyInstallment?.toLocaleString('tr-TR')} TL
                   </Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Borc/Gelir Orani</Text>
+                  <Text style={styles.detailLabel}>Borç/Gelir Oranı</Text>
                   <Text style={styles.detailValue}>
                     %{((result.debtToIncomeRatio ?? 0) * 100).toFixed(1)}
                   </Text>
@@ -236,7 +236,7 @@ export default function KmhResultScreen() {
         {/* Evaluation Factors */}
         {result.evaluationFactors && result.evaluationFactors.length > 0 && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Degerlendirme Faktorleri</Text>
+            <Text style={styles.cardTitle}>Değerlendirme Faktörleri</Text>
             {result.evaluationFactors.map((factor, i) => {
               const impactInfo = getImpactIcon(factor.impact);
               return (
@@ -282,7 +282,7 @@ export default function KmhResultScreen() {
                 size="lg"
               />
               <Button
-                title="Vazgec"
+                title="Vazgeç"
                 variant="ghost"
                 onPress={() => router.replace('/(tabs)/bank')}
                 style={{ marginTop: 10 }}

@@ -43,11 +43,11 @@ function formatTimeAgo(dateStr: string): string {
   const diffHour = Math.floor(diffMs / 3600000);
   const diffDay = Math.floor(diffMs / 86400000);
 
-  if (diffMin < 1) return 'Az once';
-  if (diffMin < 60) return `${diffMin} dk once`;
-  if (diffHour < 24) return `${diffHour} saat once`;
-  if (diffDay === 1) return 'Dun';
-  if (diffDay < 30) return `${diffDay} gun once`;
+  if (diffMin < 1) return 'Az önce';
+  if (diffMin < 60) return `${diffMin} dk önce`;
+  if (diffHour < 24) return `${diffHour} saat önce`;
+  if (diffDay === 1) return 'Dün';
+  if (diffDay < 30) return `${diffDay} gün önce`;
   return new Date(dateStr).toLocaleDateString('tr-TR');
 }
 
@@ -123,7 +123,7 @@ export default function NotificationsScreen() {
           style={styles.backBtn}
           onPress={() => router.back()}
           activeOpacity={0.7}
-          accessibilityLabel="Geri don"
+          accessibilityLabel="Geri dön"
           accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
@@ -131,7 +131,7 @@ export default function NotificationsScreen() {
         <Text style={styles.headerTitle}>Bildirimler</Text>
         {unreadCount > 0 ? (
           <TouchableOpacity style={styles.readAllBtn} onPress={markAllAsRead} activeOpacity={0.7}>
-            <Text style={styles.readAllText}>Tumunu Oku</Text>
+            <Text style={styles.readAllText}>Tümünü Oku</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.readAllPlaceholder} />
@@ -158,7 +158,7 @@ export default function NotificationsScreen() {
             </View>
             <Text style={styles.emptyTitle}>Bildirim yok</Text>
             <Text style={styles.emptySubtitle}>
-              Yeni bildirimleriniz burada gorunecek.
+              Yeni bildirimleriniz burada görünecek.
             </Text>
           </View>
         }

@@ -15,17 +15,17 @@ const DARK_NAVY = '#0a1628';
 type FilterTab = 'ALL' | 'PENDING' | 'OVERDUE' | 'COMPLETED';
 
 const FILTERS: { key: FilterTab; label: string }[] = [
-  { key: 'ALL', label: 'Tumu' },
+  { key: 'ALL', label: 'Tümü' },
   { key: 'PENDING', label: 'Bekleyen' },
   { key: 'OVERDUE', label: 'Geciken' },
-  { key: 'COMPLETED', label: 'Odenen' },
+  { key: 'COMPLETED', label: 'Ödenen' },
 ];
 
 const STATUS_CONFIG: Record<string, { icon: string; color: string; bg: string; label: string }> = {
   PENDING: { icon: 'time-outline', color: '#f59e0b', bg: '#fffbeb', label: 'Bekliyor' },
   OVERDUE: { icon: 'alert-circle', color: '#ef4444', bg: '#fef2f2', label: 'Gecikti' },
-  COMPLETED: { icon: 'checkmark-circle', color: '#10b981', bg: '#ecfdf5', label: 'Odendi' },
-  PROCESSING: { icon: 'sync-outline', color: '#2563eb', bg: '#eff6ff', label: 'Isleniyor' },
+  COMPLETED: { icon: 'checkmark-circle', color: '#10b981', bg: '#ecfdf5', label: 'Ödendi' },
+  PROCESSING: { icon: 'sync-outline', color: '#2563eb', bg: '#eff6ff', label: 'İşleniyor' },
 };
 
 function formatDate(dateStr: string): string {
@@ -126,7 +126,7 @@ export default function PaymentsListScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Odemelerim</Text>
+        <Text style={styles.headerTitle}>Ödemelerim</Text>
         <View style={{ width: 36 }} />
       </View>
 
@@ -184,9 +184,9 @@ export default function PaymentsListScreen() {
               <Ionicons name="wallet-outline" size={48} color={colors.gray[300]} />
             </View>
             <Text style={styles.emptyTitle}>
-              {filter === 'ALL' ? 'Henuz odeme yok' : `${FILTERS.find(f => f.key === filter)?.label} odeme yok`}
+              {filter === 'ALL' ? 'Henüz ödeme yok' : `${FILTERS.find(f => f.key === filter)?.label} ödeme yok`}
             </Text>
-            <Text style={styles.emptySubtitle}>Odeme gecmisiniz burada gorunecek.</Text>
+            <Text style={styles.emptySubtitle}>Ödeme geçmişiniz burada görünecek.</Text>
           </View>
         }
       />

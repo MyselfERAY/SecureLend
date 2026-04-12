@@ -55,7 +55,7 @@ export default function ProfileScreen() {
     if (source === 'camera') {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Izin Gerekli', 'Kamera izni verilmedi.');
+        Alert.alert('İzin Gerekli', 'Kamera izni verilmedi.');
         return;
       }
       result = await ImagePicker.launchCameraAsync({
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
     } else {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Izin Gerekli', 'Galeri izni verilmedi.');
+        Alert.alert('İzin Gerekli', 'Galeri izni verilmedi.');
         return;
       }
       result = await ImagePicker.launchImageLibraryAsync({
@@ -86,8 +86,8 @@ export default function ProfileScreen() {
   const handlePhotoPress = () => {
     if (Platform.OS === 'ios') {
       const options = profilePhotoUri
-        ? ['Kamera', 'Galeriden Sec', 'Fotografi Kaldir', 'Iptal']
-        : ['Kamera', 'Galeriden Sec', 'Iptal'];
+        ? ['Kamera', 'Galeriden Seç', 'Fotoğrafı Kaldır', 'İptal']
+        : ['Kamera', 'Galeriden Seç', 'İptal'];
       const cancelIndex = options.length - 1;
       const destructiveIndex = profilePhotoUri ? 2 : undefined;
 
@@ -104,18 +104,18 @@ export default function ProfileScreen() {
       );
     } else {
       Alert.alert(
-        'Profil Fotografi',
-        'Kaynak secin',
+        'Profil Fotoğrafı',
+        'Kaynak seçin',
         [
           { text: 'Kamera', onPress: () => pickImage('camera') },
-          { text: 'Galeriden Sec', onPress: () => pickImage('library') },
+          { text: 'Galeriden Seç', onPress: () => pickImage('library') },
           ...(profilePhotoUri
-            ? [{ text: 'Fotografi Kaldir', style: 'destructive' as const, onPress: async () => {
+            ? [{ text: 'Fotoğrafı Kaldır', style: 'destructive' as const, onPress: async () => {
                 setProfilePhotoUri(null);
                 if (user?.id) await clearProfilePhoto(user.id);
               }}]
             : []),
-          { text: 'Iptal', style: 'cancel' as const },
+          { text: 'İptal', style: 'cancel' as const },
         ],
       );
     }
@@ -138,7 +138,7 @@ export default function ProfileScreen() {
     if (res.status === 'success') {
       await refreshUser();
       setEditing(false);
-      setSaveMsg('Profil guncellendi!');
+      setSaveMsg('Profil güncellendi!');
     } else { setError(extractError(res)); }
     setSaving(false);
   };
@@ -149,12 +149,12 @@ export default function ProfileScreen() {
     const res = await api('/api/v1/users/me/roles', { method: 'POST', body: { role }, token: tokens.accessToken });
     if (res.status === 'success') {
       await refreshUser();
-      setRoleMsg(`${role === 'TENANT' ? 'Kiraci' : 'Ev Sahibi'} rolu eklendi!`);
+      setRoleMsg(`${role === 'TENANT' ? 'Kiracı' : 'Ev Sahibi'} rolü eklendi!`);
     } else { setRoleMsg(extractError(res)); }
     setAddingRole(false);
   };
 
-  const roleLabels: Record<string, string> = { TENANT: 'Kiraci', LANDLORD: 'Ev Sahibi', ADMIN: 'Yonetici' };
+  const roleLabels: Record<string, string> = { TENANT: 'Kiracı', LANDLORD: 'Ev Sahibi', ADMIN: 'Yönetici' };
   const roleIcons: Record<string, string> = { TENANT: 'person', LANDLORD: 'home', ADMIN: 'shield-checkmark' };
   const roleColors: Record<string, string> = { TENANT: '#2563eb', LANDLORD: '#10b981', ADMIN: '#f59e0b' };
   const roleBgs: Record<string, string> = { TENANT: '#eff6ff', LANDLORD: '#ecfdf5', ADMIN: '#fffbeb' };
@@ -212,7 +212,7 @@ export default function ProfileScreen() {
               <View style={styles.editActions}>
                 <Button title="Kaydet" onPress={handleSave} loading={saving} style={{ flex: 1 }} />
                 <Button
-                  title="Iptal"
+                  title="İptal"
                   variant="secondary"
                   onPress={() => { setEditing(false); setFullName(user?.fullName || ''); setEmail(user?.email || ''); }}
                   style={{ flex: 1 }}
@@ -224,11 +224,11 @@ export default function ProfileScreen() {
               <SettingsRow icon="person-outline" label="Ad Soyad" value={user?.fullName || ''} />
               <SettingsRow icon="call-outline" label="Telefon" value={`+90 ${user?.phone || ''}`} />
               <SettingsRow icon="id-card-outline" label="TCKN" value={user?.maskedTckn || ''} />
-              <SettingsRow icon="calendar-outline" label="Dogum Tarihi" value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'} />
+              <SettingsRow icon="calendar-outline" label="Doğum Tarihi" value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'} />
               <SettingsRow icon="mail-outline" label="E-posta" value={user?.email || '-'} last />
               <TouchableOpacity style={styles.editButton} onPress={() => router.push('/profile/edit')} activeOpacity={0.7}>
                 <Ionicons name="create-outline" size={16} color="#2563eb" />
-                <Text style={styles.editButtonText}>Duzenle</Text>
+                <Text style={styles.editButtonText}>Düzenle</Text>
               </TouchableOpacity>
             </>
           )}
@@ -254,7 +254,7 @@ export default function ProfileScreen() {
           {(!hasTenant || !hasLandlord) && (
             <View style={styles.addRolesRow}>
               {!hasTenant && (
-                <Button title="+ Kiraci" variant="outline" size="sm" onPress={() => handleAddRole('TENANT')} loading={addingRole} style={{ flex: 1 }} />
+                <Button title="+ Kiracı" variant="outline" size="sm" onPress={() => handleAddRole('TENANT')} loading={addingRole} style={{ flex: 1 }} />
               )}
               {!hasLandlord && (
                 <Button title="+ Ev Sahibi" variant="outline" size="sm" onPress={() => handleAddRole('LANDLORD')} loading={addingRole} style={{ flex: 1 }} />
@@ -264,7 +264,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Security Section */}
-        <Text style={styles.sectionLabel}>Guvenlik</Text>
+        <Text style={styles.sectionLabel}>Güvenlik</Text>
         <View style={styles.sectionCard}>
           <View style={styles.kycRow}>
             <View style={styles.kycLeft}>
@@ -280,19 +280,19 @@ export default function ProfileScreen() {
               <View>
                 <Text style={styles.kycLabel}>KYC Durumu</Text>
                 <Text style={styles.kycValue}>
-                  {user?.kycStatus === 'COMPLETED' ? 'Dogrulandi' : user?.kycStatus === 'REJECTED' ? 'Reddedildi' : 'Bekliyor'}
+                  {user?.kycStatus === 'COMPLETED' ? 'Doğrulandı' : user?.kycStatus === 'REJECTED' ? 'Reddedildi' : 'Bekliyor'}
                 </Text>
               </View>
             </View>
             <Badge
-              text={user?.kycStatus === 'COMPLETED' ? 'Dogrulandi' : user?.kycStatus === 'REJECTED' ? 'Reddedildi' : 'Bekliyor'}
+              text={user?.kycStatus === 'COMPLETED' ? 'Doğrulandı' : user?.kycStatus === 'REJECTED' ? 'Reddedildi' : 'Bekliyor'}
               variant={user?.kycStatus === 'COMPLETED' ? 'success' : user?.kycStatus === 'REJECTED' ? 'danger' : 'warning'}
             />
           </View>
         </View>
 
         {/* Quick Access */}
-        <Text style={styles.sectionLabel}>Hizli Erisim</Text>
+        <Text style={styles.sectionLabel}>Hızlı Erişim</Text>
         <View style={styles.sectionCard}>
           <TouchableOpacity style={styles.menuRow} onPress={() => router.push('/rehber')} activeOpacity={0.7}>
             <View style={[styles.menuIcon, { backgroundColor: '#ecfeff' }]}>
@@ -324,21 +324,21 @@ export default function ProfileScreen() {
             <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
               <Ionicons name="lock-closed-outline" size={18} color={colors.gray[600]} />
             </View>
-            <Text style={styles.menuText}>Gizlilik Politikasi</Text>
+            <Text style={styles.menuText}>Gizlilik Politikası</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.menuRow, styles.menuRowBorder]} onPress={() => router.push('/kvkk/aydinlatma-metni')} activeOpacity={0.7}>
             <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
               <Ionicons name="document-text-outline" size={18} color={colors.gray[600]} />
             </View>
-            <Text style={styles.menuText}>KVKK Aydinlatma Metni</Text>
+            <Text style={styles.menuText}>KVKK Aydınlatma Metni</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.menuRow, styles.menuRowBorder]} onPress={() => router.push('/kvkk/kmh-acik-riza')} activeOpacity={0.7}>
             <View style={[styles.menuIcon, { backgroundColor: '#f1f5f9' }]}>
               <Ionicons name="shield-outline" size={18} color={colors.gray[600]} />
             </View>
-            <Text style={styles.menuText}>Guvence Hesabi Acik Riza Metni</Text>
+            <Text style={styles.menuText}>Güvence Hesabı Açık Rıza Metni</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
         </View>
@@ -373,7 +373,7 @@ export default function ProfileScreen() {
         {/* Logout */}
         <TouchableOpacity style={styles.logoutButton} onPress={logout} activeOpacity={0.7}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          <Text style={styles.logoutText}>Cikis Yap</Text>
+          <Text style={styles.logoutText}>Çıkış Yap</Text>
         </TouchableOpacity>
 
         <View style={{ height: 32 }} />

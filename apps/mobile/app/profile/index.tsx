@@ -40,7 +40,7 @@ export default function ProfileScreen() {
     if (res.status === 'success') {
       await refreshUser();
       setEditing(false);
-      setSaveMsg('Profil guncellendi!');
+      setSaveMsg('Profil güncellendi!');
     } else { setError(extractError(res)); }
     setSaving(false);
   };
@@ -51,12 +51,12 @@ export default function ProfileScreen() {
     const res = await api('/api/v1/users/me/roles', { method: 'POST', body: { role }, token: tokens.accessToken });
     if (res.status === 'success') {
       await refreshUser();
-      setRoleMsg(`${role === 'TENANT' ? 'Kiraci' : 'Ev Sahibi'} rolu eklendi!`);
+      setRoleMsg(`${role === 'TENANT' ? 'Kiracı' : 'Ev Sahibi'} rolü eklendi!`);
     } else { setRoleMsg(extractError(res)); }
     setAddingRole(false);
   };
 
-  const roleLabels: Record<string, string> = { TENANT: 'Kiraci', LANDLORD: 'Ev Sahibi', ADMIN: 'Yonetici' };
+  const roleLabels: Record<string, string> = { TENANT: 'Kiracı', LANDLORD: 'Ev Sahibi', ADMIN: 'Yönetici' };
   const hasTenant = user?.roles.includes('TENANT');
   const hasLandlord = user?.roles.includes('LANDLORD');
 
@@ -70,8 +70,8 @@ export default function ProfileScreen() {
         {/* Profile Info */}
         <Card style={{ marginBottom: 12 }}>
           <View style={styles.cardHeader}>
-            <Text style={styles.sectionTitle}>Kisisel Bilgiler</Text>
-            {!editing && <Button title="Duzenle" variant="outline" size="sm" onPress={() => setEditing(true)} />}
+            <Text style={styles.sectionTitle}>Kişisel Bilgiler</Text>
+            {!editing && <Button title="Düzenle" variant="outline" size="sm" onPress={() => setEditing(true)} />}
           </View>
 
           {editing ? (
@@ -80,7 +80,7 @@ export default function ProfileScreen() {
               <Input label="E-posta" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
               <View style={styles.row}>
                 <Button title="Kaydet" onPress={handleSave} loading={saving} style={{ flex: 1 }} />
-                <Button title="Iptal" variant="secondary" onPress={() => { setEditing(false); setFullName(user?.fullName || ''); setEmail(user?.email || ''); }} style={{ flex: 1 }} />
+                <Button title="İptal" variant="secondary" onPress={() => { setEditing(false); setFullName(user?.fullName || ''); setEmail(user?.email || ''); }} style={{ flex: 1 }} />
               </View>
             </>
           ) : (
@@ -105,23 +105,23 @@ export default function ProfileScreen() {
             ))}
           </View>
           <View style={[styles.row, { marginTop: 12 }]}>
-            {!hasTenant && <Button title="+ Kiraci Rolu" variant="success" size="sm" onPress={() => handleAddRole('TENANT')} loading={addingRole} style={{ flex: 1 }} />}
+            {!hasTenant && <Button title="+ Kiracı Rolü" variant="success" size="sm" onPress={() => handleAddRole('TENANT')} loading={addingRole} style={{ flex: 1 }} />}
             {!hasLandlord && <Button title="+ Ev Sahibi Rolu" variant="outline" size="sm" onPress={() => handleAddRole('LANDLORD')} loading={addingRole} style={{ flex: 1 }} />}
           </View>
-          {hasTenant && hasLandlord && <Text style={styles.allRoles}>Tum roller mevcut</Text>}
+          {hasTenant && hasLandlord && <Text style={styles.allRoles}>Tüm roller mevcut</Text>}
         </Card>
 
         {/* KYC */}
         <Card style={{ marginBottom: 12 }}>
           <Text style={styles.sectionTitle}>KYC Durumu</Text>
           <Badge
-            text={user?.kycStatus === 'COMPLETED' ? 'Dogrulandi' : user?.kycStatus === 'REJECTED' ? 'Reddedildi' : 'Bekliyor'}
+            text={user?.kycStatus === 'COMPLETED' ? 'Doğrulandı' : user?.kycStatus === 'REJECTED' ? 'Reddedildi' : 'Bekliyor'}
             variant={user?.kycStatus === 'COMPLETED' ? 'success' : user?.kycStatus === 'REJECTED' ? 'danger' : 'warning'}
           />
         </Card>
 
         {/* Logout */}
-        <Button title="Cikis Yap" variant="danger" onPress={logout} style={{ marginTop: 8 }} />
+        <Button title="Çıkış Yap" variant="danger" onPress={logout} style={{ marginTop: 8 }} />
       </ScrollView>
     </>
   );

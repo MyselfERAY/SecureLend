@@ -17,85 +17,85 @@ import { markConsentScrolled } from '../../src/lib/consent-store';
 
 const DARK_NAVY = '#0a1628';
 
-const KMH_ACIK_RIZA_METNI = `KREDILI MEVDUAT HESABI (KMH) FINANSAL VERILERIN ISLENMESINE ILISKIN ACIK RIZA METNI
+const KMH_ACIK_RIZA_METNI = `KREDİLİ MEVDUAT HESABI (KMH) FİNANSAL VERİLERİN İŞLENMESİNE İLİŞKİN AÇIK RIZA METNİ
 
-Son Guncelleme: 01.04.2026
+Son Güncelleme: 01.04.2026
 
-VERI SORUMLUSU
+VERİ SORUMLUSU
 
-Kira Guvence Teknoloji A.S. ("Kira Guvence" veya "Sirket")
-Adres: Istanbul, Turkiye
+Kira Güvence Teknoloji A.Ş. ("Kira Güvence" veya "Şirket")
+Adres: İstanbul, Türkiye
 E-posta: info@kiraguvence.com
 
-ACIK RIZA BEYANI
+AÇIK RIZA BEYANI
 
-6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kredili Mevduat Hesabi (KMH) basvurumun degerlendirilmesi ve hesap islemlerimin yurutulmesi amaciyla asagidaki finansal ve kisisel verilerimin islenmesine acik rizamla onay veriyorum:
+6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında, Kredili Mevduat Hesabı (KMH) başvurumun değerlendirilmesi ve hesap işlemlerimin yürütülmesi amacıyla aşağıdaki finansal ve kişisel verilerimin işlenmesine açık rızamla onay veriyorum:
 
-ISLENEN FINANSAL VERILER
+İŞLENEN FİNANSAL VERİLER
 
-KMH basvuru ve degerlendirme surecinde asagidaki verilerim islenmektedir:
+KMH başvuru ve değerlendirme sürecinde aşağıdaki verilerim işlenmektedir:
 
-1. Gelir Bilgileri: Aylik net gelir, gelir belgesi bilgileri
-2. Istihdam Bilgileri: Calisma durumu, isveren adi, is baslangic tarihi
-3. Kira Bilgileri: Mevcut/tahmini kira tutari, kira sozlesme bilgileri
-4. Adres Bilgileri: Ikamet adresi, kiralanacak tasinmaz adresi
+1. Gelir Bilgileri: Aylık net gelir, gelir belgesi bilgileri
+2. İstihdam Bilgileri: Çalışma durumu, işveren adı, iş başlangıç tarihi
+3. Kira Bilgileri: Mevcut/tahmini kira tutarı, kira sözleşme bilgileri
+4. Adres Bilgileri: İkamet adresi, kiralanacak taşınmaz adresi
 5. Banka Hesap Bilgileri: IBAN, hesap hareketleri, bakiye bilgileri
-6. Kredi Skorlama Verileri: Kredi gecmisi, risk degerlendirmesi sonuclari
-7. KMH Hesap Bilgileri: Hesap numarasi, bakiye, faiz oranlari, vade bilgileri
+6. Kredi Skorlama Verileri: Kredi geçmişi, risk değerlendirmesi sonuçları
+7. KMH Hesap Bilgileri: Hesap numarası, bakiye, faiz oranları, vade bilgileri
 
-ISLENME AMACLARI
+İŞLENME AMAÇLARI
 
-Finansal verilerim asagidaki amaclarla islenmektedir:
+Finansal verilerim aşağıdaki amaçlarla işlenmektedir:
 
-1. KMH basvuru uygunlugumun degerlendirilmesi
-2. Kredi risk analizi ve skorlama yapilmasi
+1. KMH başvuru uygunluğumun değerlendirilmesi
+2. Kredi risk analizi ve skorlama yapılması
 3. KMH hesap limitinin belirlenmesi (Gelir x 3, maksimum 500.000 TL)
-4. Gelir-kira orani kontrolu (Gelir >= Kira x 2)
-5. KMH hesabinin acilmasi ve yonetilmesi
-6. Kira odeme islemlerinin gerceklestirilmesi
-7. Yasal raporlama yukumluluklerinin yerine getirilmesi (BDDK, MASAK)
-8. Dolandiricilik ve usulsuzluk onleme
+4. Gelir-kira oranı kontrolü (Gelir >= Kira x 2)
+5. KMH hesabının açılması ve yönetilmesi
+6. Kira ödeme işlemlerinin gerçekleştirilmesi
+7. Yasal raporlama yükümlülüklerinin yerine getirilmesi (BDDK, MASAK)
+8. Dolandırıcılık ve usulsüzlük önleme
 
-VERILERIN AKTARILDIGI TARAFLAR
+VERİLERİN AKTARILDIĞI TARAFLAR
 
-Finansal verilerim asagidaki taraflarla paylasilabilir:
+Finansal verilerim aşağıdaki taraflarla paylaşılabilir:
 
-- Anlasmali bankalar ve finansal kuruluslar (KMH hesap islemleri icin)
-- Kredi kayit burosu (KKB) ve risk merkezi
-- Bankalar arasi kart merkezi (BKM)
-- BDDK ve MASAK (yasal zorunluluklar geregi)
-- Bagimsiz denetim ve hukuk musavirlik firmalari
+- Anlaşmalı bankalar ve finansal kuruluşlar (KMH hesap işlemleri için)
+- Kredi kayıt bürosu (KKB) ve risk merkezi
+- Bankalar arası kart merkezi (BKM)
+- BDDK ve MASAK (yasal zorunluluklar gereği)
+- Bağımsız denetim ve hukuk müşavirlik firmaları
 
-SAKLAMA SURESI
+SAKLAMA SÜRESİ
 
-Finansal verilerim asagidaki surelerle saklanacaktir:
+Finansal verilerim aşağıdaki sürelerle saklanacaktır:
 
-- KMH hesap bilgileri: Hesap kapanisina kadar + 10 yil
-- Basvuru degerlendirme verileri: 5 yil
-- Odeme islem kayitlari: 10 yil (TTK ve vergi mevzuati)
-- Risk degerlendirme sonuclari: 5 yil
+- KMH hesap bilgileri: Hesap kapanışına kadar + 10 yıl
+- Başvuru değerlendirme verileri: 5 yıl
+- Ödeme işlem kayıtları: 10 yıl (TTK ve vergi mevzuatı)
+- Risk değerlendirme sonuçları: 5 yıl
 
 HAKLARIM
 
-KVKK'nin 11. maddesi kapsaminda:
-- Verilerimin islenip islenmedigini ogrenmek
-- Islenen verilerim hakkinda bilgi talep etmek
-- Islenme amacini ve amaca uygunlugu sorgulamak
-- Eksik veya yanlis islenmesi halinde duzeltme talep etmek
-- Isleme sartlari ortadan kalktginda silinmesini talep etmek
+KVKK'nin 11. maddesi kapsamında:
+- Verilerimin işlenip işlenmediğini öğrenmek
+- İşlenen verilerim hakkında bilgi talep etmek
+- İşlenme amacını ve amaca uygunluğu sorgulamak
+- Eksik veya yanlış işlenmesi halinde düzeltme talep etmek
+- İşleme şartları ortadan kalktığında silinmesini talep etmek
 - Otomatik analiz sonucu aleyhime bir sonuca itiraz etmek
 
-haklarima sahibim.
+haklarıma sahibim.
 
-RIZANIN GERI ALINMASI
+RIZANIN GERİ ALINMASI
 
-Acik rizami her zaman info@kiraguvence.com adresine yazili bildirimde bulunarak geri alabilirim. Rizanin geri alinmasi, geri alma oncesinde yapilan islemlerin hukuka uygunlugunu etkilemez. Rizanin geri alinmasi durumunda aktif KMH hesabimin kapatilmasi soz konusu olabilir.
+Açık rızamı her zaman info@kiraguvence.com adresine yazılı bildirimde bulunarak geri alabilirim. Rızanın geri alınması, geri alma öncesinde yapılan işlemlerin hukuka uygunluğunu etkilemez. Rızanın geri alınması durumunda aktif KMH hesabımın kapatılması söz konusu olabilir.
 
 ONAY
 
-Yukaridaki bilgilendirmeyi okudum ve anlaldim. Finansal verilerimin belirtilen amaclar dogrultusunda islenmesine, yukaridaki taraflarla paylasilmasina ve belirtilen surelerle saklanmasina acik rizamla onay veriyorum.
+Yukarıdaki bilgilendirmeyi okudum ve anladım. Finansal verilerimin belirtilen amaçlar doğrultusunda işlenmesine, yukarıdaki taraflarla paylaşılmasına ve belirtilen sürelerle saklanmasına açık rızamla onay veriyorum.
 
-Kira Guvence Teknoloji A.S.`;
+Kira Güvence Teknoloji A.Ş.`;
 
 export default function KmhAcikRizaScreen() {
   const router = useRouter();
@@ -129,8 +129,8 @@ export default function KmhAcikRizaScreen() {
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Guvence Hesabi Acik Riza</Text>
-            <Text style={styles.headerSubtitle}>Finansal veri isleme onay</Text>
+            <Text style={styles.headerTitle}>Güvence Hesabı Açık Rıza</Text>
+            <Text style={styles.headerSubtitle}>Finansal veri işleme onayı</Text>
           </View>
           <View style={styles.iconWrap}>
             <Ionicons name="document-text" size={22} color="#93c5fd" />

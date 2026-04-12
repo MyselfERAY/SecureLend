@@ -63,8 +63,8 @@ export default function ReferralScreen() {
   }, [info]);
 
   const shareMessage = info?.referralCode
-    ? `KiraGuvence ile kira odemelerini guvenle yap! Benim davet kodum: ${info.referralCode}\n\n${info.referralLink || 'https://kiraguvence.com'}`
-    : 'KiraGuvence ile kira odemelerini guvenle yap! Hemen kayit ol: https://kiraguvence.com';
+    ? `KiraGüvence ile kira ödemelerini güvenle yap! Benim davet kodum: ${info.referralCode}\n\n${info.referralLink || 'https://kiraguvence.com'}`
+    : 'KiraGüvence ile kira ödemelerini güvenle yap! Hemen kayıt ol: https://kiraguvence.com';
 
   const handleShare = useCallback(async () => {
     try {
@@ -90,7 +90,7 @@ export default function ReferralScreen() {
           style={styles.backBtn}
           onPress={() => router.back()}
           activeOpacity={0.7}
-          accessibilityLabel="Geri don"
+          accessibilityLabel="Geri dön"
           accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
@@ -114,9 +114,9 @@ export default function ReferralScreen() {
           <View style={styles.heroIconWrap}>
             <Ionicons name="people" size={32} color="#2563eb" />
           </View>
-          <Text style={styles.heroTitle}>Arkadaslarini Davet Et</Text>
+          <Text style={styles.heroTitle}>Arkadaşlarını Davet Et</Text>
           <Text style={styles.heroSubtitle}>
-            Arkadaslarin da kefil derdinden kurtulsun — her basarili davette ikinize de ilk ay ucretsiz
+            Arkadaşların da kefil derdinden kurtulsun — her başarılı davette ikinize de ilk ay ücretsiz
           </Text>
         </View>
 
@@ -139,12 +139,12 @@ export default function ReferralScreen() {
                   color={copied ? '#10b981' : '#2563eb'}
                 />
                 <Text style={[styles.copyText, copied && { color: '#10b981' }]}>
-                  {copied ? 'Kopyalandi' : 'Kopyala'}
+                  {copied ? 'Kopyalandı' : 'Kopyala'}
                 </Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <Text style={styles.codeEmpty}>Davet kodu henuz olusturulmadi. Asagidaki butonlarla platformumuzu paylasabilirsiniz.</Text>
+            <Text style={styles.codeEmpty}>Davet kodu henüz oluşturulmadı. Aşağıdaki butonlarla platformumuzu paylaşabilirsiniz.</Text>
           )}
         </View>
 
@@ -154,7 +154,7 @@ export default function ReferralScreen() {
             style={styles.shareBtn}
             onPress={handleWhatsApp}
             activeOpacity={0.7}
-            accessibilityLabel="WhatsApp ile paylas"
+            accessibilityLabel="WhatsApp ile paylaş"
             accessibilityRole="button"
           >
             <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
@@ -164,11 +164,11 @@ export default function ReferralScreen() {
             style={[styles.shareBtn, styles.shareBtnPrimary]}
             onPress={handleShare}
             activeOpacity={0.7}
-            accessibilityLabel="Davet kodunu paylas"
+            accessibilityLabel="Davet kodunu paylaş"
             accessibilityRole="button"
           >
             <Ionicons name="share-outline" size={22} color="#ffffff" />
-            <Text style={[styles.shareBtnText, { color: '#ffffff' }]}>Paylas</Text>
+            <Text style={[styles.shareBtnText, { color: '#ffffff' }]}>Paylaş</Text>
           </TouchableOpacity>
         </View>
 
@@ -182,17 +182,17 @@ export default function ReferralScreen() {
             <Text style={[styles.statValue, { color: '#10b981' }]}>
               {info?.referrals?.length || 0}
             </Text>
-            <Text style={styles.statLabel}>Basarili</Text>
+            <Text style={styles.statLabel}>Başarılı</Text>
           </View>
         </View>
 
         {/* How it works */}
         <View style={styles.howCard}>
-          <Text style={styles.howTitle}>Nasil Calisir?</Text>
+          <Text style={styles.howTitle}>Nasıl Çalışır?</Text>
           {[
-            { step: '1', icon: 'share-social' as const, text: 'Davet kodunu kefil arayan arkadaslarinla paylas' },
-            { step: '2', icon: 'person-add' as const, text: 'Arkadasin kayit olurken kodunu girer, kefil derdi biter' },
-            { step: '3', icon: 'gift' as const, text: 'Ikinize de ilk ay ucretsiz — kefil yerine banka guvencesi' },
+            { step: '1', icon: 'share-social' as const, text: 'Davet kodunu kefil arayan arkadaşlarınla paylaş' },
+            { step: '2', icon: 'person-add' as const, text: 'Arkadaşın kayıt olurken kodunu girer, kefil derdi biter' },
+            { step: '3', icon: 'gift' as const, text: 'İkinize de ilk ay ücretsiz — kefil yerine banka güvencesi' },
           ].map((item) => (
             <View key={item.step} style={styles.howStep}>
               <View style={styles.howStepNumber}>
@@ -207,7 +207,7 @@ export default function ReferralScreen() {
         {/* Referral History */}
         {info?.referrals && info.referrals.length > 0 && (
           <View style={styles.historyCard}>
-            <Text style={styles.historyTitle}>Davet Gecmisi</Text>
+            <Text style={styles.historyTitle}>Davet Geçmişi</Text>
             {info.referrals.map((r, i) => (
               <View key={i} style={[styles.historyItem, i < info.referrals.length - 1 && styles.historyItemBorder]}>
                 <View style={styles.historyLeft}>

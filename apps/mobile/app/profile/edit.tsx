@@ -54,7 +54,7 @@ export default function ProfileEditScreen() {
     if (address !== (user?.address || '')) body.address = address || undefined;
 
     if (Object.keys(body).length === 0) {
-      setSuccessMsg('Degisiklik yok.');
+      setSuccessMsg('Değişiklik yok.');
       setSaving(false);
       return;
     }
@@ -67,7 +67,7 @@ export default function ProfileEditScreen() {
 
     if (res.status === 'success') {
       await refreshUser();
-      setSuccessMsg('Profil basariyla guncellendi!');
+      setSuccessMsg('Profil başarıyla güncellendi!');
     } else {
       setError(extractError(res));
     }
@@ -85,7 +85,7 @@ export default function ProfileEditScreen() {
           <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#ffffff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profili Duzenle</Text>
+          <Text style={styles.headerTitle}>Profili Düzenle</Text>
           <View style={{ width: 40 }} />
         </View>
       </View>
@@ -103,8 +103,8 @@ export default function ProfileEditScreen() {
         <Text style={styles.sectionLabel}>Kimlik Bilgileri</Text>
         <Text style={styles.sectionHint}>
           {canEditFullName || canEditDateOfBirth
-            ? 'Bos alanlari doldurabilirsiniz. Dolu alanlar degistirilemez.'
-            : 'Bu alanlar kimlik dogrulama gerektirdigindan degistirilemez.'}
+            ? 'Boş alanları doldurabilirsiniz. Dolu alanlar değiştirilemez.'
+            : 'Bu alanlar kimlik doğrulama gerektirdiğinden değiştirilemez.'}
         </Text>
         <View style={styles.sectionCard}>
           {canEditFullName ? (
@@ -113,7 +113,7 @@ export default function ProfileEditScreen() {
                 label="Ad Soyad"
                 value={fullName}
                 onChangeText={setFullName}
-                placeholder="Adiniz ve soyadiniz"
+                placeholder="Adınız ve soyadınız"
               />
             </View>
           ) : (
@@ -124,7 +124,7 @@ export default function ProfileEditScreen() {
           {canEditDateOfBirth ? (
             <View style={styles.inputWrapper}>
               <Input
-                label="Dogum Tarihi"
+                label="Doğum Tarihi"
                 value={dateOfBirth}
                 onChangeText={(t: string) => {
                   // Auto-format: YYYY-MM-DD
@@ -139,7 +139,7 @@ export default function ProfileEditScreen() {
           ) : (
             <DisabledRow
               icon="calendar-outline"
-              label="Dogum Tarihi"
+              label="Doğum Tarihi"
               value={user?.dateOfBirth ? user.dateOfBirth.split('-').reverse().join('.') : '-'}
               last
             />
@@ -147,7 +147,7 @@ export default function ProfileEditScreen() {
         </View>
 
         {/* Editable Fields */}
-        <Text style={styles.sectionLabel}>Duzenlenebilir Bilgiler</Text>
+        <Text style={styles.sectionLabel}>Düzenlenebilir Bilgiler</Text>
         <View style={styles.sectionCard}>
           <View style={styles.inputWrapper}>
             <Input
@@ -164,7 +164,7 @@ export default function ProfileEditScreen() {
               label="Adres"
               value={address}
               onChangeText={setAddress}
-              placeholder="Ev veya is adresiniz"
+              placeholder="Ev veya iş adresiniz"
               multiline
             />
           </View>

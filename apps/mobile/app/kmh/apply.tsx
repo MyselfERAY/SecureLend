@@ -16,15 +16,15 @@ import { colors } from '../../src/theme/colors';
 const DARK_NAVY = '#0a1628';
 
 const employmentOptions = [
-  { value: 'EMPLOYED', label: 'Calisan', icon: 'briefcase' as const },
+  { value: 'EMPLOYED', label: 'Çalışan', icon: 'briefcase' as const },
   { value: 'SELF_EMPLOYED', label: 'Serbest Meslek', icon: 'person' as const },
   { value: 'RETIRED', label: 'Emekli', icon: 'heart' as const },
-  { value: 'STUDENT', label: 'Ogrenci', icon: 'school' as const },
-  { value: 'UNEMPLOYED', label: 'Issiz', icon: 'search' as const },
+  { value: 'STUDENT', label: 'Öğrenci', icon: 'school' as const },
+  { value: 'UNEMPLOYED', label: 'İşsiz', icon: 'search' as const },
 ];
 
 const APPLY_STEPS = [
-  { key: 'employment', label: 'Istihdam' },
+  { key: 'employment', label: 'İstihdam' },
   { key: 'income', label: 'Gelir' },
   { key: 'address', label: 'Adres' },
   { key: 'consent', label: 'Onay' },
@@ -83,11 +83,11 @@ export default function KmhApplyScreen() {
 
   const handleSubmit = async () => {
     if (!tokens || !income || !rent || !address) {
-      setError('Zorunlu alanlari doldurun');
+      setError('Zorunlu alanları doldurun');
       return;
     }
     if (!consentFinancial) {
-      setError('Finansal veri isleme onayi zorunludur');
+      setError('Finansal veri işleme onayı zorunludur');
       return;
     }
     setError('');
@@ -120,7 +120,7 @@ export default function KmhApplyScreen() {
         setError(extractError(res));
       }
     } catch {
-      setError('Bir hata olustu');
+      setError('Bir hata oluştu');
     }
     setSubmitting(false);
   };
@@ -134,13 +134,13 @@ export default function KmhApplyScreen() {
             style={styles.backBtn}
             onPress={() => router.back()}
             activeOpacity={0.7}
-            accessibilityLabel="Geri don"
+            accessibilityLabel="Geri dön"
             accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Banka Guvence Basvurusu</Text>
+            <Text style={styles.headerTitle}>Banka Güvence Başvurusu</Text>
             <Text style={styles.headerSubtitle}>{APPLY_STEPS[currentStep].label}</Text>
           </View>
           <View style={styles.stepBadge}>
@@ -200,7 +200,7 @@ export default function KmhApplyScreen() {
           {error ? <ErrorMessage message={error} onDismiss={() => setError('')} /> : null}
 
           {/* Employment Status */}
-          <Text style={styles.sectionLabel}>Istihdam Durumu *</Text>
+          <Text style={styles.sectionLabel}>İstihdam Durumu *</Text>
           <View style={styles.pillRow}>
             {employmentOptions.map((opt) => (
               <TouchableOpacity
@@ -224,7 +224,7 @@ export default function KmhApplyScreen() {
 
           {/* Income */}
           <Input
-            label="Aylik Gelir *"
+            label="Aylık Gelir *"
             value={income}
             onChangeText={(t) => setIncome(t.replace(/\D/g, ''))}
             keyboardType="number-pad"
@@ -235,16 +235,16 @@ export default function KmhApplyScreen() {
           {/* Employer - conditional */}
           {showEmployer && (
             <Input
-              label="Isveren Adi"
+              label="İşveren Adı"
               value={employer}
               onChangeText={setEmployer}
-              placeholder="Sirket adi"
+              placeholder="Şirket adı"
             />
           )}
 
           {/* Estimated Rent */}
           <Input
-            label="Tahmini Aylik Kira *"
+            label="Tahmini Aylık Kira *"
             value={rent}
             onChangeText={(t) => setRent(t.replace(/\D/g, ''))}
             keyboardType="number-pad"
@@ -254,7 +254,7 @@ export default function KmhApplyScreen() {
 
           {/* Address */}
           <Input
-            label="Ikamet Adresi *"
+            label="İkamet Adresi *"
             value={address}
             onChangeText={setAddress}
             placeholder="Adres bilgileriniz"
@@ -290,7 +290,7 @@ export default function KmhApplyScreen() {
               )}
             </View>
             <Text style={styles.consentText}>
-              Banka Guvence Hesabi basvurusu icin finansal verilerimin islenmesine acik riza veriyorum
+              Banka Güvence Hesabı başvurusu için finansal verilerimin işlenmesine açık rıza veriyorum
             </Text>
             <TouchableOpacity
               onPress={() => { setConsentScrolledToBottom(false); setShowConsentModal(true); }}
@@ -303,7 +303,7 @@ export default function KmhApplyScreen() {
 
           {/* Submit */}
           <Button
-            title="Basvuruyu Gonder"
+            title="Başvuruyu Gönder"
             onPress={handleSubmit}
             loading={submitting}
             disabled={!consentFinancial}
@@ -330,8 +330,8 @@ export default function KmhApplyScreen() {
               <Ionicons name="close" size={22} color="#ffffff" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
-              <Text style={styles.headerTitle}>Guvence Hesabi Acik Riza</Text>
-              <Text style={styles.headerSubtitle}>Finansal veri isleme onayi</Text>
+              <Text style={styles.headerTitle}>Güvence Hesabı Açık Rıza</Text>
+              <Text style={styles.headerSubtitle}>Finansal veri işleme onayı</Text>
             </View>
             <View style={styles.consentIconWrap}>
               <Ionicons name="shield-checkmark" size={22} color="#93c5fd" />
@@ -346,71 +346,71 @@ export default function KmhApplyScreen() {
           >
             <View style={styles.consentTextBox}>
               <Text style={styles.consentBodyText}>
-{`BANKA GUVENCE HESABI BASVURUSU ACIK RIZA BEYANI
+{`BANKA GÜVENCE HESABI BAŞVURUSU AÇIK RIZA BEYANI
 
-6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda, Kira Guvence Teknoloji A.S. ("Sirket") tarafindan hazirlanan Aydinlatma Metnini okudum ve anladim.
+6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında, Kira Güvence Teknoloji A.Ş. ("Şirket") tarafından hazırlanan Aydınlatma Metnini okudum ve anladım.
 
-Banka Guvence Hesabi (KMH) basvurusu kapsaminda, asagida belirtilen kisisel verilerimin islenmesine ozgur iradem ile acik riza veriyorum:
+Banka Güvence Hesabı (KMH) başvurusu kapsamında, aşağıda belirtilen kişisel verilerimin işlenmesine özgür iradem ile açık rıza veriyorum:
 
-1. ISLENEN FINANSAL VERILER
+1. İŞLENEN FİNANSAL VERİLER
 
-- Aylik net gelir bilgisi
-- Istihdam durumu ve isveren bilgisi
-- Mevcut kredi ve borc yukumluluklerim
-- Tahmini kira tutari
-- Borc/gelir orani hesaplamalari
-- Varlik ve yukumluluk bilgilerim
+- Aylık net gelir bilgisi
+- İstihdam durumu ve işveren bilgisi
+- Mevcut kredi ve borç yükümlülüklerim
+- Tahmini kira tutarı
+- Borç/gelir oranı hesaplamaları
+- Varlık ve yükümlülük bilgilerim
 
-2. KKB (KREDI KAYIT BUROSU) SORGULAMASI
+2. KKB (KREDİ KAYIT BÜROSU) SORGULAMASI
 
-Kredi degerlendirmesi icin KKB nezdinde kayitli kredi gecmisimin, mevcut kredi kullanimlarimin ve odeme performansimin sorgulanmasina riza veriyorum. Bu sorgulama sonucunda elde edilen bilgiler yalnizca KMH basvuru degerlendirmesi icin kullanilacaktir.
+Kredi değerlendirmesi için KKB nezdinde kayıtlı kredi geçmişimin, mevcut kredi kullanımlarımın ve ödeme performansımın sorgulanmasına rıza veriyorum. Bu sorgulama sonucunda elde edilen bilgiler yalnızca KMH başvuru değerlendirmesi için kullanılacaktır.
 
-3. FINDEKS SKORU ISLEME
+3. FİNDEKS SKORU İŞLEME
 
-Findeks kredi notu ve kredi skorumun sorgulanmasina ve degerlendirme surecinde kullanilmasina onay veriyorum. Findeks skorum, kredi limitimin belirlenmesinde temel kriterlerden biri olarak dikkate alinacaktir.
+Findeks kredi notu ve kredi skorumun sorgulanmasına ve değerlendirme sürecinde kullanılmasına onay veriyorum. Findeks skorum, kredi limitimin belirlenmesinde temel kriterlerden biri olarak dikkate alınacaktır.
 
-4. BANKA ILE PAYLASIM
+4. BANKA İLE PAYLAŞIM
 
-Kimlik ve finansal bilgilerimin, KMH hesap acilisi ve kredi degerlendirmesi amaciyla anlasmali banka ile paylasilmasina riza veriyorum. Paylasilacak bilgiler:
-- T.C. Kimlik Numarasi (dogrulama amacli)
-- Ad soyad ve dogum tarihi
+Kimlik ve finansal bilgilerimin, KMH hesap açılışı ve kredi değerlendirmesi amacıyla anlaşmalı banka ile paylaşılmasına rıza veriyorum. Paylaşılacak bilgiler:
+- T.C. Kimlik Numarası (doğrulama amaçlı)
+- Ad soyad ve doğum tarihi
 - Gelir ve istihdam bilgileri
-- KKB kredi raporu ozeti
-- Basvuru degerlendirme sonuclari
+- KKB kredi raporu özeti
+- Başvuru değerlendirme sonuçları
 
-5. OTOMATIK KARAR VERME
+5. OTOMATİK KARAR VERME
 
-KMH basvurumun degerlendirilmesinde otomatik sistemler (kredi skorlama algoritmalari) kullanildigini biliyorum. Bu otomatik degerlendirme sonucunda kredi limitim belirlenmekte veya basvurum reddedilebilmektedir. KVKK Madde 11/1-g uyarinca, otomatik isleme dayali sonuclara itiraz etme hakkima sahip oldugumu biliyorum.
+KMH başvurumun değerlendirilmesinde otomatik sistemler (kredi skorlama algoritmaları) kullanıldığını biliyorum. Bu otomatik değerlendirme sonucunda kredi limitim belirlenmekte veya başvurum reddedilebilmektedir. KVKK Madde 11/1-g uyarınca, otomatik işleme dayalı sonuçlara itiraz etme hakkıma sahip olduğumu biliyorum.
 
-6. BORC/GELIR ORANI HESAPLAMASI
+6. BORÇ/GELİR ORANI HESAPLAMASI
 
-Aylik gelir bilgim ve mevcut borc yukumluluklerim kullanilarak borc/gelir orani hesaplanacaktir. Bu oran, kredi limitimin belirlenmesinde ve basvurumun onaylanip onaylanmayacaginda belirleyici faktor olarak kullanilacaktir.
+Aylık gelir bilgim ve mevcut borç yükümlülüklerim kullanılarak borç/gelir oranı hesaplanacaktır. Bu oran, kredi limitimin belirlenmesinde ve başvurumun onaylanıp onaylanmayacağında belirleyici faktör olarak kullanılacaktır.
 
-7. AMAC SINIRLAMASI
+7. AMAÇ SINIRLAMASI
 
-Yukarida belirtilen kisisel verilerim yalnizca asagidaki amaclarla islencektir:
-- KMH basvuru degerlendirmesi
+Yukarıda belirtilen kişisel verilerim yalnızca aşağıdaki amaçlarla işlenecektir:
+- KMH başvuru değerlendirmesi
 - Kredi limiti belirlenmesi
-- Hesap acilisi islemleri
-- Yasal raporlama yukumlulukleri (BDDK, MASAK)
+- Hesap açılışı işlemleri
+- Yasal raporlama yükümlülükleri (BDDK, MASAK)
 
-8. VERI SAKLAMA SURESI
+8. VERİ SAKLAMA SÜRESİ
 
-KMH basvuruma iliskin veriler:
-- Onaylanan basvurular: Hesap aktif oldugu surece + 10 yil
-- Reddedilen basvurular: Red tarihinden itibaren 3 yil
-- KKB sorgulama kayitlari: 5 yil
+KMH başvuruma ilişkin veriler:
+- Onaylanan başvurular: Hesap aktif olduğu sürece + 10 yıl
+- Reddedilen başvurular: Red tarihinden itibaren 3 yıl
+- KKB sorgulama kayıtları: 5 yıl
 
-9. RIZANIN GERI ALINMASI
+9. RIZANIN GERİ ALINMASI
 
-Bu rizami her zaman geri alma hakkima sahip oldugumu biliyorum. Ancak rizamin geri alinmasi halinde:
-- Devam eden KMH basvurum islenemeycektir
-- Yeni KMH basvurusu yapabilmem icin tekrar riza vermem gerekecektir
-- Geri alma oncesi islenmis veriler, yasal saklama surelerine tabidir
+Bu rızamı her zaman geri alma hakkıma sahip olduğumu biliyorum. Ancak rızamın geri alınması halinde:
+- Devam eden KMH başvurum işlenemeyecektir
+- Yeni KMH başvurusu yapabilmem için tekrar rıza vermem gerekecektir
+- Geri alma öncesi işlenmiş veriler, yasal saklama sürelerine tabidir
 
-Yukaridaki hususlari okudum, anladim ve kabul ediyorum.
+Yukarıdaki hususları okudum, anladım ve kabul ediyorum.
 
-Kira Guvence Teknoloji A.S.
+Kira Güvence Teknoloji A.Ş.
 info@kiraguvence.com`}
               </Text>
             </View>

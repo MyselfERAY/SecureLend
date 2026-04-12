@@ -72,7 +72,7 @@ export default function LoginScreen() {
         params: { phone, tckn, rememberMe: rememberMe ? '1' : '0' },
       });
     } catch (e: any) {
-      setError(e.message || 'Giris basarisiz');
+      setError(e.message || 'Giriş başarısız');
     } finally {
       setLoading(false);
     }
@@ -118,16 +118,16 @@ export default function LoginScreen() {
               <View style={styles.shieldIcon}>
                 <Ionicons name="shield-checkmark" size={44} color={colors.white} />
               </View>
-              <Text style={styles.brandName}>Kira Guvence</Text>
-              <Text style={styles.brandTagline}>Guvenli Kira Yonetimi</Text>
+              <Text style={styles.brandName}>Kira Güvence</Text>
+              <Text style={styles.brandTagline}>Güvenli Kira Yönetimi</Text>
             </View>
           </View>
 
           {/* White Card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Giris Yap</Text>
+            <Text style={styles.cardTitle}>Giriş Yap</Text>
             <Text style={styles.cardSubtitle}>
-              Devam etmek icin bilgilerinizi girin
+              Devam etmek için bilgilerinizi girin
             </Text>
 
             {error ? (
@@ -155,7 +155,7 @@ export default function LoginScreen() {
 
             {/* Remember Me Toggle */}
             <View style={styles.rememberRow}>
-              <Text style={styles.rememberLabel}>Beni Hatirla</Text>
+              <Text style={styles.rememberLabel}>Beni Hatırla</Text>
               <Switch
                 value={rememberMe}
                 onValueChange={setRememberMe}
@@ -169,7 +169,7 @@ export default function LoginScreen() {
             </View>
 
             <Button
-              title="Giris Yap"
+              title="Giriş Yap"
               onPress={handleLogin}
               loading={loading}
               disabled={!isValid}
@@ -178,13 +178,13 @@ export default function LoginScreen() {
             />
 
             <View style={styles.linkRow}>
-              <Text style={styles.linkText}>Hesabiniz yok mu?  </Text>
+              <Text style={styles.linkText}>Hesabınız yok mu?  </Text>
               <Link href="/(auth)/register" asChild>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
-                  <Text style={styles.linkBold}>Kayit Ol</Text>
+                  <Text style={styles.linkBold}>Kayıt Ol</Text>
                 </TouchableOpacity>
               </Link>
             </View>

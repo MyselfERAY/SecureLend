@@ -16,11 +16,11 @@ import { KmhApplication, BankAccount, Transaction } from '../../src/types';
 const DARK_NAVY = '#0a1628';
 
 const employmentOptions = [
-  { value: 'EMPLOYED', label: 'Calisan', icon: 'briefcase' },
+  { value: 'EMPLOYED', label: 'Çalışan', icon: 'briefcase' },
   { value: 'SELF_EMPLOYED', label: 'Serbest Meslek', icon: 'person' },
   { value: 'RETIRED', label: 'Emekli', icon: 'heart' },
-  { value: 'STUDENT', label: 'Ogrenci', icon: 'school' },
-  { value: 'UNEMPLOYED', label: 'Issiz', icon: 'search' },
+  { value: 'STUDENT', label: 'Öğrenci', icon: 'school' },
+  { value: 'UNEMPLOYED', label: 'İşsiz', icon: 'search' },
 ];
 
 export default function BankScreen() {
@@ -82,14 +82,14 @@ export default function BankScreen() {
           onPress={() => setTab('kmh')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.segmentText, tab === 'kmh' && styles.segmentTextActive]}>Guvence Basvurulari</Text>
+          <Text style={[styles.segmentText, tab === 'kmh' && styles.segmentTextActive]}>Güvence Başvuruları</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.segment, tab === 'accounts' && styles.segmentActive]}
           onPress={() => setTab('accounts')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.segmentText, tab === 'accounts' && styles.segmentTextActive]}>Hesaplarim</Text>
+          <Text style={[styles.segmentText, tab === 'accounts' && styles.segmentTextActive]}>Hesaplarım</Text>
         </TouchableOpacity>
       </View>
 
@@ -103,7 +103,7 @@ export default function BankScreen() {
                   <Ionicons name="checkmark-circle" size={24} color="#10b981" />
                 </View>
                 <View style={{ marginLeft: 12, flex: 1 }}>
-                  <Text style={styles.onboardingTitle}>Guvence Basvurunuz Onaylandi!</Text>
+                  <Text style={styles.onboardingTitle}>Güvence Başvurunuz Onaylandı!</Text>
                   <Text style={styles.onboardingLimit}>
                     Onaylanan Limit: {needsOnboarding.approvedLimit?.toLocaleString('tr-TR')} TL
                   </Text>
@@ -135,20 +135,20 @@ export default function BankScreen() {
                 <Ionicons name="add-circle" size={24} color="#2563eb" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.applyTitle}>Banka Guvence Hesabi Ac</Text>
-                <Text style={styles.applySubtitle}>Kira guvence hesabi olusturun</Text>
+                <Text style={styles.applyTitle}>Banka Güvence Hesabı Aç</Text>
+                <Text style={styles.applySubtitle}>Kira güvence hesabı oluşturun</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.gray[300]} />
             </TouchableOpacity>
           )}
 
           {/* Application History */}
-          <Text style={styles.sectionTitle}>Basvuru Gecmisi</Text>
+          <Text style={styles.sectionTitle}>Başvuru Geçmişi</Text>
           {applications.length === 0 ? (
             <EmptyState
               icon="card-outline"
-              title="Henuz guvence basvurunuz yok"
-              subtitle="Banka guvencesi kefil yerine gecer — hemen basvurun"
+              title="Henüz güvence başvurunuz yok"
+              subtitle="Banka güvencesi kefil yerine geçer — hemen başvurun"
             />
           ) : (
             applications.map((app) => {
@@ -161,7 +161,7 @@ export default function BankScreen() {
                   </View>
                   <View style={styles.appDetails}>
                     <View style={styles.appDetailRow}>
-                      <Text style={styles.appDetailLabel}>Istihdam</Text>
+                      <Text style={styles.appDetailLabel}>İstihdam</Text>
                       <Text style={styles.appDetailValue}>{employmentOptions.find((o) => o.value === app.employmentStatus)?.label}</Text>
                     </View>
                     <View style={styles.appDetailRow}>
@@ -211,8 +211,8 @@ export default function BankScreen() {
           {accounts.length === 0 ? (
             <EmptyState
               icon="wallet-outline"
-              title="Henuz banka hesabiniz yok"
-              subtitle="Guvence hesabi acarak kira odemelerinizi garanti altina alin"
+              title="Henüz banka hesabınız yok"
+              subtitle="Güvence hesabı açarak kira ödemelerinizi garanti altına alın"
             />
           ) : (
             accounts.map((acc) => (
@@ -237,7 +237,7 @@ export default function BankScreen() {
                       <Text style={styles.accountBalance}>{acc.balance.toLocaleString('tr-TR')} TL</Text>
                     </View>
                     <View style={styles.accountBalanceItem}>
-                      <Text style={styles.accountBalanceLabel}>Kullanilabilir</Text>
+                      <Text style={styles.accountBalanceLabel}>Kullanılabilir</Text>
                       <Text style={styles.accountAvailable}>{acc.availableBalance.toLocaleString('tr-TR')} TL</Text>
                     </View>
                     {acc.creditLimit != null && (
@@ -249,7 +249,7 @@ export default function BankScreen() {
                   </View>
                   <View style={styles.accountExpandRow}>
                     <Text style={styles.accountExpandText}>
-                      {selectedAccount === acc.accountId ? 'Islemleri gizle' : 'Islemleri goster'}
+                      {selectedAccount === acc.accountId ? 'İşlemleri gizle' : 'İşlemleri göster'}
                     </Text>
                     <Ionicons
                       name={selectedAccount === acc.accountId ? 'chevron-up' : 'chevron-down'}
@@ -263,9 +263,9 @@ export default function BankScreen() {
                 {selectedAccount === acc.accountId && (
                   <View style={styles.txContainer}>
                     {txLoading ? (
-                      <LoadingSpinner text="Islemler yukleniyor..." size="small" inline />
+                      <LoadingSpinner text="İşlemler yükleniyor..." size="small" inline />
                     ) : transactions.length === 0 ? (
-                      <Text style={styles.txEmpty}>Islem bulunamadi.</Text>
+                      <Text style={styles.txEmpty}>İşlem bulunamadı.</Text>
                     ) : (
                       transactions.map((tx) => (
                         <View key={tx.id} style={styles.txRow}>

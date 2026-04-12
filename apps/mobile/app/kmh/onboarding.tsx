@@ -29,38 +29,38 @@ interface StepConfig {
 const STEP_CONFIGS: StepConfig[] = [
   {
     key: 'identity_verification',
-    label: 'Kimlik Dogrulama',
+    label: 'Kimlik Doğrulama',
     description: 'NFC ile kimlik tarama',
     icon: 'id-card',
-    buttonLabel: 'Dogrula',
+    buttonLabel: 'Doğrula',
     processIcon: 'phone-portrait',
-    processText: 'Kimliginizi telefonunuzun arkasina yaklastirin...',
+    processText: 'Kimliğinizi telefonunuzun arkasına yaklaştırın...',
     processDuration: 3000,
   },
   {
     key: 'liveness_check',
-    label: 'Canlilik Testi',
-    description: 'Yuz tanima ve canlilik dogrulamasi',
+    label: 'Canlılık Testi',
+    description: 'Yüz tanıma ve canlılık doğrulaması',
     icon: 'scan',
-    buttonLabel: 'Basla',
+    buttonLabel: 'Başla',
     processIcon: 'camera',
-    processText: 'Yuzunuzu cerceve icinde tutun...',
+    processText: 'Yüzünüzü çerçeve içinde tutun...',
     processDuration: 2000,
   },
   {
     key: 'video_call',
-    label: 'Goruntulu Gorusme',
-    description: 'Banka yetkili ile gorusme',
+    label: 'Görüntülü Görüşme',
+    description: 'Banka yetkili ile görüşme',
     icon: 'videocam',
-    buttonLabel: 'Baslat',
+    buttonLabel: 'Başlat',
     processIcon: 'videocam',
-    processText: 'Banka yetkilisi ile baglantiniz kuruluyor...',
+    processText: 'Banka yetkilisi ile bağlantınız kuruluyor...',
     processDuration: 4000,
   },
   {
     key: 'agreements',
-    label: 'Sozlesme Onaylari',
-    description: 'Guvence Hesabi, KVKK ve diger sozlesmeler',
+    label: 'Sözleşme Onayları',
+    description: 'Güvence Hesabı, KVKK ve diğer sözleşmeler',
     icon: 'document-text',
     buttonLabel: 'Onayla',
     processIcon: 'document-text',
@@ -227,10 +227,10 @@ export default function KmhOnboardingScreen() {
     const completed = kycStatus.steps.filter((s) => s.completed).length;
     const total = kycStatus.steps.filter((s) => s.required).length;
     if (completed === 0) return null;
-    const progressText = `${total} adimdan ${completed}'${completed === 1 ? 'i' : completed === 2 ? 'si' : 'u'} tamamlandi`;
-    if (completed === 1) return { text: 'Harika! Kimliginiz dogrulandi \u2713', progressText };
-    if (completed === 2) return { text: 'Neredeyse bitti! Son 2 adim kaldi', progressText };
-    if (completed === 3) return { text: 'Son adim! Sozlesmeleri onaylayin', progressText };
+    const progressText = `${total} adımdan ${completed}'${completed === 1 ? 'i' : completed === 2 ? 'si' : 'ü'} tamamlandı`;
+    if (completed === 1) return { text: 'Harika! Kimliğiniz doğrulandı \u2713', progressText };
+    if (completed === 2) return { text: 'Neredeyse bitti! Son 2 adım kaldı', progressText };
+    if (completed === 3) return { text: 'Son adım! Sözleşmeleri onaylayın', progressText };
     return null;
   };
   const motivationMsg = getMotivationMessage();
@@ -287,19 +287,19 @@ export default function KmhOnboardingScreen() {
         setError(extractError(res));
       }
     } catch {
-      setError('Bir hata olustu');
+      setError('Bir hata oluştu');
     }
     setCompleting(false);
   };
 
   const handleCancel = () => {
     Alert.alert(
-      'Basvuruyu Iptal Et',
-      'Bu basvuruyu iptal etmek istediginizden emin misiniz? Bu islem geri alinamaz.',
+      'Başvuruyu İptal Et',
+      'Bu başvuruyu iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
       [
-        { text: 'Hayir', style: 'cancel' },
+        { text: 'Hayır', style: 'cancel' },
         {
-          text: 'Evet, Iptal Et',
+          text: 'Evet, İptal Et',
           style: 'destructive',
           onPress: async () => {
             if (!tokens || !applicationId) return;
@@ -315,7 +315,7 @@ export default function KmhOnboardingScreen() {
                 setError(extractError(res));
               }
             } catch {
-              setError('Iptal islemi basarisiz');
+              setError('İptal işlemi başarısız');
             }
             setCancelling(false);
           },
@@ -324,7 +324,7 @@ export default function KmhOnboardingScreen() {
     );
   };
 
-  if (loading) return <LoadingSpinner text="KYC durumu yukleniyor..." />;
+  if (loading) return <LoadingSpinner text="KYC durumu yükleniyor..." />;
 
   const steps = kycStatus?.steps || [];
   const completedCount = steps.filter((s) => s.completed || !s.required).length;
@@ -364,7 +364,7 @@ export default function KmhOnboardingScreen() {
               <View style={[styles.processingIconWrap, { backgroundColor: '#ecfdf5' }]}>
                 <Ionicons name="checkmark-circle" size={48} color="#10b981" />
               </View>
-              <Text style={styles.processingSuccessText}>Tamamlandi!</Text>
+              <Text style={styles.processingSuccessText}>Tamamlandı!</Text>
             </>
           )}
         </View>
@@ -374,225 +374,225 @@ export default function KmhOnboardingScreen() {
 
   const AGREEMENT_TEXTS: Record<string, { title: string; subtitle: string; body: string }> = {
     kmh: {
-      title: 'Banka Guvence Hesabi Sozlesmesi',
-      subtitle: 'Banka Guvence Hesabi (KMH) kosullari',
-      body: `KREDILI MEVDUAT HESABI (KMH) SOZLESMESI
+      title: 'Banka Güvence Hesabı Sözleşmesi',
+      subtitle: 'Banka Güvence Hesabı (KMH) koşulları',
+      body: `KREDİLİ MEVDUAT HESABI (KMH) SÖZLEŞMESİ
 
-Sozlesme No: [Otomatik atanacaktir]
-Tarih: [Basvuru tarihi]
+Sözleşme No: [Otomatik atanacaktır]
+Tarih: [Başvuru tarihi]
 
 TARAFLAR
 
-Banka: Kira Guvence Anlasmali Banka A.S.
-Musteri: [Kullanici bilgileri]
-Platform: Kira Guvence Teknoloji A.S.
+Banka: Kira Güvence Anlaşmalı Banka A.Ş.
+Müşteri: [Kullanıcı bilgileri]
+Platform: Kira Güvence Teknoloji A.Ş.
 
 MADDE 1 - TANIMLAR
 
-1.1. KMH (Kredili Mevduat Hesabi): Kiracinin kira guvencesi olarak kullanilmak uzere acilan ozel mevduat hesabidir.
-1.2. Kredi Limiti: Musterinin gelir durumu, kredi gecmisi ve diger kriterlere gore belirlenen azami kredi kullanim tutaridir.
-1.3. Platform: Kira Guvence Teknoloji A.S. tarafindan isletilen kiraguvence.com web sitesi ve Kira Guvence mobil uygulamasidir.
+1.1. KMH (Kredili Mevduat Hesabı): Kiracının kira güvencesi olarak kullanılmak üzere açılan özel mevduat hesabıdır.
+1.2. Kredi Limiti: Müşterinin gelir durumu, kredi geçmişi ve diğer kriterlere göre belirlenen azami kredi kullanım tutarıdır.
+1.3. Platform: Kira Güvence Teknoloji A.Ş. tarafından işletilen kiraguvence.com web sitesi ve Kira Güvence mobil uygulamasıdır.
 
-MADDE 2 - HESAP ACILISI VE KULLANIM KOSULLARI
+MADDE 2 - HESAP AÇILIŞI VE KULLANIM KOŞULLARI
 
-2.1. KMH, musterinin basvurusunun onaylanmasi ve musteri edinim surecinin (KYC) tamamlanmasinin ardindan acilir.
-2.2. Hesap, yalnizca kira odeme islemleri icin kullanilabilir. Baska amaclarla kullanim yasaktir.
-2.3. Hesap acilisi icin musterinin 18 yasini doldurmus T.C. vatandasi olmasi gereklidir.
-2.4. Musteri, hesap acilisi sirasinda verdigi tum bilgilerin dogru ve guncel oldugunu beyan eder.
+2.1. KMH, müşterinin başvurusunun onaylanması ve müşteri edinim sürecinin (KYC) tamamlanmasının ardından açılır.
+2.2. Hesap, yalnızca kira ödeme işlemleri için kullanılabilir. Başka amaçlarla kullanım yasaktır.
+2.3. Hesap açılışı için müşterinin 18 yaşını doldurmuş T.C. vatandaşı olması gereklidir.
+2.4. Müşteri, hesap açılışı sırasında verdiği tüm bilgilerin doğru ve güncel olduğunu beyan eder.
 
-MADDE 3 - KREDI LIMITI VE FAIZ ORANI
+MADDE 3 - KREDİ LİMİTİ VE FAİZ ORANI
 
-3.1. Kredi limiti, musterinin aylik geliri, mevcut borc yukumlulukleri, KKB kredi gecmisi ve Findeks skoru dikkate alinarak belirlenir.
-3.2. Onaylanan kredi limiti, basvuru tarihinde gecerli olan degerlendirme kriterlerine gore hesaplanmistir.
-3.3. Uygulanacak faiz orani, sozlesme tarihinde gecerli olan ve TCMB politika faiz oranina endeksli orandir.
-3.4. Banka, faiz oranini TCMB kararlarindaki degisikliklere paralel olarak guncelleme hakkini sakli tutar.
+3.1. Kredi limiti, müşterinin aylık geliri, mevcut borç yükümlülükleri, KKB kredi geçmişi ve Findeks skoru dikkate alınarak belirlenir.
+3.2. Onaylanan kredi limiti, başvuru tarihinde geçerli olan değerlendirme kriterlerine göre hesaplanmıştır.
+3.3. Uygulanacak faiz oranı, sözleşme tarihinde geçerli olan ve TCMB politika faiz oranına endeksli orandır.
+3.4. Banka, faiz oranını TCMB kararlarındaki değişikliklere paralel olarak güncelleme hakkını saklı tutar.
 
-MADDE 4 - KIRA ODEME MEKANIZMASI
+MADDE 4 - KİRA ÖDEME MEKANİZMASI
 
-4.1. Kira odemesi, her ayin belirlenen gunu otomatik olarak KMH hesabindan ev sahibinin hesabina aktarilir.
-4.2. Platform komisyonu (%1) kira tutarindan dusulerek ev sahibine net tutar transfer edilir.
-4.3. Hesapta yeterli bakiye bulunmamasi durumunda kredi limiti kullanilir.
-4.4. Kredi limitinin asildigi durumlarda odeme gerceklestirilemez ve kiraci temerrude duser.
+4.1. Kira ödemesi, her ayın belirlenen günü otomatik olarak KMH hesabından ev sahibinin hesabına aktarılır.
+4.2. Platform garanti ücreti (%1) kira tutarından düşülerek ev sahibine net tutar transfer edilir.
+4.3. Hesapta yeterli bakiye bulunmaması durumunda kredi limiti kullanılır.
+4.4. Kredi limitinin aşıldığı durumlarda ödeme gerçekleştirilemez ve kiracı temerrüde düşer.
 
-MADDE 5 - GERI ODEME
+MADDE 5 - GERİ ÖDEME
 
-5.1. Kullanilan kredi tutari, belirlenen vadelerde aylik taksitler halinde geri odenir.
-5.2. Taksit odeme gunu, sozlesme imzalanirken belirlenen gundur.
-5.3. Erken odeme halinde kalan vade faizi tahsil edilmez (tuketici kredisi hukumleri uygulanir).
+5.1. Kullanılan kredi tutarı, belirlenen vadelerde aylık taksitler halinde geri ödenir.
+5.2. Taksit ödeme günü, sözleşme imzalanırken belirlenen gündür.
+5.3. Erken ödeme halinde kalan vade faizi tahsil edilmez (tüketici kredisi hükümleri uygulanır).
 
-MADDE 6 - TEMERUT VE GECIKME FAIZI
+MADDE 6 - TEMERRÜT VE GECİKME FAİZİ
 
-6.1. Taksit odeme tarihinde odeme yapilmamasi halinde musteri temerrude duser.
-6.2. Temerut faizi, sozlesme faiz oraninin 1.5 kati olarak uygulanir.
-6.3. Ardisik 3 taksit odenmemesi halinde sozlesme feshedilebilir ve borcun tamami muaccel hale gelir.
-6.4. Geciken odemeler KKB ve Findeks'e olumsuz olarak bildirilir.
+6.1. Taksit ödeme tarihinde ödeme yapılmaması halinde müşteri temerrüde düşer.
+6.2. Temerrüt faizi, sözleşme faiz oranının 1.5 katı olarak uygulanır.
+6.3. Ardışık 3 taksit ödenmemesi halinde sözleşme feshedilebilir ve borcun tamamı muaccel hale gelir.
+6.4. Geciken ödemeler KKB ve Findeks'e olumsuz olarak bildirilir.
 
 MADDE 7 - HESAP KAPATMA
 
-7.1. Mevcut borcun tamamen odenmesi halinde hesap kapatilabilir.
-7.2. Kira sozlesmesinin sona ermesi durumunda, kalan borc yapılandırılarak hesap kapatma sureci baslatilir.
-7.3. Musterinin vefati halinde kanuni mirascilarla borcs tasfiyesi yapilir.
+7.1. Mevcut borcun tamamen ödenmesi halinde hesap kapatılabilir.
+7.2. Kira sözleşmesinin sona ermesi durumunda, kalan borç yapılandırılarak hesap kapatma süreci başlatılır.
+7.3. Müşterinin vefatı halinde kanuni mirasçılarla borç tasfiyesi yapılır.
 
-MADDE 8 - GENEL HUKUMLER
+MADDE 8 - GENEL HÜKÜMLER
 
-8.1. Bu sozlesme Turk Borclar Kanunu, Tuketici Kanunu ve Bankacilik Kanunu hukumlerine tabidir.
-8.2. Uyusmazliklarda Istanbul Mahkemeleri ve Icra Daireleri yetkilidir.
-8.3. Bu sozlesme 3 (uc) nusaha olarak duzenlenmisstir.
+8.1. Bu sözleşme Türk Borçlar Kanunu, Tüketici Kanunu ve Bankacılık Kanunu hükümlerine tabidir.
+8.2. Uyuşmazlıklarda İstanbul Mahkemeleri ve İcra Daireleri yetkilidir.
+8.3. Bu sözleşme 3 (üç) nüsha olarak düzenlenmiştir.
 
-Kira Guvence Anlasmali Banka A.S.
-Kira Guvence Teknoloji A.S.`,
+Kira Güvence Anlaşmalı Banka A.Ş.
+Kira Güvence Teknoloji A.Ş.`,
     },
     kvkk: {
-      title: 'KVKK Aydinlatma',
-      subtitle: 'Kisisel verilerin korunmasi',
-      body: `KISISEL VERILERIN ISLENMESINE ILISKIN AYDINLATMA METNI
+      title: 'KVKK Aydınlatma',
+      subtitle: 'Kişisel verilerin korunması',
+      body: `KİŞİSEL VERİLERİN İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ
 
-Kira Guvence Teknoloji A.S. ("Sirket") olarak, 6698 sayili Kisisel Verilerin Korunmasi Kanunu ("KVKK") kapsaminda veri sorumlusu sifatiyla sizleri bilgilendirmek istiyoruz.
+Kira Güvence Teknoloji A.Ş. ("Şirket") olarak, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında veri sorumlusu sıfatıyla sizleri bilgilendirmek istiyoruz.
 
-1. VERI SORUMLUSU
+1. VERİ SORUMLUSU
 
-Kira Guvence Teknoloji A.S.
-Adres: Istanbul, Turkiye
+Kira Güvence Teknoloji A.Ş.
+Adres: İstanbul, Türkiye
 Web: https://kiraguvence.com
 E-posta: info@kiraguvence.com
 
-2. ISLENEN KISISEL VERILER
+2. İŞLENEN KİŞİSEL VERİLER
 
-KMH hizmeti kapsaminda asagidaki kisisel verileriniz islenmektedir:
+KMH hizmeti kapsamında aşağıdaki kişisel verileriniz işlenmektedir:
 
-a) Kimlik Bilgileri: T.C. Kimlik Numarasi (TCKN), ad soyad, dogum tarihi. TCKN, SHA-256 algoritmasiyla hash'lenerek saklanir.
-b) Iletisim Bilgileri: Cep telefonu numarasi, e-posta adresi.
-c) Finansal Bilgiler: Aylik net gelir, istihdam durumu, isveren bilgisi, tahmini kira tutari, mevcut kredi ve borc bilgileri.
-d) Kredi Degerlendirme Bilgileri: KKB kredi raporu, Findeks skoru, borc/gelir orani, kredi gecmisi.
-e) KYC Bilgileri: Kimlik dogrulama sonuclari, canlilik testi sonuclari, goruntulu gorusme kayitlari.
-f) Islem Bilgileri: Kira odeme gecmisi, sozlesme detaylari, hesap hareketleri.
-g) Teknik Bilgiler: IP adresi, cihaz bilgisi, isletim sistemi, erisim zamanlari, oturum bilgileri.
+a) Kimlik Bilgileri: T.C. Kimlik Numarası (TCKN), ad soyad, doğum tarihi. TCKN, SHA-256 algoritmasıyla hash'lenerek saklanır.
+b) İletişim Bilgileri: Cep telefonu numarası, e-posta adresi.
+c) Finansal Bilgiler: Aylık net gelir, istihdam durumu, işveren bilgisi, tahmini kira tutarı, mevcut kredi ve borç bilgileri.
+d) Kredi Değerlendirme Bilgileri: KKB kredi raporu, Findeks skoru, borç/gelir oranı, kredi geçmişi.
+e) KYC Bilgileri: Kimlik doğrulama sonuçları, canlılık testi sonuçları, görüntülü görüşme kayıtları.
+f) İşlem Bilgileri: Kira ödeme geçmişi, sözleşme detayları, hesap hareketleri.
+g) Teknik Bilgiler: IP adresi, cihaz bilgisi, işletim sistemi, erişim zamanları, oturum bilgileri.
 
-3. ISLENME AMACI VE HUKUKI SEBEBI
+3. İŞLENME AMACI VE HUKUKİ SEBEBİ
 
-Kisisel verileriniz asagidaki amac ve hukuki sebeplerle islenmektedir:
+Kişisel verileriniz aşağıdaki amaç ve hukuki sebeplerle işlenmektedir:
 
-a) Sozlesmenin kurulmasi ve ifasi (KVKK m.5/2-c): KMH hesap acilisi, kredi degerlendirmesi, odeme islemleri.
-b) Hukuki yukumluluk (KVKK m.5/2-c): BDDK, MASAK, SPK mevzuati uyumlulugu, vergi mevzuati.
-c) Hakkin tesisi ve korunmasi (KVKK m.5/2-e): Hukuki sureclerin yurutulmesi, alacak takibi.
-d) Mesru menfaat (KVKK m.5/2-f): Risk degerlendirmesi, hizmet iyilestirme, dolandiricilik onleme.
-e) Acik riza (KVKK m.5/1): Pazarlama iletisimleri, profilleme, ucuncu taraf paylasimlari.
+a) Sözleşmenin kurulması ve ifası (KVKK m.5/2-c): KMH hesap açılışı, kredi değerlendirmesi, ödeme işlemleri.
+b) Hukuki yükümlülük (KVKK m.5/2-c): BDDK, MASAK, SPK mevzuatı uyumluluğu, vergi mevzuatı.
+c) Hakkın tesisi ve korunması (KVKK m.5/2-e): Hukuki süreçlerin yürütülmesi, alacak takibi.
+d) Meşru menfaat (KVKK m.5/2-f): Risk değerlendirmesi, hizmet iyileştirme, dolandırıcılık önleme.
+e) Açık rıza (KVKK m.5/1): Pazarlama iletişimleri, profilleme, üçüncü taraf paylaşımları.
 
-4. VERILERIN AKTARIMI
+4. VERİLERİN AKTARIMI
 
-Kisisel verileriniz asagidaki taraflarla paylasilabilir:
-- Anlasmali bankalar (KMH hesap islemleri)
+Kişisel verileriniz aşağıdaki taraflarla paylaşılabilir:
+- Anlaşmalı bankalar (KMH hesap işlemleri)
 - KKB/Findeks (kredi sorgulama)
 - BDDK, MASAK (yasal raporlama)
-- Bulut hizmet saglayicilari (guvenli veri saklama)
-- Hukuk musavirleri (hukuki sureclerde)
+- Bulut hizmet sağlayıcıları (güvenli veri saklama)
+- Hukuk müşavirleri (hukuki süreçlerde)
 
-5. SAKLAMA SURESI
+5. SAKLAMA SÜRESİ
 
-- Hesap bilgileri: Uyelik suresi + 10 yil
-- Finansal islemler: 10 yil (TTK)
-- KYC verileri: 10 yil (MASAK)
-- KKB sorgulama kayitlari: 5 yil
-- Log kayitlari: 2 yil
+- Hesap bilgileri: Üyelik süresi + 10 yıl
+- Finansal işlemler: 10 yıl (TTK)
+- KYC verileri: 10 yıl (MASAK)
+- KKB sorgulama kayıtları: 5 yıl
+- Log kayıtları: 2 yıl
 
 6. HAKLARINIZ (KVKK Madde 11)
 
-a) Kisisel verilerinizin islenip islenmedigini ogrenme
-b) Islenmisse buna iliskin bilgi talep etme
-c) Islenme amacini ve amacina uygun kullanilip kullanilmadigini ogrenme
-d) Yurt icinde/disinda aktarildigi ucuncu kisileri bilme
-e) Eksik veya yanlis islenmesi halinde duzeltilmesini isteme
+a) Kişisel verilerinizin işlenip işlenmediğini öğrenme
+b) İşlenmişse buna ilişkin bilgi talep etme
+c) İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme
+d) Yurt içinde/dışında aktarıldığı üçüncü kişileri bilme
+e) Eksik veya yanlış işlenmesi halinde düzeltilmesini isteme
 f) Silinmesini veya yok edilmesini isteme
-g) Aktarim yapilan ucuncu kisilere bildirilmesini isteme
+g) Aktarım yapılan üçüncü kişilere bildirilmesini isteme
 h) Otomatik analiz sonucu aleyhinize bir sonuca itiraz etme
-i) Kanuna aykiri isleme nedeniyle zararin giderilmesini talep etme
+i) Kanuna aykırı işleme nedeniyle zararın giderilmesini talep etme
 
-Haklarinizi kullanmak icin info@kiraguvence.com adresine basvurabilirsiniz.
+Haklarınızı kullanmak için info@kiraguvence.com adresine başvurabilirsiniz.
 
-Kira Guvence Teknoloji A.S.`,
+Kira Güvence Teknoloji A.Ş.`,
     },
     genel: {
-      title: 'Kullanim Kosullari',
-      subtitle: 'Genel hukum ve kosullar',
-      body: `GENEL KULLANIM KOSULLARI
+      title: 'Kullanım Koşulları',
+      subtitle: 'Genel hüküm ve koşullar',
+      body: `GENEL KULLANIM KOŞULLARI
 
-Son guncelleme: Nisan 2026
+Son güncelleme: Nisan 2026
 
-Kira Guvence Teknoloji A.S. ("Kira Guvence") tarafindan isletilen kiraguvence.com web sitesi ve Kira Guvence mobil uygulamasini ("Platform") kullanarak asagidaki kosullari kabul etmis sayilirsiniz.
+Kira Güvence Teknoloji A.Ş. ("Kira Güvence") tarafından işletilen kiraguvence.com web sitesi ve Kira Güvence mobil uygulamasını ("Platform") kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.
 
-MADDE 1 - HIZMET TANIMI
+MADDE 1 - HİZMET TANIMI
 
-1.1. Kira Guvence, kiracilari, ev sahiplerini ve bankalari bir araya getiren dijital bir platformdur.
-1.2. Platform, Kredili Mevduat Hesabi (KMH) basvurusu, kira sozlesmesi yonetimi ve odeme takibi hizmetleri sunar.
-1.3. Kira Guvence bir banka veya finansal kurulus degildir. Kredi kararlari ve hesap yonetimi tamamen anlasmali bankalar tarafindan yurutulur.
+1.1. Kira Güvence, kiracıları, ev sahiplerini ve bankaları bir araya getiren dijital bir platformdur.
+1.2. Platform, Kredili Mevduat Hesabı (KMH) başvurusu, kira sözleşmesi yönetimi ve ödeme takibi hizmetleri sunar.
+1.3. Kira Güvence bir banka veya finansal kuruluş değildir. Kredi kararları ve hesap yönetimi tamamen anlaşmalı bankalar tarafından yürütülür.
 
-MADDE 2 - UYGUNLUK KOSULLARI
+MADDE 2 - UYGUNLUK KOŞULLARI
 
-2.1. Platform'u kullanabilmek icin:
-- 18 yasini doldurmus olmak
-- T.C. vatandasi olmak ve gecerli bir TCKN'ye sahip olmak
-- Aktif bir cep telefonu numarasina sahip olmak
-- Bu kosullari kabul etmek
+2.1. Platform'u kullanabilmek için:
+- 18 yaşını doldurmuş olmak
+- T.C. vatandaşı olmak ve geçerli bir TCKN'ye sahip olmak
+- Aktif bir cep telefonu numarasına sahip olmak
+- Bu koşulları kabul etmek
 
-2.2. Tüzel kisiler platform'u kullanamazlar.
+2.2. Tüzel kişiler platform'u kullanamazlar.
 
-MADDE 3 - HESAP YUKUMLULUKLERI
+MADDE 3 - HESAP YÜKÜMLÜLÜKLERİ
 
-3.1. Kullanici, kayit sirasinda dogru ve guncel bilgi saglamakla yukumludur.
-3.2. Hesap guvenliginden (sifre, OTP kodlari) kullanici sorumludur.
-3.3. Hesap bilgilerinin ucuncu kisilerle paylasilmamasi gerekmektedir.
-3.4. Supheli erisim durumunda derhal info@kiraguvence.com adresine bildirimde bulunulmalidir.
+3.1. Kullanıcı, kayıt sırasında doğru ve güncel bilgi sağlamakla yükümlüdür.
+3.2. Hesap güvenliğinden (şifre, OTP kodları) kullanıcı sorumludur.
+3.3. Hesap bilgilerinin üçüncü kişilerle paylaşılmaması gerekmektedir.
+3.4. Şüpheli erişim durumunda derhal info@kiraguvence.com adresine bildirimde bulunulmalıdır.
 
 MADDE 4 - YASAKLAR
 
-4.1. Platform asagidaki amaclarla kullanilamaz:
-- Sahte kimlik veya yaniltici bilgi ile islem yapma
-- Kara para aklama veya teror finansmani
-- Diger kullanicilarin haklarini ihlal etme
-- Platform'un teknik altyapisina zarar verme
-- Otomatik botlar veya scraping araclari kullanma
+4.1. Platform aşağıdaki amaçlarla kullanılamaz:
+- Sahte kimlik veya yanıltıcı bilgi ile işlem yapma
+- Kara para aklama veya terör finansmanı
+- Diğer kullanıcıların haklarını ihlal etme
+- Platform'un teknik altyapısına zarar verme
+- Otomatik botlar veya scraping araçları kullanma
 
-MADDE 5 - KOMISYON VE UCRETLER
+MADDE 5 - GARANTİ ÜCRETİ VE ÜCRETLER
 
-5.1. Platform, basarili kira odemeleri uzerinden %1 oraninda komisyon tahsil eder.
-5.2. Komisyon, kira tutarindan dusulerek ev sahibine net tutar aktarilir.
-5.3. KMH hesap acilisi ve yonetimi icin banka tarafindan ayrica ucret alinabilir.
-5.4. Komisyon oranlari degisiklikleri en az 30 gun onceden bildirilir.
+5.1. Platform, başarılı kira ödemeleri üzerinden %1 oranında garanti ücreti tahsil eder.
+5.2. Garanti ücreti, kira tutarından düşülerek ev sahibine net tutar aktarılır.
+5.3. KMH hesap açılışı ve yönetimi için banka tarafından ayrıca ücret alınabilir.
+5.4. Garanti ücreti oranları değişiklikleri en az 30 gün önceden bildirilir.
 
 MADDE 6 - SORUMLULUK SINIRI
 
-6.1. Kira Guvence, banka tarafindan verilen kredi kararlari, faiz oranlari ve hesap yonetimi konularinda sorumluluk kabul etmez.
-6.2. Platform kesintileri, teknik arizalar veya ucuncu taraf hizmet saglayici kaynakli sorunlardan dolayi dogrudan veya dolayli zararladan Kira Guvence sorumlu tutulamaz.
-6.3. Kira Guvence'in toplam sorumlulugu, kullanicinin son 12 ayda platform'a odedigi toplam komisyon tutari ile sinirlidir.
+6.1. Kira Güvence, banka tarafından verilen kredi kararları, faiz oranları ve hesap yönetimi konularında sorumluluk kabul etmez.
+6.2. Platform kesintileri, teknik arızalar veya üçüncü taraf hizmet sağlayıcı kaynaklı sorunlardan dolayı doğrudan veya dolaylı zararlardan Kira Güvence sorumlu tutulamaz.
+6.3. Kira Güvence'in toplam sorumluluğu, kullanıcının son 12 ayda platform'a ödediği toplam garanti ücreti tutarı ile sınırlıdır.
 
-MADDE 7 - FIKRI MULKIYET
+MADDE 7 - FİKRİ MÜLKİYET
 
-7.1. Platform uzerindeki tum icerik, tasarim, logo, yazilim ve algoritmalar Kira Guvence'e aittir.
-7.2. Kullanicilar, platform icerigini kopyalayamaz, dagitamaz veya ticari amacla kullanamazlar.
+7.1. Platform üzerindeki tüm içerik, tasarım, logo, yazılım ve algoritmalar Kira Güvence'e aittir.
+7.2. Kullanıcılar, platform içeriğini kopyalayamaz, dağıtamaz veya ticari amaçla kullanamazlar.
 
-MADDE 8 - SOZLESME DEGISIKLIKLERI
+MADDE 8 - SÖZLEŞME DEĞİŞİKLİKLERİ
 
-8.1. Kira Guvence, bu kosullari degistirme hakkini sakli tutar.
-8.2. Onemli degisiklikler en az 30 gun oncesinden uygulama ici bildirim ile duyurulur.
-8.3. Degisikliklerin yururluge girmesinden sonra Platform'un kullanilmaya devam edilmesi, degisikliklerin kabul edilmesi anlamina gelir.
+8.1. Kira Güvence, bu koşulları değiştirme hakkını saklı tutar.
+8.2. Önemli değişiklikler en az 30 gün öncesinden uygulama içi bildirim ile duyurulur.
+8.3. Değişikliklerin yürürlüğe girmesinden sonra Platform'un kullanılmaya devam edilmesi, değişikliklerin kabul edilmesi anlamına gelir.
 
-MADDE 9 - FESIH
+MADDE 9 - FESİH
 
-9.1. Kullanici, hesabini her zaman kapatarak bu sozlesmeyi feshedebilir.
-9.2. Aktif KMH kredi borcu bulunan hesaplar, borc tamamen odenmeden kapatilamaz.
-9.3. Kira Guvence, kosullarin ihlali halinde hesabi askiya alma veya kapatma hakkina sahiptir.
+9.1. Kullanıcı, hesabını her zaman kapatarak bu sözleşmeyi feshedebilir.
+9.2. Aktif KMH kredi borcu bulunan hesaplar, borç tamamen ödenmeden kapatılamaz.
+9.3. Kira Güvence, koşulların ihlali halinde hesabı askıya alma veya kapatma hakkına sahiptir.
 
-MADDE 10 - UYGULANACAK HUKUK VE UYUSMAZLIK
+MADDE 10 - UYGULANACAK HUKUK VE UYUŞMAZLIK
 
-10.1. Bu kosullar Turkiye Cumhuriyeti hukukuna tabidir.
-10.2. Uyusmazliklarda Istanbul Mahkemeleri ve Icra Daireleri yetkilidir.
-10.3. Tuketici uyusmazliklarinda 7036 sayili Kanun hukumleri saklidir.
+10.1. Bu koşullar Türkiye Cumhuriyeti hukukuna tabidir.
+10.2. Uyuşmazlıklarda İstanbul Mahkemeleri ve İcra Daireleri yetkilidir.
+10.3. Tüketici uyuşmazlıklarında 7036 sayılı Kanun hükümleri saklıdır.
 
-ILETISIM
+İLETİŞİM
 E-posta: info@kiraguvence.com
 Web: https://kiraguvence.com
 
-Kira Guvence Teknoloji A.S.`,
+Kira Güvence Teknoloji A.Ş.`,
     },
   };
 
@@ -674,8 +674,8 @@ Kira Guvence Teknoloji A.S.`,
               <Ionicons name="arrow-back" size={22} color="#ffffff" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
-              <Text style={styles.headerTitle}>Sozlesme Onaylari</Text>
-              <Text style={styles.headerSubtitle}>Tum sozlesmeleri okuyun ve onaylayin</Text>
+              <Text style={styles.headerTitle}>Sözleşme Onayları</Text>
+              <Text style={styles.headerSubtitle}>Tüm sözleşmeleri okuyun ve onaylayın</Text>
             </View>
           </View>
         </View>
@@ -697,8 +697,8 @@ Kira Guvence Teknoloji A.S.`,
               {agreementChecks.kmh && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.checkLabel}>Banka Guvence Hesabi Sozlesmesini okudum ve kabul ediyorum</Text>
-              {!agreementChecks.kmh && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
+              <Text style={styles.checkLabel}>Banka Güvence Hesabı Sözleşmesini okudum ve kabul ediyorum</Text>
+              {!agreementChecks.kmh && <Text style={styles.checkHint}>Okumak için dokunun</Text>}
             </View>
             {!agreementChecks.kmh && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}
           </TouchableOpacity>
@@ -719,8 +719,8 @@ Kira Guvence Teknoloji A.S.`,
               {agreementChecks.kvkk && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.checkLabel}>KVKK Aydinlatma Metnini okudum ve kabul ediyorum</Text>
-              {!agreementChecks.kvkk && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
+              <Text style={styles.checkLabel}>KVKK Aydınlatma Metnini okudum ve kabul ediyorum</Text>
+              {!agreementChecks.kvkk && <Text style={styles.checkHint}>Okumak için dokunun</Text>}
             </View>
             {!agreementChecks.kvkk && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}
           </TouchableOpacity>
@@ -741,14 +741,14 @@ Kira Guvence Teknoloji A.S.`,
               {agreementChecks.genel && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.checkLabel}>Genel kullanim kosullarini kabul ediyorum</Text>
-              {!agreementChecks.genel && <Text style={styles.checkHint}>Okumak icin dokunun</Text>}
+              <Text style={styles.checkLabel}>Genel kullanım koşullarını kabul ediyorum</Text>
+              {!agreementChecks.genel && <Text style={styles.checkHint}>Okumak için dokunun</Text>}
             </View>
             {!agreementChecks.genel && <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />}
           </TouchableOpacity>
 
           <Button
-            title="Onayliyorum"
+            title="Onaylıyorum"
             onPress={handleAgreementSubmit}
             disabled={!agreementChecks.kmh || !agreementChecks.kvkk || !agreementChecks.genel}
             size="lg"
@@ -773,9 +773,9 @@ Kira Guvence Teknoloji A.S.`,
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Musteri Edinim</Text>
+            <Text style={styles.headerTitle}>Müşteri Edinim</Text>
             <Text style={styles.headerSubtitle}>
-              {completedCount}/{totalSteps} adim tamamlandi
+              {completedCount}/{totalSteps} adım tamamlandı
             </Text>
           </View>
           <View style={styles.stepBadge}>
@@ -848,7 +848,7 @@ Kira Guvence Teknoloji A.S.`,
                       styles.stepDescription,
                       status === 'skipped' && styles.stepDescriptionSkipped,
                     ]}>
-                      {status === 'skipped' ? 'Mevcut musteri - atlanabilir' : step.description}
+                      {status === 'skipped' ? 'Mevcut müşteri - atlanabilir' : step.description}
                     </Text>
                   </View>
                   {/* Status indicator */}
@@ -858,7 +858,7 @@ Kira Guvence Teknoloji A.S.`,
                     </View>
                   )}
                   {status === 'skipped' && (
-                    <Text style={styles.stepSkippedLabel}>Atlandi</Text>
+                    <Text style={styles.stepSkippedLabel}>Atlandı</Text>
                   )}
                 </View>
 
@@ -877,7 +877,7 @@ Kira Guvence Teknoloji A.S.`,
                 {isProcessing && (
                   <View style={styles.stepProcessingRow}>
                     <ActivityIndicator size="small" color="#2563eb" />
-                    <Text style={styles.stepProcessingText}>Isleniyor...</Text>
+                    <Text style={styles.stepProcessingText}>İşleniyor...</Text>
                   </View>
                 )}
               </View>
@@ -896,7 +896,7 @@ Kira Guvence Teknoloji A.S.`,
         {/* Complete Button */}
         {canComplete && (
           <Button
-            title="Hesap Acilisini Tamamla"
+            title="Hesap Açılışını Tamamla"
             onPress={handleComplete}
             loading={completing}
             size="lg"
@@ -917,7 +917,7 @@ Kira Guvence Teknoloji A.S.`,
           ) : (
             <>
               <Ionicons name="close-circle-outline" size={18} color="#ef4444" />
-              <Text style={styles.cancelBtnText}>Basvuruyu Iptal Et</Text>
+              <Text style={styles.cancelBtnText}>Başvuruyu İptal Et</Text>
             </>
           )}
         </TouchableOpacity>

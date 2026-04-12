@@ -21,8 +21,8 @@ import { ContractSummary, Property } from '../../../src/types';
 const WIZARD_STEPS = [
   { key: 0, label: 'Taraflar' },
   { key: 1, label: 'Tarih ve Tutar' },
-  { key: 2, label: 'Kosullar' },
-  { key: 3, label: 'Ozet ve Onay' },
+  { key: 2, label: 'Koşullar' },
+  { key: 3, label: 'Özet ve Onay' },
 ] as const;
 
 interface TenantResult {
@@ -35,7 +35,7 @@ interface TenantResult {
 type FilterTab = 'ALL' | 'ACTIVE' | 'PENDING_SIGNATURES' | 'TERMINATED';
 
 const filterTabs: { key: FilterTab; label: string }[] = [
-  { key: 'ALL', label: 'Tumu' },
+  { key: 'ALL', label: 'Tümü' },
   { key: 'ACTIVE', label: 'Aktif' },
   { key: 'PENDING_SIGNATURES', label: 'Bekleyen' },
   { key: 'TERMINATED', label: 'Sonlanan' },
@@ -88,47 +88,47 @@ export default function ContractsListScreen() {
     switch (step) {
       case 0: // Taraflar
         if (!tenantResult) {
-          setStepErrors((prev) => ({ ...prev, 0: 'Kiraci secimi zorunludur. Telefon numarasi ile arama yapin.' }));
+          setStepErrors((prev) => ({ ...prev, 0: 'Kiracı seçimi zorunludur. Telefon numarası ile arama yapın.' }));
           return false;
         }
         if (!selectedPropertyId) {
-          setStepErrors((prev) => ({ ...prev, 0: 'Bir mulk secmeniz gerekmektedir.' }));
+          setStepErrors((prev) => ({ ...prev, 0: 'Bir mülk seçmeniz gerekmektedir.' }));
           return false;
         }
         setStepErrors((prev) => { const n = { ...prev }; delete n[0]; return n; });
         return true;
       case 1: // Tarih ve Tutar
         if (!startDate) {
-          setStepErrors((prev) => ({ ...prev, 1: 'Baslangic tarihi zorunludur.' }));
+          setStepErrors((prev) => ({ ...prev, 1: 'Başlangıç tarihi zorunludur.' }));
           return false;
         }
         if (!endDate) {
-          setStepErrors((prev) => ({ ...prev, 1: 'Bitis tarihi zorunludur.' }));
+          setStepErrors((prev) => ({ ...prev, 1: 'Bitiş tarihi zorunludur.' }));
           return false;
         }
         if (!monthlyRent || Number(monthlyRent) <= 0) {
-          setStepErrors((prev) => ({ ...prev, 1: 'Aylik kira tutari zorunludur.' }));
+          setStepErrors((prev) => ({ ...prev, 1: 'Aylık kira tutarı zorunludur.' }));
           return false;
         }
         if (!landlordIban || !/^TR\d{24}$/.test(landlordIban)) {
-          setStepErrors((prev) => ({ ...prev, 1: 'Gecerli bir IBAN giriniz (TR + 24 rakam).' }));
+          setStepErrors((prev) => ({ ...prev, 1: 'Geçerli bir IBAN giriniz (TR + 24 rakam).' }));
           return false;
         }
         const day = Number(paymentDay);
         if (!day || day < 1 || day > 28) {
-          setStepErrors((prev) => ({ ...prev, 1: 'Odeme gunu 1-28 arasi olmalidir.' }));
+          setStepErrors((prev) => ({ ...prev, 1: 'Ödeme günü 1-28 arası olmalıdır.' }));
           return false;
         }
         setStepErrors((prev) => { const n = { ...prev }; delete n[1]; return n; });
         return true;
-      case 2: // Kosullar — optional fields, always valid
+      case 2: // Koşullar — optional fields, always valid
         if (rentIncreaseType === 'FIXED_RATE' && (!rentIncreaseRate || Number(rentIncreaseRate) <= 0)) {
-          setStepErrors((prev) => ({ ...prev, 2: 'Sabit artis orani secildi, oran giriniz.' }));
+          setStepErrors((prev) => ({ ...prev, 2: 'Sabit artış oranı seçildi, oran giriniz.' }));
           return false;
         }
         setStepErrors((prev) => { const n = { ...prev }; delete n[2]; return n; });
         return true;
-      case 3: // Ozet — final check
+      case 3: // Özet — final check
         return true;
       default:
         return true;
@@ -172,20 +172,20 @@ export default function ContractsListScreen() {
   const onRefresh = async () => { setRefreshing(true); await loadContracts(); setRefreshing(false); };
 
   const searchTenant = async () => {
-    if (!/^5\d{9}$/.test(tenantPhone)) { setTenantError('Gecerli bir telefon girin (5XXXXXXXXX)'); return; }
+    if (!/^5\d{9}$/.test(tenantPhone)) { setTenantError('Geçerli bir telefon girin (5XXXXXXXXX)'); return; }
     setTenantError(''); setTenantSearching(true); setTenantResult(null);
     const res = await api<TenantResult>(`/api/v1/users/search?phone=${tenantPhone}`, { token: tokens!.accessToken });
     if (res.status === 'success' && res.data) {
       setTenantResult(res.data);
-    } else { setTenantError(extractError(res, 'Kullanici bulunamadi')); }
+    } else { setTenantError(extractError(res, 'Kullanıcı bulunamadı')); }
     setTenantSearching(false);
   };
 
   const handleCreate = async () => {
     if (!tokens || !tenantResult || !selectedPropertyId || !monthlyRent || !startDate || !endDate) {
-      setFormError('Zorunlu alanlari doldurun'); return;
+      setFormError('Zorunlu alanları doldurun'); return;
     }
-    if (!/^TR\d{24}$/.test(landlordIban)) { setFormError('Gecersiz IBAN (TR + 24 rakam)'); return; }
+    if (!/^TR\d{24}$/.test(landlordIban)) { setFormError('Geçersiz IBAN (TR + 24 rakam)'); return; }
 
     setFormError(''); setSubmitting(true);
     const body: any = {
@@ -279,9 +279,9 @@ export default function ContractsListScreen() {
         {filteredContracts.length === 0 ? (
           <EmptyState
             icon="document-text-outline"
-            title={contracts.length === 0 ? 'Henuz sozlesmeniz yok' : 'Bu filtrede sozlesme bulunamadi'}
-            subtitle={contracts.length === 0 ? 'Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika' : 'Farkli bir filtre deneyin.'}
-            ctaLabel={isLandlord && contracts.length === 0 ? 'Sozlesme Olustur' : undefined}
+            title={contracts.length === 0 ? 'Henüz sözleşmeniz yok' : 'Bu filtrede sözleşme bulunamadı'}
+            subtitle={contracts.length === 0 ? 'Kefil aramadan ilk kontratınızı oluşturun — sadece 5 dakika' : 'Farklı bir filtre deneyin.'}
+            ctaLabel={isLandlord && contracts.length === 0 ? 'Sözleşme Oluştur' : undefined}
             onCtaPress={isLandlord && contracts.length === 0 ? () => setShowForm(true) : undefined}
           />
         ) : (
@@ -305,7 +305,7 @@ export default function ContractsListScreen() {
 
                 <View style={styles.cardParties}>
                   <View style={styles.partyRow}>
-                    <Text style={styles.partyLabel}>Kiraci</Text>
+                    <Text style={styles.partyLabel}>Kiracı</Text>
                     <Text style={styles.partyValue} numberOfLines={1}>{c.tenantName}</Text>
                   </View>
                   <View style={styles.partyRow}>
@@ -334,7 +334,7 @@ export default function ContractsListScreen() {
                         color={c.signatureCount >= 2 ? '#10b981' : colors.gray[500]}
                       />
                       <Text style={[styles.sigText, c.signatureCount >= 2 && { color: '#10b981' }]}>
-                        {c.signatureCount}/2{c.mySignature ? ' (Imzaladim)' : ''}
+                        {c.signatureCount}/2{c.mySignature ? ' (İmzaladım)' : ''}
                       </Text>
                     </View>
                   )}
@@ -380,7 +380,7 @@ export default function ContractsListScreen() {
             >
               <Ionicons name="close" size={24} color={colors.gray[600]} />
             </TouchableOpacity>
-            <Text style={styles.wizardTitle}>Yeni Sozlesme</Text>
+            <Text style={styles.wizardTitle}>Yeni Sözleşme</Text>
             <View style={{ width: 40 }} />
           </View>
 
@@ -441,10 +441,10 @@ export default function ContractsListScreen() {
             {wizardStep === 0 && (
               <>
                 <Text style={styles.stepTitle}>Taraflar</Text>
-                <Text style={styles.stepDescription}>Kiraci ve mulk bilgilerini secin.</Text>
+                <Text style={styles.stepDescription}>Kiracı ve mülk bilgilerini seçin.</Text>
 
                 {/* Tenant Search */}
-                <Text style={styles.pickLabel}>Kiraci Ara (Telefon)</Text>
+                <Text style={styles.pickLabel}>Kiracı Ara (Telefon)</Text>
                 <View style={styles.searchRow}>
                   <View style={{ flex: 1 }}>
                     <Input
@@ -470,11 +470,11 @@ export default function ContractsListScreen() {
                 )}
 
                 {/* Property Selector */}
-                <Text style={styles.pickLabel}>Mulk Sec</Text>
+                <Text style={styles.pickLabel}>Mülk Seç</Text>
                 {properties.length === 0 ? (
                   <View style={styles.emptyPropMsg}>
                     <Ionicons name="alert-circle-outline" size={18} color={colors.gray[400]} />
-                    <Text style={styles.emptyPropText}>Aktif mulkunuz bulunmuyor.</Text>
+                    <Text style={styles.emptyPropText}>Aktif mülkünüz bulunmuyor.</Text>
                   </View>
                 ) : (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
@@ -496,25 +496,25 @@ export default function ContractsListScreen() {
             {wizardStep === 1 && (
               <>
                 <Text style={styles.stepTitle}>Tarih ve Tutar</Text>
-                <Text style={styles.stepDescription}>Sozlesme tarihlerini, kira tutarini ve odeme bilgilerini girin.</Text>
+                <Text style={styles.stepDescription}>Sözleşme tarihlerini, kira tutarını ve ödeme bilgilerini girin.</Text>
 
                 {/* Dates */}
                 <View style={styles.formRow}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.pickLabel}>Baslangic *</Text>
+                    <Text style={styles.pickLabel}>Başlangıç *</Text>
                     <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowStartPicker(true)} activeOpacity={0.7}>
                       <Ionicons name="calendar-outline" size={18} color={startDate ? colors.brand.dark : colors.gray[400]} />
                       <Text style={[styles.datePickerText, !startDate && styles.datePickerPlaceholder]}>
-                        {startDate ? formatDateDisplay(startDate) : 'Tarih sec'}
+                        {startDate ? formatDateDisplay(startDate) : 'Tarih seç'}
                       </Text>
                     </TouchableOpacity>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.pickLabel}>Bitis *</Text>
+                    <Text style={styles.pickLabel}>Bitiş *</Text>
                     <TouchableOpacity style={styles.datePickerBtn} onPress={() => setShowEndPicker(true)} activeOpacity={0.7}>
                       <Ionicons name="calendar-outline" size={18} color={endDate ? colors.brand.dark : colors.gray[400]} />
                       <Text style={[styles.datePickerText, !endDate && styles.datePickerPlaceholder]}>
-                        {endDate ? formatDateDisplay(endDate) : 'Tarih sec'}
+                        {endDate ? formatDateDisplay(endDate) : 'Tarih seç'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -528,9 +528,9 @@ export default function ContractsListScreen() {
                         <View style={styles.dateModalContent}>
                           <View style={styles.dateModalHeader}>
                             <TouchableOpacity onPress={() => setShowStartPicker(false)}>
-                              <Text style={styles.dateModalCancel}>Iptal</Text>
+                              <Text style={styles.dateModalCancel}>İptal</Text>
                             </TouchableOpacity>
-                            <Text style={styles.dateModalTitle}>Baslangic Tarihi</Text>
+                            <Text style={styles.dateModalTitle}>Başlangıç Tarihi</Text>
                             <TouchableOpacity onPress={() => { if (!startDate) setStartDate(new Date()); setShowStartPicker(false); }}>
                               <Text style={styles.dateModalDone}>Tamam</Text>
                             </TouchableOpacity>
@@ -553,9 +553,9 @@ export default function ContractsListScreen() {
                         <View style={styles.dateModalContent}>
                           <View style={styles.dateModalHeader}>
                             <TouchableOpacity onPress={() => setShowEndPicker(false)}>
-                              <Text style={styles.dateModalCancel}>Iptal</Text>
+                              <Text style={styles.dateModalCancel}>İptal</Text>
                             </TouchableOpacity>
-                            <Text style={styles.dateModalTitle}>Bitis Tarihi</Text>
+                            <Text style={styles.dateModalTitle}>Bitiş Tarihi</Text>
                             <TouchableOpacity onPress={() => {
                               if (!endDate) {
                                 const defaultEnd = startDate ? new Date(startDate.getTime() + 365 * 86400000) : new Date(Date.now() + 365 * 86400000);
@@ -608,7 +608,7 @@ export default function ContractsListScreen() {
                   <View style={{ flex: 1 }}><Input label="Depozito" value={depositAmount} onChangeText={(t) => setDepositAmount(t.replace(/\D/g, ''))} keyboardType="number-pad" /></View>
                 </View>
 
-                <Input label="Odeme Gunu (1-28)" value={paymentDay} onChangeText={(t) => setPaymentDay(t.replace(/\D/g, '').slice(0, 2))} keyboardType="number-pad" />
+                <Input label="Ödeme Günü (1-28)" value={paymentDay} onChangeText={(t) => setPaymentDay(t.replace(/\D/g, '').slice(0, 2))} keyboardType="number-pad" />
 
                 <Input
                   label="Ev Sahibi IBAN *"
@@ -616,7 +616,7 @@ export default function ContractsListScreen() {
                   value={landlordIban}
                   onChangeText={(t) => setLandlordIban(t.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 26))}
                   maxLength={26}
-                  error={landlordIban.length > 0 && !/^TR\d{24}$/.test(landlordIban) ? 'TR + 24 rakam olmali' : undefined}
+                  error={landlordIban.length > 0 && !/^TR\d{24}$/.test(landlordIban) ? 'TR + 24 rakam olmalı' : undefined}
                 />
               </>
             )}
@@ -624,16 +624,16 @@ export default function ContractsListScreen() {
             {/* ========== STEP 2: Kosullar ========== */}
             {wizardStep === 2 && (
               <>
-                <Text style={styles.stepTitle}>Kosullar</Text>
-                <Text style={styles.stepDescription}>Sozlesme sartlarini ve ozel maddeleri belirleyin.</Text>
+                <Text style={styles.stepTitle}>Koşullar</Text>
+                <Text style={styles.stepDescription}>Sözleşme şartlarını ve özel maddeleri belirleyin.</Text>
 
-                <Input label="Sozlesme Sartlari" value={terms} onChangeText={setTerms} multiline numberOfLines={3} />
-                <Input label="Ozel Sartlar" value={specialClauses} onChangeText={setSpecialClauses} multiline numberOfLines={2} />
+                <Input label="Sözleşme Şartları" value={terms} onChangeText={setTerms} multiline numberOfLines={3} />
+                <Input label="Özel Şartlar" value={specialClauses} onChangeText={setSpecialClauses} multiline numberOfLines={2} />
 
                 {/* Rent Increase Type */}
-                <Text style={styles.pickLabel}>Kira Artis Tipi</Text>
+                <Text style={styles.pickLabel}>Kira Artış Tipi</Text>
                 <View style={styles.increaseRow}>
-                  {([['TUFE', 'TUFE'], ['FIXED_RATE', 'Sabit Oran'], ['NONE', 'Artis Yok']] as const).map(([val, label]) => (
+                  {([['TUFE', 'TÜFE'], ['FIXED_RATE', 'Sabit Oran'], ['NONE', 'Artış Yok']] as const).map(([val, label]) => (
                     <TouchableOpacity
                       key={val}
                       style={[styles.increaseChip, rentIncreaseType === val && styles.increaseChipActive]}
@@ -646,29 +646,29 @@ export default function ContractsListScreen() {
                 </View>
                 {rentIncreaseType === 'FIXED_RATE' && (
                   <Input
-                    label="Yillik Artis Orani (%)"
+                    label="Yıllık Artış Oranı (%)"
                     value={rentIncreaseRate}
                     onChangeText={(t) => setRentIncreaseRate(t.replace(/[^\d.]/g, '').slice(0, 5))}
                     keyboardType="decimal-pad"
-                    placeholder="ornek: 25"
+                    placeholder="örnek: 25"
                   />
                 )}
 
                 <Input
-                  label="Ihbar Suresi (gun)"
+                  label="İhbar Süresi (gün)"
                   value={noticePeriodDays}
                   onChangeText={(t) => setNoticePeriodDays(t.replace(/\D/g, '').slice(0, 3))}
                   keyboardType="number-pad"
                   placeholder="30"
                 />
 
-                <Text style={styles.pickLabel}>Ek Kosullar</Text>
+                <Text style={styles.pickLabel}>Ek Koşullar</Text>
                 <View style={styles.toggleSection}>
                   <TouchableOpacity style={styles.toggleRow} onPress={() => setFurnitureIncluded((p) => !p)} activeOpacity={0.7}>
                     <View style={[styles.toggleBox, furnitureIncluded && styles.toggleBoxChecked]}>
                       {furnitureIncluded && <Ionicons name="checkmark" size={14} color="#ffffff" />}
                     </View>
-                    <Text style={styles.toggleLabel}>Esyali kiralama</Text>
+                    <Text style={styles.toggleLabel}>Eşyalı kiralama</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.toggleRow} onPress={() => setPetsAllowed((p) => !p)} activeOpacity={0.7}>
                     <View style={[styles.toggleBox, petsAllowed && styles.toggleBoxChecked]}>
@@ -689,8 +689,8 @@ export default function ContractsListScreen() {
             {/* ========== STEP 3: Ozet ve Onay ========== */}
             {wizardStep === 3 && (
               <>
-                <Text style={styles.stepTitle}>Ozet ve Onay</Text>
-                <Text style={styles.stepDescription}>Tum bilgileri kontrol edip sozlesmeyi olusturun.</Text>
+                <Text style={styles.stepTitle}>Özet ve Onay</Text>
+                <Text style={styles.stepDescription}>Tüm bilgileri kontrol edip sözleşmeyi oluşturun.</Text>
 
                 {/* Taraflar Summary */}
                 <View style={styles.summarySection}>
@@ -699,15 +699,15 @@ export default function ContractsListScreen() {
                     <Text style={styles.summarySectionTitle}>Taraflar</Text>
                     <TouchableOpacity onPress={() => setWizardStep(0)} style={styles.summaryEditBtn}>
                       <Ionicons name="pencil" size={14} color="#2563eb" />
-                      <Text style={styles.summaryEditText}>Duzenle</Text>
+                      <Text style={styles.summaryEditText}>Düzenle</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Kiraci</Text>
+                    <Text style={styles.summaryLabel}>Kiracı</Text>
                     <Text style={styles.summaryValue}>{tenantResult?.fullName || '-'}</Text>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Mulk</Text>
+                    <Text style={styles.summaryLabel}>Mülk</Text>
                     <Text style={styles.summaryValue}>{properties.find((p) => p.id === selectedPropertyId)?.title || '-'}</Text>
                   </View>
                 </View>
@@ -719,19 +719,19 @@ export default function ContractsListScreen() {
                     <Text style={styles.summarySectionTitle}>Tarih ve Tutar</Text>
                     <TouchableOpacity onPress={() => setWizardStep(1)} style={styles.summaryEditBtn}>
                       <Ionicons name="pencil" size={14} color="#2563eb" />
-                      <Text style={styles.summaryEditText}>Duzenle</Text>
+                      <Text style={styles.summaryEditText}>Düzenle</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Baslangic</Text>
+                    <Text style={styles.summaryLabel}>Başlangıç</Text>
                     <Text style={styles.summaryValue}>{startDate ? formatDateDisplay(startDate) : '-'}</Text>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Bitis</Text>
+                    <Text style={styles.summaryLabel}>Bitiş</Text>
                     <Text style={styles.summaryValue}>{endDate ? formatDateDisplay(endDate) : '-'}</Text>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Aylik Kira</Text>
+                    <Text style={styles.summaryLabel}>Aylık Kira</Text>
                     <Text style={[styles.summaryValue, styles.summaryValueBold]}>{monthlyRent ? `${Number(monthlyRent).toLocaleString('tr-TR')} TL` : '-'}</Text>
                   </View>
                   {depositAmount ? (
@@ -741,8 +741,8 @@ export default function ContractsListScreen() {
                     </View>
                   ) : null}
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Odeme Gunu</Text>
-                    <Text style={styles.summaryValue}>Her ayin {paymentDay}. gunu</Text>
+                    <Text style={styles.summaryLabel}>Ödeme Günü</Text>
+                    <Text style={styles.summaryValue}>Her ayın {paymentDay}. günü</Text>
                   </View>
                   <View style={styles.summaryRow}>
                     <Text style={styles.summaryLabel}>IBAN</Text>
@@ -754,43 +754,43 @@ export default function ContractsListScreen() {
                 <View style={styles.summarySection}>
                   <View style={styles.summarySectionHeader}>
                     <Ionicons name="document-text" size={18} color="#2563eb" />
-                    <Text style={styles.summarySectionTitle}>Kosullar</Text>
+                    <Text style={styles.summarySectionTitle}>Koşullar</Text>
                     <TouchableOpacity onPress={() => setWizardStep(2)} style={styles.summaryEditBtn}>
                       <Ionicons name="pencil" size={14} color="#2563eb" />
-                      <Text style={styles.summaryEditText}>Duzenle</Text>
+                      <Text style={styles.summaryEditText}>Düzenle</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Artis Tipi</Text>
+                    <Text style={styles.summaryLabel}>Artış Tipi</Text>
                     <Text style={styles.summaryValue}>
-                      {rentIncreaseType === 'TUFE' ? 'TUFE' : rentIncreaseType === 'FIXED_RATE' ? `Sabit %${rentIncreaseRate}` : 'Artis Yok'}
+                      {rentIncreaseType === 'TUFE' ? 'TÜFE' : rentIncreaseType === 'FIXED_RATE' ? `Sabit %${rentIncreaseRate}` : 'Artış Yok'}
                     </Text>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Ihbar Suresi</Text>
-                    <Text style={styles.summaryValue}>{noticePeriodDays} gun</Text>
+                    <Text style={styles.summaryLabel}>İhbar Süresi</Text>
+                    <Text style={styles.summaryValue}>{noticePeriodDays} gün</Text>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Esyali</Text>
-                    <Text style={styles.summaryValue}>{furnitureIncluded ? 'Evet' : 'Hayir'}</Text>
+                    <Text style={styles.summaryLabel}>Eşyalı</Text>
+                    <Text style={styles.summaryValue}>{furnitureIncluded ? 'Evet' : 'Hayır'}</Text>
                   </View>
                   <View style={styles.summaryRow}>
                     <Text style={styles.summaryLabel}>Evcil Hayvan</Text>
-                    <Text style={styles.summaryValue}>{petsAllowed ? 'Izinli' : 'Izin Yok'}</Text>
+                    <Text style={styles.summaryValue}>{petsAllowed ? 'İzinli' : 'İzin Yok'}</Text>
                   </View>
                   <View style={styles.summaryRow}>
                     <Text style={styles.summaryLabel}>Alt Kiralama</Text>
-                    <Text style={styles.summaryValue}>{sublettingAllowed ? 'Izinli' : 'Izin Yok'}</Text>
+                    <Text style={styles.summaryValue}>{sublettingAllowed ? 'İzinli' : 'İzin Yok'}</Text>
                   </View>
                   {terms ? (
                     <View style={styles.summaryRowFull}>
-                      <Text style={styles.summaryLabel}>Sartlar</Text>
+                      <Text style={styles.summaryLabel}>Şartlar</Text>
                       <Text style={styles.summaryValueSmall}>{terms}</Text>
                     </View>
                   ) : null}
                   {specialClauses ? (
                     <View style={styles.summaryRowFull}>
-                      <Text style={styles.summaryLabel}>Ozel Maddeler</Text>
+                      <Text style={styles.summaryLabel}>Özel Maddeler</Text>
                       <Text style={styles.summaryValueSmall}>{specialClauses}</Text>
                     </View>
                   ) : null}
@@ -814,12 +814,12 @@ export default function ContractsListScreen() {
 
             {wizardStep < 3 ? (
               <TouchableOpacity style={styles.wizardNextBtn} onPress={goNextStep} activeOpacity={0.7}>
-                <Text style={styles.wizardNextText}>Ileri</Text>
+                <Text style={styles.wizardNextText}>İleri</Text>
                 <Ionicons name="arrow-forward" size={18} color="#ffffff" />
               </TouchableOpacity>
             ) : (
               <Button
-                title="Sozlesme Olustur"
+                title="Sözleşme Oluştur"
                 onPress={handleCreate}
                 loading={submitting}
                 style={{ flex: 1.5 }}
