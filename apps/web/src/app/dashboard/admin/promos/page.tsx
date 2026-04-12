@@ -168,7 +168,7 @@ export default function AdminPromosPage() {
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="orn. Ilk 3 Ay Komisyonsuz"
+                placeholder="orn. Ilk 3 Ay Garanti Ücretsiz"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
               />
             </div>

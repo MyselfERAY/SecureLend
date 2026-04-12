@@ -71,7 +71,7 @@ export default function AdminPaymentsPage() {
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Kiracı</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Ev Sahibi</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Tutar</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Komisyon</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">Garanti Ücreti</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Net</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Durum</th>
                 </tr>

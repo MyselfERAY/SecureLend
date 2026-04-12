@@ -127,7 +127,7 @@ export default function PaymentsPage() {
                 <span className="text-lg font-bold text-emerald-400">{confirmPayment.amount.toLocaleString('tr-TR')} TL</span>
               </div>
             </div>
-            <p className="text-sm text-slate-400">Bu ödemeyi onaylıyor musunuz? İşlem KMH hesabınızdan gerçekleştirilecektir.</p>
+            <p className="text-sm text-slate-400">Bu ödemeyi onaylıyor musunuz? İşlem banka güvence hesabınızdan gerçekleştirilecektir.</p>
             <div className="flex gap-3">
               <button
                 onClick={() => handleProcess(confirmPayment.id)}
@@ -215,7 +215,7 @@ export default function PaymentsPage() {
             </svg>
           </div>
           <div className="text-lg font-medium text-slate-300">Henüz ödemeniz yok</div>
-          <p className="mt-2 text-sm text-slate-500">Aktif sözleşmeniz olduğunda ödemeler burada görünecektir.</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">Aktif sözleşmeniz olduğunda tüm kira ödemeleriniz burada otomatik takip edilir. Gecikme yok, unutma yok.</p>
         </div>
       )}
     </div>

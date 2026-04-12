@@ -126,7 +126,7 @@ const webAppJsonLd = {
     'Dijital kira sözleşmesi',
     'Otomatik kira ödeme takibi',
     'KPS kimlik doğrulama',
-    'KMH (Kredili Mevduat Hesabı) başvurusu',
+    'Banka Güvence Hesabı (KMH) başvurusu',
     'Anlık bildirimler',
     'Mülk yönetimi',
   ],
@@ -161,15 +161,15 @@ const faqJsonLd = {
       name: 'Kefil olmadan ev kiralayabilir miyim?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiracı ödemelerini garanti eder.',
+        text: 'Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka güvence sistemi kiracı ödemelerini garanti eder.',
       },
     },
     {
       '@type': 'Question',
-      name: 'KMH (Kredili Mevduat Hesabı) nedir?',
+      name: 'Banka Güvence Hesabı (KMH) nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'KMH, kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder.',
+        text: 'Banka Güvence Hesabı (KMH), kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder.',
       },
     },
     {
@@ -177,7 +177,7 @@ const faqJsonLd = {
       name: 'Ev sahibi için maliyet nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Ücretsiz planda komisyon %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir.',
+        text: 'Ücretsiz planda garanti ücreti %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir.',
       },
     },
     {

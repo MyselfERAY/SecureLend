@@ -21,7 +21,7 @@ const plans = [
     propertyLabel: '1 mülk',
     rentLimit: '25.000 TL\'ye kadar',
     features: [
-      'KMH (Kredili Mevduat Hesabı) entegrasyonu',
+      'Banka Güvence Hesabı (KMH) entegrasyonu',
       'Dijital kira sözleşmesi (TBK uyumlu)',
       'Otomatik ödeme takibi',
       'KVKK uyumlu altyapı',
@@ -42,7 +42,7 @@ const plans = [
     propertyLabel: '5 mülke kadar',
     rentLimit: 'Sınırsız kira tutarı',
     features: [
-      'KMH (Kredili Mevduat Hesabı) entegrasyonu',
+      'Banka Güvence Hesabı (KMH) entegrasyonu',
       'Dijital kira sözleşmesi (TBK uyumlu)',
       'Otomatik ödeme takibi',
       'Aylık PDF gelir raporu',
@@ -64,7 +64,7 @@ const plans = [
     propertyLabel: 'Sınırsız mülk',
     rentLimit: 'Sınırsız kira tutarı',
     features: [
-      'KMH (Kredili Mevduat Hesabı) entegrasyonu',
+      'Banka Güvence Hesabı (KMH) entegrasyonu',
       'Dijital kira sözleşmesi (TBK uyumlu)',
       'Otomatik ödeme takibi',
       'Detaylı PDF gelir/gider raporu',
@@ -139,12 +139,12 @@ function formatTL(amount: number): string {
 
 const faqItems = [
   {
-    q: 'KMH (Kredili Mevduat Hesabı) nedir?',
-    a: 'KMH, bankaların sunduğu bir kredi limitidir. Kira ödeme günü hesabınızda yeterli bakiye olmasa bile, KMH limiti üzerinden kira otomatik olarak ödenir. Böylece kira ödememesi ve gecikme riski sıfıra iner.',
+    q: 'Banka Güvence Hesabı (KMH) nedir?',
+    a: 'Banka Güvence Hesabı (KMH), bankaların sunduğu bir kredi limitidir. Kira ödeme günü hesabınızda yeterli bakiye olmasa bile, güvence limiti üzerinden kira otomatik olarak ödenir. Böylece kira ödememesi ve gecikme riski sıfıra iner.',
   },
   {
-    q: 'Her plana KMH dahil mi?',
-    a: 'Evet. KMH entegrasyonu platformumuzun temel değer önermesidir ve tüm planlarda — ücretsiz plan dahil — standart olarak sunulur.',
+    q: 'Her plana banka güvencesi dahil mi?',
+    a: 'Evet. Banka güvence hesabı entegrasyonu platformumuzun temel değer önermesidir ve tüm planlarda — ücretsiz plan dahil — standart olarak sunulur.',
   },
   {
     q: 'Kira garanti ücreti nasıl hesaplanıyor?',
@@ -156,7 +156,7 @@ const faqItems = [
   },
   {
     q: 'Ödemeyi siz mi alıyorsunuz?',
-    a: 'Hayır. Kira Güvence bir ödeme aracısı değildir. Tüm ödemeler banka düzenli ödeme talimatı (KMH) üzerinden gerçekleşir. Platform ödeme aracılığı yapmadığı için BDDK düzenleme kapsamında değildir.',
+    a: 'Hayır. Kira Güvence bir ödeme aracısı değildir. Tüm ödemeler banka güvence hesabı üzerinden gerçekleşir. Platform ödeme aracılığı yapmadığı için BDDK düzenleme kapsamında değildir.',
   },
   {
     q: '"İlk 3 ay garanti ücretsiz" nasıl çalışıyor?',
@@ -238,10 +238,10 @@ export default function PricingContent() {
               Fiyatlandırma
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-              Her Plana KMH Dahil
+              Her Plana Banka Güvencesi Dahil
             </h1>
             <p className="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
-              Kredili Mevduat Hesabı entegrasyonu tüm planlarda standart. Mülk sayınıza ve kira tutarınıza göre en uygun planı seçin.
+              Banka güvence hesabı entegrasyonu tüm planlarda standart. Mülk sayınıza ve kira tutarınıza göre en uygun planı seçin.
             </p>
 
             {/* Core value highlight */}
@@ -250,7 +250,7 @@ export default function PricingContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <span className="text-sm font-semibold text-emerald-800">
-                KMH ile kira ödenmeme riski sıfır — her planda ücretsiz
+                Banka güvencesi ile kira ödenmeme riski sıfır — her planda ücretsiz
               </span>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function PricingContent() {
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
                         <CheckIcon />
-                        <span className={`text-sm ${feature.includes('KMH') ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
+                        <span className={`text-sm ${feature.includes('Güvence') ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
                           {feature}
                         </span>
                       </li>
@@ -340,7 +340,7 @@ export default function PricingContent() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-sm text-blue-800">
-                <span className="font-semibold">KMH nedir?</span> Kredili Mevduat Hesabı, kiracının hesabında yeterli bakiye olmasa bile kiranın banka tarafından otomatik ödenmesini sağlar. Ev sahibi için kira güvencesi, kiracı için kolaylık.
+                <span className="font-semibold">Banka Güvence Hesabı nedir?</span> Banka Güvence Hesabı (KMH), kiracının hesabında yeterli bakiye olmasa bile kiranın banka tarafından otomatik ödenmesini sağlar. Ev sahibi için kira güvencesi, kiracı için kolaylık.
               </p>
             </div>
           </div>
@@ -767,7 +767,7 @@ export default function PricingContent() {
             </h2>
             <p className="mt-4 text-base leading-7 text-blue-100">
               Kredi kartı gerekmez. 14 gün boyunca Çoklu Mülk planının tüm özelliklerine erişim sağlayın.
-              KMH entegrasyonu, aylık raporlama ve standart destek dahil.
+              Banka güvence hesabı entegrasyonu, aylık raporlama ve standart destek dahil.
               Deneme süresi sonunda otomatik olarak Tek Mülk planına düşürülür.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
@@ -781,7 +781,7 @@ export default function PricingContent() {
               <div className="flex items-center gap-6 text-sm text-blue-200">
                 <span className="flex items-center gap-1">
                   <svg className="h-4 w-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                  KMH dahil
+                  Banka güvencesi dahil
                 </span>
                 <span className="flex items-center gap-1">
                   <svg className="h-4 w-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
@@ -835,7 +835,7 @@ export default function PricingContent() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-extrabold text-white">Hemen başlamaya hazır mısınız?</h2>
             <p className="mt-4 text-base text-blue-100">
-              Ücretsiz hesap oluşturun, KMH ile kiranızı güvence altına alın.
+              Ücretsiz hesap oluşturun, banka güvencesi ile kiranızı güvence altına alın.
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link

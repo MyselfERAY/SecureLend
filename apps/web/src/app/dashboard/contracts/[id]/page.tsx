@@ -103,7 +103,7 @@ export default function ContractDetailPage() {
   const handleSign = async () => {
     const amTenant = contract?.tenant.id === user?.id;
     if (amTenant && !selectedKmhAccountId) {
-      setError('Lütfen sözleşme için kullanılacak KMH hesabını seçin');
+      setError('Lütfen sözleşme için kullanılacak güvence hesabını seçin');
       return;
     }
     setSigning(true);
@@ -345,11 +345,11 @@ export default function ContractDetailPage() {
               ? 'border-yellow-500/30 bg-yellow-500/10'
               : 'border-slate-700/50 bg-[#0d1b2a]'
         }`}>
-          <h3 className="text-sm font-semibold text-white mb-3">KMH Hesabı Seçimi</h3>
+          <h3 className="text-sm font-semibold text-white mb-3">Güvence Hesabı Seçimi</h3>
 
           {kmhAccounts.length === 0 ? (
             <p className="text-sm text-red-400">
-              Aktif KMH hesabınız bulunamadı. Sözleşmeyi imzalayabilmek için önce Banka sayfasından KMH başvurusu yapmanız ve onay almanız gerekiyor.
+              Aktif güvence hesabınız bulunamadı. Sözleşmeyi imzalayabilmek için önce Banka sayfasından güvence başvurusu yapmanız ve onay almanız gerekiyor.
             </p>
           ) : (
             <div className="space-y-2">
@@ -397,7 +397,7 @@ export default function ContractDetailPage() {
               })}
               {eligibleKmhAccounts.length === 0 && (
                 <p className="mt-2 text-sm text-yellow-400">
-                  Hiçbir KMH hesabınızın limiti kira bedelini ({contract.monthlyRent.toLocaleString('tr-TR')} TL) karşılamıyor.
+                  Güvence hesaplarınızın limiti kira bedelini ({contract.monthlyRent.toLocaleString('tr-TR')} TL) karşılamıyor.
                 </p>
               )}
             </div>
@@ -440,14 +440,14 @@ export default function ContractDetailPage() {
             <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
               <p className="text-sm font-medium text-yellow-400">
                 {kmhAccounts.length === 0
-                  ? 'Sözleşmeyi imzalayabilmek için aktif bir KMH hesabınız olmalıdır.'
+                  ? 'Sözleşmeyi imzalayabilmek için aktif bir güvence hesabınız olmalıdır.'
                   : eligibleKmhAccounts.length === 0
-                    ? 'Mevcut KMH hesaplarınızın limiti kira bedelini karşılamıyor.'
-                    : 'Lütfen yukarıdaki listeden bir KMH hesabı seçin.'}
+                    ? 'Mevcut güvence hesaplarınızın limiti kira bedelini karşılamıyor.'
+                    : 'Lütfen yukarıdaki listeden bir güvence hesabı seçin.'}
               </p>
               {kmhAccounts.length === 0 && (
                 <p className="mt-1 text-xs text-yellow-500/70">
-                  Banka sayfasından KMH başvurusu yapın ve dijital onboarding&apos;i tamamlayın.
+                  Banka sayfasından güvence başvurusu yapın ve dijital onboarding&apos;i tamamlayın.
                 </p>
               )}
             </div>

@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Admin Paneli</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform yönetim ve komisyon takibi</p>
+        <p className="text-sm text-gray-500 mt-1">Platform yönetim ve garanti ücreti takibi</p>
       </div>
 
       {stats && (
@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
                 <div className="text-xs text-gray-400 mt-1">{stats.commissionCount} işlem</div>
               </div>
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200 p-5">
-                <div className="text-sm text-yellow-700">Platform Komisyonu (%1)</div>
+                <div className="text-sm text-yellow-700">Platform Garanti Ücreti (%1)</div>
                 <div className="text-2xl font-bold text-yellow-800 mt-1">
                   {stats.totalCommission.toLocaleString('tr-TR')} TL
                 </div>
@@ -87,7 +87,7 @@ export default function AdminDashboardPage() {
           <AdminLink href="/dashboard/admin/users" title="Kullanıcılar" desc="Tüm kullanıcıları listele" icon="U" />
           <AdminLink href="/dashboard/admin/contracts" title="Sözleşmeler" desc="Tüm sözleşmeleri görüntüle" icon="S" />
           <AdminLink href="/dashboard/admin/payments" title="Ödemeler" desc="Ödeme geçmişi ve detaylar" icon="O" />
-          <AdminLink href="/dashboard/admin/commissions" title="Komisyon Raporu" desc="Gelir ve komisyon detayları" icon="K" />
+          <AdminLink href="/dashboard/admin/commissions" title="Garanti Ücreti Raporu" desc="Gelir ve garanti ücreti detayları" icon="K" />
           <AdminLink href="/dashboard/admin/support" title="Destek Mesajları" desc="Kullanıcı destek talepleri" icon="D" />
           <AdminLink href="/dashboard/admin/articles" title="Makaleler" desc="AI taslaklar, incele ve yayınla (Salı+Perş)" icon="M" />
           <AdminLink href="/dashboard/admin/suggestions" title="Geliştirme Önerileri" desc="Developer Agent görev listesi" icon="G" />
