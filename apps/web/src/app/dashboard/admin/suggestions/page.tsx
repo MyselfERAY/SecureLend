@@ -145,8 +145,8 @@ export default function AdminSuggestionsPage() {
     setActionLoading(null);
   };
 
-  const handleApprove = (id: string) => handleStatusChange(id, 'PENDING', 'Admin tarafindan onaylandi.');
-  const handleReject = (id: string) => handleStatusChange(id, 'REJECTED', 'Admin tarafindan reddedildi.');
+  const handleApprove = (id: string) => handleStatusChange(id, 'PENDING', 'Admin tarafından onaylandı.');
+  const handleReject = (id: string) => handleStatusChange(id, 'REJECTED', 'Admin tarafından reddedildi.');
 
   const handleDelete = async (id: string) => {
     if (!tokens?.accessToken || !confirm('Bu oneriyi silmek istediginize emin misiniz?')) return;
@@ -303,7 +303,7 @@ export default function AdminSuggestionsPage() {
           <div className="rounded-2xl border border-slate-200 bg-white sticky top-20">
             {!selected ? (
               <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-slate-400">
-                Detay icin bir oneri secin.
+                Detay için bir öneri seçin.
               </div>
             ) : (
               <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
@@ -387,7 +387,7 @@ export default function AdminSuggestionsPage() {
                   {/* IN_PROGRESS → Show progress */}
                   {getDisplayStatus(selected) === 'IN_PROGRESS' && (
                     <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-2.5 text-center text-sm font-medium text-blue-700 animate-pulse">
-                      Agent calisiyor...
+                      Agent çalışıyor...
                     </div>
                   )}
 

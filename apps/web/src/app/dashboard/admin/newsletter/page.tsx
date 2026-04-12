@@ -54,7 +54,7 @@ export default function AdminNewsletterPage() {
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-5 text-center shadow-sm">
             <div className="text-3xl font-bold text-gray-700">{stats.total}</div>
-            <div className="mt-1 text-sm text-gray-500">Toplam Kayit</div>
+            <div className="mt-1 text-sm text-gray-500">Toplam Kayıt</div>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-5 text-center shadow-sm">
             <div className="text-3xl font-bold text-red-500">{stats.unsubscribed}</div>

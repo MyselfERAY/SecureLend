@@ -270,7 +270,7 @@ export default function MarketingReportsPage() {
         setShowResearchForm(false);
         fetchResearch();
       } else {
-        setResearchError(res.message || 'Talep gonderilemedi.');
+        setResearchError(res.message || 'Talep gönderilemedi.');
       }
     } catch {
       setResearchError('Bir hata oluştu. Tekrar deneyin.');
@@ -344,7 +344,7 @@ export default function MarketingReportsPage() {
               disabled={researchLoading}
               className="rounded-xl bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50"
             >
-              {researchLoading ? 'Gönderiliyor...' : 'Gonder'}
+              {researchLoading ? 'Gönderiliyor...' : 'Gönder'}
             </button>
             <button
               onClick={() => setShowResearchForm(false)}
@@ -421,7 +421,7 @@ export default function MarketingReportsPage() {
           <div className="lg:col-span-3 rounded-2xl border border-slate-200 bg-white sticky top-20">
             {!selected ? (
               <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-slate-400">
-                Detay icin bir rapor secin.
+                Detay için bir rapor seçin.
               </div>
             ) : (
               <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">

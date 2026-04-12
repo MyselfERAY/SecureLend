@@ -50,13 +50,13 @@ export default function ReferralPage() {
 
   const shareWhatsApp = () => {
     if (!info?.referralLink) return;
-    const text = `Kira Güvence ile kira ödemelerini guvence altina al! Davet linkimle kayit ol, ikimiz de 1 ay komisyonsuz kullanalim: ${info.referralLink}`;
+    const text = `Kira Güvence ile kira ödemelerini güvence altına al! Davet linkimle kayıt ol, ikimiz de 1 ay komisyonsuz kullanalım: ${info.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const shareSMS = () => {
     if (!info?.referralLink) return;
-    const text = `Kira Güvence'ye katil! Davet kodum: ${info.referralCode}. Kayit ol: ${info.referralLink}`;
+    const text = `Kira Güvence'ye katıl! Davet kodum: ${info.referralCode}. Kayıt ol: ${info.referralLink}`;
     window.open(`sms:?body=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -150,7 +150,7 @@ export default function ReferralPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {[
             { step: '1', title: 'Kodunuzu Paylasin', desc: 'Davet kodunuzu veya linkinizi arkadaşlarınızla paylaşın.' },
-            { step: '2', title: 'Arkadasiniz Kayit Olsun', desc: 'Arkadaşınız kayıt sırasında davet kodunuzu girsin.' },
+            { step: '2', title: 'Arkadaşınız Kayıt Olsun', desc: 'Arkadaşınız kayıt sırasında davet kodunuzu girsin.' },
             { step: '3', title: 'Birlikte Kazanin', desc: 'Hem siz hem arkadaşınız 1 ay komisyonsuz kullanım kazanın!' },
           ].map((item) => (
             <div key={item.step} className="rounded-lg border border-slate-700/30 bg-[#0a1628]/50 p-4 text-center">
@@ -176,7 +176,7 @@ export default function ReferralPage() {
         </div>
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 text-center">
           <div className="text-3xl font-bold text-amber-400">%100</div>
-          <div className="mt-1 text-sm text-slate-400">Komisyon Indirimi</div>
+          <div className="mt-1 text-sm text-slate-400">Komisyon İndirimi</div>
         </div>
       </div>
 

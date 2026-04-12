@@ -375,7 +375,7 @@ export default function AdminAnalyticsPage() {
                 </svg>
               </div>
               <div className="font-medium text-gray-600">Hata yok!</div>
-              <p className="mt-1 text-sm">Son {days} gunde hiçbir frontend hatası raporlanmadı.</p>
+              <p className="mt-1 text-sm">Son {days} günde hiçbir frontend hatası raporlanmadı.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -723,7 +723,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="text-3xl font-bold text-purple-600">%{data.conversionRate.rate}</div>
           <div className="mt-1 text-sm text-gray-500">Dönüşüm Oranı</div>
-          <div className="mt-0.5 text-xs text-gray-400">{data.conversionRate.registered} kayitli / {data.conversionRate.visitors} ziyaretci</div>
+          <div className="mt-0.5 text-xs text-gray-400">{data.conversionRate.registered} kayıtlı / {data.conversionRate.visitors} ziyaretçi</div>
         </div>
 
         {/* Total CTA Clicks */}
@@ -924,8 +924,8 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
     <div className="space-y-6">
       {/* Period info */}
       <p className="text-sm text-gray-500">
-        Son <span className="font-semibold">{days} gun</span> içinde kayıt olan kullanıcıların aktivasyon hunisi.
-        {' '}Toplam <span className="font-semibold">{data.steps[0].count}</span> kayit.
+        Son <span className="font-semibold">{days} gün</span> içinde kayıt olan kullanıcıların aktivasyon hunisi.
+        {' '}Toplam <span className="font-semibold">{data.steps[0].count}</span> kayıt.
       </p>
 
       {/* Funnel bars */}
@@ -982,9 +982,9 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Kullanici</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Kullanıcı</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">Mevcut Adım</th>
-                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Kayit</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Kayıt</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">KYC</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">Sözleşme</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">İmza</th>

@@ -174,7 +174,7 @@ export default function AdminSupportPage() {
         <div className="flex flex-1 flex-col rounded-xl border border-slate-700/50 bg-[#0d1b2a]">
           {!selectedRoomId ? (
             <div className="flex flex-1 items-center justify-center text-slate-500">
-              Bir sohbet secin
+              Bir sohbet seçin
             </div>
           ) : (
             <>
@@ -244,7 +244,7 @@ export default function AdminSupportPage() {
                     disabled={!input.trim() || sending}
                     className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {sending ? '...' : 'Gonder'}
+                    {sending ? '...' : 'Gönder'}
                   </button>
                 </div>
               </div>

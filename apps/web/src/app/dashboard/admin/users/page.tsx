@@ -52,7 +52,7 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Kullanıcılar</h1>
-        <span className="text-sm text-gray-500">{total} kullanici</span>
+        <span className="text-sm text-gray-500">{total} kullanıcı</span>
       </div>
 
       {loading ? (
@@ -69,7 +69,7 @@ export default function AdminUsersPage() {
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Roller</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">KYC</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Sözleşme</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Kayit</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Kayıt</th>
                 </tr>
               </thead>
               <tbody className="divide-y">

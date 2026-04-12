@@ -213,7 +213,7 @@ export default function BankPage() {
             <div className="rounded-xl border-2 border-yellow-500/30 bg-yellow-500/10 p-6">
               <h3 className="mb-2 text-lg font-bold text-yellow-400">Digital Onboarding Bekliyor</h3>
               <p className="mb-3 text-sm text-yellow-300/80">
-                KMH basvurunuz onaylandi. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
+                KMH başvurunuz onaylandı. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
                 Hesabınızı aktif hale getirmek için digital onboarding işleminizi tamamlayın.
               </p>
               <p className="mb-4 text-xs text-yellow-400/60">Referans: {pendingOnboarding.bankReferenceNo}</p>
@@ -298,7 +298,7 @@ export default function BankPage() {
 
               <div className="flex gap-3">
                 <button type="submit" disabled={submitting} className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
-                  {submitting ? 'Başvuru yapılıyor...' : 'Basvur'}
+                  {submitting ? 'Başvuru yapılıyor...' : 'Başvur'}
                 </button>
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-slate-600 px-6 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
                   İptal

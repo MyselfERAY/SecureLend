@@ -227,7 +227,7 @@ export default function DashboardLayout({
             <div className="flex-1 min-w-0">
               <div className="truncate text-sm font-semibold text-slate-200">{user?.fullName}</div>
               <div className="truncate text-xs text-slate-500">
-                {user?.roles.length ? user.roles.join(', ') : 'Kullanici'}
+                {user?.roles.length ? user.roles.join(', ') : 'Kullanıcı'}
               </div>
             </div>
           </div>
@@ -275,7 +275,7 @@ export default function DashboardLayout({
               <Link href="/dashboard/profile" className="text-right transition hover:opacity-80">
                 <div className="text-sm font-semibold text-slate-200">{user?.fullName}</div>
                 <div className="text-xs text-slate-500">
-                  {user?.roles.length ? user.roles.join(', ') : 'Kullanici'}
+                  {user?.roles.length ? user.roles.join(', ') : 'Kullanıcı'}
                 </div>
               </Link>
             </div>
@@ -285,7 +285,7 @@ export default function DashboardLayout({
               onClick={handleLogout}
               className="rounded-lg border border-slate-600 bg-transparent px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-700/50 hover:text-slate-200"
             >
-              Cikis
+              Çıkış
             </button>
           </div>
         </header>

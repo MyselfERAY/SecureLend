@@ -108,9 +108,9 @@ export default function AdminCommissionsPage() {
         </div>
       )}
 
-      {/* Detayli Kayitlar */}
+      {/* Detaylı Kayıtlar */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Komisyon Kayitlari ({report.records.length})</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Komisyon Kayıtları ({report.records.length})</h2>
         {report.records.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
             <div className="text-gray-400 text-lg">Henüz komisyon kaydı yok</div>

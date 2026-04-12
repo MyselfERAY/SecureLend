@@ -92,7 +92,7 @@ export default function SablonlarPage() {
         </div>
       </section>
 
-      {/* Hero Template — Kira Sozlesmesi */}
+      {/* Hero Template — Kira Sözleşmesi */}
       <section className="mx-auto max-w-6xl px-4 pt-12">
         {(() => {
           const hero = templates.find((t) => t.available)!;
