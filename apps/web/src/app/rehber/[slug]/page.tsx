@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import SiteNav from '../../../components/site-nav';
+import { fixTurkish } from '../../../lib/fix-turkish';
 
 interface Article {
   id: string;
@@ -108,7 +109,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           {/* Header */}
           <div className="rounded-3xl border border-slate-700/50 bg-[#0d1b2a] p-8 sm:p-10">
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="text-xs font-medium text-slate-500">{article.category}</span>
+              <span className="text-xs font-medium text-slate-500">{fixTurkish(article.category)}</span>
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
                 {audienceLabel[article.audience]}
               </span>

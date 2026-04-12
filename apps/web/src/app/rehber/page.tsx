@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import SiteNav from '../../components/site-nav';
+import { fixTurkish } from '../../lib/fix-turkish';
 
 interface Article {
   id: string;
@@ -76,7 +77,7 @@ export default async function RehberPage() {
                 className="group flex flex-col rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-6 transition hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-medium text-slate-500">{article.category}</span>
+                  <span className="text-xs font-medium text-slate-500">{fixTurkish(article.category)}</span>
                   <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
                     {audienceLabel[article.audience]}
                   </span>
