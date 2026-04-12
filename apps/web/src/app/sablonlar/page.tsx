@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import SiteNav from '../../components/site-nav';
 
 export const metadata: Metadata = {
   title: 'Hukuki Sablonlar',
   description: 'Kira sozlesmesi, tahliye taahhudu, ihtar mektubu ve diger hukuki belge sablonlari. TBK uyumlu, ucretsiz kullanim.',
   openGraph: {
-    title: 'Hukuki Sablonlar | Kira Guvence',
+    title: 'Hukuki Sablonlar | Kira Güvence',
     description: 'Kira sozlesmesi ornegi, tahliye taahhudu, ihtar mektubu sablonlari. TBK uyumlu.',
   },
   alternates: { canonical: '/sablonlar' },
@@ -65,28 +66,7 @@ const templates = [
 export default function SablonlarPage() {
   return (
     <div className="min-h-screen bg-[#0a1628]">
-      {/* Header */}
-      <header className="border-b border-slate-700/50 bg-[#0d1b2a]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-bold text-white">
-            KiraGuvence
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link href="/fiyatlandirma" className="text-sm text-slate-400 hover:text-white transition">
-              Fiyatlandirma
-            </Link>
-            <Link href="/rehber" className="text-sm text-slate-400 hover:text-white transition">
-              Rehber
-            </Link>
-            <Link
-              href="/auth/register"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition"
-            >
-              Ucretsiz Hesap Olustur
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteNav variant="dark" />
 
       {/* Hero */}
       <section className="border-b border-slate-700/50 bg-gradient-to-b from-[#0d1b2a] to-[#0a1628] py-16 text-center">
@@ -96,7 +76,7 @@ export default function SablonlarPage() {
           </h1>
           <p className="mt-4 text-lg text-slate-400">
             Turk Borclar Kanunu&apos;na uygun, profesyonel kira hukuku belge sablonlari.
-            KiraGuvence platformunda ucretsiz kullanin.
+            Kira Güvence platformunda ucretsiz kullanin.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-400">
@@ -112,33 +92,40 @@ export default function SablonlarPage() {
         </div>
       </section>
 
-      {/* Templates Grid */}
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {templates.map((t) => (
-            <div
-              key={t.title}
-              className={`group relative flex flex-col rounded-xl border bg-[#0d1b2a] p-6 transition ${
-                t.available
-                  ? 'border-blue-500/30 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/5'
-                  : 'border-slate-700/50'
-              }`}
-            >
-              {/* Badge */}
-              <span className={`mb-3 inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${t.badgeCls}`}>
-                {t.badge}
-              </span>
+      {/* Hero Template — Kira Sozlesmesi */}
+      <section className="mx-auto max-w-6xl px-4 pt-12">
+        {(() => {
+          const hero = templates.find((t) => t.available)!;
+          return (
+            <div className="relative rounded-2xl border-2 border-blue-500/50 bg-[#0d1b2a] p-8 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/20 md:flex md:gap-10">
+              {/* Glow effect */}
+              <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-r from-blue-500/10 via-transparent to-blue-500/10" />
 
-              <h3 className="mb-2 text-lg font-semibold text-white">{t.title}</h3>
-              <p className="mb-4 text-sm leading-relaxed text-slate-400">{t.description}</p>
+              <div className="relative flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${hero.badgeCls}`}>
+                    {hero.badge}
+                  </span>
+                  <span className="inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-400">
+                    Hemen Kullanilabilir
+                  </span>
+                </div>
+                <h2 className="text-2xl font-bold text-white sm:text-3xl">{hero.title}</h2>
+                <p className="mt-3 text-base leading-relaxed text-slate-300">{hero.description}</p>
+                <Link
+                  href="/auth/register"
+                  className="mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Ucretsiz Hesap Olustur
+                </Link>
+              </div>
 
-              {/* Articles */}
-              <div className="mb-5 flex-1">
+              <div className="relative mt-6 md:mt-0 md:w-64 shrink-0">
                 <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Icerik</div>
-                <ul className="space-y-1.5">
-                  {t.articles.map((a) => (
-                    <li key={a} className="flex items-center gap-2 text-sm text-slate-400">
-                      <svg className="h-3.5 w-3.5 shrink-0 text-emerald-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <ul className="space-y-2">
+                  {hero.articles.map((a) => (
+                    <li key={a} className="flex items-center gap-2 text-sm text-slate-300">
+                      <svg className="h-4 w-4 shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       {a}
@@ -146,28 +133,58 @@ export default function SablonlarPage() {
                   ))}
                 </ul>
               </div>
+            </div>
+          );
+        })()}
+      </section>
 
-              {/* CTA */}
-              {t.available ? (
-                <Link
-                  href="/auth/register"
-                  className="mt-auto block rounded-lg bg-blue-600 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
-                >
-                  Ucretsiz Hesap Olustur
-                </Link>
-              ) : (
-                <div className="mt-auto rounded-lg border border-slate-700/50 bg-slate-800/30 py-2.5 text-center text-sm font-medium text-slate-500">
-                  Cok Yakinda
-                </div>
-              )}
+      {/* Upcoming Templates Grid */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <h2 className="mb-6 text-xl font-semibold text-white">Yakinda Eklenecek Sablonlar</h2>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {templates.filter((t) => !t.available).map((t) => (
+            <div
+              key={t.title}
+              className="group relative flex flex-col rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition"
+            >
+              <span className={`mb-3 inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold ${t.badgeCls}`}>
+                {t.badge}
+              </span>
+              <h3 className="mb-2 text-base font-semibold text-white">{t.title}</h3>
+              <p className="mb-4 text-sm leading-relaxed text-slate-400">{t.description}</p>
+              <div className="mb-4 flex-1">
+                <ul className="space-y-1">
+                  {t.articles.map((a) => (
+                    <li key={a} className="flex items-center gap-2 text-xs text-slate-500">
+                      <svg className="h-3 w-3 shrink-0 text-emerald-400/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-auto rounded-lg border border-slate-700/50 bg-slate-800/30 py-2 text-center text-sm font-medium text-slate-500">
+                Cok Yakinda
+              </div>
             </div>
           ))}
+        </div>
+
+        {/* Notification prompt */}
+        <div className="mt-8 rounded-xl border border-blue-500/20 bg-blue-500/5 px-6 py-4 text-center">
+          <p className="text-sm text-slate-300">
+            Yeni sablonlar eklendikce bildirim almak ister misiniz?{' '}
+            <Link href="/auth/register" className="font-semibold text-blue-400 hover:text-blue-300 underline underline-offset-2 transition">
+              Ucretsiz kayit olun
+            </Link>
+          </p>
         </div>
 
         {/* Info box */}
         <div className="mt-12 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-8 text-center">
           <h2 className="mb-3 text-xl font-semibold text-white">
-            Neden KiraGuvence Sablonlari?
+            Neden Kira Güvence Sablonlari?
           </h2>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-slate-400">
             Tum sablonlarimiz hukuk danismanlari tarafindan hazirlanmis ve 6098 sayili
@@ -184,17 +201,6 @@ export default function SablonlarPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-700/50 py-8 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-6xl px-4">
-          <p>&copy; {new Date().getFullYear()} KiraGuvence. Tum haklari saklidir.</p>
-          <div className="mt-2 flex justify-center gap-4">
-            <Link href="/gizlilik" className="hover:text-slate-400 transition">Gizlilik</Link>
-            <Link href="/kullanim-kosullari" className="hover:text-slate-400 transition">Kullanim Kosullari</Link>
-            <Link href="/kvkk" className="hover:text-slate-400 transition">KVKK</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

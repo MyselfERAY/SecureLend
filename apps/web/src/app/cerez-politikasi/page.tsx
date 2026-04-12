@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Cerez Politikasi',
-  description: 'Kira Guvence cerez politikasi. Web sitemizde kullanilan cerezler hakkinda bilgi.',
+  description: 'Kira Güvence cerez politikasi. Web sitemizde kullanilan cerezler hakkinda bilgi.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/cerez-politikasi' },
 };

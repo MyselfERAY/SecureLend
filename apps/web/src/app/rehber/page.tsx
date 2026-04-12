@@ -30,16 +30,16 @@ const audienceLabel: Record<string, string> = {
 };
 
 const audienceColor: Record<string, string> = {
-  TENANT: 'bg-blue-50 text-blue-700',
-  LANDLORD: 'bg-emerald-50 text-emerald-700',
-  BOTH: 'bg-slate-100 text-slate-600',
+  TENANT: 'bg-blue-500/20 text-blue-400',
+  LANDLORD: 'bg-emerald-500/20 text-emerald-400',
+  BOTH: 'bg-slate-500/20 text-slate-400',
 };
 
 export const metadata = {
   title: 'Rehber',
   description: 'Kiracilar ve ev sahipleri icin kira sozlesmesi, kefil, Findeks, kira artisi, depozito ve hukuk konularinda aydinlatici rehber yazilar.',
   openGraph: {
-    title: 'Kira Rehberi | Kira Guvence',
+    title: 'Kira Rehberi | Kira Güvence',
     description: 'Kira sozlesmesi, kefil haklari, kira artis orani ve daha fazlasi.',
   },
   alternates: { canonical: '/rehber' },
@@ -49,15 +49,15 @@ export default async function RehberPage() {
   const articles = await getArticles();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <SiteNav />
+    <div className="min-h-screen bg-[#0a1628]">
+      <SiteNav variant="dark" />
 
       {/* Hero */}
-      <section className="bg-white border-b border-slate-200 px-4 py-14 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-700/50 bg-gradient-to-b from-[#0d1b2a] to-[#0a1628] px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Rehber</p>
-          <h1 className="mt-3 text-4xl font-extrabold text-slate-900">Kira Dünyasında Rehberiniz</h1>
-          <p className="mt-4 text-base text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">Rehber</p>
+          <h1 className="mt-3 text-4xl font-extrabold text-white">Kira Dünyasında Rehberiniz</h1>
+          <p className="mt-4 text-base text-slate-400">
             Kiracılar ve ev sahipleri için haklarınızı, sorumluluklarınızı ve finansal süreçleri anlatan sade yazılar.
           </p>
         </div>
@@ -73,19 +73,19 @@ export default async function RehberPage() {
               <Link
                 key={article.id}
                 href={`/rehber/${article.slug}`}
-                className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md hover:border-blue-200"
+                className="group flex flex-col rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-6 transition hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-medium text-slate-400">{article.category}</span>
+                  <span className="text-xs font-medium text-slate-500">{article.category}</span>
                   <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
                     {audienceLabel[article.audience]}
                   </span>
                 </div>
-                <h2 className="text-base font-bold text-slate-900 leading-snug group-hover:text-blue-700 transition">
+                <h2 className="text-base font-bold text-white leading-snug group-hover:text-blue-400 transition">
                   {article.title}
                 </h2>
-                <p className="mt-2 text-sm text-slate-500 flex-1 line-clamp-3">{article.summary}</p>
-                <p className="mt-4 text-xs text-slate-400">
+                <p className="mt-2 text-sm text-slate-400 flex-1 line-clamp-3">{article.summary}</p>
+                <p className="mt-4 text-xs text-slate-500">
                   {new Date(article.publishedAt).toLocaleDateString('tr-TR', {
                     day: 'numeric', month: 'long', year: 'numeric',
                   })}

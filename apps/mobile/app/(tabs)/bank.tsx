@@ -9,6 +9,7 @@ import { api } from '../../src/lib/api';
 import { Button } from '../../src/components/ui/Button';
 import { Badge, getStatusBadge } from '../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
+import { EmptyState } from '../../src/components/EmptyState';
 import { colors } from '../../src/theme/colors';
 import { KmhApplication, BankAccount, Transaction } from '../../src/types';
 
@@ -144,13 +145,11 @@ export default function BankScreen() {
           {/* Application History */}
           <Text style={styles.sectionTitle}>Basvuru Gecmisi</Text>
           {applications.length === 0 ? (
-            <View style={styles.emptyState}>
-              <View style={styles.emptyIcon}>
-                <Ionicons name="card-outline" size={40} color={colors.gray[300]} />
-              </View>
-              <Text style={styles.emptyTitle}>Henuz guvence basvurunuz yok</Text>
-              <Text style={styles.emptySubtitle}>Banka guvencesi kefil yerine gecer — hemen basvurun</Text>
-            </View>
+            <EmptyState
+              icon="card-outline"
+              title="Henuz guvence basvurunuz yok"
+              subtitle="Banka guvencesi kefil yerine gecer — hemen basvurun"
+            />
           ) : (
             applications.map((app) => {
               const isApprovedNotOnboarded = app.status === 'APPROVED' && !app.onboardingCompleted;
@@ -210,13 +209,11 @@ export default function BankScreen() {
       {tab === 'accounts' && (
         <>
           {accounts.length === 0 ? (
-            <View style={styles.emptyState}>
-              <View style={styles.emptyIcon}>
-                <Ionicons name="wallet-outline" size={40} color={colors.gray[300]} />
-              </View>
-              <Text style={styles.emptyTitle}>Henuz banka hesabiniz yok</Text>
-              <Text style={styles.emptySubtitle}>Guvence hesabi acarak kira odemelerinizi garanti altina alin</Text>
-            </View>
+            <EmptyState
+              icon="wallet-outline"
+              title="Henuz banka hesabiniz yok"
+              subtitle="Guvence hesabi acarak kira odemelerinizi garanti altina alin"
+            />
           ) : (
             accounts.map((acc) => (
               <View key={acc.accountId}>
@@ -532,21 +529,5 @@ const styles = StyleSheet.create({
   txDate: { fontSize: 12, color: colors.gray[400], marginTop: 2 },
   txAmount: { fontSize: 15, fontWeight: '700' },
 
-  // Empty State
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    paddingHorizontal: 32,
-  },
-  emptyIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.gray[100],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.gray[600], marginBottom: 6 },
-  emptySubtitle: { fontSize: 15, color: colors.gray[500], textAlign: 'center' },
+  // Empty State styles removed — now uses shared EmptyState component
 });

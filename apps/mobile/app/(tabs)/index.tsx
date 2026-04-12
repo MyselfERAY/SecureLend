@@ -12,6 +12,7 @@ import { getProfilePhoto, hasTutorialBeenSeen, setTutorialSeen } from '../../src
 import Tutorial from '../../src/components/Tutorial';
 import { Badge, getStatusBadge } from '../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../src/components/ui/LoadingSpinner';
+import { EmptyState } from '../../src/components/EmptyState';
 import { colors } from '../../src/theme/colors';
 import { ContractSummary, PaymentItem, DashboardData, DashboardNotification } from '../../src/types';
 import { useNotifications } from '../../src/hooks/useNotifications';
@@ -145,6 +146,16 @@ export default function DashboardScreen() {
     ? (dashboard?.fullName || user?.fullName || '').split(' ').map((n) => n.charAt(0)).join('').slice(0, 2).toUpperCase()
     : '?';
 
+  // Determine if user is "new" (no contracts, no properties, all metrics zero)
+  const totalProperties = landlordMetrics?.totalProperties ?? 0;
+  const isNewUser = contracts.length === 0 && totalProperties === 0 && metricActiveContracts === 0 && metricMonthlyRent === 0 && metricPendingCount === 0;
+
+  const firstStepActions = [
+    { title: 'Mulk Ekle', subtitle: 'Mulkunuzu platforma ekleyin', icon: 'home-outline' as const, route: '/(tabs)/properties' },
+    { title: 'Guvence Hesabi Ac', subtitle: 'Banka guvencesi ile basvurun', icon: 'card-outline' as const, route: '/kmh/apply' },
+    { title: 'Sozlesme Olustur', subtitle: 'Ilk kontratinizi olusturun', icon: 'document-text-outline' as const, route: '/(tabs)/contracts' },
+  ];
+
   const quickActions = [
     { title: 'Mulk Ekle', icon: 'home-outline' as const, color: '#2563eb', bg: '#eff6ff', route: '/(tabs)/properties' },
     { title: 'Sozlesme', icon: 'document-text-outline' as const, color: '#10b981', bg: '#ecfdf5', route: '/(tabs)/contracts' },
@@ -264,6 +275,8 @@ export default function DashboardScreen() {
               style={styles.bellBtn}
               onPress={() => router.push('/notifications')}
               activeOpacity={0.7}
+              accessibilityLabel="Bildirimler"
+              accessibilityRole="button"
             >
               <Ionicons name="notifications-outline" size={22} color="#ffffff" />
               {unreadCount > 0 && (
@@ -278,6 +291,8 @@ export default function DashboardScreen() {
               style={styles.avatarBtn}
               onPress={() => router.push('/(tabs)/payments')}
               activeOpacity={0.7}
+              accessibilityLabel="Profil"
+              accessibilityRole="button"
             >
               {profilePhoto ? (
                 <Image source={{ uri: profilePhoto }} style={styles.avatarImg} />
@@ -288,28 +303,34 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        <Text style={styles.heroGreeting}>Hos geldiniz, {firstName}</Text>
+        <Text style={styles.heroGreeting}>
+          {contracts.length === 0
+            ? `Hos geldiniz, ${firstName}! Kefil aramadan ilk kontratinizi olusturun.`
+            : `Hos geldiniz, ${firstName}`}
+        </Text>
 
-        {/* Tenant Metric Pills */}
-        <View style={styles.metricRow}>
-          <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>{metricActiveContracts}</Text>
-            <Text style={styles.metricLabel}>Aktif</Text>
+        {/* Tenant Metric Pills - hidden for new users */}
+        {!isNewUser && (
+          <View style={styles.metricRow}>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricValue}>{metricActiveContracts}</Text>
+              <Text style={styles.metricLabel}>Aktif</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricValue}>
+                {metricMonthlyRent > 0 ? formatCompact(metricMonthlyRent) : '0'}
+              </Text>
+              <Text style={styles.metricLabel}>Bu Ay</Text>
+            </View>
+            <View style={styles.metricPill}>
+              <Text style={styles.metricValue}>{metricPendingCount}</Text>
+              <Text style={styles.metricLabel}>Bekleyen</Text>
+            </View>
           </View>
-          <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>
-              {metricMonthlyRent > 0 ? formatCompact(metricMonthlyRent) : '0'}
-            </Text>
-            <Text style={styles.metricLabel}>Bu Ay</Text>
-          </View>
-          <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>{metricPendingCount}</Text>
-            <Text style={styles.metricLabel}>Bekleyen</Text>
-          </View>
-        </View>
+        )}
 
         {/* Landlord Metric Pills */}
-        {landlordMetrics && (
+        {landlordMetrics && !isNewUser && (
           <View style={[styles.metricRow, { marginTop: 12 }]}>
             <View style={styles.metricPill}>
               <Text style={styles.metricValue}>{landlordMetrics.totalProperties}</Text>
@@ -329,13 +350,55 @@ export default function DashboardScreen() {
         )}
       </View>
 
+      {/* First Steps Card for New Users */}
+      {isNewUser && (
+        <View style={styles.firstStepsCard}>
+          <View style={styles.firstStepsHeader}>
+            <View style={styles.firstStepsIconCircle}>
+              <Ionicons name="rocket-outline" size={22} color="#2563eb" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.firstStepsTitle}>Baslayalim!</Text>
+              <Text style={styles.firstStepsSubtitle}>Ilk adimlarinizi tamamlayin</Text>
+            </View>
+          </View>
+          {firstStepActions.map((action, i) => (
+            <TouchableOpacity
+              key={action.title}
+              style={[styles.firstStepRow, i < firstStepActions.length - 1 && styles.firstStepRowBorder]}
+              onPress={() => router.push(action.route as any)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.firstStepIconWrap}>
+                <Ionicons name={action.icon as any} size={20} color="#2563eb" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.firstStepLabel}>{action.title}</Text>
+                <Text style={styles.firstStepDesc}>{action.subtitle}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#93c5fd" />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       {/* KMH Status Card */}
       {kmhCard && (
         <TouchableOpacity
-          style={[styles.kmhCard, { backgroundColor: kmhCard.bg, borderColor: kmhCard.borderColor }]}
+          style={[
+            styles.kmhCard,
+            { backgroundColor: kmhCard.bg, borderColor: kmhCard.borderColor },
+            (!kmhStatus || kmhStatus === 'NOT_APPLIED') && styles.kmhCardHighlighted,
+          ]}
           onPress={() => router.push(kmhCard!.route as any)}
           activeOpacity={0.7}
         >
+          {(!kmhStatus || kmhStatus === 'NOT_APPLIED') && (
+            <View style={styles.kmhBadge}>
+              <Ionicons name="star" size={10} color="#ffffff" />
+              <Text style={styles.kmhBadgeText}>Onerilen</Text>
+            </View>
+          )}
           <View style={[styles.kmhIconCircle, { backgroundColor: kmhCard.borderColor + '20' }]}>
             <Ionicons name={kmhCard.icon} size={24} color={kmhCard.iconColor} />
           </View>
@@ -483,7 +546,7 @@ export default function DashboardScreen() {
         />
       ) : (
         <View style={styles.emptySection}>
-          <Ionicons name="document-text-outline" size={24} color={colors.gray[300]} />
+          <Ionicons name="document-text-outline" size={24} color={colors.gray[400]} />
           <Text style={styles.emptySectionText}>Henuz aktif sozlesme yok</Text>
         </View>
       )}
@@ -529,20 +592,18 @@ export default function DashboardScreen() {
         </>
       ) : (
         <View style={styles.emptySection}>
-          <Ionicons name="wallet-outline" size={24} color={colors.gray[300]} />
+          <Ionicons name="wallet-outline" size={24} color={colors.gray[400]} />
           <Text style={styles.emptySectionText}>Bekleyen odeme yok</Text>
         </View>
       )}
 
       {/* Empty State */}
       {contracts.length === 0 && (
-        <View style={styles.emptyState}>
-          <View style={styles.emptyIcon}>
-            <Ionicons name="document-text-outline" size={48} color={colors.gray[300]} />
-          </View>
-          <Text style={styles.emptyTitle}>Henuz sozlesmeniz yok</Text>
-          <Text style={styles.emptySubtitle}>Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika</Text>
-        </View>
+        <EmptyState
+          icon="document-text-outline"
+          title="Henuz sozlesmeniz yok"
+          subtitle="Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika"
+        />
       )}
 
       <View style={{ height: 24 }} />
@@ -589,9 +650,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   bellBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    minWidth: 44,
+    minHeight: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -616,9 +679,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   avatarBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    minWidth: 44,
+    minHeight: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -629,9 +694,9 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   avatarImg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.3)',
   },
@@ -693,6 +758,114 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.gray[600],
     marginTop: 2,
+  },
+  kmhCardHighlighted: {
+    borderWidth: 2,
+    borderColor: '#2563eb',
+    padding: 18,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+      },
+      android: { elevation: 6 },
+    }),
+  },
+  kmhBadge: {
+    position: 'absolute',
+    top: -8,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    gap: 4,
+    zIndex: 1,
+  },
+  kmhBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+
+  // First Steps Card
+  firstStepsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    borderWidth: 1.5,
+    borderColor: '#bfdbfe',
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  firstStepsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#eff6ff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#dbeafe',
+    gap: 12,
+  },
+  firstStepsIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#dbeafe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  firstStepsTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1e40af',
+  },
+  firstStepsSubtitle: {
+    fontSize: 13,
+    color: '#3b82f6',
+    marginTop: 2,
+  },
+  firstStepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  firstStepRowBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.gray[100],
+  },
+  firstStepIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  firstStepLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.gray[900],
+  },
+  firstStepDesc: {
+    fontSize: 12,
+    color: colors.gray[500],
+    marginTop: 1,
   },
 
   // Next Payment Card
@@ -999,33 +1172,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  // Empty State
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    paddingHorizontal: 32,
-  },
-  emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.gray[100],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.gray[700],
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 15,
-    color: colors.gray[500],
-    textAlign: 'center',
-    lineHeight: 22,
-  },
+  // Empty State styles removed — now uses shared EmptyState component
   emptySection: {
     flexDirection: 'row',
     alignItems: 'center',

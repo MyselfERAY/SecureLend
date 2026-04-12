@@ -32,9 +32,9 @@ const audienceLabel: Record<string, string> = {
 };
 
 const audienceColor: Record<string, string> = {
-  TENANT: 'bg-blue-50 text-blue-700',
-  LANDLORD: 'bg-emerald-50 text-emerald-700',
-  BOTH: 'bg-slate-100 text-slate-600',
+  TENANT: 'bg-blue-500/20 text-blue-400',
+  LANDLORD: 'bg-emerald-500/20 text-emerald-400',
+  BOTH: 'bg-slate-500/20 text-slate-400',
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -42,14 +42,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const article = await getArticle(slug);
   if (!article) return { title: 'Makale Bulunamadi' };
   return {
-    title: `${article.title} | Kira Guvence Rehber`,
+    title: `${article.title} | Kira Güvence Rehber`,
     description: article.summary,
     openGraph: {
       title: article.title,
       description: article.summary,
       type: 'article',
       locale: 'tr_TR',
-      siteName: 'Kira Guvence',
+      siteName: 'Kira Güvence',
       publishedTime: article.publishedAt,
     },
     alternates: { canonical: `/rehber/${slug}` },
@@ -61,18 +61,16 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const paragraphs = article.content.split('\n\n').filter(Boolean);
-
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: article.title,
     description: article.summary,
     datePublished: article.publishedAt,
-    author: { '@type': 'Organization', name: 'Kira Guvence' },
+    author: { '@type': 'Organization', name: 'Kira Güvence' },
     publisher: {
       '@type': 'Organization',
-      name: 'Kira Guvence',
+      name: 'Kira Güvence',
       url: 'https://kiraguvence.com',
     },
     mainEntityOfPage: {
@@ -92,57 +90,54 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0a1628]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <SiteNav />
+      <SiteNav variant="dark" />
 
       <main className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           {/* Back */}
           <div className="mb-8 flex items-center justify-end">
-            <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-white transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
               Tüm Yazılar
             </Link>
           </div>
 
           {/* Header */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+          <div className="rounded-3xl border border-slate-700/50 bg-[#0d1b2a] p-8 sm:p-10">
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="text-xs font-medium text-slate-400">{article.category}</span>
+              <span className="text-xs font-medium text-slate-500">{article.category}</span>
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
                 {audienceLabel[article.audience]}
               </span>
             </div>
 
-            <h1 className="text-2xl font-extrabold text-slate-900 leading-snug sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-white leading-snug sm:text-3xl">
               {article.title}
             </h1>
-            <p className="mt-3 text-sm text-slate-400">
+            <p className="mt-3 text-sm text-slate-500">
               {new Date(article.publishedAt).toLocaleDateString('tr-TR', {
                 day: 'numeric', month: 'long', year: 'numeric',
               })}
             </p>
-            <p className="mt-4 text-base text-slate-600 font-medium border-l-4 border-blue-200 pl-4">
+            <p className="mt-4 text-base text-slate-300 font-medium border-l-4 border-blue-500/40 pl-4">
               {article.summary}
             </p>
           </div>
 
           {/* Content */}
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-            <div className="prose-like space-y-4">
-              {paragraphs.map((para, i) => (
-                <p key={i} className="text-base text-slate-700 leading-relaxed">
-                  {para}
-                </p>
-              ))}
-            </div>
+          <div className="mt-6 rounded-3xl border border-slate-700/50 bg-[#0d1b2a] p-8 sm:p-10">
+            <div
+              className="prose prose-invert max-w-none prose-headings:font-bold prose-headings:text-white prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2 prose-p:text-base prose-p:leading-relaxed prose-p:text-slate-300 prose-strong:text-white prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6 prose-li:text-base prose-li:text-slate-300 prose-li:leading-relaxed prose-table:w-full prose-table:border-collapse prose-th:border prose-th:border-slate-700/50 prose-th:bg-slate-800/50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-sm prose-th:font-semibold prose-th:text-slate-300 prose-td:border prose-td:border-slate-700/50 prose-td:px-3 prose-td:py-2 prose-td:text-sm prose-td:text-slate-400 prose-a:text-blue-400 prose-a:underline hover:prose-a:text-blue-300"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
           </div>
 
           {/* Footer nav */}
           <div className="mt-8 text-center">
-            <Link href="/rehber" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
+            <Link href="/rehber" className="text-sm font-semibold text-blue-400 hover:text-blue-300">
               ← Tüm yazılara dön
             </Link>
           </div>

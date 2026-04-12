@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Kira Guvence - Dijital Kira Odeme Platformu';
+export const alt = 'Kira Güvence - Dijital Kira Odeme Platformu';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -85,7 +85,7 @@ export default function OGImage() {
             marginBottom: 12,
           }}
         >
-          Kira Guvence
+          Kira Güvence
         </div>
 
         {/* Tagline */}

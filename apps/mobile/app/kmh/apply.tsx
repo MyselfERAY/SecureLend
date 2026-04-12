@@ -23,6 +23,13 @@ const employmentOptions = [
   { value: 'UNEMPLOYED', label: 'Issiz', icon: 'search' as const },
 ];
 
+const APPLY_STEPS = [
+  { key: 'employment', label: 'Istihdam' },
+  { key: 'income', label: 'Gelir' },
+  { key: 'address', label: 'Adres' },
+  { key: 'consent', label: 'Onay' },
+];
+
 export default function KmhApplyScreen() {
   const { tokens } = useAuth();
   const router = useRouter();
@@ -38,6 +45,32 @@ export default function KmhApplyScreen() {
   const [consentFinancial, setConsentFinancial] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentScrolledToBottom, setConsentScrolledToBottom] = useState(false);
+
+  // Determine current step based on form completion
+  const getCurrentStep = (): number => {
+    if (consentFinancial) return 3; // All done, on consent/submit
+    if (address.trim()) return 3; // Address filled, on consent
+    if (income.trim() && rent.trim()) return 2; // Income filled, on address
+    if (employment) return 0; // On employment (first step always active)
+    return 0;
+  };
+  const currentStep = getCurrentStep();
+  const isStepCompleted = (index: number): boolean => {
+    switch (index) {
+      case 0: return !!employment && (!!income.trim() || !!rent.trim() || !!address.trim() || consentFinancial);
+      case 1: return !!income.trim() && !!rent.trim() && (!!address.trim() || consentFinancial);
+      case 2: return !!address.trim() && consentFinancial;
+      case 3: return consentFinancial;
+      default: return false;
+    }
+  };
+  const progressPercent = consentFinancial
+    ? 100
+    : address.trim()
+    ? 75
+    : (income.trim() && rent.trim())
+    ? 50
+    : 25;
 
   const showEmployer = employment === 'EMPLOYED' || employment === 'SELF_EMPLOYED';
 
@@ -101,22 +134,54 @@ export default function KmhApplyScreen() {
             style={styles.backBtn}
             onPress={() => router.back()}
             activeOpacity={0.7}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            accessibilityLabel="Geri don"
+            accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={22} color="#ffffff" />
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <Text style={styles.headerTitle}>Banka Guvence Basvurusu</Text>
-            <Text style={styles.headerSubtitle}>Banka Guvence Hesabi (KMH)</Text>
+            <Text style={styles.headerSubtitle}>{APPLY_STEPS[currentStep].label}</Text>
           </View>
           <View style={styles.stepBadge}>
-            <Text style={styles.stepText}>1/4</Text>
+            <Text style={styles.stepText}>{currentStep + 1}/4</Text>
           </View>
+        </View>
+
+        {/* Step Labels */}
+        <View style={styles.stepLabelsRow}>
+          {APPLY_STEPS.map((s, i) => {
+            const completed = isStepCompleted(i);
+            const active = i === currentStep;
+            return (
+              <View key={s.key} style={styles.stepLabelItem}>
+                <View style={[
+                  styles.stepLabelCircle,
+                  completed && styles.stepLabelCircleCompleted,
+                  active && !completed && styles.stepLabelCircleActive,
+                ]}>
+                  {completed ? (
+                    <Ionicons name="checkmark" size={12} color="#ffffff" />
+                  ) : (
+                    <Text style={[
+                      styles.stepLabelNumber,
+                      active && styles.stepLabelNumberActive,
+                    ]}>{i + 1}</Text>
+                  )}
+                </View>
+                <Text style={[
+                  styles.stepLabelText,
+                  completed && styles.stepLabelTextCompleted,
+                  active && !completed && styles.stepLabelTextActive,
+                ]}>{s.label}</Text>
+              </View>
+            );
+          })}
         </View>
 
         {/* Progress bar */}
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: '25%' }]} />
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
       </View>
 
@@ -259,6 +324,8 @@ export default function KmhApplyScreen() {
               style={styles.backBtn}
               onPress={() => setShowConsentModal(false)}
               activeOpacity={0.7}
+              accessibilityLabel="Kapat"
+              accessibilityRole="button"
             >
               <Ionicons name="close" size={22} color="#ffffff" />
             </TouchableOpacity>
@@ -386,9 +453,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    minWidth: 44,
+    minHeight: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -416,6 +485,51 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#93c5fd',
   },
+  stepLabelsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  stepLabelItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  stepLabelCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  stepLabelCircleCompleted: {
+    backgroundColor: '#10b981',
+  },
+  stepLabelCircleActive: {
+    backgroundColor: '#2563eb',
+  },
+  stepLabelNumber: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.4)',
+  },
+  stepLabelNumberActive: {
+    color: '#ffffff',
+  },
+  stepLabelText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.35)',
+  },
+  stepLabelTextCompleted: {
+    color: '#6ee7b7',
+    fontWeight: '600',
+  },
+  stepLabelTextActive: {
+    color: '#93c5fd',
+    fontWeight: '600',
+  },
   progressTrack: {
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -432,12 +546,11 @@ const styles = StyleSheet.create({
   formContent: { padding: 20 },
 
   sectionLabel: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.gray[500],
+    color: colors.gray[600],
     marginBottom: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   pillRow: {
     flexDirection: 'row',
@@ -454,6 +567,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[50],
     borderWidth: 1.5,
     borderColor: colors.gray[200],
+    minHeight: 44,
   },
   pillActive: {
     backgroundColor: '#eff6ff',

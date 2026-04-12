@@ -6,11 +6,11 @@ import { AnalyticsProvider } from '../components/analytics-provider';
 export const metadata: Metadata = {
   metadataBase: new URL('https://kiraguvence.com'),
   title: {
-    default: 'Kira Guvence - Dijital Kira Odeme Platformu | Guvenli Kira Yonetimi',
-    template: '%s | Kira Guvence',
+    default: 'Kira Güvence - Dijital Kira Odeme Platformu | Guvenli Kira Yonetimi',
+    template: '%s | Kira Güvence',
   },
   description:
-    'Kira Guvence ile kefil ve Findeks derdi bitti. Banka guvencesiyle kira odeyin, dijital sozlesmeyle hizla kontrat kurun. Ev sahibi ve kiraci icin guvenli kira yonetim platformu.',
+    'Kira Güvence ile kefil ve Findeks derdi bitti. Banka guvencesiyle kira odeyin, dijital sozlesmeyle hizla kontrat kurun. Ev sahibi ve kiraci icin guvenli kira yonetim platformu.',
   keywords: [
     'kira odeme',
     'dijital kira',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     'banka guvencesi kira',
     'fintech',
     'kira yonetimi',
-    'Kira Guvence',
+    'Kira Güvence',
     'kiraguvence',
     'kira sozlesmesi',
     'dijital kira sozlesmesi',
@@ -37,20 +37,20 @@ export const metadata: Metadata = {
     'kira sigortasi',
     'kiracı guvencesi',
   ],
-  authors: [{ name: 'Kira Guvence' }],
-  creator: 'Kira Guvence',
-  publisher: 'Kira Guvence',
+  authors: [{ name: 'Kira Güvence' }],
+  creator: 'Kira Güvence',
+  publisher: 'Kira Güvence',
   openGraph: {
     type: 'website',
     locale: 'tr_TR',
-    siteName: 'Kira Guvence',
-    title: 'Kira Guvence - Kefil Derdi Biten Kira Platformu',
+    siteName: 'Kira Güvence',
+    title: 'Kira Güvence - Kefil Derdi Biten Kira Platformu',
     description:
       'Banka guvencesiyle kira odeyin, kefil ve Findeks derdi bitsin. Dijital sozlesme, otomatik odeme takibi — ev sahibi ve kiraci icin.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kira Guvence - Kefil Derdi Biten Kira Platformu',
+    title: 'Kira Güvence - Kefil Derdi Biten Kira Platformu',
     description:
       'Banka guvencesiyle kira odeyin, kefil ve Findeks derdi bitsin.',
   },
@@ -77,8 +77,8 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Kira Guvence',
-  legalName: 'Kira Guvence Teknoloji',
+  name: 'Kira Güvence',
+  legalName: 'Kira Güvence Teknoloji',
   url: 'https://kiraguvence.com',
   logo: 'https://kiraguvence.com/opengraph-image',
   description:
@@ -116,7 +116,7 @@ const jsonLd = {
 const webAppJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'Kira Guvence',
+  name: 'Kira Güvence',
   url: 'https://kiraguvence.com',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Web, iOS, Android',
@@ -150,10 +150,10 @@ const faqJsonLd = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'Kira Guvence nedir?',
+      name: 'Kira Güvence nedir?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Kira Guvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz.',
+        text: 'Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz.',
       },
     },
     {
@@ -161,7 +161,7 @@ const faqJsonLd = {
       name: 'Kefil olmadan ev kiralayabilir miyim?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Evet. Kira Guvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder.',
+        text: 'Evet. Kira Güvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder.',
       },
     },
     {
@@ -185,7 +185,7 @@ const faqJsonLd = {
       name: 'Dijital sozlesme mahkemede gecerli mi?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Evet. Kira Guvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir.',
+        text: 'Evet. Kira Güvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir.',
       },
     },
   ],

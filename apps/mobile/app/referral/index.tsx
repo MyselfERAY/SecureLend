@@ -86,7 +86,13 @@ export default function ReferralScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          accessibilityLabel="Geri don"
+          accessibilityRole="button"
+        >
           <Ionicons name="arrow-back" size={22} color="#ffffff" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
@@ -120,7 +126,13 @@ export default function ReferralScreen() {
           {info?.referralCode ? (
             <View style={styles.codeRow}>
               <Text style={styles.codeValue}>{info.referralCode}</Text>
-              <TouchableOpacity style={styles.copyBtn} onPress={handleCopy} activeOpacity={0.7}>
+              <TouchableOpacity
+                style={styles.copyBtn}
+                onPress={handleCopy}
+                activeOpacity={0.7}
+                accessibilityLabel="Davet kodunu kopyala"
+                accessibilityRole="button"
+              >
                 <Ionicons
                   name={copied ? 'checkmark' : 'copy-outline'}
                   size={18}
@@ -138,11 +150,23 @@ export default function ReferralScreen() {
 
         {/* Share Buttons */}
         <View style={styles.shareRow}>
-          <TouchableOpacity style={styles.shareBtn} onPress={handleWhatsApp} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.shareBtn}
+            onPress={handleWhatsApp}
+            activeOpacity={0.7}
+            accessibilityLabel="WhatsApp ile paylas"
+            accessibilityRole="button"
+          >
             <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
             <Text style={styles.shareBtnText}>WhatsApp</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.shareBtn, styles.shareBtnPrimary]} onPress={handleShare} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={[styles.shareBtn, styles.shareBtnPrimary]}
+            onPress={handleShare}
+            activeOpacity={0.7}
+            accessibilityLabel="Davet kodunu paylas"
+            accessibilityRole="button"
+          >
             <Ionicons name="share-outline" size={22} color="#ffffff" />
             <Text style={[styles.shareBtnText, { color: '#ffffff' }]}>Paylas</Text>
           </TouchableOpacity>
@@ -217,7 +241,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 16,
   },
   backBtn: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center', justifyContent: 'center',
   },
@@ -282,6 +306,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10,
     backgroundColor: '#eff6ff',
+    minHeight: 44, justifyContent: 'center',
   },
   copyText: {
     fontSize: 13, fontWeight: '600', color: '#2563eb',

@@ -14,6 +14,7 @@ import { Badge, getStatusBadge } from '../../../src/components/ui/Badge';
 import { LoadingSpinner } from '../../../src/components/ui/LoadingSpinner';
 import { ErrorMessage } from '../../../src/components/ui/ErrorMessage';
 import { SuccessMessage } from '../../../src/components/ui/ErrorMessage';
+import { EmptyState } from '../../../src/components/EmptyState';
 import { colors } from '../../../src/theme/colors';
 import { ContractSummary, Property } from '../../../src/types';
 
@@ -276,20 +277,13 @@ export default function ContractsListScreen() {
 
         {/* Contracts List */}
         {filteredContracts.length === 0 ? (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <Ionicons name="document-text-outline" size={48} color={colors.gray[300]} />
-            </View>
-            <Text style={styles.emptyTitle}>
-              {contracts.length === 0 ? 'Henuz sozlesmeniz yok' : 'Bu filtrede sozlesme bulunamadi'}
-            </Text>
-            <Text style={styles.emptySubtitle}>
-              {contracts.length === 0 ? 'Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika' : 'Farkli bir filtre deneyin.'}
-            </Text>
-            {isLandlord && contracts.length === 0 && (
-              <Button title="Sozlesme Olustur" onPress={() => setShowForm(true)} style={{ marginTop: 20, width: 220 }} />
-            )}
-          </View>
+          <EmptyState
+            icon="document-text-outline"
+            title={contracts.length === 0 ? 'Henuz sozlesmeniz yok' : 'Bu filtrede sozlesme bulunamadi'}
+            subtitle={contracts.length === 0 ? 'Kefil aramadan ilk kontratinizi olusturun — sadece 5 dakika' : 'Farkli bir filtre deneyin.'}
+            ctaLabel={isLandlord && contracts.length === 0 ? 'Sozlesme Olustur' : undefined}
+            onCtaPress={isLandlord && contracts.length === 0 ? () => setShowForm(true) : undefined}
+          />
         ) : (
           filteredContracts.map((c) => {
             const sb = getStatusBadge(c.status);
@@ -378,7 +372,12 @@ export default function ContractsListScreen() {
         <SafeAreaView style={styles.wizardContainer}>
           {/* Wizard Header */}
           <View style={styles.wizardHeader}>
-            <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }} style={styles.wizardCloseBtn}>
+            <TouchableOpacity
+              onPress={() => { setShowForm(false); resetForm(); }}
+              style={styles.wizardCloseBtn}
+              accessibilityLabel="Kapat"
+              accessibilityRole="button"
+            >
               <Ionicons name="close" size={24} color={colors.gray[600]} />
             </TouchableOpacity>
             <Text style={styles.wizardTitle}>Yeni Sozlesme</Text>
@@ -992,33 +991,7 @@ const styles = StyleSheet.create({
     marginTop: -9,
   },
 
-  // Empty State
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 64,
-    paddingHorizontal: 32,
-  },
-  emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.gray[100],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.gray[700],
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 15,
-    color: colors.gray[500],
-    textAlign: 'center',
-    lineHeight: 22,
-  },
+  // Empty State styles removed — now uses shared EmptyState component
 
   // FAB
   fab: {
@@ -1043,7 +1016,7 @@ const styles = StyleSheet.create({
   },
 
   // Form
-  pickLabel: { fontSize: 13, fontWeight: '600', color: colors.gray[500], marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  pickLabel: { fontSize: 14, fontWeight: '600', color: colors.gray[600], marginBottom: 8, letterSpacing: 0.3 },
   searchRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
   errorSmall: { fontSize: 12, color: '#ef4444', marginBottom: 8, marginTop: -8 },
   formRow: { flexDirection: 'row', gap: 10 },
@@ -1077,7 +1050,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 48,
-    backgroundColor: colors.gray[50],
+    backgroundColor: colors.white,
     borderRadius: 12,
     paddingHorizontal: 14,
     borderWidth: 1.5,
@@ -1159,7 +1132,7 @@ const styles = StyleSheet.create({
   },
   toggleSection: {
     backgroundColor: colors.gray[50],
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 4,
     marginBottom: 20,
     borderWidth: 1.5,
@@ -1206,9 +1179,11 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.gray[100],
   },
   wizardCloseBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    minWidth: 44,
+    minHeight: 44,
+    borderRadius: 22,
     backgroundColor: colors.gray[50],
     alignItems: 'center',
     justifyContent: 'center',

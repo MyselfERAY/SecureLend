@@ -226,7 +226,7 @@ export default function BankPage() {
                     <p className="text-sm font-semibold text-blue-300">Mobil Uygulama Gerekli</p>
                     <p className="mt-1 text-sm text-blue-300/80">
                       Digital onboarding islemi (kimlik dogrulama, selfie, video dogrulama) yalnizca mobil uygulama uzerinden tamamlanabilir.
-                      Lutfen Kira Guvence mobil uygulamasini indirip onboarding isleminizi oradan tamamlayin.
+                      Lutfen Kira Güvence mobil uygulamasini indirip onboarding isleminizi oradan tamamlayin.
                     </p>
                   </div>
                 </div>

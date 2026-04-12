@@ -152,7 +152,7 @@ export default function DashboardPage() {
           {user?.roles.length ? user.roles.map(r =>
             r === 'TENANT' ? 'Kiraci' : r === 'LANDLORD' ? 'Ev Sahibi' : r === 'ADMIN' ? 'Yonetici' : r
           ).join(' / ') : 'Henuz rol atanmadi'}
-          {' '}&middot; Kira Guvence Kontrol Paneli
+          {' '}&middot; Kira Güvence Kontrol Paneli
         </p>
       </div>
 

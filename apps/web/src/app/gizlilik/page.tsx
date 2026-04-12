@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Gizlilik Politikasi',
-  description: 'Kira Guvence gizlilik politikasi. Kisisel verilerinizin nasil islendigi ve korunduguyla ilgili bilgiler.',
+  description: 'Kira Güvence gizlilik politikasi. Kisisel verilerinizin nasil islendigi ve korunduguyla ilgili bilgiler.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/gizlilik' },
 };

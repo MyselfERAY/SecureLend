@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'KVKK Aydınlatma Metni | Kira Guvence',
+  title: 'KVKK Aydınlatma Metni | Kira Güvence',
 };
 
 export default function KVKKPage() {

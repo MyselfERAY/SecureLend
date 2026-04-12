@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Kullanim Kosullari',
-  description: 'Kira Guvence kullanim kosullari ve hizmet sartlari.',
+  description: 'Kira Güvence kullanim kosullari ve hizmet sartlari.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/kullanim-kosullari' },
 };

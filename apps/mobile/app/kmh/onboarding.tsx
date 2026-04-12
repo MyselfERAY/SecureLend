@@ -221,6 +221,20 @@ export default function KmhOnboardingScreen() {
     setProcessingState('idle');
   };
 
+  // Motivational messages shown after completing a step
+  const getMotivationMessage = (): { text: string; progressText: string } | null => {
+    if (!kycStatus) return null;
+    const completed = kycStatus.steps.filter((s) => s.completed).length;
+    const total = kycStatus.steps.filter((s) => s.required).length;
+    if (completed === 0) return null;
+    const progressText = `${total} adimdan ${completed}'${completed === 1 ? 'i' : completed === 2 ? 'si' : 'u'} tamamlandi`;
+    if (completed === 1) return { text: 'Harika! Kimliginiz dogrulandi \u2713', progressText };
+    if (completed === 2) return { text: 'Neredeyse bitti! Son 2 adim kaldi', progressText };
+    if (completed === 3) return { text: 'Son adim! Sozlesmeleri onaylayin', progressText };
+    return null;
+  };
+  const motivationMsg = getMotivationMessage();
+
   const handleAgreementSubmit = async () => {
     if (!agreementChecks.kmh || !agreementChecks.kvkk || !agreementChecks.genel) return;
 
@@ -779,6 +793,22 @@ Kira Guvence Teknoloji A.S.`,
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Motivation Banner */}
+        {motivationMsg && (
+          <View style={styles.motivationBanner}>
+            <View style={styles.motivationTop}>
+              <Ionicons name="sparkles" size={18} color="#2563eb" />
+              <Text style={styles.motivationText}>{motivationMsg.text}</Text>
+            </View>
+            <View style={styles.motivationProgressRow}>
+              <View style={styles.motivationProgressTrack}>
+                <View style={[styles.motivationProgressFill, { width: `${progressPercent}%` }]} />
+              </View>
+              <Text style={styles.motivationProgressLabel}>{motivationMsg.progressText}</Text>
+            </View>
+          </View>
+        )}
+
         {/* Step Cards */}
         {steps.map((step, index) => {
           const status = getStepStatus(step);
@@ -943,6 +973,46 @@ const styles = StyleSheet.create({
 
   scrollArea: { flex: 1 },
   scrollContent: { padding: 20 },
+
+  // Motivation Banner
+  motivationBanner: {
+    backgroundColor: '#eff6ff',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  motivationTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  motivationText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1d4ed8',
+    flex: 1,
+  },
+  motivationProgressRow: {
+    gap: 6,
+  },
+  motivationProgressTrack: {
+    height: 6,
+    backgroundColor: '#dbeafe',
+    borderRadius: 3,
+  },
+  motivationProgressFill: {
+    height: 6,
+    backgroundColor: '#2563eb',
+    borderRadius: 3,
+  },
+  motivationProgressLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#3b82f6',
+  },
 
   // Step Cards
   stepCard: {

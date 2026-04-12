@@ -3,10 +3,10 @@ import PricingContent from './pricing-content';
 
 export const metadata: Metadata = {
   title: 'Fiyatlandirma',
-  description: 'Kira Guvence fiyatlandirma planlari. Ucretsiz baslayicidan Portfoy plana kadar seffaf garanti ucreti oranlari. Kira garanti ucreti, noter ve kefil masrafindan daha hesapli.',
+  description: 'Kira Güvence fiyatlandirma planlari. Ucretsiz baslayicidan Portfoy plana kadar seffaf garanti ucreti oranlari. Kira garanti ucreti, noter ve kefil masrafindan daha hesapli.',
   openGraph: {
-    title: 'Fiyatlandirma | Kira Guvence',
-    description: 'Kira Guvence fiyatlandirma planlari. Noter ve kefil masrafindan daha hesapli kira guvence sistemi.',
+    title: 'Fiyatlandirma | Kira Güvence',
+    description: 'Kira Güvence fiyatlandirma planlari. Noter ve kefil masrafindan daha hesapli kira guvence sistemi.',
   },
   alternates: { canonical: '/fiyatlandirma' },
 };

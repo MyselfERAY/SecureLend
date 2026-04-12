@@ -50,13 +50,13 @@ export default function ReferralPage() {
 
   const shareWhatsApp = () => {
     if (!info?.referralLink) return;
-    const text = `KiraGuvence ile kira odemelerini guvence altina al! Davet linkimle kayit ol, ikimiz de 1 ay komisyonsuz kullanalim: ${info.referralLink}`;
+    const text = `Kira Güvence ile kira odemelerini guvence altina al! Davet linkimle kayit ol, ikimiz de 1 ay komisyonsuz kullanalim: ${info.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const shareSMS = () => {
     if (!info?.referralLink) return;
-    const text = `KiraGuvence'ye katil! Davet kodum: ${info.referralCode}. Kayit ol: ${info.referralLink}`;
+    const text = `Kira Güvence'ye katil! Davet kodum: ${info.referralCode}. Kayit ol: ${info.referralLink}`;
     window.open(`sms:?body=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -75,7 +75,7 @@ export default function ReferralPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-white">Arkadasini Getir</h1>
       <p className="text-sm text-slate-400">
-        Davet kodunuzu paylasarak arkadaslarinizi KiraGuvence&apos;ye davet edin.
+        Davet kodunuzu paylasarak arkadaslarinizi Kira Güvence&apos;ye davet edin.
         Hem siz hem arkadasiniz 1 ay komisyonsuz kullanim kazanin!
       </p>
 

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Acik Riza Formu',
-  description: 'Kira Guvence acik riza formu. KVKK kapsaminda kisisel veri isleme onayi.',
+  description: 'Kira Güvence acik riza formu. KVKK kapsaminda kisisel veri isleme onayi.',
   alternates: { canonical: '/acik-riza' },
 };
 

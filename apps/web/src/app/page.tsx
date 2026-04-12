@@ -34,7 +34,7 @@ const steps = [
 const trustBadges = [
   {
     icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-    title: "Turkiye'nin Ilk Dijital Kira Guvence Platformu",
+    title: "Turkiye'nin Ilk Dijital Kira Güvence Platformu",
   },
   {
     icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
@@ -110,19 +110,19 @@ export default function HomePage() {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-6 md:flex">
-            <a href="#nasil-calisir" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            <a href="#nasil-calisir" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               Nasıl Çalışır?
             </a>
-            <Link href="/rehber" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            <Link href="/rehber" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               Rehber
             </Link>
-            <Link href="/fiyatlandirma" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            <Link href="/fiyatlandirma" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               Fiyatlandirma
             </Link>
-            <Link href="/sablonlar" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            <Link href="/sablonlar" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               Sablonlar
             </Link>
-            <a href="#iletisim" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+            <a href="#iletisim" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
               İletişim
             </a>
           </nav>
@@ -130,14 +130,14 @@ export default function HomePage() {
           <div className="hidden items-center gap-3 md:flex">
             <Link
               href="/auth/login"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="min-h-[44px] flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Giriş Yap
             </Link>
             <Link
               href="/auth/register"
               data-cta="header-hesap-olustur"
-              className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+              className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
             >
               Hesap Oluştur
             </Link>
@@ -146,9 +146,10 @@ export default function HomePage() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden"
+            aria-label={mobileMenuOpen ? 'Menüyü kapat' : 'Menüyü aç'}
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               {mobileMenuOpen
                 ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
@@ -160,14 +161,14 @@ export default function HomePage() {
         {mobileMenuOpen && (
           <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
             <div className="flex flex-col gap-3">
-              <a href="#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Nasıl Çalışır?</a>
-              <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Rehber</Link>
-              <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Fiyatlandirma</Link>
-              <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">Sablonlar</Link>
-              <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-slate-600">İletişim</a>
+              <a href="#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Nasıl Çalışır?</a>
+              <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Rehber</Link>
+              <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Fiyatlandirma</Link>
+              <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Sablonlar</Link>
+              <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">İletişim</a>
               <hr className="border-slate-200" />
-              <Link href="/auth/login" className="text-sm font-semibold text-slate-700">Giriş Yap</Link>
-              <Link href="/auth/register" data-cta="mobile-hesap-olustur" className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Hesap Oluştur</Link>
+              <Link href="/auth/login" className="min-h-[44px] flex items-center text-sm font-semibold text-slate-700">Giriş Yap</Link>
+              <Link href="/auth/register" data-cta="mobile-hesap-olustur" className="min-h-[44px] flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Hesap Oluştur</Link>
             </div>
           </div>
         )}
@@ -210,19 +211,19 @@ export default function HomePage() {
 
                 <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500">
                   <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     Kayıt ücretsiz
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     5 dakikada kurulum
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     SSL & KVKK uyumlu
@@ -304,7 +305,7 @@ export default function HomePage() {
             {trustBadges.map((badge) => (
               <div key={badge.title} className="flex flex-col items-center text-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20">
-                  <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={badge.icon} />
                   </svg>
                 </div>
@@ -319,7 +320,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanitim</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">KiraGuvence Nasil Calisir?</h2>
+              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kira Güvence Nasil Calisir?</h2>
               <p className="mt-3 text-base text-slate-500">Platform tanitimini adim adim inceleyin.</p>
             </div>
             <div className="mt-10">
@@ -332,23 +333,23 @@ export default function HomePage() {
                 <div className="relative aspect-video bg-gradient-to-br from-blue-50 via-white to-slate-50">
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-700 shadow-lg transition group-hover:bg-blue-800 group-hover:scale-110">
-                      <svg className="ml-1 h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="ml-1 h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </div>
                     <p className="mt-5 text-lg font-bold text-slate-900">Platform Tanitim Sunumu</p>
-                    <p className="mt-1.5 text-sm text-slate-500">9 adimda KiraGuvence&apos;yi kesfet</p>
+                    <p className="mt-1.5 text-sm text-slate-500">9 adimda Kira Güvence&apos;yi kesfet</p>
                     <div className="mt-4 flex items-center gap-6 text-xs text-slate-400">
                       <span className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         Nasil Calisir
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         Guvenlik
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                         Fiyatlandirma
                       </span>
                     </div>
@@ -374,7 +375,7 @@ export default function HomePage() {
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
               {features.map((feature) => (
-                <FeatureCard key={feature.title} {...feature} />
+                <FeatureCard key={feature.title} {...feature} highlighted={feature.icon === 'shield'} />
               ))}
             </div>
           </div>
@@ -557,12 +558,12 @@ export default function HomePage() {
             </div>
             <div className="mt-10 divide-y divide-slate-700/50 rounded-2xl border border-slate-700/50 bg-[#0d1b2a]">
               <FaqItem
-                question="Kira Guvence nedir?"
-                answer="Kira Guvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz."
+                question="Kira Güvence nedir?"
+                answer="Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldiran, banka guvenceli dijital kira yonetim platformudur. Ev sahibi kirasini garanti altina alir, kiraci kefil bulmak zorunda kalmaz."
               />
               <FaqItem
                 question="Kefil olmadan ev kiralayabilir miyim?"
-                answer="Evet. Kira Guvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder."
+                answer="Evet. Kira Güvence ile banka guvencesi kefil yerine gecer. Kiraci kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiraci odemelerini garanti eder."
               />
               <FaqItem
                 question="KMH (Kredili Mevduat Hesabi) nedir?"
@@ -574,7 +575,7 @@ export default function HomePage() {
               />
               <FaqItem
                 question="Dijital sozlesme mahkemede gecerli mi?"
-                answer="Evet. Kira Guvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir."
+                answer="Evet. Kira Güvence sozlesmeleri TBK (Turk Borclar Kanunu) uyumludur. Tum odeme kayitlari ve sozlesme gecmisi zaman damgali olarak saklanir ve hukuki delil olarak kullanilabilir."
               />
             </div>
           </div>
@@ -646,7 +647,7 @@ export default function HomePage() {
   );
 }
 
-function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc: string }) {
+function FeatureCard({ icon, title, desc, highlighted }: { icon: string; title: string; desc: string; highlighted?: boolean }) {
   const icons: Record<string, string> = {
     shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
     document: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
@@ -654,8 +655,17 @@ function FeatureCard({ icon, title, desc }: { icon: string; title: string; desc:
   };
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
-      <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
+    <article className={`relative rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
+      highlighted
+        ? 'border-blue-500 shadow-blue-100 ring-1 ring-blue-500/20'
+        : 'border-slate-200'
+    }`}>
+      {highlighted && (
+        <span className="absolute -top-3 right-4 inline-flex items-center rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
+          En Onemli
+        </span>
+      )}
+      <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${highlighted ? 'bg-blue-100' : 'bg-blue-50'}`}>
         <svg className="h-5 w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={icons[icon]} />
         </svg>
@@ -673,7 +683,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         <span className="text-sm font-semibold text-white">{question}</span>
         <svg
           className="h-5 w-5 flex-shrink-0 text-slate-400 transition-transform group-open:rotate-180"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -690,7 +700,7 @@ function TestimonialCard({ name, role, comment, avatar }: { name: string; role: 
     <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex">
         {[...Array(5)].map((_, i) => (
-          <svg key={i} className="h-4 w-4 fill-amber-400" viewBox="0 0 20 20">
+          <svg key={i} className="h-4 w-4 fill-amber-400" viewBox="0 0 20 20" aria-hidden="true">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         ))}

@@ -5,9 +5,9 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Kredi Uygunluk Kontrolu',
   description:
-    'TCKN ile kredi uygunluk kontrolu yapin. Kira Guvence uzerinden kira odeme uygunlugunuzu ve KMH limitinizi hizlica ogrenin.',
+    'TCKN ile kredi uygunluk kontrolu yapin. Kira Güvence uzerinden kira odeme uygunlugunuzu ve KMH limitinizi hizlica ogrenin.',
   openGraph: {
-    title: 'Kredi Uygunluk Kontrolu | Kira Guvence',
+    title: 'Kredi Uygunluk Kontrolu | Kira Güvence',
     description: 'TCKN ile kredi uygunluk kontrolu yapin. Kira odeme uygunlugunuzu ogrenin.',
   },
 };
