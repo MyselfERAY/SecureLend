@@ -133,7 +133,7 @@ export default function BankPage() {
       });
       if (res.status === 'success' && res.data) {
         if (res.data.status === 'APPROVED') {
-          setFormSuccess(`KMH başvurunuz ONAYLANDI! Limit: ${Number(res.data.approvedLimit).toLocaleString('tr-TR')} TL. Digital onboarding işleminizi tamamlayın.`);
+          setFormSuccess(`Banka güvence başvurunuz ONAYLANDI! Limit: ${Number(res.data.approvedLimit).toLocaleString('tr-TR')} TL. Digital onboarding işleminizi tamamlayın.`);
         } else {
           setFormError(`Başvurunuz reddedildi: ${res.data.rejectionReason}`);
         }
@@ -175,7 +175,7 @@ export default function BankPage() {
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
         {[
-          { key: 'kmh' as ActiveTab, label: 'KMH Başvurusu' },
+          { key: 'kmh' as ActiveTab, label: 'Banka Güvencesi' },
           { key: 'accounts' as ActiveTab, label: 'Hesaplar & İşlemler' },
         ].map((tab) => (
           <button
@@ -213,7 +213,7 @@ export default function BankPage() {
             <div className="rounded-xl border-2 border-yellow-500/30 bg-yellow-500/10 p-6">
               <h3 className="mb-2 text-lg font-bold text-yellow-400">Digital Onboarding Bekliyor</h3>
               <p className="mb-3 text-sm text-yellow-300/80">
-                KMH başvurunuz onaylandı. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
+                Banka güvence başvurunuz onaylandı. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
                 Hesabınızı aktif hale getirmek için digital onboarding işleminizi tamamlayın.
               </p>
               <p className="mb-4 text-xs text-yellow-400/60">Referans: {pendingOnboarding.bankReferenceNo}</p>
@@ -237,16 +237,16 @@ export default function BankPage() {
           {canApply && !showForm && (
             <div className="flex justify-end">
               <button onClick={() => setShowForm(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
-                Yeni KMH Başvurusu
+                Yeni Güvence Başvurusu
               </button>
             </div>
           )}
 
           {showForm && (
             <form onSubmit={handleApplyKmh} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-white">KMH Başvurusu</h3>
+              <h3 className="text-lg font-semibold text-white">Banka Güvence Hesabı Başvurusu</h3>
               <p className="text-sm text-slate-400">
-                Kredili Mevduat Hesabı (KMH) başvurusu için aşağıdaki bilgileri doldurun.
+                Banka Güvence Hesabı (KMH) başvurusu için aşağıdaki bilgileri doldurun.
               </p>
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
                 <strong className="text-amber-200">KVKK Bilgilendirmesi:</strong> Kayıt sırasında
@@ -353,7 +353,7 @@ export default function BankPage() {
                       )}
                       {app.bankAccount && (
                         <div className="mt-2">
-                          <div className="text-xs text-slate-500">KMH Hesap</div>
+                          <div className="text-xs text-slate-500">Güvence Hesabı</div>
                           <div className="font-mono text-xs text-blue-400">{app.bankAccount.accountNumber}</div>
                         </div>
                       )}
@@ -372,9 +372,9 @@ export default function BankPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
               </div>
-              <div className="text-lg font-medium text-slate-300">Henüz KMH başvurunuz yok</div>
+              <div className="text-lg font-medium text-slate-300">Henüz banka güvence başvurunuz yok</div>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-                Kredili Mevduat Hesabı (KMH) ile sözleşme imzalayabilir ve kira ödemelerinizi güvence altına alabilirsiniz.
+                Banka güvencesi ile kira ödemeleriniz garanti altında. Kefil gerekmiyor, banka sizin yerinize güvence veriyor.
               </p>
             </div>
           )}
@@ -393,7 +393,7 @@ export default function BankPage() {
               </div>
               <div className="text-lg font-medium text-slate-300">Henüz banka hesabınız yok</div>
               <p className="mt-2 text-sm text-slate-500">
-                KMH başvurusu yapıp onboarding tamamladıktan sonra hesabınız burada görünecektir.
+                Güvence başvurunuz onaylanıp dijital onboarding tamamlandığında hesabınız burada aktif olacak. Tüm kira işlemleriniz tek ekranda.
               </p>
             </div>
           ) : (
@@ -419,7 +419,7 @@ export default function BankPage() {
                     <div className="text-right">
                       {acc.creditLimit != null && (
                         <>
-                          <div className="text-xs text-slate-500">KMH Limiti</div>
+                          <div className="text-xs text-slate-500">Güvence Limiti</div>
                           <div className="font-semibold text-blue-400">{acc.creditLimit.toLocaleString('tr-TR')} {acc.currency}</div>
                           <div className="mt-1 text-xs text-slate-500">Kullanilabilir: {acc.availableBalance.toLocaleString('tr-TR')} {acc.currency}</div>
                         </>

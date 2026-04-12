@@ -5,7 +5,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Kredi Uygunluk Kontrolü',
   description:
-    'TCKN ile kredi uygunluk kontrolü yapın. Kira Güvence üzerinden kira ödeme uygunluğunuzu ve KMH limitinizi hızlıca öğrenin.',
+    'TCKN ile kredi uygunluk kontrolü yapın. Kira Güvence üzerinden kira ödeme uygunluğunuzu ve güvence limitinizi hızlıca öğrenin.',
   openGraph: {
     title: 'Kredi Uygunluk Kontrolü | Kira Güvence',
     description: 'TCKN ile kredi uygunluk kontrolü yapın. Kira ödeme uygunluğunuzu öğrenin.',

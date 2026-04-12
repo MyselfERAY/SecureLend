@@ -238,7 +238,7 @@ export default function DashboardPage() {
         <QuickAction
           href="/dashboard/bank"
           title="Banka Hesapları"
-          desc="KMH hesabı açın ve yönetin"
+          desc="Banka güvence hesabınızı açın ve yönetin"
           icon={
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -330,10 +330,8 @@ export default function DashboardPage() {
           <div className="text-lg font-medium text-slate-300">Henüz sözleşmeniz yok</div>
           <p className="mt-2 text-sm text-slate-500">
             {isLandlord
-              ? stats.properties > 0
-                ? 'Mülkünüz var ancak henüz sözleşme oluşturmamışsınız.'
-                : 'Önce mülk ekleyin, sonra sözleşme oluşturun.'
-              : 'Ev sahibiniz sözleşme oluşturduğunda burada görünecektir.'}
+              ? 'Kefil aramadan ilk kontratınızı kurun — dijital sözleşme 5 dakikada hazır, noter gereksiz.'
+              : 'Ev sahibiniz sözleşme oluşturduğunda burada görünecek. Kira Güvence ile kefil derdi yok!'}
           </p>
           {isLandlord && (
             <div className="mt-4 flex items-center justify-center gap-3">

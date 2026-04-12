@@ -56,6 +56,7 @@ export default function ContractsPage() {
 
   // Form state
   const [showForm, setShowForm] = useState(false);
+  const [formStep, setFormStep] = useState(1);
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [tenantSearch, setTenantSearch] = useState('');
   const [tenantResult, setTenantResult] = useState<TenantResult | null>(null);
@@ -189,6 +190,7 @@ export default function ContractsPage() {
     setTenantResult(null);
     setTenantSearch('');
     setTenantError('');
+    setFormStep(1);
   };
 
   if (loading) {
@@ -215,7 +217,7 @@ export default function ContractsPage() {
         <h1 className="text-2xl font-bold text-white">Sözleşmelerim</h1>
         {isLandlord && (
           <button
-            onClick={() => { setShowForm(!showForm); if (showForm) resetForm(); }}
+            onClick={() => { setShowForm(!showForm); if (showForm) { resetForm(); } }}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
               showForm
                 ? 'border border-slate-600 text-slate-300 hover:bg-slate-700/50'
@@ -259,149 +261,207 @@ export default function ContractsPage() {
         </div>
       )}
 
-      {/* Create Form */}
+      {/* Create Form — 3-Step Wizard */}
       {showForm && (
         <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-5">
           <h3 className="text-lg font-semibold text-white">Yeni Kira Sözleşmesi</h3>
+
+          {/* Progress Bar */}
+          <div className="flex items-center gap-2 mb-6">
+            {[
+              { num: 1, label: 'Taraflar' },
+              { num: 2, label: 'Detaylar' },
+              { num: 3, label: 'Onay' },
+            ].map((s) => (
+              <div key={s.num} className="flex items-center gap-2">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                  formStep >= s.num ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'
+                }`}>
+                  {s.num}
+                </div>
+                <span className={`text-sm font-medium ${formStep >= s.num ? 'text-white' : 'text-slate-500'}`}>
+                  {s.label}
+                </span>
+                {s.num < 3 && <div className={`h-px w-8 ${formStep > s.num ? 'bg-blue-600' : 'bg-slate-700'}`} />}
+              </div>
+            ))}
+          </div>
 
           {formError && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{formError}</div>
           )}
 
-          {/* Tenant search */}
-          <div className="rounded-lg border border-slate-700/50 bg-[#0a1628]/50 p-4 space-y-3">
-            <label className={labelCls}>Kiracı Ara (Telefon Numarası)</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={tenantSearch}
-                onChange={(e) => setTenantSearch(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                placeholder="5XXXXXXXXX"
-                className={inputCls}
-              />
-              <button
-                type="button"
-                onClick={searchTenant}
-                disabled={tenantSearching}
-                className="shrink-0 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 disabled:opacity-50"
-              >
-                {tenantSearching ? 'Aranıyor...' : 'Ara'}
-              </button>
-            </div>
-            {tenantError && <p className="text-sm text-red-400">{tenantError}</p>}
-            {tenantResult && (
-              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-                <div className="text-sm font-medium text-emerald-400">Kiracı Bulundu</div>
-                <div className="mt-1 text-sm text-emerald-300/80">
-                  <span className="font-medium">{tenantResult.fullName}</span>
-                  <span className="ml-2 text-emerald-400/60">({tenantResult.maskedTckn})</span>
-                  <span className="ml-2 text-emerald-400/60">Tel: {tenantResult.phone}</span>
+          {/* Step 1 — Taraflar (Parties) */}
+          {formStep === 1 && (
+            <>
+              {/* Tenant search */}
+              <div className="rounded-lg border border-slate-700/50 bg-[#0a1628]/50 p-4 space-y-3">
+                <label className={labelCls}>Kiracı Ara (Telefon Numarası)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={tenantSearch}
+                    onChange={(e) => setTenantSearch(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="5XXXXXXXXX"
+                    className={inputCls}
+                  />
+                  <button
+                    type="button"
+                    onClick={searchTenant}
+                    disabled={tenantSearching}
+                    className="shrink-0 rounded-lg bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 disabled:opacity-50"
+                  >
+                    {tenantSearching ? 'Aranıyor...' : 'Ara'}
+                  </button>
                 </div>
+                {tenantError && <p className="text-sm text-red-400">{tenantError}</p>}
+                {tenantResult && (
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
+                    <div className="text-sm font-medium text-emerald-400">Kiracı Bulundu</div>
+                    <div className="mt-1 text-sm text-emerald-300/80">
+                      <span className="font-medium">{tenantResult.fullName}</span>
+                      <span className="ml-2 text-emerald-400/60">({tenantResult.maskedTckn})</span>
+                      <span className="ml-2 text-emerald-400/60">Tel: {tenantResult.phone}</span>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Property select */}
-          <div>
-            <label className={labelCls}>Mülk *</label>
-            <select
-              value={formData.propertyId}
-              onChange={(e) => handlePropertySelect(e.target.value)}
-              className={inputCls}
-              required
-            >
-              <option value="">Mülk seçin...</option>
-              {properties.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title} — {p.monthlyRent.toLocaleString('tr-TR')} TL/ay
-                </option>
-              ))}
-            </select>
-            {properties.length === 0 && (
-              <p className="mt-1 text-xs text-yellow-400">
-                Henüz aktif mülkünüz yok. Önce Mülkler sayfasından mülk ekleyin.
-              </p>
-            )}
-          </div>
-
-          {/* Date and rent fields */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className={labelCls}>Başlangıç Tarihi *</label>
-              <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className={inputCls} required />
-            </div>
-            <div>
-              <label className={labelCls}>Bitiş Tarihi *</label>
-              <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className={inputCls} required />
-            </div>
-            <div>
-              <label className={labelCls}>Aylık Kira (TL) *</label>
-              <input type="number" value={formData.monthlyRent} onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })} className={inputCls} required />
-            </div>
-            <div>
-              <label className={labelCls}>Depozito (TL)</label>
-              <input type="number" value={formData.depositAmount} onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Ödeme Günü (1-28) *</label>
-              <input type="number" min="1" max="28" value={formData.paymentDayOfMonth} onChange={(e) => setFormData({ ...formData, paymentDayOfMonth: e.target.value })} className={inputCls} required />
-            </div>
-          </div>
-
-          {/* IBAN */}
-          <div>
-            <label className={labelCls}>Ev Sahibi IBAN *</label>
-            <input
-              type="text"
-              value={formData.landlordIban}
-              onChange={(e) => {
-                const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 26);
-                setFormData({ ...formData, landlordIban: val });
-              }}
-              placeholder="TR000000000000000000000000"
-              maxLength={26}
-              className={`${inputCls} font-mono`}
-              required
-            />
-            <p className="mt-1 text-xs text-slate-500">TR ile başlamalı, 26 karakter</p>
-            {formData.landlordIban && !/^TR\d{24}$/.test(formData.landlordIban) && (
-              <p className="mt-1 text-xs text-red-400">IBAN TR ile başlamalı ve toplam 26 karakter olmalıdır</p>
-            )}
-          </div>
-
-          {/* Terms */}
-          <div>
-            <label className={labelCls}>Sözleşme Şartları</label>
-            <textarea value={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.value })} rows={3} placeholder="Genel sözleşme şartları..." className={`${inputCls} resize-none`} />
-          </div>
-          <div>
-            <label className={labelCls}>Özel Maddeler</label>
-            <textarea value={formData.specialClauses} onChange={(e) => setFormData({ ...formData, specialClauses: e.target.value })} rows={2} placeholder="Özel maddeler..." className={`${inputCls} resize-none`} />
-          </div>
-
-          {/* Summary */}
-          {formData.propertyId && tenantResult && (
-            <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm">
-              <div className="mb-2 font-medium text-blue-400">Sözleşme Özeti</div>
-              <div className="space-y-1 text-blue-300/80">
-                <div>Mülk: {properties.find((p) => p.id === formData.propertyId)?.title}</div>
-                <div>Kiracı: {tenantResult.fullName}</div>
-                <div>Kira: {Number(formData.monthlyRent || 0).toLocaleString('tr-TR')} TL/ay</div>
-                {formData.depositAmount && <div>Depozito: {Number(formData.depositAmount).toLocaleString('tr-TR')} TL</div>}
-                <div>Sure: {formData.startDate} — {formData.endDate}</div>
-                <div>Ödeme Günü: Her ayın {formData.paymentDayOfMonth}. gunu</div>
-                {formData.landlordIban && <div>IBAN: {formData.landlordIban}</div>}
+              {/* Property select */}
+              <div>
+                <label className={labelCls}>Mülk *</label>
+                <select
+                  value={formData.propertyId}
+                  onChange={(e) => handlePropertySelect(e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="">Mülk seçin...</option>
+                  {properties.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title} — {p.monthlyRent.toLocaleString('tr-TR')} TL/ay
+                    </option>
+                  ))}
+                </select>
+                {properties.length === 0 && (
+                  <p className="mt-1 text-xs text-yellow-400">
+                    Henüz aktif mülkünüz yok. Önce Mülkler sayfasından mülk ekleyin.
+                  </p>
+                )}
               </div>
-            </div>
+
+              {/* Selected info summary */}
+              {tenantResult && formData.propertyId && (
+                <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm">
+                  <div className="space-y-1 text-blue-300/80">
+                    <div>Kiracı: <span className="text-white font-medium">{tenantResult.fullName}</span></div>
+                    <div>Mülk: <span className="text-white font-medium">{properties.find((p) => p.id === formData.propertyId)?.title}</span></div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          <button
-            type="submit"
-            disabled={submitting || !tenantResult || !formData.propertyId}
-            className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {submitting ? 'Oluşturuluyor...' : 'Sözleşme Oluştur'}
-          </button>
+          {/* Step 2 — Sözleşme Detayları (Contract Details) */}
+          {formStep === 2 && (
+            <>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className={labelCls}>Başlangıç Tarihi *</label>
+                  <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className={inputCls} required />
+                </div>
+                <div>
+                  <label className={labelCls}>Bitiş Tarihi *</label>
+                  <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className={inputCls} required />
+                </div>
+                <div>
+                  <label className={labelCls}>Aylık Kira (TL) *</label>
+                  <input type="number" value={formData.monthlyRent} onChange={(e) => setFormData({ ...formData, monthlyRent: e.target.value })} className={inputCls} required />
+                </div>
+                <div>
+                  <label className={labelCls}>Depozito (TL)</label>
+                  <input type="number" value={formData.depositAmount} onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Ödeme Günü (1-28) *</label>
+                  <input type="number" min="1" max="28" value={formData.paymentDayOfMonth} onChange={(e) => setFormData({ ...formData, paymentDayOfMonth: e.target.value })} className={inputCls} required />
+                </div>
+              </div>
+
+              {/* IBAN */}
+              <div>
+                <label className={labelCls}>Ev Sahibi IBAN *</label>
+                <input
+                  type="text"
+                  value={formData.landlordIban}
+                  onChange={(e) => {
+                    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 26);
+                    setFormData({ ...formData, landlordIban: val });
+                  }}
+                  placeholder="TR000000000000000000000000"
+                  maxLength={26}
+                  className={`${inputCls} font-mono`}
+                  required
+                />
+                <p className="mt-1 text-xs text-slate-500">TR ile başlamalı, 26 karakter</p>
+                {formData.landlordIban && !/^TR\d{24}$/.test(formData.landlordIban) && (
+                  <p className="mt-1 text-xs text-red-400">IBAN TR ile başlamalı ve toplam 26 karakter olmalıdır</p>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Step 3 — Onay (Review & Confirm) */}
+          {formStep === 3 && (
+            <>
+              {/* Terms */}
+              <div>
+                <label className={labelCls}>Sözleşme Şartları</label>
+                <textarea value={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.value })} rows={3} placeholder="Genel sözleşme şartları..." className={`${inputCls} resize-none`} />
+              </div>
+              <div>
+                <label className={labelCls}>Özel Maddeler</label>
+                <textarea value={formData.specialClauses} onChange={(e) => setFormData({ ...formData, specialClauses: e.target.value })} rows={2} placeholder="Özel maddeler..." className={`${inputCls} resize-none`} />
+              </div>
+
+              {/* Summary */}
+              {formData.propertyId && tenantResult && (
+                <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-sm">
+                  <div className="mb-2 font-medium text-blue-400">Sözleşme Özeti</div>
+                  <div className="space-y-1 text-blue-300/80">
+                    <div>Mülk: {properties.find((p) => p.id === formData.propertyId)?.title}</div>
+                    <div>Kiracı: {tenantResult.fullName}</div>
+                    <div>Kira: {Number(formData.monthlyRent || 0).toLocaleString('tr-TR')} TL/ay</div>
+                    {formData.depositAmount && <div>Depozito: {Number(formData.depositAmount).toLocaleString('tr-TR')} TL</div>}
+                    <div>Süre: {formData.startDate} — {formData.endDate}</div>
+                    <div>Ödeme Günü: Her ayın {formData.paymentDayOfMonth}. günü</div>
+                    {formData.landlordIban && <div>IBAN: {formData.landlordIban}</div>}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Navigation buttons */}
+          <div className="flex gap-3 mt-6">
+            {formStep > 1 && (
+              <button type="button" onClick={() => setFormStep(formStep - 1)}
+                className="rounded-lg border border-slate-600 px-6 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-700/50">
+                Geri
+              </button>
+            )}
+            {formStep < 3 ? (
+              <button type="button" onClick={() => setFormStep(formStep + 1)}
+                disabled={formStep === 1 ? (!tenantResult || !formData.propertyId) : (!formData.startDate || !formData.endDate || !formData.monthlyRent || !formData.landlordIban)}
+                className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+                İleri
+              </button>
+            ) : (
+              <button type="submit" disabled={submitting}
+                className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+                {submitting ? 'Oluşturuluyor...' : 'Sözleşme Oluştur'}
+              </button>
+            )}
+          </div>
         </form>
       )}
 
@@ -414,11 +474,11 @@ export default function ContractsPage() {
             </svg>
           </div>
           <div className="text-lg font-medium text-slate-300">Henüz sözleşmeniz yok</div>
-          {isLandlord && (
-            <p className="mt-2 text-sm text-slate-500">
-              Yeni Sözleşme butonuna tıklayarak kira sözleşmesi oluşturabilirsiniz.
-            </p>
-          )}
+          <p className="mt-2 text-sm text-slate-500">
+            {isLandlord
+              ? 'İlk dijital kira sözleşmenizi oluşturun. TBK uyumlu, mahkemede geçerli, 5 dakikada hazır.'
+              : 'Ev sahibiniz sözleşme oluşturduğunda burada görünecek.'}
+          </p>
         </div>
       ) : filteredContracts.length === 0 ? (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-12 text-center">
@@ -439,7 +499,9 @@ export default function ContractsPage() {
           <p className="mt-1 text-sm text-slate-500">
             {activeTab === 'archive'
               ? 'Feshedilen veya süresi dolan sözleşmeler burada görünecektir.'
-              : 'Aktif, taslak veya imza bekleyen sözleşmeleriniz burada görünecektir.'}
+              : isLandlord
+                ? 'İlk dijital kira sözleşmenizi oluşturun. TBK uyumlu, mahkemede geçerli, 5 dakikada hazır.'
+                : 'Ev sahibiniz sözleşme oluşturduğunda burada görünecek.'}
           </p>
         </div>
       ) : (

@@ -33,9 +33,9 @@ const audienceLabel: Record<string, string> = {
 };
 
 const audienceColor: Record<string, string> = {
-  TENANT: 'bg-blue-500/20 text-blue-400',
-  LANDLORD: 'bg-emerald-500/20 text-emerald-400',
-  BOTH: 'bg-slate-500/20 text-slate-400',
+  TENANT: 'bg-blue-100 text-blue-700',
+  LANDLORD: 'bg-emerald-100 text-emerald-700',
+  BOTH: 'bg-slate-100 text-slate-600',
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -91,23 +91,23 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   };
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
+    <div className="min-h-screen bg-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <SiteNav variant="dark" />
+      <SiteNav variant="light" />
 
       <main className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           {/* Back */}
           <div className="mb-8 flex items-center justify-end">
-            <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-white transition">
+            <Link href="/rehber" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
               Tüm Yazılar
             </Link>
           </div>
 
           {/* Header */}
-          <div className="rounded-3xl border border-slate-700/50 bg-[#0d1b2a] p-8 sm:p-10">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-8 sm:p-10">
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="text-xs font-medium text-slate-500">{fixTurkish(article.category)}</span>
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
@@ -115,7 +115,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </span>
             </div>
 
-            <h1 className="text-2xl font-extrabold text-white leading-snug sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-slate-900 leading-snug sm:text-3xl">
               {article.title}
             </h1>
             <p className="mt-3 text-sm text-slate-500">
@@ -123,12 +123,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 day: 'numeric', month: 'long', year: 'numeric',
               })}
             </p>
-            <p className="mt-4 text-base text-slate-300 font-medium border-l-4 border-blue-500/40 pl-4">
+            <p className="mt-4 text-base text-slate-600 font-medium border-l-4 border-blue-500 pl-4">
               {article.summary}
             </p>
           </div>
 
-          {/* Content — light background for readability */}
+          {/* Content */}
           <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
             {article.content.includes('<') ? (
               <div
@@ -148,7 +148,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
           {/* Footer nav */}
           <div className="mt-8 text-center">
-            <Link href="/rehber" className="text-sm font-semibold text-blue-400 hover:text-blue-300">
+            <Link href="/rehber" className="text-sm font-semibold text-blue-600 hover:text-blue-800">
               ← Tüm yazılara dön
             </Link>
           </div>

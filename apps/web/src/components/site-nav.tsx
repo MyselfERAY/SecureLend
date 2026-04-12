@@ -75,7 +75,7 @@ export default function SiteNav({ variant = 'light' }: SiteNavProps) {
             href="/auth/register"
             className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
           >
-            Hesap Oluştur
+            Ücretsiz Hesap Oluştur
           </Link>
         </div>
 
@@ -104,7 +104,7 @@ export default function SiteNav({ variant = 'light' }: SiteNavProps) {
             <Link href="/#iletisim" onClick={() => setMobileMenuOpen(false)} className={mobileLinkCls}>İletişim</Link>
             <hr className={hrCls} />
             <Link href="/auth/login" className={mobileLoginCls}>Giriş Yap</Link>
-            <Link href="/auth/register" className="min-h-[44px] flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Hesap Oluştur</Link>
+            <Link href="/auth/register" className="min-h-[44px] flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Ücretsiz Hesap Oluştur</Link>
           </div>
         </div>
       )}

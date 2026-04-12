@@ -21,7 +21,7 @@ const features = [
   {
     icon: 'bank',
     title: 'Banka Güvenceli Ödeme',
-    desc: 'KMH ile kira her ay otomatik ödenir. Ev sahibi zamanında alır, kiracı birkaç günlük faizle korunur.',
+    desc: 'Banka güvence hesabı ile kira her ay otomatik ödenir. Ev sahibi zamanında alır, kiracı birkaç günlük faizle korunur.',
   },
 ];
 
@@ -141,7 +141,7 @@ export default function HomePage() {
               data-cta="header-hesap-olustur"
               className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
             >
-              Hesap Oluştur
+              Ücretsiz Hesap Oluştur
             </Link>
           </div>
 
@@ -170,7 +170,7 @@ export default function HomePage() {
               <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">İletişim</a>
               <hr className="border-slate-200" />
               <Link href="/auth/login" className="min-h-[44px] flex items-center text-sm font-semibold text-slate-700">Giriş Yap</Link>
-              <Link href="/auth/register" data-cta="mobile-hesap-olustur" className="min-h-[44px] flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Hesap Oluştur</Link>
+              <Link href="/auth/register" data-cta="mobile-hesap-olustur" className="min-h-[44px] flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Ücretsiz Hesap Oluştur</Link>
             </div>
           </div>
         )}
@@ -497,7 +497,7 @@ export default function HomePage() {
               Kira Rehberi Bülteni
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Kiracı hakları, ev sahibi rehberleri, KMH bilgileri ve emlak piyasası analizlerini her hafta e-posta kutunuzda alın.
+              Kiracı hakları, ev sahibi rehberleri, banka güvence bilgileri ve emlak piyasası analizlerini her hafta e-posta kutunuzda alın.
             </p>
             <form
               onSubmit={async (e) => {
@@ -565,15 +565,15 @@ export default function HomePage() {
               />
               <FaqItem
                 question="Kefil olmadan ev kiralayabilir miyim?"
-                answer="Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka destekli KMH sistemi kiracı ödemelerini garanti eder."
+                answer="Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka güvence sistemi kiracı ödemelerini garanti eder."
               />
               <FaqItem
-                question="KMH (Kredili Mevduat Hesabı) nedir?"
-                answer="KMH, kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder."
+                question="Banka Güvence Hesabı (KMH) nedir?"
+                answer="Banka Güvence Hesabı (KMH), kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder."
               />
               <FaqItem
                 question="Ev sahibi için maliyet nedir?"
-                answer="Ücretsiz planda komisyon %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir."
+                answer="Ücretsiz planda garanti ücreti %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir."
               />
               <FaqItem
                 question="Dijital sözleşme mahkemede geçerli mi?"

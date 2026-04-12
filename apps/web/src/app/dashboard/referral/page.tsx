@@ -50,7 +50,7 @@ export default function ReferralPage() {
 
   const shareWhatsApp = () => {
     if (!info?.referralLink) return;
-    const text = `Kira Güvence ile kira ödemelerini güvence altına al! Davet linkimle kayıt ol, ikimiz de 1 ay komisyonsuz kullanalım: ${info.referralLink}`;
+    const text = `Kira Güvence ile kira ödemelerini güvence altına al! Davet linkimle kayıt ol, ikimiz de 1 ay garanti ücretsiz kullanalım: ${info.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -76,7 +76,7 @@ export default function ReferralPage() {
       <h1 className="text-2xl font-bold text-white">Arkadaşını Getir</h1>
       <p className="text-sm text-slate-400">
         Davet kodunuzu paylaşarak arkadaşlarınızı Kira Güvence&apos;ye davet edin.
-        Hem siz hem arkadaşınız 1 ay komisyonsuz kullanım kazanın!
+        Hem siz hem arkadaşınız 1 ay garanti ücretsiz kullanım kazanın!
       </p>
 
       {/* Referral Code & Link */}
@@ -151,7 +151,7 @@ export default function ReferralPage() {
           {[
             { step: '1', title: 'Kodunuzu Paylasin', desc: 'Davet kodunuzu veya linkinizi arkadaşlarınızla paylaşın.' },
             { step: '2', title: 'Arkadaşınız Kayıt Olsun', desc: 'Arkadaşınız kayıt sırasında davet kodunuzu girsin.' },
-            { step: '3', title: 'Birlikte Kazanin', desc: 'Hem siz hem arkadaşınız 1 ay komisyonsuz kullanım kazanın!' },
+            { step: '3', title: 'Birlikte Kazanin', desc: 'Hem siz hem arkadaşınız 1 ay garanti ücretsiz kullanım kazanın!' },
           ].map((item) => (
             <div key={item.step} className="rounded-lg border border-slate-700/30 bg-[#0a1628]/50 p-4 text-center">
               <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600/20 text-lg font-bold text-blue-400">
@@ -176,7 +176,7 @@ export default function ReferralPage() {
         </div>
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 text-center">
           <div className="text-3xl font-bold text-amber-400">%100</div>
-          <div className="mt-1 text-sm text-slate-400">Komisyon İndirimi</div>
+          <div className="mt-1 text-sm text-slate-400">Garanti Ücreti İndirimi</div>
         </div>
       </div>
 

@@ -35,6 +35,7 @@ interface FoundUser {
 }
 
 export default function OnboardingWizard({ token, userName, onComplete }: OnboardingWizardProps) {
+  const [introSlide, setIntroSlide] = useState(0);
   const [currentStep, setCurrentStep] = useState(1);
   const [role, setRole] = useState<RoleChoice>(null);
   const [propertyAdded, setPropertyAdded] = useState(false);
@@ -197,6 +198,79 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
       setLoading(false);
     }
   };
+
+  const introSlides = [
+    {
+      icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+      title: 'Kefil Derdi Bitti',
+      description: 'Banka güvencesi kefil yerine geçer. Ev sahibi kirasından emin, kiracı kefilden kurtulur.',
+      bullets: ['Kefil arama derdi yok', 'Findeks skoru önemsiz', 'Banka güvencesiyle kiralayın'],
+    },
+    {
+      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+      title: '5 Dakikada Dijital Sözleşme',
+      description: 'TBK uyumlu dijital kira sözleşmesi oluşturun. Noter gereksiz, mahkemede geçerli.',
+      bullets: ['Noterci masrafı yok', 'Hukuki olarak geçerli', 'Anlık dijital imza'],
+    },
+    {
+      icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+      title: 'Otomatik Kira Takibi',
+      description: 'Kira ödemeleri otomatik takip edilir. Gecikme bildirimleri, ödeme geçmişi — hepsi tek ekranda.',
+      bullets: ['Otomatik ödeme hatırlatma', 'Gecikme takibi', 'Tam ödeme geçmişi'],
+    },
+  ];
+
+  if (introSlide >= 0) {
+    const slide = introSlides[introSlide];
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/95 backdrop-blur-sm p-4">
+        <div className="w-full max-w-lg rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-8 text-center">
+          {/* Dots indicator */}
+          <div className="flex justify-center gap-2 mb-8">
+            {introSlides.map((_, i) => (
+              <div key={i} className={`h-2 rounded-full transition-all ${i === introSlide ? 'w-8 bg-blue-500' : 'w-2 bg-slate-600'}`} />
+            ))}
+          </div>
+
+          {/* Icon */}
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-600/20">
+            <svg className="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={slide.icon} />
+            </svg>
+          </div>
+
+          {/* Content */}
+          <h2 className="text-2xl font-bold text-white mb-3">{slide.title}</h2>
+          <p className="text-slate-400 mb-6">{slide.description}</p>
+
+          {/* Bullets */}
+          <div className="space-y-2 mb-8">
+            {slide.bullets.map((b, i) => (
+              <div key={i} className="flex items-center justify-center gap-2 text-sm text-slate-300">
+                <svg className="h-4 w-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {b}
+              </div>
+            ))}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <button onClick={() => setIntroSlide(-1)} className="text-sm text-slate-500 hover:text-slate-300">
+              Atla
+            </button>
+            <button
+              onClick={() => introSlide < 2 ? setIntroSlide(introSlide + 1) : setIntroSlide(-1)}
+              className="rounded-lg bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              {introSlide < 2 ? 'Devam' : 'Başlayalım'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderProgressBar = () => {
     const step = getVisualStep();

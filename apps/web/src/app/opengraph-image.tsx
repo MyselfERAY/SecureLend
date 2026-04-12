@@ -102,7 +102,7 @@ export default function OGImage() {
 
         {/* Feature pills */}
         <div style={{ display: 'flex', gap: 16 }}>
-          {['Dijital Sözleşme', 'Otomatik Ödeme', 'KPS Doğrulama', 'KMH Desteği'].map(
+          {['Dijital Sözleşme', 'Otomatik Ödeme', 'KPS Doğrulama', 'Banka Güvencesi'].map(
             (text) => (
               <div
                 key={text}
