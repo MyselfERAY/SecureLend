@@ -289,11 +289,11 @@ export default function AdminPromosPage() {
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Şablon</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Tür</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Indirim</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Sure</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Kullanim</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">İndirim</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">Süre</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">Kullanım</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-600">Durum</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Islem</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">İşlem</th>
                 </tr>
               </thead>
               <tbody className="divide-y">

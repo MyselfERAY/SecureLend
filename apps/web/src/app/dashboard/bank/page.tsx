@@ -226,7 +226,7 @@ export default function BankPage() {
                     <p className="text-sm font-semibold text-blue-300">Mobil Uygulama Gerekli</p>
                     <p className="mt-1 text-sm text-blue-300/80">
                       Digital onboarding işlemi (kimlik doğrulama, selfie, video doğrulama) yalnızca mobil uygulama üzerinden tamamlanabilir.
-                      Lutfen Kira Güvence mobil uygulamasini indirip onboarding işleminizi oradan tamamlayın.
+                      Lütfen Kira Güvence mobil uygulamasını indirip onboarding işleminizi oradan tamamlayın.
                     </p>
                   </div>
                 </div>

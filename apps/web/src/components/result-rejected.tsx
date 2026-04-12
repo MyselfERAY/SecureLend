@@ -23,7 +23,7 @@ export function ResultRejected({
             <p className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
               Reddedildi
             </p>
-            <h1 className="mt-4 text-3xl font-extrabold text-slate-900">Basvuru sonucu olumsuz</h1>
+            <h1 className="mt-4 text-3xl font-extrabold text-slate-900">Başvuru sonucu olumsuz</h1>
             <p className="mt-2 text-sm text-slate-600">TCKN: {application.maskedTckn}</p>
           </div>
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-700">
@@ -41,7 +41,7 @@ export function ResultRejected({
         </div>
 
         <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-medium text-slate-500">
-          Basvuru No: {application.applicationId.slice(0, 8)}...
+          Başvuru No: {application.applicationId.slice(0, 8)}...
         </div>
 
         <Link

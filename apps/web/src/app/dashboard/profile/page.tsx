@@ -154,7 +154,7 @@ export default function ProfilePage() {
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@email.com" className={inputCls} />
             </div>
             {saveMsg && (
-              <div className={`rounded-lg p-2 text-sm ${saveMsg.includes('guncellendi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+              <div className={`rounded-lg p-2 text-sm ${saveMsg.includes('güncellendi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                 {saveMsg}
               </div>
             )}
@@ -244,7 +244,7 @@ export default function ProfilePage() {
         )}
 
         {kycMsg && (
-          <div className={`mt-3 rounded-lg p-2 text-sm ${kycMsg.includes('tamamlandi') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+          <div className={`mt-3 rounded-lg p-2 text-sm ${kycMsg.includes('tamamlandı') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
             {kycMsg}
           </div>
         )}

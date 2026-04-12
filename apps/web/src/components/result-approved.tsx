@@ -21,9 +21,9 @@ export function ResultApproved({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
-              Onaylandi
+              Onaylandı
             </p>
-            <h1 className="mt-4 text-3xl font-extrabold text-slate-900">Basvuru sonucu olumlu</h1>
+            <h1 className="mt-4 text-3xl font-extrabold text-slate-900">Başvuru sonucu olumlu</h1>
             <p className="mt-2 text-sm text-slate-600">TCKN: {application.maskedTckn}</p>
           </div>
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
@@ -40,20 +40,20 @@ export function ResultApproved({
             tone="success"
           />
           <DataCard
-            label="Yillik Faiz"
+            label="Yıllık Faiz"
             value={`%${application.interestRate?.toFixed(2)}`}
           />
         </div>
 
         <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-medium text-slate-500">
-          Basvuru No: {application.applicationId.slice(0, 8)}...
+          Başvuru No: {application.applicationId.slice(0, 8)}...
         </div>
 
         <Link
           href="/"
           className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
         >
-          Yeni Basvuru Baslat
+          Yeni Başvuru Başlat
         </Link>
       </div>
     </main>

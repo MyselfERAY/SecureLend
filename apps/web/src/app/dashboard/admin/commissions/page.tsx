@@ -62,11 +62,11 @@ export default function AdminCommissionsPage() {
       {/* Özet Kartlar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500">Toplam Islem</div>
+          <div className="text-xs text-gray-500">Toplam İşlem</div>
           <div className="text-xl font-bold text-gray-900 mt-1">{report.totals.count}</div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500">Islem Hacmi</div>
+          <div className="text-xs text-gray-500">İşlem Hacmi</div>
           <div className="text-xl font-bold text-gray-900 mt-1">{report.totals.totalRevenue.toLocaleString('tr-TR')} TL</div>
         </div>
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200 p-4">
@@ -79,17 +79,17 @@ export default function AdminCommissionsPage() {
         </div>
       </div>
 
-      {/* Aylik Özet */}
+      {/* Aylık Özet */}
       {report.monthly.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Aylik Özet</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Aylık Özet</h2>
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Ay</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Islem Sayisi</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Islem Hacmi</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">İşlem Sayısı</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">İşlem Hacmi</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Komisyon</th>
                 </tr>
               </thead>

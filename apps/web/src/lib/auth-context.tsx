@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: { tckn, phone, fullName, dateOfBirth, ...(consents ? { consents } : {}) },
     });
     if (res.status !== 'success' || !res.data) {
-      throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Kayit hatasi');
+      throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Kayıt hatası');
     }
     return res.data;
   };
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: { tckn, phone },
     });
     if (res.status !== 'success' || !res.data) {
-      throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Giris hatasi');
+      throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'Giriş hatası');
     }
     return res.data;
   };
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: { phone, code },
     });
     if (res.status !== 'success' || !res.data) {
-      throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'OTP hatasi');
+      throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'OTP hatası');
     }
     // refreshToken is now set as httpOnly cookie by the backend
     setTokens(res.data);

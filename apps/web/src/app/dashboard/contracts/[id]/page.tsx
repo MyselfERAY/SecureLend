@@ -147,7 +147,7 @@ export default function ContractDetailPage() {
         setShowTerminate(false);
         setTerminateReason('');
       } else {
-        setError((res as any).data?.message || res.message || 'Fesih hatasi');
+        setError((res as any).data?.message || res.message || 'Fesih hatası');
       }
     } catch (err: any) {
       setError(err.message);

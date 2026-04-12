@@ -142,7 +142,7 @@ export default function PropertiesPage() {
       setDeleteTarget(null);
       await loadProperties();
     } catch (err: any) {
-      alert('Silme hatasi: ' + err.message);
+      alert('Silme hatası: ' + err.message);
     } finally {
       setDeleting(false);
     }
