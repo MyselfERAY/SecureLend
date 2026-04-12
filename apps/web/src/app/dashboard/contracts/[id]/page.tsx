@@ -447,7 +447,7 @@ export default function ContractDetailPage() {
               </p>
               {kmhAccounts.length === 0 && (
                 <p className="mt-1 text-xs text-yellow-500/70">
-                  Banka sayfasından KMH başvurusu yapın ve dijital onboarding&apos;i tamamlayin.
+                  Banka sayfasından KMH başvurusu yapın ve dijital onboarding&apos;i tamamlayın.
                 </p>
               )}
             </div>

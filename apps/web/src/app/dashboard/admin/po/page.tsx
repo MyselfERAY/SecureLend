@@ -121,7 +121,7 @@ const metricsLabel: Record<string, string> = {
   monthlyPayments: 'Aylık Ödeme',
   pendingSuggestions: 'Bekleyen Öneri',
   'users.total': 'Toplam Kullanıcı',
-  'users.lastSevenDays': 'Son 7 Gün (Kullanici)',
+  'users.lastSevenDays': 'Son 7 Gün (Kullanıcı)',
   'contracts.lastSevenDays': 'Son 7 Gün (Sözleşme)',
   total: 'Toplam',
   lastSevenDays: 'Son 7 Gün',
@@ -626,7 +626,7 @@ export default function PoJournalPage() {
                                   >
                                     {actionLoading === 'task-' + item.id
                                       ? 'Gönderiliyor...'
-                                      : 'Görev Takibine Gonder'}
+                                      : 'Görev Takibine Gönder'}
                                   </button>
                                   <button
                                     onClick={() => handleDismiss(item.id)}

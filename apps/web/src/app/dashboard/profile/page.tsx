@@ -120,7 +120,7 @@ export default function ProfilePage() {
   const roleLabel: Record<string, string> = {
     TENANT: 'Kiracı',
     LANDLORD: 'Ev Sahibi',
-    ADMIN: 'Yonetici',
+    ADMIN: 'Yönetici',
   };
 
   const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
