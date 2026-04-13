@@ -622,6 +622,8 @@ enum AgentType {
   PO
   MARKETING
   DEV
+  HEALTH
+  ARTICLE
 
   @@map("agent_type")
 }

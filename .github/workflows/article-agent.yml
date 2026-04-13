@@ -40,7 +40,7 @@ jobs:
           RUN_RESPONSE=$(curl -s -X POST \
             -H "x-api-key: $SERVICE_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"agentType":"MARKETING"}' \
+            -d '{"agentType":"ARTICLE"}' \
             "$API_BASE/api/v1/agent-runs")
 
           RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
