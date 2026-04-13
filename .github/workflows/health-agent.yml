@@ -32,7 +32,9 @@ jobs:
             -d '{"agentType":"HEALTH"}' \
             "$API_BASE/api/v1/agent-runs")
 
+          echo "::notice::Agent run response: $RUN_RESPONSE"
           RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+          echo "::notice::RUN_ID=$RUN_ID"
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Fetch API error analytics
@@ -44,6 +46,7 @@ jobs:
             "$API_BASE/api/v1/analytics/api-dashboard?days=1")
           echo "$API_DASHBOARD" > /tmp/api_dashboard.json
 
+          echo "::notice::API Dashboard raw: $(echo "$API_DASHBOARD" | jq -c '.data.summary // .status // "null"')"
           API_ERRORS=$(echo "$API_DASHBOARD" | jq '.data.summary.totalErrors // 0')
           echo "::notice::API errors (24h): $API_ERRORS"
           echo "api_error_count=$API_ERRORS" >> $GITHUB_OUTPUT
