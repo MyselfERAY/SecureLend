@@ -153,7 +153,14 @@ jobs:
           }"
 
           echo "=== Generating Daily Strategy ==="
-          claude --print --dangerously-skip-permissions "$PROMPT" > /tmp/claude_raw.txt 2>&1 || true
+          printf '%s' "$PROMPT" | claude --print --dangerously-skip-permissions - > /tmp/claude_raw.txt 2>&1
+          CLAUDE_EXIT=$?
+          echo "::notice::Claude exit code: $CLAUDE_EXIT"
+          echo "::notice::Claude output size: $(wc -c < /tmp/claude_raw.txt 2>/dev/null || echo 0) bytes"
+          if [ $CLAUDE_EXIT -ne 0 ]; then
+            echo "::warning::Claude CLI failed, showing stderr:"
+            cat /tmp/claude_raw.txt | tail -20
+          fi
 
           if [ ! -s /tmp/claude_raw.txt ]; then
             echo "::warning::Claude Code produced no output"
@@ -229,8 +236,10 @@ jobs:
           9. Sadece JSON dondur."
 
           echo "=== Generating Research Report ==="
-          claude --print --dangerously-skip-permissions "$PROMPT" > /tmp/claude_raw.txt 2>&1 || true
+          printf '%s' "$PROMPT" | claude --print --dangerously-skip-permissions - > /tmp/claude_raw.txt 2>&1
           CLAUDE_EXIT=$?
+          echo "::notice::Claude exit code: $CLAUDE_EXIT"
+          echo "::notice::Claude output size: $(wc -c < /tmp/claude_raw.txt 2>/dev/null || echo 0) bytes"
 
           if [ ! -s /tmp/claude_raw.txt ]; then
             echo "::warning::Claude Code produced no output (exit=$CLAUDE_EXIT)"
