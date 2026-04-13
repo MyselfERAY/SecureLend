@@ -147,21 +147,8 @@ jobs:
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
           # Robust JSON extraction: brace-depth matching + validation
-          echo "$RESULT" | node -e "
-            process.stdin.setEncoding('utf8');let d='';
-            process.stdin.on('data',c=>d+=c);
-            process.stdin.on('end',()=>{
-              let clean=d.replace(/\`\`\`json\s*/gi,'').replace(/\`\`\`\s*/g,'').trim();
-              try{const j=JSON.parse(clean);console.log(JSON.stringify(j));process.exit(0)}catch(e){}
-              const first=clean.indexOf('{');const last=clean.lastIndexOf('}');
-              if(first>=0&&last>first){
-                try{const j=JSON.parse(clean.substring(first,last+1));console.log(JSON.stringify(j));process.exit(0)}catch(e){
-                  process.stderr.write('Parse error: '+e.message+'\\n');
-                }
-              }
-              process.exit(1);
-            });
-          " > /tmp/po_report.json 2>&1 || true
+          echo "$RESULT" > /tmp/claude_raw.txt
+          node -e 'const fs=require("fs");let d=fs.readFileSync("/tmp/claude_raw.txt","utf8");d=d.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();const f=d.indexOf("{"),l=d.lastIndexOf("}");if(f>=0&&l>f){try{const j=JSON.parse(d.substring(f,l+1));fs.writeFileSync("/tmp/po_report.json",JSON.stringify(j));process.exit(0)}catch(e){process.stderr.write("Parse error: "+e.message+"\n")}}process.exit(1)' 2>&1 || true
 
           if [ ! -s /tmp/po_report.json ]; then
             echo "::error::Failed to extract valid JSON from Claude response"

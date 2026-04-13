@@ -148,30 +148,17 @@ jobs:
           echo "=== Generating Article ==="
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
-          echo "$RESULT" | node -e "
-            process.stdin.setEncoding('utf8');let d='';
-            process.stdin.on('data',c=>d+=c);
-            process.stdin.on('end',()=>{
-              let clean=d.replace(/\`\`\`json\s*/gi,'').replace(/\`\`\`\s*/g,'').trim();
-              try{const j=JSON.parse(clean);console.log(JSON.stringify(j));process.exit(0)}catch(e){}
-              const first=clean.indexOf('{');const last=clean.lastIndexOf('}');
-              if(first>=0&&last>first){
-                try{const j=JSON.parse(clean.substring(first,last+1));console.log(JSON.stringify(j));process.exit(0)}catch(e){
-                  process.stderr.write('Parse error: '+e.message+'\\n');
-                }
-              }
-              process.exit(1);
-            });
-          " > /tmp/article.json 2>&1 || true
+          echo "$RESULT" > /tmp/claude_raw.txt
+          node -e 'const fs=require("fs");let d=fs.readFileSync("/tmp/claude_raw.txt","utf8");d=d.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();const f=d.indexOf("{"),l=d.lastIndexOf("}");if(f>=0&&l>f){try{const j=JSON.parse(d.substring(f,l+1));fs.writeFileSync("/tmp/article_output.json",JSON.stringify(j));process.exit(0)}catch(e){process.stderr.write("Parse error: "+e.message+"\n")}}process.exit(1)' 2>&1 || true
 
-          if [ ! -s /tmp/article.json ]; then
+          if [ ! -s /tmp/article_output.json ]; then
             echo "::error::Failed to extract valid JSON"
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "=== Generated Article ==="
-          cat /tmp/article.json | jq '.title, .slug, .category' 2>/dev/null
+          cat /tmp/article_output.json | jq '.title, .slug, .category' 2>/dev/null
           echo "generate_ok=true" >> $GITHUB_OUTPUT
 
       - name: Submit article as draft
@@ -188,7 +175,7 @@ jobs:
             content: (.content // ""),
             category: (.category // "Rehber"),
             audience: (.audience // "BOTH")
-          }' /tmp/article.json)
+          }' /tmp/article_output.json)
 
           RESPONSE=$(curl -s -X POST \
             -H "x-api-key: $SERVICE_API_KEY" \
@@ -217,7 +204,7 @@ jobs:
           if [ -z "$RUN_ID" ]; then exit 0; fi
 
           if [ "${{ steps.submit.outputs.submit_ok }}" = "true" ]; then
-            TITLE=$(cat /tmp/article.json | jq -r '.title // "article"')
+            TITLE=$(cat /tmp/article_output.json | jq -r '.title // "article"')
             curl -s -X PATCH \
               -H "x-api-key: $SERVICE_API_KEY" \
               -H "Content-Type: application/json" \

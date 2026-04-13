@@ -169,24 +169,7 @@ jobs:
           fi
 
           # Strip markdown fences and extract JSON
-          cat /tmp/claude_raw.txt | node -e "
-            process.stdin.setEncoding('utf8');let d='';
-            process.stdin.on('data',c=>d+=c);
-            process.stdin.on('end',()=>{
-              // Strip markdown code fences
-              let clean=d.replace(/\`\`\`json\s*/gi,'').replace(/\`\`\`\s*/g,'').trim();
-              // Try direct parse first
-              try{const j=JSON.parse(clean);console.log(JSON.stringify(j));process.exit(0)}catch(e){}
-              // Fallback: find first { to last }
-              const first=clean.indexOf('{');const last=clean.lastIndexOf('}');
-              if(first>=0&&last>first){
-                try{const j=JSON.parse(clean.substring(first,last+1));console.log(JSON.stringify(j));process.exit(0)}catch(e){
-                  process.stderr.write('Parse error: '+e.message+'\\n');
-                }
-              }
-              process.exit(1);
-            });
-          " > /tmp/marketing_report.json 2>&1 || true
+          node -e 'const fs=require("fs");let d=fs.readFileSync("/tmp/claude_raw.txt","utf8");d=d.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();const f=d.indexOf("{"),l=d.lastIndexOf("}");if(f>=0&&l>f){try{const j=JSON.parse(d.substring(f,l+1));fs.writeFileSync("/tmp/marketing_report.json",JSON.stringify(j));process.exit(0)}catch(e){process.stderr.write("Parse error: "+e.message+"\n")}}process.exit(1)' 2>&1 || true
 
           if [ ! -s /tmp/marketing_report.json ] || ! node -e "JSON.parse(require('fs').readFileSync('/tmp/marketing_report.json','utf8'))" 2>/dev/null; then
             echo "::error::Failed to extract valid JSON from Claude response"
@@ -254,21 +237,7 @@ jobs:
             exit 0
           fi
 
-          cat /tmp/claude_raw.txt | node -e "
-            process.stdin.setEncoding('utf8');let d='';
-            process.stdin.on('data',c=>d+=c);
-            process.stdin.on('end',()=>{
-              let clean=d.replace(/\`\`\`json\s*/gi,'').replace(/\`\`\`\s*/g,'').trim();
-              try{const j=JSON.parse(clean);console.log(JSON.stringify(j));process.exit(0)}catch(e){}
-              const first=clean.indexOf('{');const last=clean.lastIndexOf('}');
-              if(first>=0&&last>first){
-                try{const j=JSON.parse(clean.substring(first,last+1));console.log(JSON.stringify(j));process.exit(0)}catch(e){
-                  process.stderr.write('Parse error: '+e.message+'\\n');
-                }
-              }
-              process.exit(1);
-            });
-          " > /tmp/marketing_report.json 2>&1 || true
+          node -e 'const fs=require("fs");let d=fs.readFileSync("/tmp/claude_raw.txt","utf8");d=d.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();const f=d.indexOf("{"),l=d.lastIndexOf("}");if(f>=0&&l>f){try{const j=JSON.parse(d.substring(f,l+1));fs.writeFileSync("/tmp/marketing_report.json",JSON.stringify(j));process.exit(0)}catch(e){process.stderr.write("Parse error: "+e.message+"\n")}}process.exit(1)' 2>&1 || true
 
           if [ ! -s /tmp/marketing_report.json ] || ! node -e "JSON.parse(require('fs').readFileSync('/tmp/marketing_report.json','utf8'))" 2>/dev/null; then
             echo "::error::Failed to extract valid JSON from Claude response"
