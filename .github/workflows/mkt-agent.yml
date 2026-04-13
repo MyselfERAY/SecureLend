@@ -181,12 +181,12 @@ jobs:
               }
               process.exit(1);
             });
-          " > /tmp/marketing_report.json 2>/dev/null
+          " > /tmp/marketing_report.json 2>/dev/null || true
 
           if [ ! -s /tmp/marketing_report.json ]; then
             echo "::error::Failed to extract valid JSON from Claude response"
-            echo "=== Raw output (last 30 lines) ==="
-            cat /tmp/claude_raw.txt | tail -30
+            echo "=== Raw output (first 50 lines) ==="
+            cat /tmp/claude_raw.txt | head -50
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -259,12 +259,12 @@ jobs:
               }
               process.exit(1);
             });
-          " > /tmp/marketing_report.json 2>/dev/null
+          " > /tmp/marketing_report.json 2>/dev/null || true
 
           if [ ! -s /tmp/marketing_report.json ]; then
             echo "::error::Failed to extract valid JSON from Claude response"
-            echo "=== Raw output (last 30 lines) ==="
-            cat /tmp/claude_raw.txt | tail -30
+            echo "=== Raw output (first 50 lines) ==="
+            cat /tmp/claude_raw.txt | head -50
             echo "generate_ok=false" >> $GITHUB_OUTPUT
             exit 0
           fi
