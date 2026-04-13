@@ -134,7 +134,7 @@ export class AuthService implements OnModuleInit {
           entityType: 'User',
           entityId: u.id,
           tcknMasked: maskedTckn,
-          ipAddress,
+          ipAddress: this.safeIp(ipAddress),
         },
       });
 
@@ -147,8 +147,8 @@ export class AuthService implements OnModuleInit {
               type: consent.type,
               version: consent.version,
               accepted: true,
-              ipAddress,
-              userAgent,
+              ipAddress: this.safeIp(ipAddress),
+              userAgent: this.safeUserAgent(userAgent),
             },
           });
         }
@@ -198,7 +198,7 @@ export class AuthService implements OnModuleInit {
           action: 'LOGIN_FAILED',
           entityType: 'User',
           entityId: user?.id,
-          ipAddress: ipAddress || 'unknown',
+          ipAddress: this.safeIp(ipAddress),
           tcknMasked: user ? user.tcknMasked : maskTckn(tckn),
         },
       });
@@ -262,7 +262,7 @@ export class AuthService implements OnModuleInit {
           action: otp.purpose === 'REGISTER' ? 'OTP_VERIFIED_REGISTER' : 'USER_LOGIN',
           entityType: 'User',
           entityId: u.id,
-          ipAddress,
+          ipAddress: this.safeIp(ipAddress),
         },
       });
 
@@ -335,6 +335,14 @@ export class AuthService implements OnModuleInit {
     await this.smsService.sendOtp(phone, code);
   }
 
+  /** DB kolon limitlerini aşan değerleri truncate et */
+  private safeIp(ip?: string): string {
+    return (ip || 'unknown').substring(0, 45);
+  }
+  private safeUserAgent(ua?: string): string {
+    return (ua || '').substring(0, 500);
+  }
+
   private async generateTokens(
     userId: string,
     roles: string[],
@@ -356,7 +364,7 @@ export class AuthService implements OnModuleInit {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     await this.prisma.refreshToken.create({
-      data: { userId, tokenHash, expiresAt, ipAddress, userAgent },
+      data: { userId, tokenHash, expiresAt, ipAddress: this.safeIp(ipAddress), userAgent: this.safeUserAgent(userAgent) },
     });
 
     return { accessToken, refreshToken, expiresIn: 900 }; // 15 min
