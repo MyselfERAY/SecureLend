@@ -152,15 +152,17 @@ jobs:
             process.stdin.setEncoding('utf8');let d='';
             process.stdin.on('data',c=>d+=c);
             process.stdin.on('end',()=>{
-              const s=d.indexOf('{');if(s<0)process.exit(1);
-              let depth=0;
-              for(let i=s;i<d.length;i++){
-                if(d[i]==='{')depth++;if(d[i]==='}')depth--;
-                if(depth===0){try{JSON.parse(d.substring(s,i+1));console.log(d.substring(s,i+1));process.exit(0)}catch(e){}}
+              let clean=d.replace(/\`\`\`json\s*/gi,'').replace(/\`\`\`\s*/g,'').trim();
+              try{const j=JSON.parse(clean);console.log(JSON.stringify(j));process.exit(0)}catch(e){}
+              const first=clean.indexOf('{');const last=clean.lastIndexOf('}');
+              if(first>=0&&last>first){
+                try{const j=JSON.parse(clean.substring(first,last+1));console.log(JSON.stringify(j));process.exit(0)}catch(e){
+                  process.stderr.write('Parse error: '+e.message+'\\n');
+                }
               }
               process.exit(1);
             });
-          " > /tmp/article.json 2>/dev/null
+          " > /tmp/article.json 2>&1 || true
 
           if [ ! -s /tmp/article.json ]; then
             echo "::error::Failed to extract valid JSON"
