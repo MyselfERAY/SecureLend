@@ -2,8 +2,10 @@ name: Health Agent
 
 on:
   schedule:
-    - cron: '0 6 * * *'        # Daily at 06:00 UTC (09:00 Turkey)
-    - cron: '0 15 * * *'       # Daily at 15:00 UTC (18:00 Turkey)
+    - cron: '0 3 * * *'        # 06:00 Turkey
+    - cron: '0 9 * * *'        # 12:00 Turkey
+    - cron: '0 15 * * *'       # 18:00 Turkey
+    - cron: '0 21 * * *'       # 00:00 Turkey
   workflow_dispatch:           # Manual trigger
 
 env:
