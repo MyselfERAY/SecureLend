@@ -823,6 +823,7 @@ export class ContractService {
       landlordName: c.landlord.fullName,
       isSigned: c.signatures.some((s: any) => s.userId === userId),
       signatureCount: c.signatures.length,
+      signedRoles: c.signatures.map((s: any) => s.role as string),
     };
   }
 

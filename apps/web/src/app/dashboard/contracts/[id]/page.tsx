@@ -407,22 +407,50 @@ export default function ContractDetailPage() {
 
       {/* Signatures */}
       <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-        <h2 className="mb-4 text-lg font-semibold text-white">İmzalar</h2>
+        <h2 className="mb-4 text-lg font-semibold text-white">İmza Durumu</h2>
         <div className="space-y-3">
-          {contract.signatures.length === 0 && (
-            <p className="text-sm text-slate-500">Henüz imza yok</p>
-          )}
-          {contract.signatures.map((s, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
-                &#10003;
+          {(
+            [
+              { role: 'LANDLORD', label: 'Ev Sahibi', name: contract.landlord.fullName },
+              { role: 'TENANT', label: 'Kiracı', name: contract.tenant.fullName },
+            ] as const
+          ).map(({ role, label, name }) => {
+            const sig = contract.signatures.find((s) => s.role === role);
+            return (
+              <div
+                key={role}
+                className="flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/30 px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                      sig ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700/50 text-slate-500'
+                    }`}
+                  >
+                    {sig ? '✓' : '·'}
+                  </div>
+                  <div>
+                    <div className="font-medium text-white">{name}</div>
+                    <div className="text-xs text-slate-500">{label}</div>
+                  </div>
+                </div>
+                {sig ? (
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
+                      İmzalandı ✓
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      {new Date(sig.signedAt).toLocaleString('tr-TR')}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-semibold text-yellow-400">
+                    Bekleniyor...
+                  </span>
+                )}
               </div>
-              <div>
-                <div className="font-medium text-white">{s.signedByName} ({s.role === 'LANDLORD' ? 'Ev Sahibi' : 'Kiracı'})</div>
-                <div className="text-xs text-slate-500">{new Date(s.signedAt).toLocaleString('tr-TR')}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {error && <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{error}</div>}

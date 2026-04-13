@@ -16,6 +16,7 @@ interface ContractSummary {
   landlordName: string;
   isSigned: boolean;
   signatureCount: number;
+  signedRoles?: string[];
 }
 
 interface PropertyOption {
@@ -531,9 +532,21 @@ export default function ContractsPage() {
                   <div className="font-semibold text-blue-400">
                     {c.monthlyRent.toLocaleString('tr-TR')} TL
                   </div>
-                  <div className="mt-1 text-xs text-slate-500">
-                    İmza: {c.signatureCount}/2 {c.isSigned ? '(İmzaladım)' : ''}
-                  </div>
+                  {c.status === 'PENDING_SIGNATURES' ? (
+                    <div className="mt-1 flex items-center gap-2 text-xs">
+                      <span className={c.signedRoles?.includes('LANDLORD') ? 'text-emerald-400' : 'text-yellow-400'}>
+                        Ev Sahibi: {c.signedRoles?.includes('LANDLORD') ? 'İmzaladı ✓' : 'Bekliyor'}
+                      </span>
+                      <span className="text-slate-700">·</span>
+                      <span className={c.signedRoles?.includes('TENANT') ? 'text-emerald-400' : 'text-yellow-400'}>
+                        Kiracı: {c.signedRoles?.includes('TENANT') ? 'İmzaladı ✓' : 'Bekliyor'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="mt-1 text-xs text-slate-500">
+                      İmza: {c.signatureCount}/2 {c.isSigned ? '(İmzaladım)' : ''}
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
