@@ -149,7 +149,29 @@ jobs:
           RESULT=$(claude --print --dangerously-skip-permissions "$PROMPT" 2>&1)
 
           echo "$RESULT" > /tmp/claude_raw.txt
-          node -e 'const fs=require("fs");let d=fs.readFileSync("/tmp/claude_raw.txt","utf8");d=d.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();const f=d.indexOf("{"),l=d.lastIndexOf("}");if(f>=0&&l>f){try{const j=JSON.parse(d.substring(f,l+1));fs.writeFileSync("/tmp/article_output.json",JSON.stringify(j));process.exit(0)}catch(e){process.stderr.write("Parse error: "+e.message+"\n")}}process.exit(1)' 2>&1 || true
+          cat > /tmp/extract_json.js << 'NODESCRIPT'
+          const fs = require("fs");
+          const INPUT = process.argv[2] || "/tmp/claude_raw.txt";
+          const OUTPUT = process.argv[3] || "/tmp/output.json";
+          let d = fs.readFileSync(INPUT, "utf8");
+          d = d.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+          const first = d.indexOf("{");
+          const last = d.lastIndexOf("}");
+          if (first < 0 || last <= first) { process.stderr.write("No JSON object found\n"); process.exit(1); }
+          let raw = d.substring(first, last + 1);
+          try { const j = JSON.parse(raw); fs.writeFileSync(OUTPUT, JSON.stringify(j)); process.exit(0); } catch(e) { process.stderr.write("Attempt 1: " + e.message + "\n"); }
+          let fixed = raw.replace(/[\x00-\x1f]/g, (ch) => {
+            if (ch === "\n") return "\\n"; if (ch === "\r") return "\\r"; if (ch === "\t") return "\\t"; return "";
+          });
+          try { const j = JSON.parse(fixed); fs.writeFileSync(OUTPUT, JSON.stringify(j)); process.exit(0); } catch(e) { process.stderr.write("Attempt 2: " + e.message + "\n"); }
+          try {
+            const getField = (name) => { const re = new RegExp('"' + name + '"\\s*:\\s*"'); const m = re.exec(fixed); if (!m) return ""; let start = m.index + m[0].length, esc = false; for (let i = start; i < fixed.length; i++) { if (esc) { esc = false; continue; } if (fixed[i] === "\\") { esc = true; continue; } if (fixed[i] === '"') return fixed.substring(start, i); } return ""; };
+            const obj = { title: getField("title"), slug: getField("slug"), summary: getField("summary"), content: getField("content"), category: getField("category"), audience: getField("audience") };
+            if (obj.title && obj.content) { fs.writeFileSync(OUTPUT, JSON.stringify(obj)); process.stderr.write("Recovered via field extraction\n"); process.exit(0); }
+          } catch(e) { process.stderr.write("Attempt 3: " + e.message + "\n"); }
+          process.exit(1);
+          NODESCRIPT
+          node /tmp/extract_json.js /tmp/claude_raw.txt /tmp/article_output.json 2>&1 || true
 
           if [ ! -s /tmp/article_output.json ]; then
             echo "::error::Failed to extract valid JSON"
