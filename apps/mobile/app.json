@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "SecureLend",
+    "name": "Kira Güvence",
     "slug": "securelend-mobile",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "securelend",
@@ -11,21 +11,32 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1e40af"
+      "backgroundColor": "#b5391a"
     },
     "ios": {
-      "bundleIdentifier": "com.securelend.mobile",
+      "bundleIdentifier": "com.kiraguvence.app",
+      "buildNumber": "1",
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification",
+          "remote-notification"
+        ],
+        "NSCameraUsageDescription": "Profil fotoğrafınızı çekmek için kamera erişimi gereklidir.",
+        "NSPhotoLibraryUsageDescription": "Profil fotoğrafınızı seçmek için galeri erişimi gereklidir.",
+        "CFBundleDisplayName": "Kira Güvence",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.securelend.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1e40af"
-      }
+        "backgroundColor": "#b5391a"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -39,8 +50,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Profil fotografinizi secmek icin galeri erisimi gereklidir.",
-          "cameraPermission": "Profil fotografinizi cekmek icin kamera erisimi gereklidir."
+          "photosPermission": "Profil fotoğrafınızı seçmek için galeri erişimi gereklidir.",
+          "cameraPermission": "Profil fotoğrafınızı çekmek için kamera erişimi gereklidir."
         }
       ],
       [
@@ -49,7 +60,15 @@
           "icon": "./assets/icon.png",
           "color": "#1e40af"
         }
-      ]
-    ]
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3fe49b13-8ef9-4045-9d8c-b63fd5be567a"
+      }
+    },
+    "owner": "eray.karacaoglan"
   }
 }

@@ -322,6 +322,12 @@ export class AuthService implements OnModuleInit {
     const code = '111111';
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
+    // Eski doğrulanmamış OTP'leri iptal et (race condition önlemi)
+    await this.prisma.otpCode.updateMany({
+      where: { phone, verifiedAt: null },
+      data: { expiresAt: new Date(0) },
+    });
+
     await this.prisma.otpCode.create({
       data: { userId, phone, code, purpose, expiresAt },
     });
