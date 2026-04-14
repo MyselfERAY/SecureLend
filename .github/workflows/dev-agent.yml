@@ -132,35 +132,25 @@ jobs:
           SDESC=$(cat /tmp/suggestion_desc.txt)
           PREV_ERROR=""
 
-          # ── Gather repo context for Claude ──
-          echo "=== Gathering repo context ==="
-          FILE_TREE=$(find . -maxdepth 3 \
-            -not -path '*/node_modules/*' \
-            -not -path '*/.next/*' \
-            -not -path '*/dist/*' \
-            -not -path '*/.git/*' \
-            -not -path '*/.turbo/*' \
-            -not -path '*/.cache/*' \
-            -not -path '*/coverage/*' \
-            | sort | head -100)
-          API_MODULES=$(ls -1 apps/api/src/modules/ 2>/dev/null || echo "(none)")
-          WEB_PAGES=$(find apps/web/src/app -name 'page.tsx' 2>/dev/null | sort | head -30 || echo "(none)")
-          PRISMA_MODELS=$(grep -E '^model |^enum ' apps/api/prisma/schema.prisma 2>/dev/null || echo "(none)")
-          API_DEPS=$(node -e "const p=require('./apps/api/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
-          WEB_DEPS=$(node -e "const p=require('./apps/web/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
-
           # ── Architecture context (Architect Agent tarafından yönetilir) ──
+          echo "=== Gathering architecture context ==="
           ARCH_MODULES=$(cat architecture/modules.md 2>/dev/null || echo "(no architecture map)")
-          ARCH_DEPS=$(cat architecture/impact-map.md 2>/dev/null || echo "")
           ARCH_CONVENTIONS=$(cat architecture/conventions.md 2>/dev/null || echo "")
-          ARCH_CHANGELOG=$(cat architecture/changelog.md 2>/dev/null || echo "")
 
-          # Architect'in son çalışma tarihini kontrol et
+          # Görev ile ilgili modül dosyalarını bul (görev başlığından anahtar kelime ile)
+          ARCH_RELATED=""
+          for modfile in architecture/modules/*.md; do
+            [ -f "$modfile" ] && ARCH_RELATED="$ARCH_RELATED
+          === $(basename "$modfile") ===
+          $(cat "$modfile")"
+          done
+
+          # Architect son çalışma kontrolü
           ARCH_LAST_RUN=$(grep -m1 'Tarih:' architecture/changelog.md 2>/dev/null | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}' || echo "1970-01-01T00:00:00")
           LAST_COMMIT_DATE=$(git log -1 --format=%cI 2>/dev/null || echo "")
           echo "::notice::Architect last run: $ARCH_LAST_RUN, Last commit: $LAST_COMMIT_DATE"
 
-          echo "✓ Repo context gathered"
+          echo "✓ Architecture context gathered"
 
           for ATTEMPT in 1 2 3; do
             echo ""
@@ -197,35 +187,14 @@ jobs:
           Description:
           $SDESC
           $RETRY_CONTEXT
-          == REPO STRUCTURE (top 3 levels) ==
-          $FILE_TREE
-
-          == API MODULES (apps/api/src/modules/) ==
-          $API_MODULES
-
-          == FRONTEND PAGES ==
-          $WEB_PAGES
-
-          == PRISMA MODELS & ENUMS ==
-          $PRISMA_MODELS
-
-          == API DEPENDENCIES ==
-          $API_DEPS
-
-          == WEB DEPENDENCIES ==
-          $WEB_DEPS
-
-          == MİMARİ HARİTA (Architect Agent) ==
+          == MİMARİ HARİTA ==
           $ARCH_MODULES
-
-          == BAĞIMLILIK VE ETKİ HARİTASI ==
-          $ARCH_DEPS
 
           == KODLAMA KURALLARI ==
           $ARCH_CONVENTIONS
 
-          == SON MİMARİ DEĞİŞİKLİKLER ==
-          $ARCH_CHANGELOG
+          == MODÜL DETAYLARI ==
+          $ARCH_RELATED
 
           == RULES ==
           1. Read CLAUDE.md first for project context and conventions.
