@@ -94,6 +94,8 @@ Architecture dosyaları `architecture/` klasöründe bulunur. Architect Agent ta
 - Kodlama kuralları → `architecture/conventions.md`
 - Son değişiklikler → `architecture/changelog.md`
 
+> **Not:** Architect Agent workflow şu an devre dışı. Architecture dosyaları referans olarak repo'da duruyor, sadece Claude Code oturumlarında kullanılıyor.
+
 ---
 
 ## GitHub Repository
@@ -179,7 +181,6 @@ All agents run as GitHub Actions workflows in `.github/workflows/`. They use Cla
 | Article Agent | `article-agent.yml` | Tue+Thu 10:00 TR | SEO blog articles in Turkish for /rehber section |
 | Developer Agent | `dev-agent.yml` | Every 30 min | Picks up PENDING suggestions, implements, builds, deploys, verifies |
 | Health Agent | `health-agent.yml` | 4x/day (06:00/12:00/18:00/00:00 TR) | Error analytics, fix suggestions, architecture staleness check |
-| Architect Agent | `architect-agent.yml` | On-demand (Dev Agent + Health Agent trigger) | Architecture map maintenance, pre-deploy code review |
 
 ### Agent Data Flow
 ```

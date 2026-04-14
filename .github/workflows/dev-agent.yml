@@ -132,10 +132,23 @@ jobs:
           SDESC=$(cat /tmp/suggestion_desc.txt)
           PREV_ERROR=""
 
-          # ── Architecture context (sadece router — detayları Claude Code kendisi okur) ──
-          echo "=== Gathering architecture context ==="
-          ARCH_MODULES=$(cat architecture/modules.md 2>/dev/null || echo "(no architecture map)")
-          echo "✓ Architecture context gathered"
+          # ── Gather repo context for Claude ──
+          echo "=== Gathering repo context ==="
+          FILE_TREE=$(find . -maxdepth 3 \
+            -not -path '*/node_modules/*' \
+            -not -path '*/.next/*' \
+            -not -path '*/dist/*' \
+            -not -path '*/.git/*' \
+            -not -path '*/.turbo/*' \
+            -not -path '*/.cache/*' \
+            -not -path '*/coverage/*' \
+            | sort | head -100)
+          API_MODULES=$(ls -1 apps/api/src/modules/ 2>/dev/null || echo "(none)")
+          WEB_PAGES=$(find apps/web/src/app -name 'page.tsx' 2>/dev/null | sort | head -30 || echo "(none)")
+          PRISMA_MODELS=$(grep -E '^model |^enum ' apps/api/prisma/schema.prisma 2>/dev/null || echo "(none)")
+          API_DEPS=$(node -e "const p=require('./apps/api/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
+          WEB_DEPS=$(node -e "const p=require('./apps/web/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
+          echo "✓ Repo context gathered"
 
           for ATTEMPT in 1 2 3; do
             echo ""
@@ -172,32 +185,46 @@ jobs:
           Description:
           $SDESC
           $RETRY_CONTEXT
-          == MİMARİ HARİTA (hangi modül nerede — detay için architecture/modules/*.md oku) ==
-          $ARCH_MODULES
+          == REPO STRUCTURE (top 3 levels) ==
+          $FILE_TREE
+
+          == API MODULES (apps/api/src/modules/) ==
+          $API_MODULES
+
+          == FRONTEND PAGES ==
+          $WEB_PAGES
+
+          == PRISMA MODELS & ENUMS ==
+          $PRISMA_MODELS
+
+          == API DEPENDENCIES ==
+          $API_DEPS
+
+          == WEB DEPENDENCIES ==
+          $WEB_DEPS
 
           == RULES ==
           1. Read CLAUDE.md first for project context and conventions.
-          2. Use architecture/modules.md to find the right module, then read architecture/modules/<module>.md for details. Also read architecture/conventions.md for coding rules.
-          3. Find all relevant files (Glob, Grep, Read). ALWAYS read the FULL content of files you will modify — do not skip sections.
-          4. Implement EVERYTHING the task asks. Do not skip any part. If the task says 'hide X', find ALL instances of X and hide them all.
-          5. Follow existing conventions:
+          2. Find all relevant files (Glob, Grep, Read). ALWAYS read the FULL content of files you will modify — do not skip sections.
+          3. Implement EVERYTHING the task asks. Do not skip any part. If the task says 'hide X', find ALL instances of X and hide them all.
+          4. Follow existing conventions:
              - TypeScript strict mode, no implicit any
              - JSend response format: { status, data, message }
              - NestJS: controller -> service -> prisma
              - Next.js 15 App Router: page.tsx for pages
              - Turkish UI labels, Tailwind CSS styling
              - pnpm as package manager
-          6. Do NOT run git commands (no git add, commit, push).
-          7. Do NOT modify these protected files:
+          5. Do NOT run git commands (no git add, commit, push).
+          6. Do NOT modify these protected files:
              - .github/workflows/* (CI/CD configs)
              - prisma/schema.prisma (DB schema - requires migration)
              - pnpm-lock.yaml, pnpm-workspace.yaml, turbo.json
              - tsconfig.json (any tsconfig file in any directory)
              - Any .env files
              - CLAUDE.md
-          8. Only change files relevant to the task. No refactoring.
-          9. Keep changes small and focused. Max 10 files, max 500 lines changed.
-          10. If the task requires a Prisma migration, create ONLY the SQL file
+          7. Only change files relevant to the task. No refactoring.
+          8. Keep changes small and focused. Max 10 files, max 500 lines changed.
+          9. If the task requires a Prisma migration, create ONLY the SQL file
              in prisma/migrations/ - do NOT touch schema.prisma."
 
             echo "=== Running Claude Code ==="
@@ -380,52 +407,57 @@ jobs:
           exit 1
 
       # ══════════════════════════════════════════
-      # STEP 5: Architect Review (replaces self-review)
+      # STEP 5: Self-Review
       # ══════════════════════════════════════════
-      - name: Install Anthropic SDK for Architect
-        if: steps.implement.outputs.implementation_ok == 'true'
-        run: |
-          mkdir -p /tmp/anthropic-sdk
-          cd /tmp/anthropic-sdk
-          npm init -y > /dev/null 2>&1
-          npm install @anthropic-ai/sdk > /dev/null 2>&1
-          echo "NODE_PATH=/tmp/anthropic-sdk/node_modules" >> $GITHUB_ENV
-
-      - name: Architect review changes
+      - name: Self-review changes
         id: review
         if: steps.implement.outputs.implementation_ok == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          echo "=== Preparing diff for Architect Review ==="
-
-          # Diff oluştur (tracked + untracked)
+          STITLE=$(cat /tmp/suggestion_title.txt)
           DIFF=$(git diff)
+          UNTRACKED_DIFF=""
           for f in $(git ls-files --others --exclude-standard); do
-            DIFF="$DIFF
+            UNTRACKED_DIFF="$UNTRACKED_DIFF
           === NEW FILE: $f ===
           $(cat "$f")"
           done
-          echo "$DIFF" > /tmp/architect_diff.txt
 
-          echo "=== Running Architect Agent (review mode) ==="
-          node scripts/architect-agent.js --mode review --diff-file /tmp/architect_diff.txt > /tmp/architect_result.json 2>/tmp/architect_log.txt
-          EXIT_CODE=$?
+          REVIEW_PROMPT="You are a code reviewer for SecureLend (Turkish fintech platform).
 
-          cat /tmp/architect_log.txt
+          The task was: $STITLE
 
-          if [ "$EXIT_CODE" -eq 2 ]; then
-            # BLOCK
-            REVIEW=$(cat /tmp/architect_result.json | jq -r '.review // "BLOCK: unknown"')
-            echo "::warning::Architect BLOCKED: $REVIEW"
+          Here is the git diff of changes made:
+          $DIFF
+          $UNTRACKED_DIFF
+
+          Review these changes and answer with ONLY one of:
+          APPROVE - if the main task is correctly implemented
+          REJECT: <reason> - if there are serious issues
+
+          Check for these SERIOUS issues only (REJECT if found):
+          1. Does it implement the main task? (core functionality must be there)
+          2. No hardcoded secrets, API keys, or credentials?
+          3. No destructive changes (deleting important data, breaking auth)?
+          4. No syntax errors or obviously broken code?
+
+          APPROVE if these minor things are present (do NOT reject for these):
+          - Small supporting changes needed to fix build errors (import fixes, type adjustments)
+          - Fixing pre-existing broken imports (e.g. @securelend/shared) to make build pass
+          - Minor style differences from existing code
+          - Extra files changed if they are needed to compile successfully"
+
+          echo "=== Running self-review ==="
+          REVIEW_RESULT=$(claude --print --dangerously-skip-permissions "$REVIEW_PROMPT" 2>&1 || echo "APPROVE")
+          echo "$REVIEW_RESULT"
+
+          if echo "$REVIEW_RESULT" | grep -q "^REJECT"; then
+            echo "::warning::Self-review rejected the changes"
             echo "review_passed=false" >> $GITHUB_OUTPUT
-            echo "$REVIEW" > /tmp/review_result.txt
-          elif [ "$EXIT_CODE" -eq 0 ]; then
-            echo "✓ Architect approved"
-            echo "review_passed=true" >> $GITHUB_OUTPUT
+            echo "$REVIEW_RESULT" > /tmp/review_result.txt
           else
-            # Architect hata aldı — güvenlik için geç (fallback: approve)
-            echo "::warning::Architect Agent failed (exit $EXIT_CODE) — fallback approve"
+            echo "✓ Self-review approved"
             echo "review_passed=true" >> $GITHUB_OUTPUT
           fi
 
