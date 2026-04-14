@@ -435,7 +435,12 @@ jobs:
       # ══════════════════════════════════════════
       - name: Install Anthropic SDK for Architect
         if: steps.implement.outputs.implementation_ok == 'true'
-        run: npm install @anthropic-ai/sdk
+        run: |
+          mkdir -p /tmp/anthropic-sdk
+          cd /tmp/anthropic-sdk
+          npm init -y > /dev/null 2>&1
+          npm install @anthropic-ai/sdk > /dev/null 2>&1
+          echo "NODE_PATH=/tmp/anthropic-sdk/node_modules" >> $GITHUB_ENV
 
       - name: Architect review changes
         id: review

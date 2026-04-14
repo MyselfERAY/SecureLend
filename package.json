@@ -9,9 +9,6 @@
     "clean": "turbo run clean",
     "type-check": "turbo run type-check"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0"
-  },
   "devDependencies": {
     "@turbo/gen": "^1.12.4",
     "@types/node": "^20.11.24",
