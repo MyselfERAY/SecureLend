@@ -1,0 +1,242 @@
+name: Architect Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'review | update_only | full_scan'
+        required: true
+        default: 'update_only'
+        type: choice
+        options:
+          - review
+          - update_only
+          - full_scan
+
+  workflow_call:
+    inputs:
+      mode:
+        description: 'review | update_only | full_scan'
+        required: true
+        type: string
+      diff_files:
+        description: 'Değişen dosyaların listesi (newline-separated)'
+        required: false
+        type: string
+      suggestion_id:
+        description: 'Review modunda ilgili suggestion ID'
+        required: false
+        type: string
+    outputs:
+      review_result:
+        description: 'APPROVE veya BLOCK: sebep'
+        value: ${{ jobs.architect.outputs.review_result }}
+      architecture_updated:
+        description: 'Architecture dosyaları güncellendi mi'
+        value: ${{ jobs.architect.outputs.arch_updated }}
+
+env:
+  API_BASE: https://securelend-production.up.railway.app
+
+concurrency:
+  group: securelend-architect
+  cancel-in-progress: false
+
+jobs:
+  architect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      review_result: ${{ steps.run_architect.outputs.review_result }}
+      arch_updated: ${{ steps.commit.outputs.arch_updated }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ══════════════════════════════════════════
+      # STEP 1: Create Agent Run
+      # ══════════════════════════════════════════
+      - name: Create Agent Run
+        id: run
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_RESPONSE=$(curl -s -X POST \
+            -H "x-api-key: $SERVICE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"agentType":"ARCHITECT"}' \
+            "$API_BASE/api/v1/agent-runs")
+          RUN_ID=$(echo "$RUN_RESPONSE" | jq -r '.data.id // empty')
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "::notice::Agent Run ID: $RUN_ID"
+
+      # ══════════════════════════════════════════
+      # STEP 2: Install dependencies
+      # ══════════════════════════════════════════
+      - name: Install Anthropic SDK
+        run: npm install @anthropic-ai/sdk
+
+      # ══════════════════════════════════════════
+      # STEP 3: Prepare diff
+      # ══════════════════════════════════════════
+      - name: Prepare diff
+        id: diff
+        run: |
+          MODE="${{ inputs.mode }}"
+
+          if [ "$MODE" = "full_scan" ]; then
+            echo "mode=full_scan" >> $GITHUB_OUTPUT
+            echo "::notice::Mode: full_scan — tüm repo taranacak"
+            exit 0
+          fi
+
+          # Diff'i al (son commit veya input'tan)
+          DIFF_FILES="${{ inputs.diff_files }}"
+          if [ -n "$DIFF_FILES" ]; then
+            echo "$DIFF_FILES" > /tmp/diff_files.txt
+            git diff HEAD~1 -- $(echo "$DIFF_FILES" | tr '\n' ' ') > /tmp/diff.txt 2>/dev/null || \
+              git diff HEAD~1 > /tmp/diff.txt
+          else
+            git diff HEAD~1 > /tmp/diff.txt
+          fi
+
+          DIFF_SIZE=$(wc -c < /tmp/diff.txt | tr -d ' ')
+          echo "::notice::Diff size: $DIFF_SIZE bytes"
+
+          if [ "$DIFF_SIZE" -eq 0 ]; then
+            echo "has_diff=false" >> $GITHUB_OUTPUT
+            echo "::notice::No diff — skipping"
+          else
+            echo "has_diff=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+
+      # ══════════════════════════════════════════
+      # STEP 4: Run Architect Agent (Node.js)
+      # ══════════════════════════════════════════
+      - name: Run Architect Agent
+        id: run_architect
+        if: steps.diff.outputs.has_diff == 'true' || steps.diff.outputs.mode == 'full_scan'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          MODE="${{ steps.diff.outputs.mode }}"
+          echo "::notice::Running architect-agent.js in mode: $MODE"
+
+          if [ "$MODE" = "full_scan" ]; then
+            RESULT=$(node scripts/architect-agent.js --mode full_scan 2>&1) || EXIT_CODE=$?
+          else
+            RESULT=$(node scripts/architect-agent.js --mode "$MODE" --diff-file /tmp/diff.txt 2>&1) || EXIT_CODE=$?
+          fi
+
+          EXIT_CODE=${EXIT_CODE:-0}
+
+          # Exit code 2 = BLOCK (review rejected)
+          if [ "$EXIT_CODE" -eq 2 ]; then
+            REVIEW_LINE=$(echo "$RESULT" | grep -o 'BLOCK:.*' | head -1)
+            echo "review_result=$REVIEW_LINE" >> $GITHUB_OUTPUT
+            echo "::warning::Architect BLOCKED: $REVIEW_LINE"
+          elif [ "$EXIT_CODE" -eq 0 ]; then
+            echo "review_result=APPROVE" >> $GITHUB_OUTPUT
+            echo "::notice::Architect APPROVED"
+          else
+            echo "review_result=ERROR" >> $GITHUB_OUTPUT
+            echo "::error::Architect Agent failed with exit code $EXIT_CODE"
+          fi
+
+      # ══════════════════════════════════════════
+      # STEP 5: Commit architecture updates
+      # ══════════════════════════════════════════
+      - name: Commit architecture updates
+        id: commit
+        if: steps.run_architect.outputs.review_result != 'ERROR'
+        run: |
+          # architecture/ dosyalarında değişiklik var mı?
+          ARCH_CHANGES=$(git diff --name-only architecture/ 2>/dev/null || true)
+          ARCH_NEW=$(git ls-files --others --exclude-standard architecture/ 2>/dev/null || true)
+
+          if [ -z "$ARCH_CHANGES" ] && [ -z "$ARCH_NEW" ]; then
+            echo "::notice::Architecture dosyalarında değişiklik yok"
+            echo "arch_updated=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "::notice::Architecture dosyaları güncellendi: $ARCH_CHANGES $ARCH_NEW"
+
+          git config user.name "SecureLend Architect Agent"
+          git config user.email "architect-agent@kiraguvence.com"
+          git add architecture/
+
+          git commit -m "chore: update architecture summary [architect-update]"
+
+          # Push with retry
+          for attempt in 1 2 3; do
+            if git push origin main 2>/dev/null; then
+              echo "arch_updated=true" >> $GITHUB_OUTPUT
+              echo "::notice::Architecture push başarılı (attempt $attempt)"
+              break
+            else
+              echo "::warning::Push rejected (attempt $attempt), rebasing..."
+              git pull --rebase origin main
+              if [ $attempt -eq 3 ]; then
+                echo "::error::Architecture push failed after 3 attempts"
+                echo "arch_updated=false" >> $GITHUB_OUTPUT
+              fi
+            fi
+          done
+
+      # ══════════════════════════════════════════
+      # STEP 6: Update suggestion (if review mode)
+      # ══════════════════════════════════════════
+      - name: Update suggestion status
+        if: inputs.mode == 'review' && inputs.suggestion_id != ''
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          REVIEW="${{ steps.run_architect.outputs.review_result }}"
+          SID="${{ inputs.suggestion_id }}"
+
+          if echo "$REVIEW" | grep -q "^BLOCK"; then
+            REASON=$(echo "$REVIEW" | sed 's/BLOCK: //' | head -c 500 | tr '"' "'")
+            curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"agentNotes\":\"Architect BLOCKED: $REASON\"}" \
+              "$API_BASE/api/v1/suggestions/$SID"
+            echo "::notice::Suggestion $SID updated with BLOCK reason"
+          fi
+
+      # ══════════════════════════════════════════
+      # ALWAYS: Complete agent run
+      # ══════════════════════════════════════════
+      - name: Complete agent run
+        if: always()
+        env:
+          SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
+        run: |
+          RUN_ID="${{ steps.run.outputs.run_id }}"
+          if [ -z "$RUN_ID" ]; then exit 0; fi
+
+          REVIEW="${{ steps.run_architect.outputs.review_result }}"
+          ARCH_UPDATED="${{ steps.commit.outputs.arch_updated }}"
+          MODE="${{ inputs.mode }}"
+
+          if [ "$REVIEW" = "ERROR" ] || [ "$REVIEW" = "" ]; then
+            curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"status":"FAILED","errorMessage":"Architect agent failed."}' \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          else
+            SUMMARY="Mode: $MODE. Review: ${REVIEW:-N/A}. Architecture updated: ${ARCH_UPDATED:-false}."
+            curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"status\":\"COMPLETED\",\"summary\":\"$SUMMARY\"}" \
+              "$API_BASE/api/v1/agent-runs/$RUN_ID"
+          fi

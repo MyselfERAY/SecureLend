@@ -624,6 +624,7 @@ enum AgentType {
   DEV
   HEALTH
   ARTICLE
+  ARCHITECT
 
   @@map("agent_type")
 }
