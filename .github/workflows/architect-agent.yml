@@ -78,10 +78,15 @@ jobs:
           echo "::notice::Agent Run ID: $RUN_ID"
 
       # ══════════════════════════════════════════
-      # STEP 2: Install dependencies
+      # STEP 2: Install dependencies (isolated from monorepo)
       # ══════════════════════════════════════════
       - name: Install Anthropic SDK
-        run: npm install @anthropic-ai/sdk
+        run: |
+          mkdir -p /tmp/anthropic-sdk
+          cd /tmp/anthropic-sdk
+          npm init -y > /dev/null 2>&1
+          npm install @anthropic-ai/sdk > /dev/null 2>&1
+          echo "NODE_PATH=/tmp/anthropic-sdk/node_modules" >> $GITHUB_ENV
 
       # ══════════════════════════════════════════
       # STEP 3: Prepare diff
