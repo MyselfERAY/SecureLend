@@ -148,6 +148,18 @@ jobs:
           PRISMA_MODELS=$(grep -E '^model |^enum ' apps/api/prisma/schema.prisma 2>/dev/null || echo "(none)")
           API_DEPS=$(node -e "const p=require('./apps/api/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
           WEB_DEPS=$(node -e "const p=require('./apps/web/package.json'); console.log(Object.keys(p.dependencies||{}).join(', '))" 2>/dev/null || echo "(none)")
+
+          # ── Architecture context (Architect Agent tarafından yönetilir) ──
+          ARCH_MODULES=$(cat architecture/modules.md 2>/dev/null || echo "(no architecture map)")
+          ARCH_DEPS=$(cat architecture/impact-map.md 2>/dev/null || echo "")
+          ARCH_CONVENTIONS=$(cat architecture/conventions.md 2>/dev/null || echo "")
+          ARCH_CHANGELOG=$(cat architecture/changelog.md 2>/dev/null || echo "")
+
+          # Architect'in son çalışma tarihini kontrol et
+          ARCH_LAST_RUN=$(grep -m1 'Tarih:' architecture/changelog.md 2>/dev/null | grep -oP '\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}' || echo "1970-01-01T00:00:00")
+          LAST_COMMIT_DATE=$(git log -1 --format=%cI 2>/dev/null || echo "")
+          echo "::notice::Architect last run: $ARCH_LAST_RUN, Last commit: $LAST_COMMIT_DATE"
+
           echo "✓ Repo context gathered"
 
           for ATTEMPT in 1 2 3; do
@@ -202,6 +214,18 @@ jobs:
 
           == WEB DEPENDENCIES ==
           $WEB_DEPS
+
+          == MİMARİ HARİTA (Architect Agent) ==
+          $ARCH_MODULES
+
+          == BAĞIMLILIK VE ETKİ HARİTASI ==
+          $ARCH_DEPS
+
+          == KODLAMA KURALLARI ==
+          $ARCH_CONVENTIONS
+
+          == SON MİMARİ DEĞİŞİKLİKLER ==
+          $ARCH_CHANGELOG
 
           == RULES ==
           1. Read CLAUDE.md first for project context and conventions.
@@ -407,57 +431,47 @@ jobs:
           exit 1
 
       # ══════════════════════════════════════════
-      # STEP 5: Self-Review
+      # STEP 5: Architect Review (replaces self-review)
       # ══════════════════════════════════════════
-      - name: Self-review changes
+      - name: Install Anthropic SDK for Architect
+        if: steps.implement.outputs.implementation_ok == 'true'
+        run: npm install @anthropic-ai/sdk
+
+      - name: Architect review changes
         id: review
         if: steps.implement.outputs.implementation_ok == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          STITLE=$(cat /tmp/suggestion_title.txt)
+          echo "=== Preparing diff for Architect Review ==="
+
+          # Diff oluştur (tracked + untracked)
           DIFF=$(git diff)
-          UNTRACKED_DIFF=""
           for f in $(git ls-files --others --exclude-standard); do
-            UNTRACKED_DIFF="$UNTRACKED_DIFF
+            DIFF="$DIFF
           === NEW FILE: $f ===
           $(cat "$f")"
           done
+          echo "$DIFF" > /tmp/architect_diff.txt
 
-          REVIEW_PROMPT="You are a code reviewer for SecureLend (Turkish fintech platform).
+          echo "=== Running Architect Agent (review mode) ==="
+          node scripts/architect-agent.js --mode review --diff-file /tmp/architect_diff.txt > /tmp/architect_result.json 2>/tmp/architect_log.txt
+          EXIT_CODE=$?
 
-          The task was: $STITLE
+          cat /tmp/architect_log.txt
 
-          Here is the git diff of changes made:
-          $DIFF
-          $UNTRACKED_DIFF
-
-          Review these changes and answer with ONLY one of:
-          APPROVE - if the main task is correctly implemented
-          REJECT: <reason> - if there are serious issues
-
-          Check for these SERIOUS issues only (REJECT if found):
-          1. Does it implement the main task? (core functionality must be there)
-          2. No hardcoded secrets, API keys, or credentials?
-          3. No destructive changes (deleting important data, breaking auth)?
-          4. No syntax errors or obviously broken code?
-
-          APPROVE if these minor things are present (do NOT reject for these):
-          - Small supporting changes needed to fix build errors (import fixes, type adjustments)
-          - Fixing pre-existing broken imports (e.g. @securelend/shared) to make build pass
-          - Minor style differences from existing code
-          - Extra files changed if they are needed to compile successfully"
-
-          echo "=== Running self-review ==="
-          REVIEW_RESULT=$(claude --print --dangerously-skip-permissions "$REVIEW_PROMPT" 2>&1 || echo "APPROVE")
-          echo "$REVIEW_RESULT"
-
-          if echo "$REVIEW_RESULT" | grep -q "^REJECT"; then
-            echo "::warning::Self-review rejected the changes"
+          if [ "$EXIT_CODE" -eq 2 ]; then
+            # BLOCK
+            REVIEW=$(cat /tmp/architect_result.json | jq -r '.review // "BLOCK: unknown"')
+            echo "::warning::Architect BLOCKED: $REVIEW"
             echo "review_passed=false" >> $GITHUB_OUTPUT
-            echo "$REVIEW_RESULT" > /tmp/review_result.txt
+            echo "$REVIEW" > /tmp/review_result.txt
+          elif [ "$EXIT_CODE" -eq 0 ]; then
+            echo "✓ Architect approved"
+            echo "review_passed=true" >> $GITHUB_OUTPUT
           else
-            echo "✓ Self-review approved"
+            # Architect hata aldı — güvenlik için geç (fallback: approve)
+            echo "::warning::Architect Agent failed (exit $EXIT_CODE) — fallback approve"
             echo "review_passed=true" >> $GITHUB_OUTPUT
           fi
 

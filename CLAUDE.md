@@ -81,6 +81,21 @@ Uses multi-stage build with pnpm. Key steps:
 
 ---
 
+## Architecture Summary (Architect Agent)
+
+Architecture dosyaları `architecture/` klasöründe bulunur. Architect Agent tarafından otomatik yönetilir.
+
+**Bir değişiklik yapmadan önce ilgili dosyayı oku:**
+- Hangi modülle ilgili → `architecture/modules.md` (router — hangi md'ye gidileceğini gösterir)
+- Modül detayı → `architecture/modules/<modül>.md`
+- Etki analizi → `architecture/impact-map.md` (neyi değiştirince ne etkilenir)
+- DB yapısı → `architecture/db-schema.md`
+- API endpoint'ler → `architecture/api-contracts.md`
+- Kodlama kuralları → `architecture/conventions.md`
+- Son değişiklikler → `architecture/changelog.md`
+
+---
+
 ## GitHub Repository
 - **Repo:** MyselfERAY/SecureLend
 - **Branch strategy:** main only (no dev branch yet - prod used as test)
@@ -163,6 +178,8 @@ All agents run as GitHub Actions workflows in `.github/workflows/`. They use Cla
 | Marketing Agent | `marketing-agent.yml` | Weekdays 09:00 TR | Daily strategy or research reports, task generation |
 | Article Agent | `article-agent.yml` | Tue+Thu 10:00 TR | SEO blog articles in Turkish for /rehber section |
 | Developer Agent | `dev-agent.yml` | Every 30 min | Picks up PENDING suggestions, implements, builds, deploys, verifies |
+| Health Agent | `health-agent.yml` | 4x/day (06:00/12:00/18:00/00:00 TR) | Error analytics, fix suggestions, architecture staleness check |
+| Architect Agent | `architect-agent.yml` | On-demand (Dev Agent + Health Agent trigger) | Architecture map maintenance, pre-deploy code review |
 
 ### Agent Data Flow
 ```
