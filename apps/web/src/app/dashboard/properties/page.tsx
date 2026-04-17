@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../../lib/auth-context';
 import { api } from '../../../lib/api';
 import { PROVINCES, DISTRICTS } from '../../../lib/turkey-locations';
+import {
+  PROPERTY_TYPE_OPTIONS,
+  ROOM_COUNT_OPTIONS,
+  PROPERTY_TYPE_LABELS,
+} from '../../../lib/property-options';
 
 interface Property {
   id: string;
@@ -158,9 +163,7 @@ export default function PropertiesPage() {
     INACTIVE: { text: 'Pasif', cls: 'bg-slate-500/20 text-slate-400' },
   };
 
-  const propertyTypeLabel: Record<string, string> = {
-    APARTMENT: 'Daire', HOUSE: 'Müstakil Ev', OFFICE: 'Ofis', SHOP: 'Dükkan',
-  };
+  const propertyTypeLabel = PROPERTY_TYPE_LABELS;
 
   const inputCls = 'w-full rounded-lg border border-slate-600 bg-[#0a1628] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
   const labelCls = 'mb-1.5 block text-sm font-medium text-slate-300';
@@ -227,19 +230,27 @@ export default function PropertiesPage() {
             <div>
               <label className={labelCls}>Tür</label>
               <select value={formData.propertyType} onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })} className={inputCls}>
-                <option value="APARTMENT">Daire</option>
-                <option value="HOUSE">Müstakil Ev</option>
-                <option value="VILLA">Villa</option>
-                <option value="STUDIO">Stüdyo</option>
-                <option value="OFFICE">Ofis</option>
-                <option value="SHOP">Dükkan</option>
-                <option value="COMMERCIAL">Ticari</option>
-                <option value="OTHER">Diğer</option>
+                {PROPERTY_TYPE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className={labelCls}>Oda Sayisi</label>
-              <input type="text" value={formData.roomCount} onChange={(e) => setFormData({ ...formData, roomCount: e.target.value })} className={inputCls} />
+              <label className={labelCls}>Oda Sayısı</label>
+              <select
+                value={formData.roomCount}
+                onChange={(e) => setFormData({ ...formData, roomCount: e.target.value })}
+                className={inputCls}
+              >
+                <option value="">Seçin</option>
+                {ROOM_COUNT_OPTIONS.map((rc) => (
+                  <option key={rc} value={rc}>
+                    {rc}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className={labelCls}>Alan (m2)</label>
