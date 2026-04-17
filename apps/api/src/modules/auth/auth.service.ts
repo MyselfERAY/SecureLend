@@ -53,6 +53,16 @@ export class AuthService implements OnModuleInit {
         this.logger.log('referral_code column added successfully');
       }
 
+      // Ensure NVI/KKB/UAVT columns exist (self-heal if Prisma migrate deploy lagged)
+      await this.ensureColumn('users', 'tckn_encrypted', 'VARCHAR(512)');
+      await this.ensureColumn('users', 'nvi_verified', 'BOOLEAN NOT NULL DEFAULT false');
+      await this.ensureColumn('users', 'nvi_verified_at', 'TIMESTAMP(3)');
+      await this.ensureColumn('users', 'phone_tckn_verified', 'BOOLEAN NOT NULL DEFAULT false');
+      await this.ensureColumn('users', 'phone_tckn_verified_at', 'TIMESTAMP(3)');
+      await this.ensureColumn('properties', 'uavt_code', 'VARCHAR(20)');
+      await this.ensureColumn('properties', 'uavt_verified_at', 'TIMESTAMP(3)');
+      await this.ensureColumn('properties', 'ownership_verified', 'BOOLEAN NOT NULL DEFAULT false');
+
       // Ensure newsletter_subscribers table exists
       const nlCheck = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
         SELECT EXISTS (
@@ -65,6 +75,32 @@ export class AuthService implements OnModuleInit {
       }
     } catch (err) {
       this.logger.error(`Auth onModuleInit failed: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  /** DDL self-heal: kolon yoksa ekler. Prisma migrate deploy sessiz fail olsa bile korur. */
+  private async ensureColumn(
+    table: string,
+    column: string,
+    definition: string,
+  ): Promise<void> {
+    try {
+      const check = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = ${table} AND column_name = ${column}
+        ) as exists`;
+      if (!check[0]?.exists) {
+        this.logger.warn(`${table}.${column} missing — adding via raw SQL`);
+        await this.prisma.$executeRawUnsafe(
+          `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "${column}" ${definition};`,
+        );
+        this.logger.log(`${table}.${column} added`);
+      }
+    } catch (err) {
+      this.logger.error(
+        `ensureColumn(${table}.${column}) failed: ${err instanceof Error ? err.message : err}`,
+      );
     }
   }
 
@@ -86,9 +122,10 @@ export class AuthService implements OnModuleInit {
     const tcknHash = this.encryptionService.hash(tckn);
     const tcknEncrypted = this.encryptionService.encrypt(tckn); // null if key missing — safe
 
-    // Check duplicate
+    // Check duplicate — explicit select: migration lag'a dayanıklı
     const existing = await this.prisma.user.findUnique({
       where: { tcknHash },
+      select: { id: true },
     });
     if (existing) {
       throw new ConflictException('Bu TCKN ile kayitli bir kullanici mevcut');
@@ -228,7 +265,18 @@ export class AuthService implements OnModuleInit {
     }
 
     const tcknHash = this.encryptionService.hash(tckn);
-    const user = await this.prisma.user.findUnique({ where: { tcknHash } });
+    // Explicit select: migration lag durumunda yeni kolonların varlığına bel bağlamadan
+    // sadece eski/kritik kolonları SELECT eder. "column does not exist" 500'ünü önler.
+    const user = await this.prisma.user.findUnique({
+      where: { tcknHash },
+      select: {
+        id: true,
+        phone: true,
+        isActive: true,
+        tcknMasked: true,
+        roles: true,
+      },
+    });
 
     if (!user || user.phone !== phone || !user.isActive) {
       // Log failed login attempt
