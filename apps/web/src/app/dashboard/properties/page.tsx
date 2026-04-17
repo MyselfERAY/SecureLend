@@ -31,6 +31,7 @@ export default function PropertiesPage() {
     title: '', addressLine1: '', city: '', district: '',
     propertyType: 'APARTMENT', roomCount: '', areaM2: '',
     floor: '', totalFloors: '', monthlyRent: '', depositAmount: '',
+    uavtCode: '',
   });
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +42,7 @@ export default function PropertiesPage() {
     title: '', addressLine1: '', city: '', district: '',
     propertyType: 'APARTMENT', roomCount: '', areaM2: '',
     floor: '', totalFloors: '', monthlyRent: '', depositAmount: '',
+    uavtCode: '',
   };
 
   const loadProperties = async () => {
@@ -80,6 +82,7 @@ export default function PropertiesPage() {
       totalFloors: p.totalFloors ? String(p.totalFloors) : '',
       monthlyRent: String(p.monthlyRent),
       depositAmount: p.depositAmount ? String(p.depositAmount) : '',
+      uavtCode: (p as any).uavtCode || '',
     });
     setFormError('');
     setShowForm(true);
@@ -104,6 +107,7 @@ export default function PropertiesPage() {
       if (formData.floor) body.floor = Number(formData.floor);
       if (formData.totalFloors) body.totalFloors = Number(formData.totalFloors);
       if (formData.depositAmount) body.depositAmount = Number(formData.depositAmount);
+      if (formData.uavtCode.trim()) body.uavtCode = formData.uavtCode.trim();
 
       let res;
       if (editingId) {
@@ -225,8 +229,12 @@ export default function PropertiesPage() {
               <select value={formData.propertyType} onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })} className={inputCls}>
                 <option value="APARTMENT">Daire</option>
                 <option value="HOUSE">Müstakil Ev</option>
+                <option value="VILLA">Villa</option>
+                <option value="STUDIO">Stüdyo</option>
                 <option value="OFFICE">Ofis</option>
                 <option value="SHOP">Dükkan</option>
+                <option value="COMMERCIAL">Ticari</option>
+                <option value="OTHER">Diğer</option>
               </select>
             </div>
             <div>
@@ -252,6 +260,19 @@ export default function PropertiesPage() {
             <div>
               <label className={labelCls}>Depozito (TL)</label>
               <input type="number" value={formData.depositAmount} onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })} className={inputCls} />
+            </div>
+            <div className="md:col-span-2">
+              <label className={labelCls}>UAVT Kodu <span className="text-slate-500">(opsiyonel — tapu doğrulaması için)</span></label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={formData.uavtCode}
+                onChange={(e) => setFormData({ ...formData, uavtCode: e.target.value.replace(/\D/g, '') })}
+                placeholder="12345678"
+                maxLength={10}
+                className={inputCls}
+              />
+              <p className="mt-1 text-xs text-slate-500">8-10 haneli UAVT kodu. Girilirse tapu sahiplik doğrulaması yapılır.</p>
             </div>
           </div>
           <div className="flex gap-3">
