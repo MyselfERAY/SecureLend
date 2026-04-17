@@ -42,14 +42,17 @@ export class KkbService {
         };
       }
 
-      // Mock: Son haneleri kontrol ederek %95 başarı simüle et.
-      // Gerçek entegrasyonda bu blok kaldırılacak, banka API'sine istek gidecek.
-      const lastTcknDigit = parseInt(tckn.slice(-1), 10);
-      const verified = lastTcknDigit !== 9; // %90 başarı oranı simüle
+      // Mock fail kriteri: telefonun son hanesi 0 → fail (test için deterministic).
+      // Gerçek TCKN son hanesi her zaman çift olduğundan TCKN üzerinden mock yapılamaz.
+      // Banka entegrasyonunda bu blok kaldırılır, KKB API çağrısı gelir.
+      const lastPhoneDigit = parseInt(phone.replace(/\s/g, '').slice(-1), 10);
+      const verified = lastPhoneDigit !== 0;
 
       return {
         verified,
-        reason: verified ? undefined : 'TCKN-telefon eşleşmesi doğrulanamadı',
+        reason: verified
+          ? undefined
+          : 'TCKN-telefon eşleşmesi doğrulanamadı (mock: telefon son hanesi 0)',
         checkedAt: new Date(),
       };
     } catch (err) {
@@ -87,15 +90,16 @@ export class KkbService {
         };
       }
 
-      // Mock: IBAN'ın son hanesi 9 değilse true. Gerçekte banka API sorgusu.
+      // Mock fail kriteri: IBAN son hanesi 0 → fail.
+      // Gerçekte banka API üzerinden KKB sorgusu.
       const lastIbanDigit = parseInt(cleanIban.slice(-1), 10);
-      const verified = lastIbanDigit !== 9;
+      const verified = lastIbanDigit !== 0;
 
       return {
         verified,
         reason: verified
           ? undefined
-          : 'IBAN sahibi ile TCKN eşleşmiyor',
+          : 'IBAN sahibi ile TCKN eşleşmiyor (mock: IBAN son hanesi 0)',
         checkedAt: new Date(),
       };
     } catch (err) {
