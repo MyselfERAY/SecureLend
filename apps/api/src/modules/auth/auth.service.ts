@@ -2,6 +2,7 @@ import {
   Injectable,
   Logger,
   BadRequestException,
+  NotFoundException,
   UnauthorizedException,
   ConflictException,
   OnModuleInit,
@@ -483,6 +484,45 @@ export class AuthService implements OnModuleInit {
     return {
       firstName: parts.slice(0, -1).join(' '),
       lastName: parts[parts.length - 1],
+    };
+  }
+
+  async getInviteByToken(token: string) {
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        id: string;
+        full_name: string;
+        email: string | null;
+        phone: string | null;
+        note: string | null;
+        used: boolean;
+        expires_at: Date;
+      }>
+    >`
+      SELECT id::text as id, full_name, email, phone, note, used, expires_at
+      FROM "invite_tokens"
+      WHERE token = ${token}
+      LIMIT 1
+    `;
+
+    if (!rows.length) {
+      throw new NotFoundException('Davet linki bulunamadı');
+    }
+
+    const row = rows[0];
+    if (row.used) {
+      throw new BadRequestException('Bu davet linki zaten kullanıldı');
+    }
+    if (new Date() > row.expires_at) {
+      throw new BadRequestException('Bu davet linkinin süresi doldu');
+    }
+
+    return {
+      fullName: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      note: row.note,
+      expiresAt: row.expires_at.toISOString(),
     };
   }
 

@@ -1,17 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../lib/auth-context';
 import Logo from '../../../components/logo';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register } = useAuth();
   const [tckn, setTckn] = useState('');
-  const [phone, setPhone] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState(searchParams.get('phone') ?? '');
+  const [fullName, setFullName] = useState(searchParams.get('fullName') ?? '');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [kvkkOnayladi, setKvkkOnayladi] = useState(false);
   const [acikRizaOnayladi, setAcikRizaOnayladi] = useState(false);
@@ -179,5 +180,13 @@ export default function RegisterPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }

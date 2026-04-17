@@ -1,7 +1,9 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Param,
   Req,
   Res,
   HttpCode,
@@ -100,6 +102,14 @@ export class AuthController {
     const tokens = await this.authService.refreshTokens(refreshToken, ipAddress, userAgent);
     res.cookie(RT_COOKIE, tokens.refreshToken, RT_COOKIE_OPTS);
     return { status: 'success', data: { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn } };
+  }
+
+  @Public()
+  @Get('invite/:token')
+  @Throttle({ short: { limit: 10, ttl: seconds(60) } })
+  async getInvite(@Param('token') token: string) {
+    const data = await this.authService.getInviteByToken(token);
+    return { status: 'success', data };
   }
 
   @Post('logout')

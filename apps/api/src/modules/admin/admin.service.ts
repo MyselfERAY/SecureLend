@@ -1,10 +1,141 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentStatus, ContractStatus, KmhApplicationStatus, KycStatus } from '@prisma/client';
+import { CreateInviteDto } from './dto/create-invite.dto';
+
+interface InviteTokenRow {
+  id: string;
+  token: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  note: string | null;
+  used: boolean;
+  used_at: Date | null;
+  expires_at: Date;
+  created_at: Date;
+}
 
 @Injectable()
-export class AdminService {
+export class AdminService implements OnModuleInit {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    await this.ensureInviteTable();
+  }
+
+  private async ensureInviteTable(): Promise<void> {
+    try {
+      const [{ exists }] = await this.prisma.$queryRaw<[{ exists: boolean }]>`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'invite_tokens'
+        ) as exists`;
+      if (!exists) {
+        this.logger.warn('invite_tokens table missing — creating via raw SQL');
+        await this.prisma.$executeRawUnsafe(`
+          CREATE TABLE IF NOT EXISTS "invite_tokens" (
+            "id"                  UUID NOT NULL DEFAULT gen_random_uuid(),
+            "token"               VARCHAR(64) NOT NULL,
+            "full_name"           VARCHAR(200) NOT NULL,
+            "email"               VARCHAR(255),
+            "phone"               VARCHAR(20),
+            "note"                TEXT,
+            "used"                BOOLEAN NOT NULL DEFAULT false,
+            "used_at"             TIMESTAMP(3),
+            "used_by_user_id"     UUID,
+            "created_by_admin_id" UUID NOT NULL,
+            "expires_at"          TIMESTAMP(3) NOT NULL,
+            "created_at"          TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updated_at"          TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT "invite_tokens_pkey" PRIMARY KEY ("id"),
+            CONSTRAINT "invite_tokens_token_key" UNIQUE ("token")
+          )
+        `);
+        await this.prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "invite_tokens_token_idx" ON "invite_tokens"("token")`);
+        this.logger.log('invite_tokens table created');
+      }
+    } catch (err) {
+      this.logger.error(`ensureInviteTable failed: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  async createInvite(adminId: string, dto: CreateInviteDto) {
+    const token = randomBytes(32).toString('base64url');
+    const expiresAt = new Date(Date.now() + (dto.expiresInDays ?? 7) * 24 * 60 * 60 * 1000);
+    const webUrl = process.env.WEB_URL || 'https://kiraguvence.com';
+
+    const [row] = await this.prisma.$queryRaw<InviteTokenRow[]>`
+      INSERT INTO "invite_tokens" (token, full_name, email, phone, note, expires_at, created_by_admin_id)
+      VALUES (
+        ${token},
+        ${dto.fullName},
+        ${dto.email ?? null},
+        ${dto.phone ?? null},
+        ${dto.note ?? null},
+        ${expiresAt},
+        ${adminId}::uuid
+      )
+      RETURNING
+        id::text as id, token, full_name, email, phone, note,
+        used, used_at, expires_at, created_at
+    `;
+
+    return {
+      id: row.id,
+      token: row.token,
+      fullName: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      note: row.note,
+      used: row.used,
+      expiresAt: row.expires_at.toISOString(),
+      createdAt: row.created_at.toISOString(),
+      inviteUrl: `${webUrl}/davet/${row.token}`,
+    };
+  }
+
+  async listInvites(page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+    const webUrl = process.env.WEB_URL || 'https://kiraguvence.com';
+
+    const [rows, [{ count }]] = await Promise.all([
+      this.prisma.$queryRaw<InviteTokenRow[]>`
+        SELECT id::text as id, token, full_name, email, phone, note,
+               used, used_at, expires_at, created_at
+        FROM "invite_tokens"
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${skip}
+      `,
+      this.prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*)::bigint as count FROM "invite_tokens"
+      `,
+    ]);
+
+    const now = new Date();
+    return {
+      invites: rows.map((r) => ({
+        id: r.id,
+        token: r.token,
+        fullName: r.full_name,
+        email: r.email,
+        phone: r.phone,
+        note: r.note,
+        used: r.used,
+        usedAt: r.used_at?.toISOString() ?? null,
+        expired: !r.used && now > r.expires_at,
+        expiresAt: r.expires_at.toISOString(),
+        createdAt: r.created_at.toISOString(),
+        inviteUrl: `${webUrl}/davet/${r.token}`,
+      })),
+      total: Number(count),
+      page,
+      limit,
+    };
+  }
 
   async getOverviewStats() {
     const now = new Date();
