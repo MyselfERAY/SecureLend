@@ -615,6 +615,14 @@ model DevSuggestion {
   status      SuggestionStatus   @default(PENDING)
   agentNotes  String?            @map("agent_notes")
   prLink      String?            @map("pr_link") @db.VarChar(500)
+  // Otomatik ajanlarin (Health Agent vb.) ayni hata icin tekrar tekrar
+  // Suggestion acmasini onlemek icin deterministic dedup key. Service
+  // tarafindaki create() bu key uzerinden aktif/yeni-tamamlanmis kaydi
+  // dondurur. Bu migration'da UNIQUE index yok — sadece kolon; kolon
+  // guvenli sekilde prod'a aktiginda ayri bir PR'da unique eklenecek.
+  // SuggestionService.onModuleInit kolonu raw SQL ile garanti altina alir
+  // (migration sessizce fail olsa bile Prisma client 500 atmaz).
+  dedupKey    String?            @map("dedup_key") @db.VarChar(200)
   createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   poItems     PoItem[]
