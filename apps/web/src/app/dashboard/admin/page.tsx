@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Users, FileText, CreditCard, Wallet, Receipt, MessageSquare,
   BookOpen, Lightbulb, Target, Megaphone, CheckSquare, Activity,
-  Gift, BarChart3, Mail, ShieldCheck, TrendingUp, ArrowUpRight,
+  Gift, BarChart3, Mail, TrendingUp, ArrowUpRight,
   LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../../../lib/auth-context';
@@ -118,7 +118,6 @@ export default function AdminDashboardPage() {
         <CategoryGroup title="Kullanıcı & Sözleşme">
           <ModuleCard href="/dashboard/admin/users" icon={Users} title="Kullanıcılar" desc="Liste, filtre, KYC durumu" />
           <ModuleCard href="/dashboard/admin/contracts" icon={FileText} title="Sözleşmeler" desc="Tüm sözleşmeler, durumlar" />
-          <ModuleCard href="/dashboard/admin/kyc-compliance" icon={ShieldCheck} title="KYC Uyumluluk" desc="Doğrulama dağılımı, UAVT oranı" />
           <ModuleCard href="/dashboard/admin/support" icon={MessageSquare} title="Destek Mesajları" desc="Kullanıcı talepleri" />
         </CategoryGroup>
 

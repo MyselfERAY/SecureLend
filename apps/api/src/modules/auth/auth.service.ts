@@ -13,7 +13,6 @@ import { maskTckn, validateTckn } from '@securelend/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { IdentityVerificationService } from '../identity-verification/identity-verification.service';
-import { KkbService } from '../kkb/kkb.service';
 import { SmsService } from '../notification/sms.service';
 import { PromoService } from '../promo/promo.service';
 import { ConsentType } from '@prisma/client';
@@ -31,7 +30,6 @@ export class AuthService implements OnModuleInit {
     private readonly configService: ConfigService,
     private readonly encryptionService: EncryptionService,
     private readonly identityService: IdentityVerificationService,
-    private readonly kkbService: KkbService,
     private readonly smsService: SmsService,
     private readonly promoService: PromoService,
   ) {
@@ -84,7 +82,6 @@ export class AuthService implements OnModuleInit {
 
     const maskedTckn = maskTckn(tckn);
     const tcknHash = this.encryptionService.hash(tckn);
-    const tcknEncrypted = this.encryptionService.encrypt(tckn);
 
     // Check duplicate
     const existing = await this.prisma.user.findUnique({
@@ -94,32 +91,10 @@ export class AuthService implements OnModuleInit {
       throw new ConflictException('Bu TCKN ile kayitli bir kullanici mevcut');
     }
 
-    // NVI: TCKN + ad + soyad + doğum yılı eşleşmesi
-    const nameParts = fullName.trim().split(/\s+/);
-    const firstName = nameParts[0] ?? '';
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (nameParts[0] ?? '');
-    const birthYear = new Date(dateOfBirth).getFullYear();
-
-    const nviResult = await this.identityService.verifyByTcknAndBirthYear(
-      tckn,
-      birthYear,
-      firstName,
-      lastName,
-    );
-    if (!nviResult.verified) {
-      this.logger.warn(`NVI verification failed for ${maskedTckn}`);
-      throw new BadRequestException(
-        'Kimlik dogrulamasi basarisiz. TC Kimlik No, ad-soyad ve dogum tarihi bilgilerinizin dogru oldugundan emin olun.',
-      );
-    }
-
-    // KKB: TCKN ↔ telefon eşleşmesi
-    const phoneMatch = await this.kkbService.verifyPhoneTcknMatch(tckn, phone);
-    if (!phoneMatch.matched) {
-      this.logger.warn(`KKB phone match failed for ${maskedTckn}: ${phoneMatch.reason}`);
-      throw new BadRequestException(
-        'Telefon numarasi TC Kimlik No ile eslesmiyor. Kayitli telefon numaranizla kayit olmayi deneyin.',
-      );
+    // KPS identity verification
+    const identity = await this.identityService.verifyIdentity(tckn);
+    if (!identity.verified) {
+      throw new BadRequestException('Kimlik dogrulamasi basarisiz');
     }
 
     // Validate referrer if referral code provided
@@ -144,14 +119,10 @@ export class AuthService implements OnModuleInit {
         data: {
           tcknHash,
           tcknMasked: maskedTckn,
-          tcknEncrypted,
           fullName,
           phone,
           dateOfBirth: new Date(dateOfBirth),
           kpsVerified: true,
-          nviVerified: true,
-          nviVerifiedAt: new Date(),
-          phoneTcknVerified: true,
           referralCode: newReferralCode,
         },
       });

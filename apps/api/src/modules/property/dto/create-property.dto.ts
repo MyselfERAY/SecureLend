@@ -44,11 +44,6 @@ export class CreatePropertyDto {
   @MaxLength(10, { message: 'Posta kodu en fazla 10 karakter olmali' })
   postalCode?: string;
 
-  @IsOptional()
-  @IsString({ message: 'UAVT kodu metin olmali' })
-  @Matches(/^\d{10}$/, { message: 'UAVT kodu 10 rakam olmali' })
-  uavtCode?: string;
-
   @IsEnum(['APARTMENT', 'HOUSE', 'STUDIO', 'OFFICE', 'OTHER'], {
     message: 'Gecerli bir mulk tipi secin (APARTMENT, HOUSE, STUDIO, OFFICE, OTHER)',
   })
