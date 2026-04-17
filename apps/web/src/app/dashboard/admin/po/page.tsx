@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import DOMPurify from 'dompurify';
 import {
   Target, Plus, ArrowRight, AlertCircle, Loader2, CheckSquare, X,
   Sparkles, Bug, TrendingUp, Gavel, Eye, Trophy,
@@ -80,6 +81,34 @@ const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
 
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function SafeHtml({ html }: { html: string }) {
+  const clean = useMemo(
+    () =>
+      DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['p','br','strong','em','ul','ol','li','h1','h2','h3','h4','h5','h6','a','span','div','blockquote','code'],
+        ALLOWED_ATTR: ['href','target','rel'],
+      }),
+    [html],
+  );
+  return (
+    <div
+      className="text-sm text-slate-200 leading-relaxed
+        [&_h1]:text-white [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mt-3 [&_h1]:mb-2
+        [&_h2]:text-white [&_h2]:text-base [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1.5
+        [&_h3]:text-white [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1
+        [&_strong]:text-white [&_strong]:font-semibold
+        [&_em]:text-slate-300 [&_em]:italic
+        [&_a]:text-blue-400 [&_a]:underline hover:[&_a]:text-blue-300
+        [&_p]:mb-2 [&_p]:text-slate-200
+        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1.5 [&_ul]:text-slate-200
+        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1.5 [&_ol]:text-slate-200
+        [&_li]:my-0.5 [&_li]:text-slate-200
+        [&_code]:bg-slate-800 [&_code]:text-amber-300 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs"
+      dangerouslySetInnerHTML={{ __html: clean }}
+    />
+  );
 }
 
 export default function PoJournalPage() {
@@ -326,7 +355,9 @@ export default function PoJournalPage() {
                     </div>
                   </div>
                   {selectedReport.summary && (
-                    <p className="mt-3 text-sm text-slate-300 leading-relaxed">{selectedReport.summary}</p>
+                    <div className="mt-3">
+                      <SafeHtml html={selectedReport.summary} />
+                    </div>
                   )}
 
                   {/* Metrics snapshot */}

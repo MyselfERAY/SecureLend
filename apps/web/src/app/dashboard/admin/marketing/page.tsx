@@ -21,7 +21,24 @@ function SafeHtml({ html }: { html: string }) {
   );
   return (
     <div
-      className="prose prose-sm prose-invert max-w-none prose-headings:text-white prose-strong:text-white prose-a:text-blue-400"
+      className="text-sm text-slate-200 leading-relaxed
+        [&_h1]:text-white [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
+        [&_h2]:text-white [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2
+        [&_h3]:text-white [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1.5
+        [&_h4]:text-white [&_h4]:text-sm [&_h4]:font-semibold [&_h4]:mt-2 [&_h4]:mb-1
+        [&_strong]:text-white [&_strong]:font-semibold
+        [&_em]:text-slate-300 [&_em]:italic
+        [&_a]:text-blue-400 [&_a]:underline hover:[&_a]:text-blue-300
+        [&_p]:mb-2 [&_p]:text-slate-200
+        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ul]:text-slate-200
+        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_ol]:text-slate-200
+        [&_li]:my-0.5 [&_li]:text-slate-200
+        [&_blockquote]:border-l-2 [&_blockquote]:border-blue-500/50 [&_blockquote]:pl-3 [&_blockquote]:text-slate-300 [&_blockquote]:italic [&_blockquote]:my-3
+        [&_code]:bg-slate-800 [&_code]:text-amber-300 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
+        [&_pre]:bg-slate-800 [&_pre]:text-slate-200 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-3 [&_pre]:text-xs [&_pre]:overflow-x-auto
+        [&_table]:w-full [&_table]:my-3 [&_table]:border-collapse [&_table]:text-xs
+        [&_th]:bg-slate-800/60 [&_th]:text-slate-200 [&_th]:font-semibold [&_th]:text-left [&_th]:p-2 [&_th]:border [&_th]:border-slate-700
+        [&_td]:text-slate-300 [&_td]:p-2 [&_td]:border [&_td]:border-slate-700/50"
       dangerouslySetInnerHTML={{ __html: clean }}
     />
   );
