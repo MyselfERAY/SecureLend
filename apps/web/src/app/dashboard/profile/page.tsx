@@ -4,6 +4,26 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../../lib/auth-context';
 import { api } from '../../../lib/api';
 
+interface ReminderPrefs {
+  enabled: boolean;
+  channelSms: boolean;
+  channelEmail: boolean;
+  remind7Days: boolean;
+  remind3Days: boolean;
+  remind1Day: boolean;
+  overdueReminder: boolean;
+}
+
+const defaultPrefs: ReminderPrefs = {
+  enabled: true,
+  channelSms: false,
+  channelEmail: true,
+  remind7Days: true,
+  remind3Days: true,
+  remind1Day: true,
+  overdueReminder: true,
+};
+
 export default function ProfilePage() {
   const { tokens, user, refreshUser } = useAuth();
 
@@ -19,12 +39,25 @@ export default function ProfilePage() {
   const [kycLoading, setKycLoading] = useState(false);
   const [kycMsg, setKycMsg] = useState('');
 
+  const [prefs, setPrefs] = useState<ReminderPrefs>(defaultPrefs);
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const [prefsMsg, setPrefsMsg] = useState('');
+
   useEffect(() => {
     if (user) {
       setFullName(user.fullName);
       setEmail(user.email || '');
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!tokens) return;
+    api('/api/v1/users/reminder-preferences', { token: tokens.accessToken })
+      .then((res) => {
+        if (res.status === 'success') setPrefs(res.data as ReminderPrefs);
+      })
+      .catch(() => {});
+  }, [tokens]);
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -78,6 +111,28 @@ export default function ProfilePage() {
       setRoleMsg(err.message);
     } finally {
       setAddingRole(false);
+    }
+  };
+
+  const handleSavePrefs = async () => {
+    setPrefsSaving(true);
+    setPrefsMsg('');
+    try {
+      const res = await api('/api/v1/users/reminder-preferences', {
+        method: 'PUT',
+        body: prefs as unknown as Record<string, unknown>,
+        token: tokens!.accessToken,
+      });
+      if (res.status === 'success') {
+        setPrefs(res.data as ReminderPrefs);
+        setPrefsMsg('Tercihler kaydedildi.');
+      } else {
+        setPrefsMsg('Hata oluştu.');
+      }
+    } catch {
+      setPrefsMsg('Hata oluştu.');
+    } finally {
+      setPrefsSaving(false);
     }
   };
 
@@ -249,6 +304,85 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Payment Reminder Preferences */}
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Ödeme Hatırlatmaları</h2>
+          <button
+            onClick={() => setPrefs((p) => ({ ...p, enabled: !p.enabled }))}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${prefs.enabled ? 'bg-blue-600' : 'bg-slate-600'}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${prefs.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
+
+        <div className={`space-y-5 ${!prefs.enabled ? 'pointer-events-none opacity-40' : ''}`}>
+          {/* Channel */}
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Bildirim Kanalı</p>
+            <div className="flex flex-wrap gap-3">
+              <CheckOption
+                label="E-posta"
+                checked={prefs.channelEmail}
+                onChange={(v) => setPrefs((p) => ({ ...p, channelEmail: v }))}
+              />
+              <CheckOption
+                label="SMS"
+                checked={prefs.channelSms}
+                onChange={(v) => setPrefs((p) => ({ ...p, channelSms: v }))}
+              />
+            </div>
+          </div>
+
+          {/* Timing */}
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Hatırlatma Zamanlaması</p>
+            <div className="flex flex-wrap gap-3">
+              <CheckOption
+                label="7 gün önce"
+                checked={prefs.remind7Days}
+                onChange={(v) => setPrefs((p) => ({ ...p, remind7Days: v }))}
+              />
+              <CheckOption
+                label="3 gün önce"
+                checked={prefs.remind3Days}
+                onChange={(v) => setPrefs((p) => ({ ...p, remind3Days: v }))}
+              />
+              <CheckOption
+                label="1 gün önce"
+                checked={prefs.remind1Day}
+                onChange={(v) => setPrefs((p) => ({ ...p, remind1Day: v }))}
+              />
+            </div>
+          </div>
+
+          {/* Overdue */}
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Ek Uyarı</p>
+            <CheckOption
+              label="Geciken ödeme için +1 gün tekrar hatırlat"
+              checked={prefs.overdueReminder}
+              onChange={(v) => setPrefs((p) => ({ ...p, overdueReminder: v }))}
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            onClick={handleSavePrefs}
+            disabled={prefsSaving}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+          >
+            {prefsSaving ? 'Kaydediliyor...' : 'Tercihleri Kaydet'}
+          </button>
+          {prefsMsg && (
+            <span className={`text-sm ${prefsMsg.includes('kaydedildi') ? 'text-emerald-400' : 'text-red-400'}`}>
+              {prefsMsg}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -259,5 +393,27 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <span className="text-sm text-slate-400">{label}</span>
       <span className="text-sm font-medium text-white">{value}</span>
     </div>
+  );
+}
+
+function CheckOption({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 rounded border-slate-600 bg-[#0a1628] accent-blue-500"
+      />
+      <span className="text-sm text-slate-300">{label}</span>
+    </label>
   );
 }
