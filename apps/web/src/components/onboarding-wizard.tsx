@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { api } from '../lib/api';
 import { PROVINCES, DISTRICTS } from '../lib/turkey-locations';
+import { PROPERTY_TYPE_OPTIONS, ROOM_COUNT_OPTIONS } from '../lib/property-options';
 
 interface OnboardingWizardProps {
   token: string;
@@ -151,7 +152,13 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
         setSummary((prev) => ({ ...prev, property: propertyForm.title }));
         setCurrentStep(3);
       } else {
-        setError((res as any).data?.message || 'Mülk eklenirken bir hata oluştu.');
+        const d = (res as any).data;
+        const msg =
+          d?.message ||
+          (Array.isArray(d?.validation) ? d.validation[0] : null) ||
+          (res as any).message ||
+          'Mülk eklenirken bir hata oluştu.';
+        setError(msg);
       }
     } catch {
       setError('Mülk eklenirken bir hata oluştu. Lütfen tekrar deneyin.');
@@ -440,10 +447,11 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               onChange={(e) => setPropertyForm((prev) => ({ ...prev, propertyType: e.target.value }))}
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="APARTMENT">Daire</option>
-              <option value="HOUSE">Müstakil Ev</option>
-              <option value="VILLA">Villa</option>
-              <option value="COMMERCIAL">Ticari</option>
+              {PROPERTY_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -454,15 +462,11 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="">Seçin</option>
-              <option value="1+0">1+0 (Stüdyo)</option>
-              <option value="1+1">1+1</option>
-              <option value="2+1">2+1</option>
-              <option value="3+1">3+1</option>
-              <option value="3+2">3+2</option>
-              <option value="4+1">4+1</option>
-              <option value="4+2">4+2</option>
-              <option value="5+1">5+1</option>
-              <option value="5+2">5+2</option>
+              {ROOM_COUNT_OPTIONS.map((rc) => (
+                <option key={rc} value={rc}>
+                  {rc}
+                </option>
+              ))}
             </select>
           </div>
         </div>
