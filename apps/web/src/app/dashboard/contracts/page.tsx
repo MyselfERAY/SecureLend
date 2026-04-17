@@ -77,6 +77,13 @@ export default function ContractsPage() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // NVI identity verification state (Step 1)
+  const [nviTckn, setNviTckn] = useState('');
+  const [nviBirthYear, setNviBirthYear] = useState('');
+  const [nviVerified, setNviVerified] = useState(false);
+  const [nviLoading, setNviLoading] = useState(false);
+  const [nviError, setNviError] = useState('');
+
   const isLandlord = user?.roles.includes('LANDLORD');
 
   const loadContracts = async () => {
@@ -191,7 +198,44 @@ export default function ContractsPage() {
     setTenantResult(null);
     setTenantSearch('');
     setTenantError('');
+    setNviTckn('');
+    setNviBirthYear('');
+    setNviVerified(false);
+    setNviError('');
     setFormStep(1);
+  };
+
+  const nviVerify = async () => {
+    if (!/^\d{11}$/.test(nviTckn)) {
+      setNviError('Geçerli bir TC Kimlik No giriniz (11 rakam)');
+      return;
+    }
+    const year = parseInt(nviBirthYear, 10);
+    if (!year || year < 1900 || year > 2010) {
+      setNviError('Geçerli bir doğum yılı giriniz (1900–2010)');
+      return;
+    }
+    setNviLoading(true);
+    setNviError('');
+    try {
+      const nameParts = (user?.fullName ?? '').trim().split(/\s+/);
+      const firstName = nameParts[0] ?? '';
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : (nameParts[0] ?? '');
+      const res = await api<{ verified: boolean }>('/api/v1/identity/verify', {
+        method: 'POST',
+        body: { tckn: nviTckn, birthYear: year, firstName, lastName },
+        token: tokens!.accessToken,
+      });
+      if (res.status === 'success' && res.data?.verified) {
+        setNviVerified(true);
+      } else {
+        setNviError('Kimlik doğrulanamadı. TC Kimlik No ve doğum yılınızı kontrol ediniz.');
+      }
+    } catch (err: unknown) {
+      setNviError(err instanceof Error ? err.message : 'Doğrulama hatası');
+    } finally {
+      setNviLoading(false);
+    }
   };
 
   if (loading) {
@@ -270,9 +314,10 @@ export default function ContractsPage() {
           {/* Progress Bar */}
           <div className="flex items-center gap-2 mb-6">
             {[
-              { num: 1, label: 'Taraflar' },
-              { num: 2, label: 'Detaylar' },
-              { num: 3, label: 'Onay' },
+              { num: 1, label: 'Kimlik' },
+              { num: 2, label: 'Taraflar' },
+              { num: 3, label: 'Detaylar' },
+              { num: 4, label: 'Onay' },
             ].map((s) => (
               <div key={s.num} className="flex items-center gap-2">
                 <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
@@ -283,7 +328,7 @@ export default function ContractsPage() {
                 <span className={`text-sm font-medium ${formStep >= s.num ? 'text-white' : 'text-slate-500'}`}>
                   {s.label}
                 </span>
-                {s.num < 3 && <div className={`h-px w-8 ${formStep > s.num ? 'bg-blue-600' : 'bg-slate-700'}`} />}
+                {s.num < 4 && <div className={`h-px w-8 ${formStep > s.num ? 'bg-blue-600' : 'bg-slate-700'}`} />}
               </div>
             ))}
           </div>
@@ -292,8 +337,68 @@ export default function ContractsPage() {
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{formError}</div>
           )}
 
-          {/* Step 1 — Taraflar (Parties) */}
+          {/* Step 1 — Kimlik Doğrulama (NVI) */}
           {formStep === 1 && (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4 text-sm text-blue-300/80">
+                Sözleşme oluşturmadan önce TC Kimlik No&apos;nuzun NVI üzerinden doğrulanması gerekmektedir.
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className={labelCls}>TC Kimlik No *</label>
+                  <input
+                    type="text"
+                    value={nviTckn}
+                    onChange={(e) => {
+                      setNviTckn(e.target.value.replace(/\D/g, '').slice(0, 11));
+                      setNviVerified(false);
+                      setNviError('');
+                    }}
+                    placeholder="11 haneli TC Kimlik No"
+                    maxLength={11}
+                    disabled={nviVerified}
+                    className={`${inputCls} font-mono`}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Doğum Yılı *</label>
+                  <input
+                    type="text"
+                    value={nviBirthYear}
+                    onChange={(e) => {
+                      setNviBirthYear(e.target.value.replace(/\D/g, '').slice(0, 4));
+                      setNviVerified(false);
+                      setNviError('');
+                    }}
+                    placeholder="Örn: 1990"
+                    maxLength={4}
+                    disabled={nviVerified}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+              {nviError && (
+                <p className="text-sm text-red-400">{nviError}</p>
+              )}
+              {nviVerified ? (
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-400">
+                  Kimlik doğrulama başarılı. Sözleşme adımlarına devam edebilirsiniz.
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={nviVerify}
+                  disabled={nviLoading || nviTckn.length !== 11 || nviBirthYear.length !== 4}
+                  className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {nviLoading ? 'Doğrulanıyor...' : 'Kimliği Doğrula'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Step 2 — Taraflar (Parties) */}
+          {formStep === 2 && (
             <>
               {/* Tenant search */}
               <div className="rounded-lg border border-slate-700/50 bg-[#0a1628]/50 p-4 space-y-3">
@@ -362,8 +467,8 @@ export default function ContractsPage() {
             </>
           )}
 
-          {/* Step 2 — Sözleşme Detayları (Contract Details) */}
-          {formStep === 2 && (
+          {/* Step 3 — Sözleşme Detayları (Contract Details) */}
+          {formStep === 3 && (
             <>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
@@ -411,8 +516,8 @@ export default function ContractsPage() {
             </>
           )}
 
-          {/* Step 3 — Onay (Review & Confirm) */}
-          {formStep === 3 && (
+          {/* Step 4 — Onay (Review & Confirm) */}
+          {formStep === 4 && (
             <>
               {/* Terms */}
               <div>
@@ -450,9 +555,13 @@ export default function ContractsPage() {
                 Geri
               </button>
             )}
-            {formStep < 3 ? (
+            {formStep < 4 ? (
               <button type="button" onClick={() => setFormStep(formStep + 1)}
-                disabled={formStep === 1 ? (!tenantResult || !formData.propertyId) : (!formData.startDate || !formData.endDate || !formData.monthlyRent || !formData.landlordIban)}
+                disabled={
+                  formStep === 1 ? !nviVerified :
+                  formStep === 2 ? (!tenantResult || !formData.propertyId) :
+                  !formData.startDate || !formData.endDate || !formData.monthlyRent || !formData.landlordIban
+                }
                 className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
                 İleri
               </button>
