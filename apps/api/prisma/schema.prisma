@@ -627,6 +627,7 @@ model DevSuggestion {
   updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   poItems     PoItem[]
 
+  @@unique([dedupKey], map: "dev_suggestion_dedup_key_key")
   @@index([status], map: "idx_dev_suggestion_status")
   @@index([priority], map: "idx_dev_suggestion_priority")
   @@map("dev_suggestions")
