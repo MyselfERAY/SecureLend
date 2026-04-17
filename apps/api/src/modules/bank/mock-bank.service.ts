@@ -153,15 +153,6 @@ export class MockBankService extends BankService {
   // ─── KMH Application ──────────────────────────────
 
   async applyForKmh(userId: string, dto: ApplyKmhDto): Promise<KmhApplicationResult> {
-    // Kullanıcının NVI + KKB telefon doğrulamasından geçmiş olması gerek
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundException('Kullanici bulunamadi');
-    if (!user.nviVerified || !user.phoneTcknVerified) {
-      throw new BadRequestException(
-        'KMH basvurusu icin hesabinizin kimlik dogrulamasi (TCKN + telefon) tamamlanmali.',
-      );
-    }
-
     // Check if user already has an active (APPROVED + not onboarded yet, or PENDING) application
     const existing = await this.prisma.kmhApplication.findFirst({
       where: {
