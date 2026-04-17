@@ -215,17 +215,37 @@ export default function AdminAnalyticsPage() {
         icon={BarChart3}
         back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
         actions={
-          <select
-            value={rangeMinutes}
-            onChange={(e) => setRangeMinutes(Number(e.target.value))}
-            className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm font-medium text-slate-200"
-          >
-            {RANGE_PRESETS.map((p) => (
-              <option key={p.minutes} value={p.minutes}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <ResetEventsButton
+              onReset={() => {
+                // Verileri zorla yenile
+                setApiData(null);
+                setExtData(null);
+                setFunnelData(null);
+                setLoading(true);
+                if (tokens?.accessToken) {
+                  api<AnalyticsDashboard>(`/api/v1/analytics/dashboard?days=${daysForLegacy}`, {
+                    token: tokens.accessToken,
+                  })
+                    .then((res) => {
+                      if (res.status === 'success' && res.data) setData(res.data);
+                    })
+                    .finally(() => setLoading(false));
+                }
+              }}
+            />
+            <select
+              value={rangeMinutes}
+              onChange={(e) => setRangeMinutes(Number(e.target.value))}
+              className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm font-medium text-slate-200"
+            >
+              {RANGE_PRESETS.map((p) => (
+                <option key={p.minutes} value={p.minutes}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </div>
         }
       />
 
@@ -1239,6 +1259,71 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
             </table>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Reset / Milat butonu — hata log'larini temizleyip sifirdan izlemek icin
+// ═══════════════════════════════════════════════════════════════
+
+function ResetEventsButton({ onReset }: { onReset: () => void }) {
+  const { tokens } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const handleReset = async (type?: string) => {
+    if (!tokens?.accessToken) return;
+    const label = type === 'api_error' ? 'sadece API hatalarini'
+      : type === 'api_request' ? 'sadece API isteklerini'
+      : 'TUM event log\'larini';
+    if (!confirm(`${label} silmek uzeresin. Geri alinmaz. Emin misin?`)) return;
+    setLoading(true);
+    const qs = type ? `?type=${type}` : '';
+    const res = await api<{ deleted: number; type: string }>(
+      `/api/v1/analytics/events${qs}`,
+      { method: 'DELETE', token: tokens.accessToken },
+    );
+    setLoading(false);
+    if (res.status === 'success' && res.data) {
+      alert(`Silindi: ${res.data.deleted} kayit (${res.data.type})`);
+      onReset();
+    } else {
+      alert('Silme basarisiz: ' + (res.message ?? 'bilinmeyen hata'));
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <button
+        type="button"
+        disabled={loading}
+        className="rounded-lg border border-red-700/50 bg-red-950/40 px-3 py-2 text-sm font-medium text-red-300 hover:bg-red-900/40 disabled:opacity-50"
+      >
+        {loading ? 'Siliniyor...' : 'Milat At ▾'}
+      </button>
+      <div className="absolute right-0 top-full mt-1 hidden min-w-[220px] rounded-lg border border-slate-700 bg-[#0d1b2a] p-2 shadow-xl group-hover:block z-20">
+        <button
+          type="button"
+          onClick={() => handleReset('api_error')}
+          className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+        >
+          Sadece hatalari sil
+        </button>
+        <button
+          type="button"
+          onClick={() => handleReset('api_request')}
+          className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+        >
+          Sadece API isteklerini sil
+        </button>
+        <button
+          type="button"
+          onClick={() => handleReset()}
+          className="block w-full rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/40"
+        >
+          Tum log'lari sil
+        </button>
       </div>
     </div>
   );
