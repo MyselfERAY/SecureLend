@@ -514,6 +514,57 @@ export class AnalyticsService implements OnModuleInit {
     };
   }
 
+  /**
+   * Belirli bir zaman aralığındaki API hatalarını döner:
+   *   - topEndpoints: endpoint bazında hata sayısı (top 15)
+   *   - events: ham error event'leri (son `limit` tane, yeni → eski)
+   * Admin UI'da chart bar'ına tıklayınca açılan detay panelini besliyor.
+   */
+  async getApiErrorsForWindow(from: Date, to: Date, limit = 50) {
+    const [topEndpoints, events] = await Promise.all([
+      this.prisma.analyticsEvent.groupBy({
+        by: ['page'],
+        where: { eventType: 'api_error', createdAt: { gte: from, lt: to } },
+        _count: true,
+        orderBy: { _count: { page: 'desc' } },
+        take: 15,
+      }),
+      this.prisma.analyticsEvent.findMany({
+        where: { eventType: 'api_error', createdAt: { gte: from, lt: to } },
+        select: {
+          page: true,
+          device: true,
+          browser: true,
+          errorMessage: true,
+          userId: true,
+          ipAddress: true,
+          duration: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+    ]);
+
+    return {
+      window: { from: from.toISOString(), to: to.toISOString() },
+      topEndpoints: topEndpoints.map((e) => ({
+        endpoint: e.page,
+        count: e._count,
+      })),
+      events: events.map((e) => ({
+        endpoint: e.page,
+        method: e.device,
+        statusCode: e.browser,
+        errorMessage: e.errorMessage,
+        userId: e.userId,
+        ip: e.ipAddress,
+        durationMs: e.duration,
+        createdAt: e.createdAt,
+      })),
+    };
+  }
+
   // ─── Extended Metrics ───
 
   async getExtendedMetrics(days = 30) {

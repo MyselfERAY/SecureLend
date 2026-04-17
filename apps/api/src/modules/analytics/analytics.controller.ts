@@ -131,6 +131,47 @@ export class AnalyticsController {
     return { status: 'success', data };
   }
 
+  /**
+   * Belirli bir zaman penceresinde (bucket) olan API hatalarının detayı.
+   * Chart'ta bir bar'a tıklandığında o bucket'ın detayını getirmek için
+   * kullanılıyor. `from` ve `to` ISO8601 formatında olmalı; en fazla 7 gün
+   * genişliğe izin veriliyor (büyük aralıklarda zaten `/api-dashboard`
+   * aggregate'i var).
+   */
+  @Get('api-errors')
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  async getApiErrorsForWindow(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('limit') limit?: string,
+  ): Promise<JSendSuccess<unknown>> {
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+    if (!fromDate || Number.isNaN(fromDate.getTime()) || !toDate || Number.isNaN(toDate.getTime())) {
+      return {
+        status: 'success',
+        data: { window: { from: null, to: null }, topEndpoints: [], events: [] },
+      };
+    }
+    const maxWindowMs = 7 * 24 * 60 * 60 * 1000;
+    if (toDate.getTime() - fromDate.getTime() > maxWindowMs) {
+      return {
+        status: 'success',
+        data: {
+          window: { from: fromDate.toISOString(), to: toDate.toISOString() },
+          topEndpoints: [],
+          events: [],
+          truncated: true,
+        },
+      };
+    }
+    const parsedLimit = limit ? parseInt(limit, 10) : 50;
+    const safeLimit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 50, 1), 200);
+    const data = await this.analyticsService.getApiErrorsForWindow(fromDate, toDate, safeLimit);
+    return { status: 'success', data };
+  }
+
   // ─── ADMIN: Extended Metrics (Bounce, Funnel, Referrer, Conversion) ───
 
   @Get('extended')
