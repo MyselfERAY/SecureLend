@@ -1,10 +1,16 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Target, Plus, ArrowRight, AlertCircle, Loader2, CheckSquare, X,
+  Sparkles, Bug, TrendingUp, Gavel, Eye, Trophy,
+} from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
-
-// ── Types ──
+import {
+  PageHeader, Card, Badge, EmptyState, LoadingSkeleton, Button,
+  type BadgeTone,
+} from '../_components/admin-ui';
 
 type ItemCategory = 'UX_IMPROVEMENT' | 'COMPETITOR_ANALYSIS' | 'REGULATION_COMPLIANCE' | 'FEATURE_SUGGESTION' | 'BUG_REPORT' | 'METRIC_SUMMARY';
 type ItemStatus = 'ACTIVE' | 'MOVED_TO_DEV' | 'DISMISSED';
@@ -25,13 +31,7 @@ interface PoItem {
   updatedAt: string;
 }
 
-interface MetricsSnapshot {
-  totalUsers?: number;
-  activeContracts?: number;
-  monthlyPayments?: number;
-  pendingSuggestions?: number;
-  [key: string]: number | undefined;
-}
+interface MetricsSnapshot { [key: string]: any }
 
 interface PoReport {
   id: string;
@@ -42,165 +42,55 @@ interface PoReport {
   createdAt: string;
 }
 
-// ── Category display config ──
-
-const categoryLabel: Record<ItemCategory, string> = {
-  UX_IMPROVEMENT: 'UX',
-  COMPETITOR_ANALYSIS: 'Rakip Analizi',
-  REGULATION_COMPLIANCE: 'Regulasyon',
-  FEATURE_SUGGESTION: 'Özellik',
-  BUG_REPORT: 'Bug',
-  METRIC_SUMMARY: 'Metrik Özeti',
+const CATEGORY_META: Record<ItemCategory, { label: string; tone: BadgeTone; icon: React.ComponentType<{ className?: string }> }> = {
+  UX_IMPROVEMENT:       { label: 'UX', tone: 'info', icon: Eye },
+  COMPETITOR_ANALYSIS:  { label: 'Rakip', tone: 'info', icon: Trophy },
+  REGULATION_COMPLIANCE:{ label: 'Regülasyon', tone: 'warning', icon: Gavel },
+  FEATURE_SUGGESTION:   { label: 'Özellik', tone: 'success', icon: Sparkles },
+  BUG_REPORT:           { label: 'Bug', tone: 'danger', icon: Bug },
+  METRIC_SUMMARY:       { label: 'Metrik', tone: 'neutral', icon: TrendingUp },
 };
 
-const categoryColor: Record<ItemCategory, string> = {
-  UX_IMPROVEMENT: 'bg-blue-100 text-blue-700',
-  COMPETITOR_ANALYSIS: 'bg-purple-100 text-purple-700',
-  REGULATION_COMPLIANCE: 'bg-amber-100 text-amber-700',
-  FEATURE_SUGGESTION: 'bg-emerald-100 text-emerald-700',
-  BUG_REPORT: 'bg-rose-100 text-rose-700',
-  METRIC_SUMMARY: 'bg-slate-100 text-slate-700',
+const ITEM_STATUS_META: Record<ItemStatus, { label: string; tone: BadgeTone }> = {
+  ACTIVE:       { label: 'Aktif', tone: 'neutral' },
+  MOVED_TO_DEV: { label: 'Geliştirmede', tone: 'info' },
+  DISMISSED:    { label: 'Kapatıldı', tone: 'danger' },
 };
 
-const categoryBorder: Record<ItemCategory, string> = {
-  UX_IMPROVEMENT: 'border-blue-400 bg-blue-50',
-  COMPETITOR_ANALYSIS: 'border-purple-400 bg-purple-50',
-  REGULATION_COMPLIANCE: 'border-amber-400 bg-amber-50',
-  FEATURE_SUGGESTION: 'border-emerald-400 bg-emerald-50',
-  BUG_REPORT: 'border-rose-400 bg-rose-50',
-  METRIC_SUMMARY: 'border-slate-400 bg-slate-50',
+const PRIORITY_META: Record<Priority, { label: string; tone: BadgeTone }> = {
+  LOW:      { label: 'Düşük',  tone: 'neutral' },
+  MEDIUM:   { label: 'Orta',   tone: 'warning' },
+  HIGH:     { label: 'Yüksek', tone: 'warning' },
+  CRITICAL: { label: 'Kritik', tone: 'danger' },
 };
 
-// ── Status display config ──
-
-const itemStatusLabel: Record<ItemStatus, string> = {
-  ACTIVE: 'Aktif',
-  MOVED_TO_DEV: 'Geliştirmede',
-  DISMISSED: 'Kapatıldı',
+const DEV_STATUS_META: Record<DevSuggestionStatus, { label: string; tone: BadgeTone }> = {
+  NEW:         { label: 'Yeni', tone: 'info' },
+  APPROVED:    { label: 'Onaylandı', tone: 'warning' },
+  IN_PROGRESS: { label: 'Geliştiriliyor', tone: 'info' },
+  DONE:        { label: 'Tamamlandı', tone: 'success' },
+  REJECTED:    { label: 'Reddedildi', tone: 'danger' },
 };
-
-const itemStatusColor: Record<ItemStatus, string> = {
-  ACTIVE: 'bg-slate-100 text-slate-600',
-  MOVED_TO_DEV: 'bg-emerald-100 text-emerald-700',
-  DISMISSED: 'bg-rose-100 text-rose-600',
-};
-
-const devStatusLabel: Record<DevSuggestionStatus, string> = {
-  NEW: 'Yeni',
-  APPROVED: 'Onaylandı',
-  IN_PROGRESS: 'Geliştiriliyor',
-  DONE: 'Tamamlandı',
-  REJECTED: 'Reddedildi',
-};
-
-const devStatusColor: Record<DevSuggestionStatus, string> = {
-  NEW: 'bg-purple-100 text-purple-700',
-  APPROVED: 'bg-amber-100 text-amber-700',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700',
-  DONE: 'bg-emerald-100 text-emerald-700',
-  REJECTED: 'bg-rose-100 text-rose-700',
-};
-
-const priorityLabel: Record<Priority, string> = {
-  LOW: 'Düşük',
-  MEDIUM: 'Orta',
-  HIGH: 'Yüksek',
-  CRITICAL: 'Kritik',
-};
-
-const priorityColor: Record<Priority, string> = {
-  LOW: 'text-slate-400',
-  MEDIUM: 'text-amber-500',
-  HIGH: 'text-orange-500',
-  CRITICAL: 'text-rose-600',
-};
-
-const metricsLabel: Record<string, string> = {
-  totalUsers: 'Toplam Kullanıcı',
-  activeContracts: 'Aktif Sözleşme',
-  monthlyPayments: 'Aylık Ödeme',
-  pendingSuggestions: 'Bekleyen Öneri',
-  'users.total': 'Toplam Kullanıcı',
-  'users.lastSevenDays': 'Son 7 Gün (Kullanıcı)',
-  'contracts.lastSevenDays': 'Son 7 Gün (Sözleşme)',
-  total: 'Toplam',
-  lastSevenDays: 'Son 7 Gün',
-};
-
-// ── Helpers ──
 
 type FilterKey = 'ALL' | ItemCategory;
-
-const filterChips: { key: FilterKey; label: string }[] = [
+const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
   { key: 'ALL', label: 'Tümü' },
-  { key: 'UX_IMPROVEMENT', label: 'UX' },
-  { key: 'COMPETITOR_ANALYSIS', label: 'Rakip Analizi' },
-  { key: 'REGULATION_COMPLIANCE', label: 'Regulasyon' },
-  { key: 'FEATURE_SUGGESTION', label: 'Özellik' },
-  { key: 'BUG_REPORT', label: 'Bug' },
-  { key: 'METRIC_SUMMARY', label: 'Metrik Özeti' },
+  ...Object.entries(CATEGORY_META).map(([k, m]) => ({ key: k as ItemCategory, label: m.label })),
 ];
 
-const chipActiveColor: Record<FilterKey, string> = {
-  ALL: 'border-slate-500 bg-slate-100 text-slate-800',
-  UX_IMPROVEMENT: categoryBorder.UX_IMPROVEMENT + ' text-blue-800',
-  COMPETITOR_ANALYSIS: categoryBorder.COMPETITOR_ANALYSIS + ' text-purple-800',
-  REGULATION_COMPLIANCE: categoryBorder.REGULATION_COMPLIANCE + ' text-amber-800',
-  FEATURE_SUGGESTION: categoryBorder.FEATURE_SUGGESTION + ' text-emerald-800',
-  BUG_REPORT: categoryBorder.BUG_REPORT + ' text-rose-800',
-  METRIC_SUMMARY: categoryBorder.METRIC_SUMMARY + ' text-slate-800',
-};
-
-/** Flatten nested metrics into [label, number] pairs for safe rendering */
-function flattenMetrics(obj: Record<string, unknown>, prefix = ''): [string, number][] {
-  const result: [string, number][] = [];
-  for (const [key, value] of Object.entries(obj)) {
-    const label = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === 'number') {
-      result.push([label, value]);
-    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-      result.push(...flattenMetrics(value as Record<string, unknown>, label));
-    }
-  }
-  return result;
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
-
-function formatReportDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('tr-TR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
-function groupItemsByCategory(items: PoItem[]): Record<ItemCategory, PoItem[]> {
-  const groups: Record<ItemCategory, PoItem[]> = {
-    UX_IMPROVEMENT: [],
-    COMPETITOR_ANALYSIS: [],
-    REGULATION_COMPLIANCE: [],
-    FEATURE_SUGGESTION: [],
-    BUG_REPORT: [],
-    METRIC_SUMMARY: [],
-  };
-  items.forEach((item) => {
-    if (groups[item.category]) {
-      groups[item.category].push(item);
-    }
-  });
-  return groups;
-}
-
-// ── Component ──
 
 export default function PoJournalPage() {
   const { tokens } = useAuth();
   const [reports, setReports] = useState<PoReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterKey>('ALL');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Add Item form state
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     category: 'FEATURE_SUGGESTION' as ItemCategory,
@@ -211,66 +101,38 @@ export default function PoJournalPage() {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  const reportsRef = useRef<PoReport[]>([]);
-  reportsRef.current = reports;
-
-  // ── Fetch reports ──
+  const selectedIdRef = useRef<string | null>(null);
+  selectedIdRef.current = selectedReportId;
 
   const fetchReports = async (background = false) => {
     if (!tokens?.accessToken) return;
-    if (background) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
+    if (background) setRefreshing(true); else setLoading(true);
     try {
-      const res = await api<any>('/api/v1/po/reports', {
-        token: tokens.accessToken,
-      });
+      const res = await api<any>('/api/v1/po/reports', { token: tokens.accessToken });
       if (res.status === 'success' && res.data) {
-        // API returns { reports: [...], total, page, limit }
-        const list: PoReport[] = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.reports)
-          ? res.data.reports
-          : [];
+        const list: PoReport[] = Array.isArray(res.data) ? res.data : Array.isArray(res.data.reports) ? res.data.reports : [];
         setReports(list);
+        if (!selectedIdRef.current && list.length > 0) {
+          setSelectedReportId(list[0].id);
+        }
       }
-    } catch {
-      // silently fail on background refresh
-    }
-    if (background) {
-      setRefreshing(false);
-    } else {
-      setLoading(false);
-    }
+    } catch {}
+    if (background) setRefreshing(false); else setLoading(false);
   };
 
+  useEffect(() => { fetchReports(false); }, [tokens?.accessToken]);
   useEffect(() => {
-    fetchReports(false);
+    const i = setInterval(() => fetchReports(true), 30000);
+    return () => clearInterval(i);
   }, [tokens?.accessToken]);
-
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => fetchReports(true), 30000);
-    return () => clearInterval(interval);
-  }, [tokens?.accessToken]);
-
-  // ── Actions ──
 
   const handleMoveToDev = async (itemId: string) => {
     if (!tokens?.accessToken) return;
     setActionLoading('dev-' + itemId);
     try {
-      await api(`/api/v1/po/items/${itemId}/move-to-dev`, {
-        method: 'POST',
-        token: tokens.accessToken,
-      });
+      await api(`/api/v1/po/items/${itemId}/move-to-dev`, { method: 'POST', token: tokens.accessToken });
       fetchReports(true);
-    } catch {
-      // ignore
-    }
+    } catch {}
     setActionLoading(null);
   };
 
@@ -278,14 +140,9 @@ export default function PoJournalPage() {
     if (!tokens?.accessToken) return;
     setActionLoading('task-' + itemId);
     try {
-      await api(`/api/v1/po/items/${itemId}/send-to-tasks`, {
-        method: 'POST',
-        token: tokens.accessToken,
-      });
+      await api(`/api/v1/po/items/${itemId}/send-to-tasks`, { method: 'POST', token: tokens.accessToken });
       fetchReports(true);
-    } catch {
-      // ignore
-    }
+    } catch {}
     setActionLoading(null);
   };
 
@@ -293,30 +150,19 @@ export default function PoJournalPage() {
     if (!tokens?.accessToken) return;
     setActionLoading('dismiss-' + itemId);
     try {
-      await api(`/api/v1/po/items/${itemId}`, {
-        method: 'PATCH',
-        token: tokens.accessToken,
-        body: { status: 'DISMISSED' },
-      });
+      await api(`/api/v1/po/items/${itemId}`, { method: 'PATCH', token: tokens.accessToken, body: { status: 'DISMISSED' } });
       fetchReports(true);
-    } catch {
-      // ignore
-    }
+    } catch {}
     setActionLoading(null);
   };
 
   const handleCreateItem = async () => {
     if (!tokens?.accessToken) return;
-    if (!form.title.trim() || !form.description.trim()) {
-      setFormError('Başlık ve açıklama zorunludur.');
-      return;
-    }
-    setFormError(null);
-    setFormLoading(true);
+    if (!form.title.trim() || !form.description.trim()) { setFormError('Başlık ve açıklama zorunludur.'); return; }
+    setFormError(null); setFormLoading(true);
     try {
       const res = await api('/api/v1/po/items', {
-        method: 'POST',
-        token: tokens.accessToken,
+        method: 'POST', token: tokens.accessToken,
         body: {
           category: form.category,
           title: form.title.trim(),
@@ -326,13 +172,7 @@ export default function PoJournalPage() {
         },
       });
       if (res.status === 'success') {
-        setForm({
-          category: 'FEATURE_SUGGESTION',
-          title: '',
-          description: '',
-          priority: 'HIGH',
-          isDevTask: false,
-        });
+        setForm({ category: 'FEATURE_SUGGESTION', title: '', description: '', priority: 'HIGH', isDevTask: false });
         setShowForm(false);
         fetchReports(true);
       } else {
@@ -344,321 +184,280 @@ export default function PoJournalPage() {
     setFormLoading(false);
   };
 
-  // ── Filter items within reports ──
+  const selectedReport = reports.find((r) => r.id === selectedReportId) || null;
 
-  const filteredReports: PoReport[] = reports.map((report) => {
-    const items = report.items ?? [];
-    if (filter === 'ALL') return { ...report, items };
-    return {
-      ...report,
-      items: items.filter((item) => item.category === filter),
-    };
-  });
+  const visibleItems = useMemo(() => {
+    if (!selectedReport) return [];
+    const items = selectedReport.items ?? [];
+    return filter === 'ALL' ? items : items.filter((i) => i.category === filter);
+  }, [selectedReport, filter]);
+
+  const fieldCls = 'w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500';
+  const labelCls = 'block text-xs font-medium text-slate-400 mb-1';
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">
-            PO Günlüğü
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Günlük ürün raporu ve öneriler
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
-        >
-          + Madde Ekle
-        </button>
-      </div>
+      <PageHeader
+        title="PO Günlüğü"
+        desc="Günlük ürün raporları, öneriler ve Dev Agent'a taşınan görevler"
+        icon={Target}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+        actions={
+          <Button variant="primary" icon={Plus} onClick={() => setShowForm(!showForm)}>
+            Madde Ekle
+          </Button>
+        }
+      />
 
-      {/* ── Category Filter Chips ── */}
-      <div className="flex flex-wrap gap-2">
-        {filterChips.map((chip) => (
-          <button
-            key={chip.key}
-            onClick={() => setFilter(chip.key)}
-            className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
-              filter === chip.key
-                ? chipActiveColor[chip.key]
-                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-            }`}
-          >
-            {chip.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Add Item Form ── */}
+      {/* Add item form */}
       {showForm && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900">Yeni PO Maddesi</h2>
-
-          <select
-            value={form.category}
-            onChange={(e) =>
-              setForm({ ...form, category: e.target.value as ItemCategory })
-            }
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
-          >
-            <option value="UX_IMPROVEMENT">UX</option>
-            <option value="COMPETITOR_ANALYSIS">Rakip Analizi</option>
-            <option value="REGULATION_COMPLIANCE">Regulasyon</option>
-            <option value="FEATURE_SUGGESTION">Özellik</option>
-            <option value="BUG_REPORT">Bug</option>
-            <option value="METRIC_SUMMARY">Metrik Özeti</option>
-          </select>
-
-          <input
-            type="text"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="Başlık"
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-          />
-
-          <textarea
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Detaylı açıklama..."
-            rows={4}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none"
-          />
-
-          <select
-            value={form.priority}
-            onChange={(e) =>
-              setForm({ ...form, priority: e.target.value as Priority })
-            }
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none"
-          >
-            <option value="CRITICAL">Kritik</option>
-            <option value="HIGH">Yüksek</option>
-            <option value="MEDIUM">Orta</option>
-            <option value="LOW">Düşük</option>
-          </select>
-
-          <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.isDevTask}
-              onChange={(e) =>
-                setForm({ ...form, isDevTask: e.target.checked })
-              }
-              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-            />
-            Geliştirme görevi (Dev Task)
-          </label>
-
+        <Card className="border-blue-500/30">
+          <h3 className="text-sm font-semibold text-white mb-3">Yeni PO Maddesi</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Kategori</label>
+              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as ItemCategory })} className={fieldCls}>
+                {Object.entries(CATEGORY_META).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Öncelik</label>
+              <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })} className={fieldCls}>
+                <option value="CRITICAL">Kritik</option>
+                <option value="HIGH">Yüksek</option>
+                <option value="MEDIUM">Orta</option>
+                <option value="LOW">Düşük</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className={labelCls}>Başlık *</label>
+              <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={fieldCls} />
+            </div>
+            <div className="md:col-span-2">
+              <label className={labelCls}>Açıklama *</label>
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={`${fieldCls} resize-none`} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="inline-flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                <input type="checkbox" checked={form.isDevTask} onChange={(e) => setForm({ ...form, isDevTask: e.target.checked })} className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-blue-600" />
+                Doğrudan Dev Agent'a taşı
+              </label>
+            </div>
+          </div>
           {formError && (
-            <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-sm text-rose-600 font-medium">
-              {formError}
+            <div className="mt-3 rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2 text-xs text-rose-400 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" /> {formError}
             </div>
           )}
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleCreateItem}
-              disabled={formLoading}
-              className="rounded-xl bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50"
-            >
+          <div className="flex gap-2 mt-3">
+            <Button variant="primary" onClick={handleCreateItem} disabled={formLoading}>
               {formLoading ? 'Kaydediliyor...' : 'Kaydet'}
-            </button>
-            <button
-              onClick={() => setShowForm(false)}
-              className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              İptal
-            </button>
+            </Button>
+            <Button variant="secondary" onClick={() => setShowForm(false)}>İptal</Button>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* ── Content ── */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
+        <LoadingSkeleton rows={4} />
       ) : reports.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center">
-          <div className="text-slate-400 text-sm">
-            Henüz PO raporu yok.
-          </div>
-          <p className="mt-2 text-xs text-slate-400">
-            PO Agent günlük rapor oluşturduğunda burada görünecek.
-          </p>
-        </div>
+        <EmptyState icon={Target} title="Henüz PO raporu yok" desc="PO Agent günlük 08:00'de otomatik üretir." />
       ) : (
-        <div className="space-y-8">
-          {refreshing && (
-            <div className="text-right text-xs text-slate-400 animate-pulse">
-              Güncelleniyor...
+        <div className="grid gap-4 lg:grid-cols-12">
+          {/* Left: Report timeline — 3 cols */}
+          <div className="lg:col-span-3 space-y-2">
+            {refreshing && <div className="text-right text-xs text-slate-500 animate-pulse">Güncelleniyor...</div>}
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              Raporlar · {reports.length}
             </div>
-          )}
-
-          {/* ── Timeline / Journal ── */}
-          {filteredReports.map((report) => (
-            <div key={report.id} className="relative">
-              {/* Date header */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-3 w-3 rounded-full bg-blue-500 ring-4 ring-blue-100 flex-shrink-0" />
-                <h2 className="text-lg font-extrabold text-slate-900">
-                  {formatReportDate(report.reportDate)}
-                </h2>
-              </div>
-
-              <div className="ml-1.5 border-l-2 border-slate-200 pl-6 space-y-4">
-                {/* Summary */}
-                {report.summary && (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                      Özet
-                    </p>
-                    <div
-                      className="text-sm text-slate-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: report.summary }}
-                    />
+            {reports.map((r) => {
+              const active = r.id === selectedReportId;
+              const itemCount = r.items?.length ?? 0;
+              const devCount = r.items?.filter((i) => i.status === 'MOVED_TO_DEV').length ?? 0;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setSelectedReportId(r.id)}
+                  className={`w-full text-left rounded-lg border px-3 py-2.5 transition ${
+                    active
+                      ? 'border-blue-500/50 bg-[#0f2037]'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-white">{formatDate(r.reportDate)}</div>
+                  <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                    <span>{itemCount} madde</span>
+                    {devCount > 0 && <span className="text-emerald-400">· {devCount} dev'e</span>}
                   </div>
-                )}
+                </button>
+              );
+            })}
+          </div>
 
-                {/* Metrics Snapshot */}
-                {report.metricsSnapshot &&
-                  Object.keys(report.metricsSnapshot).length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {flattenMetrics(report.metricsSnapshot).map(
-                        ([key, value]) => (
-                            <div
-                              key={key}
-                              className="rounded-xl border border-slate-200 bg-white p-4 text-center"
-                            >
-                              <div className="text-xs font-semibold text-slate-500">
-                                {metricsLabel[key] || key}
-                              </div>
-                              <div className="mt-1 text-xl font-bold text-slate-900">
-                                {typeof value === 'number'
-                                  ? value.toLocaleString('tr-TR')
-                                  : String(value)}
-                              </div>
-                            </div>
-                          ),
-                      )}
+          {/* Right: Selected report detail — 9 cols */}
+          <div className="lg:col-span-9 space-y-4">
+            {!selectedReport ? (
+              <Card>
+                <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+                  Detay için bir rapor seçin
+                </div>
+              </Card>
+            ) : (
+              <>
+                {/* Report summary */}
+                <Card>
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wider">Rapor Özeti</div>
+                      <h2 className="text-lg font-bold text-white mt-1">{formatDate(selectedReport.reportDate)}</h2>
                     </div>
+                    <div className="flex items-center gap-3">
+                      {Object.entries(CATEGORY_META).map(([k, m]) => {
+                        const count = (selectedReport.items ?? []).filter((i) => i.category === (k as ItemCategory)).length;
+                        if (count === 0) return null;
+                        const Icon = m.icon;
+                        return (
+                          <div key={k} className="flex items-center gap-1.5 text-xs">
+                            <Icon className="h-3.5 w-3.5 text-slate-400" />
+                            <span className="text-slate-300">{count}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {selectedReport.summary && (
+                    <p className="mt-3 text-sm text-slate-300 leading-relaxed">{selectedReport.summary}</p>
                   )}
 
-                {/* Items grouped by category */}
-                {report.items.length > 0 ? (
-                  Object.entries(groupItemsByCategory(report.items)).map(
-                    ([cat, items]) => {
-                      if (items.length === 0) return null;
-                      const category = cat as ItemCategory;
+                  {/* Metrics snapshot */}
+                  {selectedReport.metricsSnapshot && (
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {Object.entries(flattenMetrics(selectedReport.metricsSnapshot)).slice(0, 8).map(([label, value]) => (
+                        <div key={label} className="rounded-lg border border-slate-700/50 bg-slate-900/30 px-3 py-2">
+                          <div className="text-[10px] text-slate-500 uppercase tracking-wider truncate">{label}</div>
+                          <div className="text-lg font-bold text-white mt-0.5">{value.toLocaleString('tr-TR')}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+
+                {/* Category filter */}
+                <div className="flex flex-wrap gap-2">
+                  {FILTER_OPTIONS.map((opt) => {
+                    const count = opt.key === 'ALL'
+                      ? (selectedReport.items?.length ?? 0)
+                      : (selectedReport.items?.filter((i) => i.category === opt.key).length ?? 0);
+                    if (opt.key !== 'ALL' && count === 0) return null;
+                    const active = filter === opt.key;
+                    return (
+                      <button
+                        key={opt.key}
+                        onClick={() => setFilter(opt.key)}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                          active
+                            ? 'border-blue-500/50 bg-blue-500/10 text-blue-300'
+                            : 'border-slate-700/50 bg-[#0d1b2a] text-slate-400 hover:border-slate-600 hover:text-white'
+                        }`}
+                      >
+                        {opt.label} <span className="opacity-60 ml-1">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Items */}
+                {visibleItems.length === 0 ? (
+                  <EmptyState title="Bu kategoride madde yok" />
+                ) : (
+                  <div className="space-y-2">
+                    {visibleItems.map((item) => {
+                      const catMeta = CATEGORY_META[item.category];
+                      const CatIcon = catMeta.icon;
+                      const pMeta = PRIORITY_META[item.priority];
+                      const sMeta = ITEM_STATUS_META[item.status];
+                      const devMeta = item.devSuggestionStatus ? DEV_STATUS_META[item.devSuggestionStatus] : null;
+
                       return (
-                        <div key={category} className="space-y-2">
-                          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            {categoryLabel[category]}
-                          </p>
-                          {items.map((item) => (
-                            <div
-                              key={item.id}
-                              className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-sm"
-                            >
-                              <div className="flex flex-wrap items-center gap-2 mb-2">
-                                {/* Category badge */}
-                                <span
-                                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryColor[item.category]}`}
-                                >
-                                  {categoryLabel[item.category]}
-                                </span>
-
-                                {/* Priority */}
-                                <span
-                                  className={`text-xs font-bold ${priorityColor[item.priority]}`}
-                                >
-                                  {priorityLabel[item.priority]}
-                                </span>
-
-                                {/* Status badge */}
-                                <span
-                                  className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${itemStatusColor[item.status]}`}
-                                >
-                                  {itemStatusLabel[item.status]}
-                                </span>
-                              </div>
-
-                              <h3 className="text-sm font-bold text-slate-900 leading-snug">
-                                {item.title}
-                              </h3>
-                              <p className="mt-1 text-sm text-slate-600 leading-relaxed">
-                                {item.description}
-                              </p>
-
-                              {/* Dev Suggestion status (when moved) */}
-                              {item.status === 'MOVED_TO_DEV' &&
-                                item.devSuggestionStatus && (
-                                  <div className="mt-3 flex items-center gap-2">
-                                    <span className="text-xs text-slate-500">
-                                      Geliştirme durumu:
-                                    </span>
-                                    <span
-                                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${devStatusColor[item.devSuggestionStatus]}`}
-                                    >
-                                      {devStatusLabel[item.devSuggestionStatus]}
-                                    </span>
-                                  </div>
+                        <div key={item.id} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                              <CatIcon className="h-4 w-4 text-slate-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                                <Badge tone={catMeta.tone}>{catMeta.label}</Badge>
+                                <Badge tone={pMeta.tone}>{pMeta.label}</Badge>
+                                <Badge tone={sMeta.tone}>{sMeta.label}</Badge>
+                                {devMeta && (
+                                  <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                    <ArrowRight className="h-3 w-3" />
+                                    <Badge tone={devMeta.tone}>{devMeta.label}</Badge>
+                                  </span>
                                 )}
+                              </div>
+                              <div className="text-sm font-semibold text-white leading-snug">{item.title}</div>
+                              <p className="text-xs text-slate-400 mt-1 leading-relaxed">{item.description}</p>
 
-                              {/* Action buttons for ACTIVE items */}
                               {item.status === 'ACTIVE' && (
-                                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
-                                  <button
-                                    onClick={() => handleMoveToDev(item.id)}
-                                    disabled={actionLoading !== null}
-                                    className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
-                                  >
-                                    {actionLoading === 'dev-' + item.id
-                                      ? 'Gönderiliyor...'
-                                      : 'Geliştirmeye Gönder'}
-                                  </button>
-                                  <button
+                                <div className="flex items-center gap-2 mt-3">
+                                  {!item.isDevTask && (
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      icon={ArrowRight}
+                                      onClick={() => handleMoveToDev(item.id)}
+                                      disabled={actionLoading === 'dev-' + item.id}
+                                    >
+                                      {actionLoading === 'dev-' + item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Dev\'e Taşı'}
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    icon={CheckSquare}
                                     onClick={() => handleSendToTasks(item.id)}
-                                    disabled={actionLoading !== null}
-                                    className="rounded-xl border border-blue-300 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+                                    disabled={actionLoading === 'task-' + item.id}
                                   >
-                                    {actionLoading === 'task-' + item.id
-                                      ? 'Gönderiliyor...'
-                                      : 'Görev Takibine Gönder'}
-                                  </button>
-                                  <button
+                                    Göreve Ekle
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    icon={X}
                                     onClick={() => handleDismiss(item.id)}
-                                    disabled={actionLoading !== null}
-                                    className="rounded-xl border border-slate-300 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:opacity-50"
+                                    disabled={actionLoading === 'dismiss-' + item.id}
+                                    className="text-slate-500 hover:text-slate-300"
                                   >
-                                    {actionLoading === 'dismiss-' + item.id
-                                      ? 'Kapatılıyor...'
-                                      : 'İptal Et'}
-                                  </button>
+                                    Kapat
+                                  </Button>
                                 </div>
                               )}
                             </div>
-                          ))}
+                          </div>
                         </div>
                       );
-                    },
-                  )
-                ) : (
-                  <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400">
-                    Bu raporda{' '}
-                    {filter !== 'ALL'
-                      ? `"${filterChips.find((c) => c.key === filter)?.label}" kategorisinde`
-                      : ''}{' '}
-                    madde yok.
+                    })}
                   </div>
                 )}
-              </div>
-            </div>
-          ))}
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function flattenMetrics(obj: Record<string, unknown>, prefix = ''): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const label = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'number') {
+      out[label] = value;
+    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(out, flattenMetrics(value as Record<string, unknown>, label));
+    }
+  }
+  return out;
 }
