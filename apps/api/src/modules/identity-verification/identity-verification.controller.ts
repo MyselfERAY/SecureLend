@@ -5,7 +5,7 @@ import { VerifyIdentityDto } from './dto/verify-identity.dto';
 
 @ApiTags('identity')
 @ApiBearerAuth()
-@Controller('identity')
+@Controller('api/v1/identity')
 export class IdentityVerificationController {
   constructor(
     private readonly identityService: IdentityVerificationService,
