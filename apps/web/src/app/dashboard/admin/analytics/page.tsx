@@ -507,9 +507,18 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
       if (Number.isNaN(from.getTime())) return;
       to = new Date(from.getTime() + 60 * 60 * 1000);
     } else {
-      // `day` = "YYYY-MM-DD" — yerel gün başlangıcı
-      const [y, m, d] = day.split('-').map(Number);
-      from = new Date(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
+      // Beklenen format "YYYY-MM-DD". Önce regex ile doğrula;
+      // backend bozuk string (ör. "Fri Apr 17") dönerse Date(day) fallback dene.
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
+      if (match) {
+        const [, ys, ms, ds] = match;
+        from = new Date(Number(ys), Number(ms) - 1, Number(ds), 0, 0, 0, 0);
+      } else {
+        const fallback = new Date(day);
+        if (Number.isNaN(fallback.getTime())) return;
+        from = new Date(fallback.getFullYear(), fallback.getMonth(), fallback.getDate(), 0, 0, 0, 0);
+      }
+      if (Number.isNaN(from.getTime())) return;
       to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
     }
     setSelectedBucket(day);

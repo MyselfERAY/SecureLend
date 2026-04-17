@@ -499,18 +499,26 @@ export class AnalyticsService implements OnModuleInit {
         createdAt: e.createdAt,
       })),
       granularity,
-      dailyRequests: (dailyRequests as any[]).map((d) => ({
-        day: granularity === 'hour'
-          ? new Date(d.day).toISOString()
-          : String(d.day).slice(0, 10),
-        count: Number(d.count),
-      })),
-      dailyErrors: (dailyErrors as any[]).map((d) => ({
-        day: granularity === 'hour'
-          ? new Date(d.day).toISOString()
-          : String(d.day).slice(0, 10),
-        count: Number(d.count),
-      })),
+      // Postgres `DATE(...)` pg driver'dan Date objesi olarak dönebiliyor;
+      // String() ile doğrudan slice "Fri Apr 17" gibi bozuk string üretiyordu.
+      // Her durumda Date'e normalize edip UTC tabanlı "YYYY-MM-DD" veya tam
+      // ISO üret — client güvenle parse edebilsin.
+      dailyRequests: (dailyRequests as any[]).map((d) => {
+        const dt = d.day instanceof Date ? d.day : new Date(d.day);
+        const iso = dt.toISOString();
+        return {
+          day: granularity === 'hour' ? iso : iso.slice(0, 10),
+          count: Number(d.count),
+        };
+      }),
+      dailyErrors: (dailyErrors as any[]).map((d) => {
+        const dt = d.day instanceof Date ? d.day : new Date(d.day);
+        const iso = dt.toISOString();
+        return {
+          day: granularity === 'hour' ? iso : iso.slice(0, 10),
+          count: Number(d.count),
+        };
+      }),
     };
   }
 
