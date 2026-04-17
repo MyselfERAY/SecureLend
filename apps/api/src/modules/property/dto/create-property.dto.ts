@@ -45,10 +45,19 @@ export class CreatePropertyDto {
   postalCode?: string;
 
   @IsEnum(
-    ['APARTMENT', 'HOUSE', 'VILLA', 'STUDIO', 'OFFICE', 'COMMERCIAL', 'OTHER'],
+    [
+      'APARTMENT',
+      'HOUSE',
+      'VILLA',
+      'STUDIO',
+      'OFFICE',
+      'SHOP',
+      'COMMERCIAL',
+      'OTHER',
+    ],
     {
       message:
-        'Geçerli bir mülk tipi seçin (APARTMENT, HOUSE, VILLA, STUDIO, OFFICE, COMMERCIAL, OTHER)',
+        'Geçerli bir mülk tipi seçin (APARTMENT, HOUSE, VILLA, STUDIO, OFFICE, SHOP, COMMERCIAL, OTHER)',
     },
   )
   propertyType!: string;
