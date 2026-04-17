@@ -44,9 +44,13 @@ export class CreatePropertyDto {
   @MaxLength(10, { message: 'Posta kodu en fazla 10 karakter olmali' })
   postalCode?: string;
 
-  @IsEnum(['APARTMENT', 'HOUSE', 'STUDIO', 'OFFICE', 'OTHER'], {
-    message: 'Gecerli bir mulk tipi secin (APARTMENT, HOUSE, STUDIO, OFFICE, OTHER)',
-  })
+  @IsEnum(
+    ['APARTMENT', 'HOUSE', 'VILLA', 'STUDIO', 'OFFICE', 'COMMERCIAL', 'OTHER'],
+    {
+      message:
+        'Geçerli bir mülk tipi seçin (APARTMENT, HOUSE, VILLA, STUDIO, OFFICE, COMMERCIAL, OTHER)',
+    },
+  )
   propertyType!: string;
 
   @IsOptional()
