@@ -1,8 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BookOpen, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import {
+  PageHeader, Card, Badge, EmptyState, LoadingSkeleton, Button,
+} from '../_components/admin-ui';
 
 interface Article {
   id: string;
@@ -17,10 +21,10 @@ interface Article {
   createdAt: string;
 }
 
-const audienceLabel: Record<string, string> = {
+const AUDIENCE_LABEL: Record<string, string> = {
   TENANT: 'Kiracı',
   LANDLORD: 'Ev Sahibi',
-  BOTH: 'Herkes İçin',
+  BOTH: 'Herkes',
 };
 
 export default function AdminArticlesPage() {
@@ -40,166 +44,151 @@ export default function AdminArticlesPage() {
   };
 
   useEffect(() => { fetchArticles(); }, [tokens?.accessToken]);
-
-  // Auto-refresh every 15 seconds
   useEffect(() => {
-    const interval = setInterval(fetchArticles, 15000);
-    return () => clearInterval(interval);
+    const i = setInterval(fetchArticles, 15000);
+    return () => clearInterval(i);
   }, [tokens?.accessToken]);
 
   const handlePublish = async (id: string) => {
     if (!tokens?.accessToken) return;
     setActionLoading(id);
     await api(`/api/v1/articles/${id}/publish`, { method: 'PATCH', token: tokens.accessToken });
-    setActionLoading(null);
-    setPreview(null);
-    fetchArticles();
+    setActionLoading(null); setPreview(null); fetchArticles();
   };
-
   const handleUnpublish = async (id: string) => {
     if (!tokens?.accessToken) return;
     setActionLoading(id);
     await api(`/api/v1/articles/${id}/unpublish`, { method: 'PATCH', token: tokens.accessToken });
-    setActionLoading(null);
-    setPreview(null);
-    fetchArticles();
+    setActionLoading(null); setPreview(null); fetchArticles();
   };
-
   const handleDelete = async (id: string) => {
-    if (!tokens?.accessToken || !confirm('Bu makaleyi kalıcı olarak silmek istediğinize emin misiniz?')) return;
+    if (!tokens?.accessToken || !confirm('Bu makaleyi silmek istediğinize emin misiniz?')) return;
     setActionLoading(id);
     await api(`/api/v1/articles/${id}`, { method: 'DELETE', token: tokens.accessToken });
-    setActionLoading(null);
-    setPreview(null);
-    fetchArticles();
+    setActionLoading(null); setPreview(null); fetchArticles();
   };
 
   const filtered = articles.filter((a) => a.status === tab);
   const draftCount = articles.filter((a) => a.status === 'DRAFT').length;
+  const pubCount = articles.filter((a) => a.status === 'PUBLISHED').length;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-slate-900">Makaleler</h1>
-        <p className="mt-1 text-sm text-slate-500">Taslakları inceleyin, yayınlayın veya silin.</p>
-      </div>
+      <PageHeader
+        title="Makaleler"
+        desc="AI taslaklarını inceleyin, yayınlayın veya silin."
+        icon={BookOpen}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+      />
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-1 p-1 rounded-lg bg-slate-800/50 border border-slate-700/50 w-fit">
         <button
-          onClick={() => { setTab('DRAFT'); setPreview(null); fetchArticles(); }}
-          className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
-            tab === 'DRAFT' ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-800'
+          onClick={() => { setTab('DRAFT'); setPreview(null); }}
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition ${
+            tab === 'DRAFT' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
           Taslaklar
           {draftCount > 0 && (
-            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+            <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300">
               {draftCount}
             </span>
           )}
         </button>
         <button
-          onClick={() => { setTab('PUBLISHED'); setPreview(null); fetchArticles(); }}
-          className={`pb-2 px-1 text-sm font-semibold border-b-2 transition ${
-            tab === 'PUBLISHED' ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-800'
+          onClick={() => { setTab('PUBLISHED'); setPreview(null); }}
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition ${
+            tab === 'PUBLISHED' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
           Yayında
+          <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300">
+            {pubCount}
+          </span>
         </button>
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
+        <LoadingSkeleton rows={3} />
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
-          {tab === 'DRAFT' ? 'Bekleyen taslak yok.' : 'Yayında makale yok.'}
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title={tab === 'DRAFT' ? 'Bekleyen taslak yok' : 'Yayında makale yok'}
+        />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {/* List */}
           <div className="space-y-3">
-            {filtered.map((article) => (
+            {filtered.map((a) => (
               <button
-                key={article.id}
-                onClick={() => setPreview(article)}
-                className={`w-full text-left rounded-2xl border p-5 transition ${
-                  preview?.id === article.id
-                    ? 'border-blue-400 bg-blue-50 shadow-sm'
-                    : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm'
+                key={a.id}
+                onClick={() => setPreview(a)}
+                className={`w-full text-left rounded-xl border p-4 transition ${
+                  preview?.id === a.id
+                    ? 'border-blue-500/50 bg-[#0f2037]'
+                    : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-slate-400">{article.category}</span>
-                  <span className="ml-auto text-xs text-slate-400">{audienceLabel[article.audience]}</span>
+                  <Badge tone="neutral">{a.category}</Badge>
+                  <Badge tone="info">{AUDIENCE_LABEL[a.audience]}</Badge>
                 </div>
-                <p className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">{article.title}</p>
-                <p className="mt-1 text-xs text-slate-500 line-clamp-2">{article.summary}</p>
-                <p className="mt-2 text-xs text-slate-400">
-                  {new Date(article.createdAt).toLocaleDateString('tr-TR', {
+                <div className="font-semibold text-white text-sm leading-snug line-clamp-2">{a.title}</div>
+                <div className="text-xs text-slate-400 mt-1 line-clamp-2">{a.summary}</div>
+                <div className="text-xs text-slate-500 mt-2">
+                  {new Date(a.createdAt).toLocaleDateString('tr-TR', {
                     day: 'numeric', month: 'long', year: 'numeric',
                   })}
-                </p>
+                </div>
               </button>
             ))}
           </div>
 
-          {/* Preview panel */}
-          <div className="rounded-2xl border border-slate-200 bg-white">
+          {/* Preview */}
+          <div className="lg:sticky lg:top-6 h-fit">
             {!preview ? (
-              <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-slate-400">
-                Önizlemek için sol taraftan bir makale seçin.
-              </div>
+              <Card>
+                <div className="flex items-center justify-center py-16 text-sm text-slate-500">
+                  Önizlemek için bir makale seçin
+                </div>
+              </Card>
             ) : (
-              <div className="p-6 space-y-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    preview.status === 'DRAFT'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-emerald-100 text-emerald-700'
-                  }`}>
-                    {preview.status === 'DRAFT' ? 'Taslak' : 'Yayında'}
-                  </span>
-                  <span className="text-xs text-slate-400">{preview.category}</span>
-                  <span className="text-xs text-slate-400">· {audienceLabel[preview.audience]}</span>
-                </div>
+              <Card>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={preview.status === 'DRAFT' ? 'warning' : 'success'}>
+                      {preview.status === 'DRAFT' ? 'Taslak' : 'Yayında'}
+                    </Badge>
+                    <Badge tone="neutral">{preview.category}</Badge>
+                    <Badge tone="info">{AUDIENCE_LABEL[preview.audience]}</Badge>
+                  </div>
 
-                <h2 className="text-lg font-extrabold text-slate-900 leading-snug">{preview.title}</h2>
-                <p className="text-sm font-medium text-slate-600 border-l-4 border-blue-200 pl-3">
-                  {preview.summary}
-                </p>
+                  <h2 className="text-lg font-bold text-white leading-snug">{preview.title}</h2>
+                  <p className="text-sm text-slate-300 border-l-2 border-blue-500/50 pl-3 italic">
+                    {preview.summary}
+                  </p>
 
-                <div className="max-h-64 overflow-y-auto rounded-xl bg-slate-50 p-4 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {preview.content}
-                </div>
+                  <div className="max-h-64 overflow-y-auto rounded-lg bg-slate-900/50 border border-slate-700/50 p-4 text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+                    {preview.content}
+                  </div>
 
-                <div className="flex gap-3 pt-2">
-                  {preview.status === 'DRAFT' ? (
-                    <button
-                      onClick={() => handlePublish(preview.id)}
-                      disabled={actionLoading === preview.id}
-                      className="flex-1 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:opacity-50"
-                    >
-                      {actionLoading === preview.id ? 'İşleniyor...' : 'Yayınla'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleUnpublish(preview.id)}
-                      disabled={actionLoading === preview.id}
-                      className="flex-1 rounded-xl bg-slate-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
-                    >
-                      {actionLoading === preview.id ? 'İşleniyor...' : 'Yayından Kaldır'}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(preview.id)}
-                    disabled={actionLoading === preview.id}
-                    className="rounded-xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
-                  >
-                    Sil
-                  </button>
+                  <div className="flex gap-2 pt-2">
+                    {preview.status === 'DRAFT' ? (
+                      <Button variant="primary" icon={Eye} onClick={() => handlePublish(preview.id)} disabled={actionLoading === preview.id} className="flex-1 justify-center">
+                        {actionLoading === preview.id ? 'İşleniyor...' : 'Yayınla'}
+                      </Button>
+                    ) : (
+                      <Button variant="secondary" icon={EyeOff} onClick={() => handleUnpublish(preview.id)} disabled={actionLoading === preview.id} className="flex-1 justify-center">
+                        {actionLoading === preview.id ? 'İşleniyor...' : 'Yayından Kaldır'}
+                      </Button>
+                    )}
+                    <Button variant="ghost" icon={Trash2} onClick={() => handleDelete(preview.id)} disabled={actionLoading === preview.id} className="text-rose-400 hover:text-rose-300">
+                      Sil
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </Card>
             )}
           </div>
         </div>
