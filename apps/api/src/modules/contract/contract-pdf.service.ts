@@ -317,6 +317,34 @@ export class ContractPdfService {
 
       doc.moveDown(0.8);
 
+      // ─── MADDE 10: MESAFELI SOZLESME VE CAYMA HAKKI (6502) ───
+      this.checkPageSpace(doc, 210);
+      this.sectionTitle(doc, fontB, 'MADDE 10 - MESAFELI SOZLESME VE CAYMA HAKKI');
+      doc.fontSize(8.5).font(fontR).fillColor('#666666')
+        .text('(6502 Sayili Tuketicinin Korunmasi Hakkinda Kanun m.48 ve Mesafeli Sozlesmeler Yonetmeligi)', { lineGap: 2 });
+      doc.moveDown(0.4);
+
+      const withdrawalClauses = [
+        'Isbu kira sozlesmesi, 6502 sayili Tuketicinin Korunmasi Hakkinda Kanun (TKHK) ve Mesafeli Sozlesmeler Yonetmeligi kapsaminda dijital ortamda (mesafeli usulde) akdedilmistir.',
+        'Sozlesme taraflarindan tuketici konumundaki kiraci, sozlesmenin kurulmasindan itibaren 14 (on dort) takvim gunu icerisinde herhangi bir gerekce gostermeksizin ve cezai sart odemeksizin sozlesmeden cayma hakkina sahiptir (TKHK m.48/1).',
+        'Cayma hakkinin kullanilmasi icin; info@kiraguvence.com adresine yazili e-posta gonderilmesi veya platform uzerindeki "Cayma Bildirimi" formu araciligiyla bildirimde bulunulmasi yeterlidir. Cayma bildirimi aninda cayma suresi kullanilmis sayilir.',
+        'Cayma bildiriminin alinmasindan itibaren en gec 14 (on dort) gun icerisinde, tahsil edilen tutarlar odeme aracina gore iade edilir.',
+        'Kiracinin acik onayi ile cayma suresi dolmadan ifasina baslanmis hizmetler bakimindan cayma hakki kullanilmayabilir (Yonetmelik m.15). Bu durum, kira sozlesmesi hizmetinin aktif hale gelmesini kapsamaktadir.',
+        'Sozlesme kapsaminda uyusmazlik halinde kiraci; Tuketici Hakem Heyeti, Tuketici Mahkemesi veya Ticaret Bakanligi TUBIS sistemi (tuketici.gtb.gov.tr) araciligiyla sikayet basvurusunda bulunabilir.',
+      ];
+
+      withdrawalClauses.forEach((clause, idx) => {
+        doc.fontSize(8.5).font(fontR).fillColor('#333333')
+          .text(`10.${idx + 1} ${clause}`, { lineGap: 2 });
+        doc.moveDown(0.25);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(8).font(fontR).fillColor('#888888')
+        .text('ON BILGILENDIRME: Taraflara 6502 sayili TKHK m.48 kapsaminda Mesafeli Sozlesmeler Yonetmeligi\'nin ongoerdugu on bilgilendirme formu sunulmus ve taraflarca okunup anlasilmistir.', { lineGap: 2 });
+
+      doc.moveDown(0.8);
+
       // ─── iMZALAR ───
       this.checkPageSpace(doc, 220);
       this.drawLine(doc);
@@ -378,10 +406,10 @@ export class ContractPdfService {
       doc.moveDown(0.4);
       doc.fontSize(7).font(fontR).fillColor('#999999')
         .text(
-          'Bu sozlesme KiraGuvence.com kira guvence platformu uzerinden olusturulmustur. ' +
-          'Sozlesme 6098 sayili Turk Borclar Kanunu (TBK) m.299-378 hukumlerine tabidir. ' +
+          'Bu sozlesme KiraGuvence.com kira guvence platformu uzerinden dijital ortamda (mesafeli usulde) olusturulmustur. ' +
+          '6098 sayili TBK m.299-378 hukumlerine tabi olup 6502 sayili TKHK m.48 kapsaminda cayma hakki bildirimi icermektedir. ' +
           'Platform odeme araciligi yapmamakta olup, kira tahsilati banka duzenli odeme talimati ile gerceklestirilmektedir. ' +
-          'Platform hizmetleri BDDK duzenlemelerine tabi degildir.',
+          'Sikayet: info@kiraguvence.com | TUBIS: tuketici.gtb.gov.tr',
           { align: 'center', lineGap: 2 },
         );
 

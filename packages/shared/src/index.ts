@@ -20,3 +20,8 @@ export {
   GIZLILIK_POLITIKASI,
   KULLANIM_KOSULLARI,
 } from './legal/kvkk-texts';
+export {
+  ON_BILGILENDIRME_FORMU_VERSION,
+  ON_BILGILENDIRME_FORMU_METNI,
+  CAYMA_HAKKI_METNI,
+} from './legal/on-bilgilendirme';

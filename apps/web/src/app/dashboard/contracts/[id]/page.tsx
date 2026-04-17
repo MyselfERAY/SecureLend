@@ -76,6 +76,8 @@ export default function ContractDetailPage() {
   const [error, setError] = useState('');
   const [selectedKmhAccountId, setSelectedKmhAccountId] = useState<string>('');
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [preInfoRead, setPreInfoRead] = useState(false);
+  const [caymaHakkiOnaylandi, setCaymaHakkiOnaylandi] = useState(false);
 
   const contractId = params.id as string;
 
@@ -106,9 +108,18 @@ export default function ContractDetailPage() {
       setError('Lütfen sözleşme için kullanılacak güvence hesabını seçin');
       return;
     }
+    if (!preInfoRead || !caymaHakkiOnaylandi) {
+      setError('Sözleşmeyi imzalamadan önce ön bilgilendirme formunu okuyup onaylamanız zorunludur (6502 sayılı TKHK m.48).');
+      return;
+    }
     setSigning(true);
     setError('');
     try {
+      // 6502 TKHK m.48 — Mesafeli Sözleşmeler Yönetmeliği uyumu: ön bilgilendirme ve cayma hakkı onaylarını kaydet
+      await Promise.all([
+        api('/api/v1/consents', { method: 'POST', body: { type: 'ON_BILGILENDIRME_FORMU', version: '1.0' }, token: tokens!.accessToken }),
+        api('/api/v1/consents', { method: 'POST', body: { type: 'CAYMA_HAKKI_TEYIDI', version: '1.0' }, token: tokens!.accessToken }),
+      ]);
       const body: Record<string, unknown> = {};
       if (amTenant && selectedKmhAccountId) {
         body.kmhAccountId = selectedKmhAccountId;
@@ -211,7 +222,7 @@ export default function ContractDetailPage() {
   const eligibleKmhAccounts = kmhAccounts.filter((a) => a.creditLimit >= contract.monthlyRent);
   const selectedKmh = kmhAccounts.find((a) => a.accountId === selectedKmhAccountId);
   const kmhOk = !isTenant || (selectedKmh != null && selectedKmh.creditLimit >= contract.monthlyRent);
-  const canSign = contract.status === 'PENDING_SIGNATURES' && !mySignature && kmhOk;
+  const canSign = contract.status === 'PENDING_SIGNATURES' && !mySignature && kmhOk && preInfoRead && caymaHakkiOnaylandi;
   const canTerminate = contract.status === 'ACTIVE';
 
   const statusLabel: Record<string, string> = {
@@ -454,6 +465,48 @@ export default function ContractDetailPage() {
         </div>
 
         {error && <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">{error}</div>}
+
+        {/* 6502 TKHK - Ön Bilgilendirme Zorunluluğu */}
+        {contract.status === 'PENDING_SIGNATURES' && !mySignature && (
+          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-amber-300">Zorunlu: Ön Bilgilendirme Formu (6502 Sayılı TKHK)</p>
+                <p className="mt-0.5 text-xs text-amber-400/80">
+                  Mesafeli Sözleşmeler Yönetmeliği gereğince sözleşme imzalanmadan önce aşağıdaki onaylar zorunludur.{' '}
+                  <a href="/on-bilgilendirme" target="_blank" className="underline hover:text-amber-300">
+                    Ön Bilgilendirme Formu&apos;nu tüm detaylarıyla okuyun &rarr;
+                  </a>
+                </p>
+              </div>
+            </div>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={preInfoRead}
+                onChange={(e) => setPreInfoRead(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-amber-500 shrink-0"
+              />
+              <span className="text-sm text-amber-200">
+                Ön Bilgilendirme Formu&apos;nu okudum; hizmetin niteliği, fiyatı ve ödeme koşullarını anladım.
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={caymaHakkiOnaylandi}
+                onChange={(e) => setCaymaHakkiOnaylandi(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-amber-500 shrink-0"
+              />
+              <span className="text-sm text-amber-200">
+                Sözleşmenin kurulmasından itibaren <strong>14 takvim günü</strong> içinde herhangi bir gerekçe göstermeksizin cayma hakkıma sahip olduğumu ve bu hakkı info@kiraguvence.com adresine bildirerek kullanabileceğimi anladım (6502 sayılı TKHK m.48).
+              </span>
+            </label>
+          </div>
+        )}
 
         {contract.status === 'PENDING_SIGNATURES' && !mySignature && (
           canSign ? (
