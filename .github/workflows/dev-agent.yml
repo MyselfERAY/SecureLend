@@ -471,6 +471,12 @@ jobs:
           git config user.name "SecureLend Dev Agent"
           git config user.email "dev-agent@kiraguvence.com"
 
+          # Save diff summary before commit (for later summary generation)
+          git diff --stat > /tmp/diff_stat.txt
+          git ls-files --others --exclude-standard | while read f; do
+            echo "new file: $f"
+          done >> /tmp/diff_stat.txt
+
           git add -A
 
           if git diff --staged --quiet; then
@@ -569,7 +575,68 @@ jobs:
             "$API_BASE/api/v1/suggestions/$SID"
 
       # ══════════════════════════════════════════
-      # STEP 9: Mark DONE (success path)
+      # STEP 9a: Generate task summary and test plan
+      # ══════════════════════════════════════════
+      - name: Generate summary and test plan
+        id: summary
+        if: steps.deploy.outputs.deploy_ok == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          STITLE=$(cat /tmp/suggestion_title.txt)
+          SDESC=$(cat /tmp/suggestion_desc.txt)
+          DIFF_STAT=$(cat /tmp/diff_stat.txt 2>/dev/null || echo "(no diff info)")
+          COMMIT_SHA="${{ steps.push.outputs.COMMIT_SHA }}"
+
+          SUMMARY_PROMPT="Sen SecureLend Dev Agent'ısın. Az önce bir görevi tamamlayıp deploy ettin.
+          Kullanıcıya yaptığın işi ve nasıl test edeceğini anlatan KISA bir rapor üret.
+
+          == GÖREV ==
+          $STITLE
+
+          == AÇIKLAMA ==
+          $SDESC
+
+          == DEĞİŞEN DOSYALAR ==
+          $DIFF_STAT
+
+          == ÇIKTI FORMATI ==
+          Aşağıdaki formatı TAM OLARAK takip et (Markdown, Türkçe):
+
+          **Ne Yapıldı:**
+          - [2-4 madde, teknik değil iş odaklı]
+
+          **Etkilenen Alanlar:**
+          - Backend: [varsa dosya/modül — kısa]
+          - Frontend: [varsa sayfa — kısa]
+          - DB: [migration var mı? ne eklendi?]
+
+          **Nasıl Test Edilir:**
+          1. [Adım adım — kiraguvence.com'da hangi sayfaya git, ne yap, ne görmeli]
+          2. ...
+
+          **Notlar:**
+          - [Gerekli env var, config, veya kullanıcı aksiyonu varsa]
+          - [Yoksa 'Ekstra yapılandırma gerekmez']
+
+          Maks 250 kelime. Kod parçaları EKLEME. Kullanıcı yönetici, teknik detay istemiyor."
+
+          echo "=== Generating summary ==="
+          claude --print --dangerously-skip-permissions "$SUMMARY_PROMPT" > /tmp/task_summary.md 2>&1 || true
+
+          if [ ! -s /tmp/task_summary.md ]; then
+            echo "(summary oluşturulamadı)" > /tmp/task_summary.md
+          fi
+
+          # Add commit SHA at the end
+          echo "" >> /tmp/task_summary.md
+          echo "---" >> /tmp/task_summary.md
+          echo "Commit: $COMMIT_SHA | Deploy: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /tmp/task_summary.md
+
+          echo "::notice::Summary generated ($(wc -c < /tmp/task_summary.md) bytes)"
+
+      # ══════════════════════════════════════════
+      # STEP 9b: Mark DONE (success path)
       # ══════════════════════════════════════════
       - name: Mark suggestion DONE
         if: steps.deploy.outputs.deploy_ok == 'true'
@@ -577,10 +644,16 @@ jobs:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
           SID: ${{ steps.check.outputs.sid }}
         run: |
-          NOTES="Implemented, pushed, deployed and verified at $(date -u +%Y-%m-%dT%H:%M:%SZ). Attempt ${{ steps.implement.outputs.attempt }}/$MAX_RETRIES."
+          # Build JSON payload with summary using jq to handle special chars safely
+          SUMMARY_CONTENT=$(cat /tmp/task_summary.md 2>/dev/null || echo "Implemented and deployed.")
+          PAYLOAD=$(jq -n \
+            --arg status "DONE" \
+            --arg notes "$SUMMARY_CONTENT" \
+            '{status: $status, agentNotes: $notes}')
+
           curl -s -X PATCH -H "x-api-key: $SERVICE_API_KEY" \
             -H 'Content-Type: application/json' \
-            -d "{\"status\":\"DONE\",\"agentNotes\":\"$NOTES\"}" \
+            -d "$PAYLOAD" \
             "$API_BASE/api/v1/suggestions/$SID"
           echo "::notice::✓ Task completed and verified!"
 
