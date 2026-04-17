@@ -1271,8 +1271,22 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
 function ResetEventsButton({ onReset }: { onReset: () => void }) {
   const { tokens } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  // Disariya tiklaninca menuyu kapat
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('[data-reset-menu]')) return;
+      setOpen(false);
+    };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [open]);
 
   const handleReset = async (type?: string) => {
+    setOpen(false);
     if (!tokens?.accessToken) return;
     const label = type === 'api_error' ? 'sadece API hatalarini'
       : type === 'api_request' ? 'sadece API isteklerini'
@@ -1294,37 +1308,40 @@ function ResetEventsButton({ onReset }: { onReset: () => void }) {
   };
 
   return (
-    <div className="relative group">
+    <div className="relative" data-reset-menu>
       <button
         type="button"
         disabled={loading}
+        onClick={() => setOpen((v) => !v)}
         className="rounded-lg border border-red-700/50 bg-red-950/40 px-3 py-2 text-sm font-medium text-red-300 hover:bg-red-900/40 disabled:opacity-50"
       >
         {loading ? 'Siliniyor...' : 'Milat At ▾'}
       </button>
-      <div className="absolute right-0 top-full mt-1 hidden min-w-[220px] rounded-lg border border-slate-700 bg-[#0d1b2a] p-2 shadow-xl group-hover:block z-20">
-        <button
-          type="button"
-          onClick={() => handleReset('api_error')}
-          className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
-        >
-          Sadece hatalari sil
-        </button>
-        <button
-          type="button"
-          onClick={() => handleReset('api_request')}
-          className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
-        >
-          Sadece API isteklerini sil
-        </button>
-        <button
-          type="button"
-          onClick={() => handleReset()}
-          className="block w-full rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/40"
-        >
-          Tum log'lari sil
-        </button>
-      </div>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 min-w-[220px] rounded-lg border border-slate-700 bg-[#0d1b2a] p-2 shadow-xl z-20">
+          <button
+            type="button"
+            onClick={() => handleReset('api_error')}
+            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+          >
+            Sadece hatalari sil
+          </button>
+          <button
+            type="button"
+            onClick={() => handleReset('api_request')}
+            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+          >
+            Sadece API isteklerini sil
+          </button>
+          <button
+            type="button"
+            onClick={() => handleReset()}
+            className="block w-full rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/40"
+          >
+            Tum log'lari sil
+          </button>
+        </div>
+      )}
     </div>
   );
 }
