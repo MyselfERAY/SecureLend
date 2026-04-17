@@ -23,6 +23,41 @@ interface OverviewStats {
   commissionCount: number;
 }
 
+type CategoryKey = 'user' | 'finance' | 'content' | 'agent' | 'analytics';
+
+interface Module {
+  href: string;
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  category: CategoryKey;
+}
+
+const CATEGORY_META: Record<CategoryKey, { label: string; accent: string }> = {
+  user:      { label: 'Kullanıcı',  accent: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  finance:   { label: 'Finans',     accent: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+  content:   { label: 'İçerik',     accent: 'text-violet-400 bg-violet-500/10 border-violet-500/20' },
+  agent:     { label: 'Agent',      accent: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+  analytics: { label: 'Analitik',   accent: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
+};
+
+const MODULES: Module[] = [
+  { href: '/dashboard/admin/users',        icon: Users,         title: 'Kullanıcılar',       desc: 'Liste, filtre, KYC durumu',         category: 'user' },
+  { href: '/dashboard/admin/contracts',    icon: FileText,      title: 'Sözleşmeler',        desc: 'Tüm sözleşmeler, durumlar',         category: 'user' },
+  { href: '/dashboard/admin/support',      icon: MessageSquare, title: 'Destek Mesajları',   desc: 'Kullanıcı talepleri',               category: 'user' },
+  { href: '/dashboard/admin/payments',     icon: CreditCard,    title: 'Ödemeler',           desc: 'Ödeme geçmişi ve detay',            category: 'finance' },
+  { href: '/dashboard/admin/commissions',  icon: Wallet,        title: 'Garanti Ücreti',     desc: 'Gelir raporu, CSV export',          category: 'finance' },
+  { href: '/dashboard/admin/promos',       icon: Gift,          title: 'Promosyonlar',       desc: 'Şablon, atama, takip',              category: 'finance' },
+  { href: '/dashboard/admin/articles',     icon: BookOpen,      title: 'Makaleler',          desc: 'AI taslakları, yayın',              category: 'content' },
+  { href: '/dashboard/admin/marketing',    icon: Megaphone,     title: 'Pazarlama',          desc: 'Raporlar ve araştırma',             category: 'content' },
+  { href: '/dashboard/admin/newsletter',   icon: Mail,          title: 'Bülten',             desc: 'Newsletter ve metrikler',           category: 'content' },
+  { href: '/dashboard/admin/suggestions',  icon: Lightbulb,     title: 'Geliştirme Önerileri', desc: 'Dev Agent kuyruğu',               category: 'agent' },
+  { href: '/dashboard/admin/po',           icon: Target,        title: 'PO Günlüğü',         desc: 'Ürün raporu, öneriler',             category: 'agent' },
+  { href: '/dashboard/admin/tasks',        icon: CheckSquare,   title: 'Görev Takibi',       desc: 'Tüm görevler ve tarih',             category: 'agent' },
+  { href: '/dashboard/admin/agents',       icon: Activity,      title: 'Agent KPI',          desc: 'Performans ve geçmiş',              category: 'agent' },
+  { href: '/dashboard/admin/analytics',    icon: BarChart3,     title: 'Site Analitiği',     desc: 'Görüntüleme, hata, cihaz',          category: 'analytics' },
+];
+
 export default function AdminDashboardPage() {
   const { tokens } = useAuth();
   const [stats, setStats] = useState<OverviewStats | null>(null);
@@ -31,9 +66,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (!tokens?.accessToken) return;
     api<OverviewStats>('/api/v1/admin/overview', { token: tokens.accessToken })
-      .then((res) => {
-        if (res.status === 'success' && res.data) setStats(res.data);
-      })
+      .then((res) => { if (res.status === 'success' && res.data) setStats(res.data); })
       .finally(() => setLoading(false));
   }, [tokens?.accessToken]);
 
@@ -42,220 +75,144 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Yönetim Paneli</h1>
+          <h1 className="text-2xl font-bold text-white">Yönetim Paneli</h1>
           <p className="text-sm text-slate-400 mt-1">Platform metrikleri, finansal özet ve modül erişimi</p>
         </div>
         <div className="text-xs text-slate-500">
-          Canlı veri · {new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
       </div>
 
-      {loading && <LoadingState />}
+      {/* Stat row — compact */}
+      {loading && <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-slate-800/40 border border-slate-700/50 animate-pulse" />)}
+      </div>}
 
       {!loading && stats && (
         <>
-          {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Kullanıcı"
-              value={stats.totalUsers}
-              icon={Users}
-              accent="blue"
-            />
-            <StatCard
-              label="Aktif Sözleşme"
-              value={stats.activeContracts}
-              sublabel={`/${stats.totalContracts} toplam`}
-              icon={FileText}
-              accent="emerald"
-            />
-            <StatCard
-              label="Tamamlanan Ödeme"
-              value={stats.completedPayments}
-              sublabel={`/${stats.totalPayments} toplam`}
-              icon={CheckSquare}
-              accent="violet"
-            />
-            <StatCard
-              label="Garanti Ücreti Adedi"
-              value={stats.commissionCount}
-              icon={Receipt}
-              accent="amber"
-            />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatItem label="Kullanıcı"          value={stats.totalUsers}                            icon={Users}       tone="blue" />
+            <StatItem label="Aktif Sözleşme"     value={stats.activeContracts}   sub={`/${stats.totalContracts}`} icon={FileText}    tone="emerald" />
+            <StatItem label="Tamamlanan Ödeme"   value={stats.completedPayments} sub={`/${stats.totalPayments}`}  icon={CheckSquare} tone="violet" />
+            <StatItem label="Garanti Ücreti"     value={stats.commissionCount}                       icon={Receipt}     tone="amber" />
           </div>
 
-          {/* Financial Summary */}
-          <section>
-            <SectionTitle icon={TrendingUp}>Finansal Özet</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FinanceCard
-                label="Toplam İşlem Hacmi"
-                value={stats.totalRevenue}
-                sub={`${stats.commissionCount} işlem`}
-                tone="neutral"
-              />
-              <FinanceCard
-                label="Platform Geliri (%1)"
-                value={stats.totalCommission}
-                sub="Garanti ücreti toplamı"
-                tone="highlight"
-              />
-              <FinanceCard
-                label="Ev Sahibi Ödemeleri"
-                value={stats.totalLandlordPayouts}
-                sub="Net dağıtılan"
-                tone="positive"
-              />
+          {/* Financial strip — single row, inline */}
+          <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="h-4 w-4 text-slate-400" />
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Finansal Özet</h2>
             </div>
-          </section>
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-700/50 -mx-5">
+              <FinItem label="Toplam İşlem Hacmi"  value={stats.totalRevenue}          sub={`${stats.commissionCount} işlem`} tone="neutral" />
+              <FinItem label="Platform Geliri (%1)" value={stats.totalCommission}       sub="Garanti ücreti"                    tone="amber" />
+              <FinItem label="Ev Sahibine Net"       value={stats.totalLandlordPayouts}  sub="Dağıtılan"                         tone="emerald" />
+            </div>
+          </div>
         </>
       )}
 
-      {/* Modules — grouped by category */}
-      <section>
-        <SectionTitle icon={Activity}>Modüller</SectionTitle>
-
-        <CategoryGroup title="Kullanıcı & Sözleşme">
-          <ModuleCard href="/dashboard/admin/users" icon={Users} title="Kullanıcılar" desc="Liste, filtre, KYC durumu" />
-          <ModuleCard href="/dashboard/admin/contracts" icon={FileText} title="Sözleşmeler" desc="Tüm sözleşmeler, durumlar" />
-          <ModuleCard href="/dashboard/admin/support" icon={MessageSquare} title="Destek Mesajları" desc="Kullanıcı talepleri" />
-        </CategoryGroup>
-
-        <CategoryGroup title="Finans">
-          <ModuleCard href="/dashboard/admin/payments" icon={CreditCard} title="Ödemeler" desc="Ödeme geçmişi ve detay" />
-          <ModuleCard href="/dashboard/admin/commissions" icon={Wallet} title="Garanti Ücreti Raporu" desc="Gelir, CSV export" />
-          <ModuleCard href="/dashboard/admin/promos" icon={Gift} title="Promosyonlar" desc="Şablon, atama, takip" />
-        </CategoryGroup>
-
-        <CategoryGroup title="İçerik & Pazarlama">
-          <ModuleCard href="/dashboard/admin/articles" icon={BookOpen} title="Makaleler" desc="AI taslakları, yayın" />
-          <ModuleCard href="/dashboard/admin/marketing" icon={Megaphone} title="Pazarlama & Strateji" desc="Raporlar ve araştırma" />
-          <ModuleCard href="/dashboard/admin/newsletter" icon={Mail} title="Bülten Aboneleri" desc="Newsletter ve metrikler" />
-        </CategoryGroup>
-
-        <CategoryGroup title="Agent Sistemi">
-          <ModuleCard href="/dashboard/admin/suggestions" icon={Lightbulb} title="Geliştirme Önerileri" desc="Dev Agent kuyruğu" />
-          <ModuleCard href="/dashboard/admin/po" icon={Target} title="PO Günlüğü" desc="Ürün raporu, öneriler" />
-          <ModuleCard href="/dashboard/admin/tasks" icon={CheckSquare} title="Görev Takibi" desc="Tüm görevler ve tarih" />
-          <ModuleCard href="/dashboard/admin/agents" icon={Activity} title="Agent KPI" desc="Performans ve geçmiş" />
-        </CategoryGroup>
-
-        <CategoryGroup title="Analitik">
-          <ModuleCard href="/dashboard/admin/analytics" icon={BarChart3} title="Site Analitiği" desc="Görüntüleme, hata, cihaz" />
-        </CategoryGroup>
-      </section>
-    </div>
-  );
-}
-
-// ─── Components ────────────────────────────────────────────────
-
-function LoadingState() {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {[...Array(4)].map((_, i) => (
-        <div key={i} className="h-28 rounded-xl bg-slate-800/50 border border-slate-700/50 animate-pulse" />
-      ))}
-    </div>
-  );
-}
-
-function SectionTitle({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
-  return (
-    <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
-      <Icon className="h-4 w-4" />
-      {children}
-    </h2>
-  );
-}
-
-function CategoryGroup({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-6">
-      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">{title}</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-const ACCENT_CLASSES = {
-  blue: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
-  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  violet: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
-  amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-} as const;
-
-type Accent = keyof typeof ACCENT_CLASSES;
-
-function StatCard({
-  label, value, sublabel, icon: Icon, accent,
-}: {
-  label: string; value: number; sublabel?: string; icon: LucideIcon; accent: Accent;
-}) {
-  const c = ACCENT_CLASSES[accent];
-  return (
-    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 hover:border-slate-600 transition">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</div>
-          <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-white">{value.toLocaleString('tr-TR')}</span>
-            {sublabel && <span className="text-xs text-slate-500">{sublabel}</span>}
+      {/* Modules — uniform 4-column grid with category dot */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Activity className="h-4 w-4 text-slate-400" />
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Modüller</h2>
+          <div className="ml-auto flex items-center gap-3">
+            {Object.entries(CATEGORY_META).map(([k, m]) => (
+              <div key={k} className="flex items-center gap-1.5 text-xs text-slate-500">
+                <div className={`h-1.5 w-1.5 rounded-full ${m.accent.split(' ').find(c => c.startsWith('bg-'))?.replace('/10', '')}`} />
+                {m.label}
+              </div>
+            ))}
           </div>
         </div>
-        <div className={`h-9 w-9 rounded-lg ${c.bg} ${c.border} border flex items-center justify-center`}>
-          <Icon className={`h-4 w-4 ${c.text}`} />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {MODULES.map((m) => (
+            <ModuleCard key={m.href} module={m} />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function FinanceCard({
-  label, value, sub, tone,
+/* ─── Compact Stat Item ──────────────────────────────────────── */
+
+function StatItem({
+  label, value, sub, icon: Icon, tone,
 }: {
-  label: string; value: number; sub: string; tone: 'neutral' | 'highlight' | 'positive';
+  label: string; value: number; sub?: string;
+  icon: LucideIcon;
+  tone: 'blue' | 'emerald' | 'violet' | 'amber';
 }) {
-  const styles = {
-    neutral: 'bg-[#0d1b2a] border-slate-700/50',
-    highlight: 'bg-gradient-to-br from-amber-500/10 to-orange-500/5 border-amber-500/20',
-    positive: 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
-  };
-  const valueColor = {
-    neutral: 'text-white',
-    highlight: 'text-amber-300',
-    positive: 'text-emerald-300',
-  };
+  const colors = {
+    blue:    { bg: 'bg-blue-500/10',    text: 'text-blue-400',    border: 'border-blue-500/20' },
+    emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+    violet:  { bg: 'bg-violet-500/10',  text: 'text-violet-400',  border: 'border-violet-500/20' },
+    amber:   { bg: 'bg-amber-500/10',   text: 'text-amber-400',   border: 'border-amber-500/20' },
+  }[tone];
   return (
-    <div className={`rounded-xl border p-5 ${styles[tone]}`}>
-      <div className="text-sm text-slate-400">{label}</div>
-      <div className={`text-2xl font-bold mt-2 ${valueColor[tone]}`}>
-        {value.toLocaleString('tr-TR')} <span className="text-base font-medium opacity-75">TL</span>
+    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 flex items-center gap-3">
+      <div className={`h-10 w-10 rounded-lg ${colors.bg} ${colors.border} border flex items-center justify-center shrink-0`}>
+        <Icon className={`h-4 w-4 ${colors.text}`} />
       </div>
-      <div className="text-xs text-slate-500 mt-1.5">{sub}</div>
+      <div className="min-w-0">
+        <div className="text-xs text-slate-400">{label}</div>
+        <div className="flex items-baseline gap-1 mt-0.5">
+          <span className="text-xl font-bold text-white">{value.toLocaleString('tr-TR')}</span>
+          {sub && <span className="text-xs text-slate-500">{sub}</span>}
+        </div>
+      </div>
     </div>
   );
 }
 
-function ModuleCard({
-  href, icon: Icon, title, desc,
+/* ─── Financial Strip Item ───────────────────────────────────── */
+
+function FinItem({
+  label, value, sub, tone,
 }: {
-  href: string; icon: LucideIcon; title: string; desc: string;
+  label: string; value: number; sub: string; tone: 'neutral' | 'amber' | 'emerald';
 }) {
+  const valueColor = {
+    neutral: 'text-white',
+    amber: 'text-amber-300',
+    emerald: 'text-emerald-300',
+  }[tone];
+  return (
+    <div className="px-5 py-2">
+      <div className="text-xs text-slate-400">{label}</div>
+      <div className={`text-2xl font-bold mt-1 ${valueColor}`}>
+        {value.toLocaleString('tr-TR')}
+        <span className="text-sm font-medium opacity-60 ml-1">TL</span>
+      </div>
+      <div className="text-xs text-slate-500 mt-0.5">{sub}</div>
+    </div>
+  );
+}
+
+/* ─── Module Card ────────────────────────────────────────────── */
+
+function ModuleCard({ module }: { module: Module }) {
+  const { href, icon: Icon, title, desc, category } = module;
+  const catMeta = CATEGORY_META[category];
+  const catColor = catMeta.accent.split(' ').find(c => c.startsWith('bg-'))?.replace('/10', '');
   return (
     <Link
       href={href}
-      className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 hover:border-blue-500/50 hover:bg-[#0f2037] transition flex flex-col"
+      className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 hover:border-slate-600 hover:bg-[#0f2037] transition flex flex-col"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center group-hover:bg-blue-500/10 group-hover:border-blue-500/30 transition">
-          <Icon className="h-4 w-4 text-slate-400 group-hover:text-blue-400 transition" />
+        <div className={`h-9 w-9 rounded-lg border flex items-center justify-center ${catMeta.accent}`}>
+          <Icon className="h-4 w-4" />
         </div>
-        <ArrowUpRight className="h-4 w-4 text-slate-600 group-hover:text-blue-400 transition" />
+        <div className="flex items-center gap-2">
+          <div className={`h-1.5 w-1.5 rounded-full ${catColor}`} />
+          <ArrowUpRight className="h-4 w-4 text-slate-600 group-hover:text-slate-400 transition" />
+        </div>
       </div>
-      <div className="font-semibold text-white text-sm">{title}</div>
+      <div className="font-semibold text-white text-sm leading-tight">{title}</div>
       <div className="text-xs text-slate-400 mt-1 leading-relaxed">{desc}</div>
     </Link>
   );

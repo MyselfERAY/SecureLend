@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Lightbulb, Plus, Play, ExternalLink, Trash2, Check, X, Loader2, AlertCircle,
+  Lightbulb, Plus, Play, ExternalLink, Trash2, Check, X, Loader2, AlertCircle, Search,
 } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
@@ -80,6 +80,9 @@ export default function AdminSuggestionsPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterPriority, setFilterPriority] = useState<Priority | 'ALL'>('ALL');
+  const [sortKey, setSortKey] = useState<'created-desc' | 'created-asc' | 'priority' | 'status'>('created-desc');
   const selectedRef = useRef<Suggestion | null>(null);
   selectedRef.current = selected;
 
@@ -150,10 +153,32 @@ export default function AdminSuggestionsPage() {
     setTimeout(() => setTriggerLoading(false), 2000);
   };
 
-  const filtered = filterStatus === 'ALL' ? suggestions : suggestions.filter((s) => getDisplayStatus(s) === filterStatus);
   const counts: Record<DisplayStatus, number> = { NEW: 0, APPROVED: 0, IN_PROGRESS: 0, DONE: 0, REJECTED: 0 };
   suggestions.forEach((s) => { counts[getDisplayStatus(s)]++; });
   const pipeline: DisplayStatus[] = ['NEW', 'APPROVED', 'IN_PROGRESS', 'DONE', 'REJECTED'];
+
+  const filtered = useMemo(() => {
+    let list = suggestions;
+    if (filterStatus !== 'ALL') list = list.filter((s) => getDisplayStatus(s) === filterStatus);
+    if (filterPriority !== 'ALL') list = list.filter((s) => s.priority === filterPriority);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((s) => s.title.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
+    }
+    const sorted = [...list];
+    const PRI_ORDER: Record<Priority, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+    const STATUS_ORDER: Record<DisplayStatus, number> = { NEW: 0, APPROVED: 1, IN_PROGRESS: 2, DONE: 3, REJECTED: 4 };
+    sorted.sort((a, b) => {
+      switch (sortKey) {
+        case 'created-asc': return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'priority': return PRI_ORDER[a.priority] - PRI_ORDER[b.priority];
+        case 'status': return STATUS_ORDER[getDisplayStatus(a)] - STATUS_ORDER[getDisplayStatus(b)];
+        case 'created-desc':
+        default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+    return sorted;
+  }, [suggestions, filterStatus, filterPriority, search, sortKey]);
 
   return (
     <div className="space-y-6">
