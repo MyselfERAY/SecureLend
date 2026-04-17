@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import {
+  PageHeader, Card, Badge, DataTable, EmptyState, LoadingSkeleton, Button,
+  type Column, type BadgeTone,
+} from '../_components/admin-ui';
 
 interface AdminContract {
   id: string;
@@ -19,6 +24,15 @@ interface AdminContract {
   createdAt: string;
 }
 
+const STATUS_META: Record<string, { label: string; tone: BadgeTone }> = {
+  DRAFT: { label: 'Taslak', tone: 'neutral' },
+  PENDING_SIGNATURES: { label: 'İmza Bekliyor', tone: 'warning' },
+  PENDING_ACTIVATION: { label: 'Aktivasyon Bekliyor', tone: 'info' },
+  ACTIVE: { label: 'Aktif', tone: 'success' },
+  TERMINATED: { label: 'Feshedildi', tone: 'danger' },
+  EXPIRED: { label: 'Süresi Doldu', tone: 'neutral' },
+};
+
 export default function AdminContractsPage() {
   const { tokens } = useAuth();
   const [contracts, setContracts] = useState<AdminContract[]>([]);
@@ -29,7 +43,10 @@ export default function AdminContractsPage() {
   const load = async (p: number) => {
     if (!tokens?.accessToken) return;
     setLoading(true);
-    const res = await api<{ contracts: AdminContract[]; total: number }>(`/api/v1/admin/contracts?page=${p}&limit=20`, { token: tokens.accessToken });
+    const res = await api<{ contracts: AdminContract[]; total: number }>(
+      `/api/v1/admin/contracts?page=${p}&limit=20`,
+      { token: tokens.accessToken },
+    );
     if (res.status === 'success' && res.data) {
       setContracts(res.data.contracts);
       setTotal(res.data.total);
@@ -39,73 +56,102 @@ export default function AdminContractsPage() {
 
   useEffect(() => { load(page); }, [tokens?.accessToken, page]);
 
-  const statusLabel: Record<string, { text: string; cls: string }> = {
-    DRAFT: { text: 'Taslak', cls: 'bg-gray-100 text-gray-700' },
-    PENDING_SIGNATURES: { text: 'İmza Bekliyor', cls: 'bg-yellow-100 text-yellow-700' },
-    PENDING_ACTIVATION: { text: 'Aktivasyon Bekliyor', cls: 'bg-blue-100 text-blue-700' },
-    ACTIVE: { text: 'Aktif', cls: 'bg-green-100 text-green-700' },
-    TERMINATED: { text: 'Feshedildi', cls: 'bg-red-100 text-red-700' },
-    EXPIRED: { text: 'Süresi Doldu', cls: 'bg-gray-100 text-gray-600' },
-  };
-
   const totalPages = Math.ceil(total / 20);
+
+  const columns: Column<AdminContract>[] = [
+    {
+      key: 'property',
+      label: 'Mülk',
+      render: (c) => (
+        <div>
+          <div className="font-medium text-white">{c.propertyTitle}</div>
+          <div className="text-xs text-slate-500 mt-0.5">{c.city}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'tenant',
+      label: 'Kiracı',
+      render: (c) => <span className="text-slate-300">{c.tenantName}</span>,
+    },
+    {
+      key: 'landlord',
+      label: 'Ev Sahibi',
+      render: (c) => <span className="text-slate-300">{c.landlordName}</span>,
+    },
+    {
+      key: 'rent',
+      label: 'Aylık Kira',
+      align: 'right',
+      render: (c) => (
+        <span className="font-mono font-medium text-white">
+          {c.monthlyRent.toLocaleString('tr-TR')} TL
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'Durum',
+      render: (c) => {
+        const m = STATUS_META[c.status] || { label: c.status, tone: 'neutral' as BadgeTone };
+        return <Badge tone={m.tone}>{m.label}</Badge>;
+      },
+    },
+    {
+      key: 'dates',
+      label: 'Dönem',
+      render: (c) => (
+        <span className="text-xs text-slate-400">
+          {c.startDate} → {c.endDate}
+        </span>
+      ),
+    },
+    {
+      key: 'payments',
+      label: 'Ödeme',
+      align: 'center',
+      render: (c) => (
+        <span className={`font-mono text-sm ${c.paymentCount > 0 ? 'text-white' : 'text-slate-500'}`}>
+          {c.paymentCount}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Sözleşmeler</h1>
-        <span className="text-sm text-gray-500">{total} sözleşme</span>
-      </div>
+      <PageHeader
+        title="Sözleşmeler"
+        desc={`Toplam ${total.toLocaleString('tr-TR')} sözleşme`}
+        icon={FileText}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+      />
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
+        <LoadingSkeleton rows={5} />
+      ) : contracts.length === 0 ? (
+        <EmptyState icon={FileText} title="Henüz sözleşme yok" />
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Mülk</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Kiracı</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Ev Sahibi</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Kira</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Durum</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Tarih</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Ödeme</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {contracts.map((c) => (
-                  <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{c.propertyTitle}</div>
-                      <div className="text-xs text-gray-500">{c.city}</div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{c.tenantName}</td>
-                    <td className="px-4 py-3 text-gray-600">{c.landlordName}</td>
-                    <td className="px-4 py-3 font-medium text-gray-900">{c.monthlyRent.toLocaleString('tr-TR')} TL</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${statusLabel[c.status]?.cls || ''}`}>
-                        {statusLabel[c.status]?.text || c.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">
-                      {c.startDate} - {c.endDate}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{c.paymentCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <>
+          <DataTable columns={columns} data={contracts} />
+
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 py-3 border-t">
-              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Önceki</button>
-              <span className="px-3 py-1 text-sm text-gray-500">{page} / {totalPages}</span>
-              <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm border rounded disabled:opacity-30">Sonraki</button>
-            </div>
+            <Card>
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-slate-400">Sayfa {page} / {totalPages}</div>
+                <div className="flex items-center gap-2">
+                  <Button variant="secondary" size="sm" icon={ChevronLeft} onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>
+                    Önceki
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>
+                    Sonraki
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
           )}
-        </div>
+        </>
       )}
     </div>
   );

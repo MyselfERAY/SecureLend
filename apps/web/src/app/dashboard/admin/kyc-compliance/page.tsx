@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ShieldCheck, Users, Home, Phone, Lock, FileCheck, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import {
+  PageHeader, Card, Badge, DataTable, LoadingSkeleton,
+  type Column, type BadgeTone,
+} from '../_components/admin-ui';
 
 interface ComplianceMetric {
   count: number;
@@ -48,176 +53,245 @@ export default function KycCompliancePage() {
 
   useEffect(() => {
     if (!tokens?.accessToken) return;
-    api<KycComplianceData>('/api/v1/admin/kyc-compliance', {
-      token: tokens.accessToken,
-    })
+    api<KycComplianceData>('/api/v1/admin/kyc-compliance', { token: tokens.accessToken })
       .then((res) => {
         if (res.status === 'success' && res.data) setData(res.data);
       })
       .finally(() => setLoading(false));
   }, [tokens?.accessToken]);
 
-  if (loading) {
-    return <div className="text-center py-12 text-gray-500">Yükleniyor...</div>;
-  }
-  if (!data) {
-    return <div className="text-center py-12 text-gray-500">Veri yüklenemedi.</div>;
-  }
-
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">KYC Uyumluluk Paneli</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Kimlik doğrulama, TCKN şifreleme, UAVT ve KKB kontrolleri
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="KYC Uyumluluk"
+        desc="Kimlik doğrulama, UAVT ve güvenlik metrikleri"
+        icon={ShieldCheck}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+      />
 
-      {/* Kullanıcı doğrulama metrikleri */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">
-          Kullanıcı Doğrulama Dağılımı ({data.summary.totalUsers} kullanıcı)
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <MetricCard
-            title="NVI Doğrulandı"
-            value={data.summary.nviVerified.count}
-            pct={data.summary.nviVerified.pct}
-            desc="TCKN + ad + soyad + doğum yılı"
-          />
-          <MetricCard
-            title="KKB Telefon Eşleşti"
-            value={data.summary.phoneTcknVerified.count}
-            pct={data.summary.phoneTcknVerified.pct}
-            desc="TCKN ↔ telefon (banka partneri)"
-          />
-          <MetricCard
-            title="KPS Doğrulandı"
-            value={data.summary.kpsVerified.count}
-            pct={data.summary.kpsVerified.pct}
-            desc="Legacy kimlik doğrulama"
-          />
-          <MetricCard
-            title="KYC Tamamlandı"
-            value={data.summary.kycCompleted.count}
-            pct={data.summary.kycCompleted.pct}
-            desc="Banka KYC süreci"
-          />
-          <MetricCard
-            title="TCKN Şifreli"
-            value={data.summary.tcknEncrypted.count}
-            pct={data.summary.tcknEncrypted.pct}
-            desc="AES-256-GCM saklama"
-          />
-        </div>
-      </div>
+      {loading && <LoadingSkeleton rows={4} />}
 
-      {/* Mülk UAVT */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">
-          Mülk UAVT Doğrulama
-        </h2>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded-lg bg-white border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Toplam Mülk</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">
-              {data.properties.total}
-            </p>
-          </div>
-          <div className="rounded-lg bg-white border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">UAVT Doğrulandı</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">
-              {data.properties.uavtVerified}
-            </p>
-          </div>
-          <div className="rounded-lg bg-white border border-gray-200 p-4">
-            <p className="text-sm text-gray-500">Doğrulama Oranı</p>
-            <p className="text-2xl font-bold text-blue-600 mt-1">
-              %{data.properties.uavtVerificationRate}
-            </p>
-          </div>
-        </div>
-      </div>
+      {!loading && data && (
+        <>
+          {/* User verification metrics */}
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              Kullanıcı Doğrulama · {data.summary.totalUsers.toLocaleString('tr-TR')} kullanıcı
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <MetricCard
+                icon={FileCheck}
+                label="NVI"
+                count={data.summary.nviVerified.count}
+                total={data.summary.totalUsers}
+                pct={data.summary.nviVerified.pct}
+                desc="TCKN + kimlik"
+              />
+              <MetricCard
+                icon={Phone}
+                label="KKB Telefon"
+                count={data.summary.phoneTcknVerified.count}
+                total={data.summary.totalUsers}
+                pct={data.summary.phoneTcknVerified.pct}
+                desc="TCKN ↔ telefon"
+              />
+              <MetricCard
+                icon={Users}
+                label="KPS"
+                count={data.summary.kpsVerified.count}
+                total={data.summary.totalUsers}
+                pct={data.summary.kpsVerified.pct}
+                desc="Legacy doğrulama"
+              />
+              <MetricCard
+                icon={ShieldCheck}
+                label="KYC Tamam"
+                count={data.summary.kycCompleted.count}
+                total={data.summary.totalUsers}
+                pct={data.summary.kycCompleted.pct}
+                desc="Banka KYC"
+              />
+              <MetricCard
+                icon={Lock}
+                label="TCKN Şifreli"
+                count={data.summary.tcknEncrypted.count}
+                total={data.summary.totalUsers}
+                pct={data.summary.tcknEncrypted.pct}
+                desc="AES-256-GCM"
+              />
+            </div>
+          </section>
 
-      {/* Eksik doğrulama olan kullanıcılar */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">
-          Eksik Doğrulama ({data.incompleteVerifications.length} kullanıcı)
-        </h2>
-        {data.incompleteVerifications.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            Tüm kullanıcılar doğrulanmış ✓
-          </p>
-        ) : (
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700">Kullanıcı</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700">TCKN</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700">Telefon</th>
-                  <th className="px-4 py-2 text-center font-medium text-gray-700">NVI</th>
-                  <th className="px-4 py-2 text-center font-medium text-gray-700">KKB Tel</th>
-                  <th className="px-4 py-2 text-center font-medium text-gray-700">KYC</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700">Kayıt</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {data.incompleteVerifications.map((u) => (
-                  <tr key={u.id}>
-                    <td className="px-4 py-2 text-gray-900">{u.fullName}</td>
-                    <td className="px-4 py-2 font-mono text-gray-600">{u.tcknMasked}</td>
-                    <td className="px-4 py-2 text-gray-600">{u.phone}</td>
-                    <td className="px-4 py-2 text-center">
-                      {u.nviVerified ? '✓' : '✗'}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      {u.phoneTcknVerified ? '✓' : '✗'}
-                    </td>
-                    <td className="px-4 py-2 text-center text-xs text-gray-500">
-                      {u.kycStatus}
-                    </td>
-                    <td className="px-4 py-2 text-xs text-gray-500">
-                      {new Date(u.createdAt).toLocaleDateString('tr-TR')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+          {/* Properties UAVT */}
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              Mülk UAVT Doğrulama
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Card>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center justify-center">
+                    <Home className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400">Toplam Mülk</div>
+                    <div className="text-2xl font-bold text-white mt-0.5">
+                      {data.properties.total.toLocaleString('tr-TR')}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+              <Card>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400">UAVT Doğrulandı</div>
+                    <div className="text-2xl font-bold text-emerald-400 mt-0.5">
+                      {data.properties.uavtVerified.toLocaleString('tr-TR')}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+              <Card>
+                <div className="text-xs text-slate-400 mb-2">Doğrulama Oranı</div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-white">
+                    %{data.properties.uavtVerificationRate}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all"
+                    style={{ width: `${data.properties.uavtVerificationRate}%` }}
+                  />
+                </div>
+              </Card>
+            </div>
+          </section>
+
+          {/* Incomplete verifications */}
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <span className="inline-flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                Eksik Doğrulama · {data.incompleteVerifications.length} kullanıcı
+              </span>
+            </h2>
+
+            {data.incompleteVerifications.length === 0 ? (
+              <Card>
+                <div className="py-6 text-center text-sm text-emerald-400">
+                  <ShieldCheck className="h-8 w-8 mx-auto mb-2" />
+                  Tüm kullanıcılar doğrulanmış
+                </div>
+              </Card>
+            ) : (
+              <DataTable columns={incompleteColumns} data={data.incompleteVerifications} />
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }
 
+/* ─── Metric Card ────────────────────────────────────────────── */
+
 function MetricCard({
-  title,
-  value,
-  pct,
-  desc,
+  icon: Icon, label, count, total, pct, desc,
 }: {
-  title: string;
-  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  count: number;
+  total: number;
   pct: number;
   desc: string;
 }) {
-  const color = pct >= 90 ? 'green' : pct >= 60 ? 'blue' : 'red';
+  const tone = pct >= 90 ? 'emerald' : pct >= 60 ? 'blue' : 'rose';
   const colors = {
-    green: 'text-green-600 bg-green-50',
-    blue: 'text-blue-600 bg-blue-50',
-    red: 'text-red-600 bg-red-50',
+    emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    blue: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    rose: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
   };
   return (
-    <div className="rounded-lg bg-white border border-gray-200 p-4">
-      <p className="text-xs font-medium text-gray-600">{title}</p>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="text-2xl font-bold text-gray-900">{value}</span>
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${colors[color]}`}>
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <Icon className="h-4 w-4 text-slate-400" />
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${colors[tone]}`}>
           %{pct}
         </span>
       </div>
-      <p className="text-xs text-gray-500 mt-2">{desc}</p>
-    </div>
+      <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</div>
+      <div className="mt-1 flex items-baseline gap-1">
+        <span className="text-xl font-bold text-white">{count.toLocaleString('tr-TR')}</span>
+        <span className="text-xs text-slate-500">/{total}</span>
+      </div>
+      <div className="text-xs text-slate-500 mt-1">{desc}</div>
+      <div className="mt-3 h-1 rounded-full bg-slate-700 overflow-hidden">
+        <div
+          className={`h-full transition-all ${
+            tone === 'emerald' ? 'bg-emerald-500' : tone === 'blue' ? 'bg-blue-500' : 'bg-rose-500'
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </Card>
   );
 }
+
+/* ─── Columns ─────────────────────────────────────────────────── */
+
+const incompleteColumns: Column<KycComplianceData['incompleteVerifications'][0]>[] = [
+  {
+    key: 'user',
+    label: 'Kullanıcı',
+    render: (u) => (
+      <div>
+        <div className="font-medium text-white">{u.fullName}</div>
+        <div className="text-xs text-slate-500 font-mono mt-0.5">{u.tcknMasked}</div>
+      </div>
+    ),
+  },
+  {
+    key: 'phone',
+    label: 'Telefon',
+    render: (u) => <span className="text-xs font-mono text-slate-400">{u.phone}</span>,
+  },
+  {
+    key: 'nvi',
+    label: 'NVI',
+    align: 'center',
+    render: (u) =>
+      u.nviVerified ? (
+        <Badge tone="success">✓</Badge>
+      ) : (
+        <Badge tone="danger">✗</Badge>
+      ),
+  },
+  {
+    key: 'kkb',
+    label: 'KKB Tel',
+    align: 'center',
+    render: (u) =>
+      u.phoneTcknVerified ? <Badge tone="success">✓</Badge> : <Badge tone="danger">✗</Badge>,
+  },
+  {
+    key: 'kyc',
+    label: 'KYC',
+    align: 'center',
+    render: (u) => (
+      <span className="text-xs text-slate-400">{u.kycStatus}</span>
+    ),
+  },
+  {
+    key: 'createdAt',
+    label: 'Kayıt',
+    render: (u) => (
+      <span className="text-xs text-slate-400">
+        {new Date(u.createdAt).toLocaleDateString('tr-TR')}
+      </span>
+    ),
+  },
+];

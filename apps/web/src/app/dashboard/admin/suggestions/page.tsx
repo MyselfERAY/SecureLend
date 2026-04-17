@@ -1,8 +1,15 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  Lightbulb, Plus, Play, ExternalLink, Trash2, Check, X, Loader2, AlertCircle,
+} from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import {
+  PageHeader, Card, Badge, EmptyState, LoadingSkeleton, Button,
+  type BadgeTone,
+} from '../_components/admin-ui';
 
 type Status = 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'REJECTED';
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -20,8 +27,6 @@ interface Suggestion {
   updatedAt: string;
 }
 
-// ── Display helpers ──
-// DB has 4 statuses. We use REJECTED with null agentNotes as "NEW" (awaiting approval)
 function getDisplayStatus(s: Suggestion): DisplayStatus {
   if (s.status === 'REJECTED' && !s.agentNotes) return 'NEW';
   if (s.status === 'REJECTED') return 'REJECTED';
@@ -30,42 +35,19 @@ function getDisplayStatus(s: Suggestion): DisplayStatus {
   return 'DONE';
 }
 
-const displayStatusLabel: Record<DisplayStatus, string> = {
-  NEW: 'Yeni',
-  APPROVED: 'Onaylandı',
-  IN_PROGRESS: 'Geliştiriliyor',
-  DONE: 'Tamamlandı',
-  REJECTED: 'Reddedildi',
+const STATUS_META: Record<DisplayStatus, { label: string; tone: BadgeTone }> = {
+  NEW: { label: 'Yeni', tone: 'info' },
+  APPROVED: { label: 'Onaylandı', tone: 'warning' },
+  IN_PROGRESS: { label: 'Geliştiriliyor', tone: 'info' },
+  DONE: { label: 'Tamamlandı', tone: 'success' },
+  REJECTED: { label: 'Reddedildi', tone: 'danger' },
 };
 
-const displayStatusColor: Record<DisplayStatus, string> = {
-  NEW: 'bg-purple-100 text-purple-700',
-  APPROVED: 'bg-amber-100 text-amber-700',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700',
-  DONE: 'bg-emerald-100 text-emerald-700',
-  REJECTED: 'bg-rose-100 text-rose-700',
-};
-
-const displayStatusBorder: Record<DisplayStatus, string> = {
-  NEW: 'border-purple-400 bg-purple-50',
-  APPROVED: 'border-amber-400 bg-amber-50',
-  IN_PROGRESS: 'border-blue-400 bg-blue-50',
-  DONE: 'border-emerald-400 bg-emerald-50',
-  REJECTED: 'border-rose-400 bg-rose-50',
-};
-
-const priorityLabel: Record<Priority, string> = {
-  LOW: 'Düşük',
-  MEDIUM: 'Orta',
-  HIGH: 'Yüksek',
-  CRITICAL: 'Kritik',
-};
-
-const priorityColor: Record<Priority, string> = {
-  LOW: 'text-slate-400',
-  MEDIUM: 'text-amber-500',
-  HIGH: 'text-orange-500',
-  CRITICAL: 'text-rose-600',
+const PRIORITY_META: Record<Priority, { label: string; tone: BadgeTone }> = {
+  LOW: { label: 'Düşük', tone: 'neutral' },
+  MEDIUM: { label: 'Orta', tone: 'warning' },
+  HIGH: { label: 'Yüksek', tone: 'warning' },
+  CRITICAL: { label: 'Kritik', tone: 'danger' },
 };
 
 function timeAgo(dateStr: string): string {
@@ -93,7 +75,6 @@ export default function AdminSuggestionsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<DisplayStatus | 'ALL'>('ALL');
   const [triggerLoading, setTriggerLoading] = useState(false);
-
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', priority: 'HIGH' as Priority });
   const [formLoading, setFormLoading] = useState(false);
@@ -104,52 +85,38 @@ export default function AdminSuggestionsPage() {
 
   const fetchSuggestions = async (background = false) => {
     if (!tokens?.accessToken) return;
-    if (background) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
+    if (background) setRefreshing(true); else setLoading(true);
     const res = await api<Suggestion[]>('/api/v1/suggestions', { token: tokens.accessToken });
     if (res.status === 'success' && res.data) {
       setSuggestions(res.data);
-      const currentSelected = selectedRef.current;
-      if (currentSelected) {
-        const updated = res.data.find((s: Suggestion) => s.id === currentSelected.id);
+      const cur = selectedRef.current;
+      if (cur) {
+        const updated = res.data.find((s) => s.id === cur.id);
         if (updated) setSelected(updated);
       }
     }
-    if (background) {
-      setRefreshing(false);
-    } else {
-      setLoading(false);
-    }
+    if (background) setRefreshing(false); else setLoading(false);
   };
 
   useEffect(() => { fetchSuggestions(false); }, [tokens?.accessToken]);
-
   useEffect(() => {
-    const interval = setInterval(() => fetchSuggestions(true), 15000);
-    return () => clearInterval(interval);
+    const i = setInterval(() => fetchSuggestions(true), 15000);
+    return () => clearInterval(i);
   }, [tokens?.accessToken]);
 
-  // ── Actions ──
   const handleStatusChange = async (id: string, status: Status, notes?: string) => {
     if (!tokens?.accessToken) return;
     setActionLoading(id);
     const body: Record<string, string> = { status };
     if (notes) body.agentNotes = notes;
-    const res = await api<Suggestion>(`/api/v1/suggestions/${id}`, {
-      method: 'PATCH', token: tokens.accessToken, body,
-    });
+    const res = await api<Suggestion>(`/api/v1/suggestions/${id}`, { method: 'PATCH', token: tokens.accessToken, body });
     if (res.status === 'success' && res.data) { setSelected(res.data); fetchSuggestions(true); }
     setActionLoading(null);
   };
-
   const handleApprove = (id: string) => handleStatusChange(id, 'PENDING', 'Admin tarafından onaylandı.');
   const handleReject = (id: string) => handleStatusChange(id, 'REJECTED', 'Admin tarafından reddedildi.');
-
   const handleDelete = async (id: string) => {
-    if (!tokens?.accessToken || !confirm('Bu oneriyi silmek istediginize emin misiniz?')) return;
+    if (!tokens?.accessToken || !confirm('Bu öneriyi silmek istediğinize emin misiniz?')) return;
     setActionLoading(id);
     await api(`/api/v1/suggestions/${id}`, { method: 'DELETE', token: tokens.accessToken });
     setActionLoading(null); setSelected(null); fetchSuggestions(true);
@@ -157,19 +124,17 @@ export default function AdminSuggestionsPage() {
 
   const handleCreate = async () => {
     if (!tokens?.accessToken) return;
-    if (!form.title.trim() || !form.description.trim()) {
-      setFormError('Başlık ve açıklama zorunludur.');
-      return;
-    }
-    setFormError(null);
-    setFormLoading(true);
+    if (!form.title.trim() || !form.description.trim()) { setFormError('Başlık ve açıklama zorunludur.'); return; }
+    setFormError(null); setFormLoading(true);
     try {
       const res = await api<Suggestion>('/api/v1/suggestions', {
         method: 'POST', token: tokens.accessToken,
         body: { title: form.title.trim(), description: form.description.trim(), priority: form.priority },
       });
       if (res.status === 'success') {
-        setForm({ title: '', description: '', priority: 'HIGH' }); setShowForm(false); fetchSuggestions(true);
+        setForm({ title: '', description: '', priority: 'HIGH' });
+        setShowForm(false);
+        fetchSuggestions(true);
       } else {
         setFormError(res.message || 'Kaydetme başarısız oldu.');
       }
@@ -185,236 +150,236 @@ export default function AdminSuggestionsPage() {
     setTimeout(() => setTriggerLoading(false), 2000);
   };
 
-  // ── Filtering ──
-  const filtered = filterStatus === 'ALL'
-    ? suggestions
-    : suggestions.filter((s) => getDisplayStatus(s) === filterStatus);
-
-  // ── Pipeline counts ──
+  const filtered = filterStatus === 'ALL' ? suggestions : suggestions.filter((s) => getDisplayStatus(s) === filterStatus);
   const counts: Record<DisplayStatus, number> = { NEW: 0, APPROVED: 0, IN_PROGRESS: 0, DONE: 0, REJECTED: 0 };
   suggestions.forEach((s) => { counts[getDisplayStatus(s)]++; });
-
   const pipeline: DisplayStatus[] = ['NEW', 'APPROVED', 'IN_PROGRESS', 'DONE', 'REJECTED'];
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Gelistirme Onerileri</h1>
-          <p className="mt-1 text-sm text-slate-500">Oneri ekle, onayla, agent otomatik gelistirir.</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={handleTriggerAgent} disabled={triggerLoading}
-            className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50">
-            {triggerLoading ? 'Aciliyor...' : 'Agent Baslat'}
-          </button>
-          <button onClick={() => setShowForm(!showForm)}
-            className="rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800">
-            + Yeni Oneri
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Geliştirme Önerileri"
+        desc="Öneri ekle, onayla, Dev Agent otomatik geliştirir."
+        icon={Lightbulb}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+        actions={
+          <>
+            <Button variant="secondary" icon={Play} onClick={handleTriggerAgent} disabled={triggerLoading}>
+              {triggerLoading ? 'Açılıyor...' : 'Agent Başlat'}
+            </Button>
+            <Button variant="primary" icon={Plus} onClick={() => setShowForm(!showForm)}>
+              Yeni Öneri
+            </Button>
+          </>
+        }
+      />
 
-      {/* ── Pipeline Filters ── */}
+      {/* Pipeline */}
       <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-        {pipeline.map((ds) => (
-          <button key={ds}
-            onClick={() => { setFilterStatus(filterStatus === ds ? 'ALL' : ds); }}
-            className={`rounded-xl border p-3 text-center transition ${
-              filterStatus === ds ? displayStatusBorder[ds] : 'border-slate-200 bg-white hover:border-slate-300'
-            }`}>
-            <div className="text-xs font-semibold text-slate-600">{displayStatusLabel[ds]}</div>
-            <div className="text-lg font-bold text-slate-900">{counts[ds]}</div>
-          </button>
-        ))}
+        {pipeline.map((ds) => {
+          const active = filterStatus === ds;
+          const meta = STATUS_META[ds];
+          return (
+            <button
+              key={ds}
+              onClick={() => setFilterStatus(active ? 'ALL' : ds)}
+              className={`rounded-xl border p-3 text-center transition ${
+                active
+                  ? 'border-blue-500/50 bg-blue-500/10'
+                  : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+              }`}
+            >
+              <div className="text-xs font-medium text-slate-400">{meta.label}</div>
+              <div className="text-2xl font-bold text-white mt-1">{counts[ds]}</div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Create Form ── */}
+      {/* Create Form */}
       {showForm && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900">Yeni Gelistirme Onerisi</h2>
-          <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Başlık"
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none" />
-          <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Detaylı açıklama... (ne yapilacagini, hangi dosyalarin etkilenecegini, beklenen davranisi yazin)" rows={5}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none" />
-          <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none">
-            <option value="CRITICAL">Kritik</option>
-            <option value="HIGH">Yüksek</option>
-            <option value="MEDIUM">Orta</option>
-            <option value="LOW">Düşük</option>
-          </select>
-          {formError && (
-            <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-sm text-rose-600 font-medium">
-              {formError}
+        <Card className="border-blue-500/30">
+          <h3 className="text-sm font-semibold text-white mb-4">Yeni Geliştirme Önerisi</h3>
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Başlık"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Detaylı açıklama — ne yapılacağını, hangi dosyaların etkileneceğini, beklenen davranışı yazın."
+              rows={5}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+            />
+            <select
+              value={form.priority}
+              onChange={(e) => setForm({ ...form, priority: e.target.value as Priority })}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+            >
+              <option value="CRITICAL">Kritik</option>
+              <option value="HIGH">Yüksek</option>
+              <option value="MEDIUM">Orta</option>
+              <option value="LOW">Düşük</option>
+            </select>
+            {formError && (
+              <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2 text-xs text-rose-400 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" /> {formError}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button variant="primary" onClick={handleCreate} disabled={formLoading}>
+                {formLoading ? 'Kaydediliyor...' : 'Kaydet'}
+              </Button>
+              <Button variant="secondary" onClick={() => setShowForm(false)}>İptal</Button>
             </div>
-          )}
-          <div className="flex gap-3">
-            <button onClick={handleCreate} disabled={formLoading}
-              className="rounded-xl bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50">
-              {formLoading ? 'Kaydediliyor...' : 'Kaydet'}
-            </button>
-            <button onClick={() => setShowForm(false)}
-              className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-              İptal
-            </button>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* ── List + Detail ── */}
+      {/* List + Detail */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400">Yükleniyor...</div>
+        <LoadingSkeleton rows={4} />
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 py-16 text-center text-slate-400">
-          {filterStatus === 'ALL' ? 'Henüz öneri yok. Yukarıdaki butona tıklayarak ekleyin.' : 'Bu durumda öneri yok.'}
-        </div>
+        <EmptyState
+          icon={Lightbulb}
+          title={filterStatus === 'ALL' ? 'Henüz öneri yok' : 'Bu durumda öneri yok'}
+          desc={filterStatus === 'ALL' ? 'Yukarıdaki butona tıklayarak öneri ekleyin.' : undefined}
+        />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {/* List */}
           <div className="space-y-3">
             {refreshing && (
-              <div className="text-right text-xs text-slate-400 animate-pulse">Güncelleniyor...</div>
+              <div className="text-right text-xs text-slate-500 animate-pulse">Güncelleniyor...</div>
             )}
             {filtered.map((s) => {
               const ds = getDisplayStatus(s);
+              const meta = STATUS_META[ds];
+              const pMeta = PRIORITY_META[s.priority];
+              const active = selected?.id === s.id;
               return (
-                <button key={s.id} onClick={() => setSelected(s)}
-                  className={`w-full text-left rounded-2xl border p-5 transition ${
-                    selected?.id === s.id ? 'border-blue-400 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm'
-                  }`}>
+                <button
+                  key={s.id}
+                  onClick={() => setSelected(s)}
+                  className={`w-full text-left rounded-xl border p-4 transition ${
+                    active
+                      ? 'border-blue-500/50 bg-[#0f2037]'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                  }`}
+                >
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`text-xs font-bold ${priorityColor[s.priority]}`}>{priorityLabel[s.priority]}</span>
-                    <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${displayStatusColor[ds]}`}>
-                      {displayStatusLabel[ds]}
-                    </span>
+                    <Badge tone={pMeta.tone}>{pMeta.label}</Badge>
+                    <div className="ml-auto">
+                      <Badge tone={meta.tone}>{meta.label}</Badge>
+                    </div>
                   </div>
-                  <p className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">{s.title}</p>
-                  <p className="mt-1 text-xs text-slate-500 line-clamp-2">{s.description}</p>
-                  <p className="mt-2 text-xs text-slate-400">{timeAgo(s.createdAt)}</p>
+                  <div className="font-semibold text-white text-sm leading-snug line-clamp-2">{s.title}</div>
+                  <div className="text-xs text-slate-400 mt-1 line-clamp-2">{s.description}</div>
+                  <div className="text-xs text-slate-500 mt-2">{timeAgo(s.createdAt)}</div>
                 </button>
               );
             })}
           </div>
 
           {/* Detail Panel */}
-          <div className="rounded-2xl border border-slate-200 bg-white sticky top-20">
+          <div className="lg:sticky lg:top-6 h-fit">
             {!selected ? (
-              <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-slate-400">
-                Detay için bir öneri seçin.
-              </div>
+              <Card>
+                <div className="flex items-center justify-center py-16 text-sm text-slate-500">
+                  Detay için bir öneri seçin
+                </div>
+              </Card>
             ) : (
-              <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                {/* Status + Priority badges */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${displayStatusColor[getDisplayStatus(selected)]}`}>
-                    {displayStatusLabel[getDisplayStatus(selected)]}
-                  </span>
-                  <span className={`text-xs font-bold ${priorityColor[selected.priority]}`}>
-                    {priorityLabel[selected.priority]}
-                  </span>
-                </div>
-
-                {/* Title + Description */}
-                <h2 className="text-lg font-extrabold text-slate-900">{selected.title}</h2>
-                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{selected.description}</p>
-
-                {/* Metadata */}
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Oluşturulma</span>
-                    <span className="font-medium text-slate-700">{formatDate(selected.createdAt)}</span>
+              <Card>
+                <div className="space-y-4 max-h-[75vh] overflow-y-auto">
+                  <div className="flex items-center gap-2">
+                    <Badge tone={STATUS_META[getDisplayStatus(selected)].tone}>
+                      {STATUS_META[getDisplayStatus(selected)].label}
+                    </Badge>
+                    <Badge tone={PRIORITY_META[selected.priority].tone}>
+                      {PRIORITY_META[selected.priority].label}
+                    </Badge>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Son Güncelleme</span>
-                    <span className="font-medium text-slate-700">{formatDate(selected.updatedAt)}</span>
-                  </div>
-                  {selected.status === 'DONE' && (
+                  <h2 className="text-lg font-bold text-white">{selected.title}</h2>
+                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.description}</p>
+
+                  {/* Metadata */}
+                  <div className="rounded-lg bg-slate-800/40 border border-slate-700/50 p-3 space-y-2">
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">Deploy Tarihi</span>
-                      <span className="font-medium text-emerald-600">{formatDate(selected.updatedAt)}</span>
+                      <span className="text-slate-500">Oluşturulma</span>
+                      <span className="text-slate-300">{formatDate(selected.createdAt)}</span>
                     </div>
-                  )}
-                </div>
-
-                {/* Agent Notes */}
-                {selected.agentNotes && (
-                  <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
-                    <p className="text-xs font-semibold text-blue-700 mb-1">Agent Notlari</p>
-                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{selected.agentNotes}</p>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">Son Güncelleme</span>
+                      <span className="text-slate-300">{formatDate(selected.updatedAt)}</span>
+                    </div>
                   </div>
-                )}
 
-                {/* PR Link */}
-                {selected.prLink && (
-                  <a href={selected.prLink} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-800">
-                    PR Linki &rarr;
-                  </a>
-                )}
-
-                {/* ── Action Buttons ── */}
-                <div className="space-y-3 pt-2 border-t border-slate-100">
-                  {/* NEW → Approve or Reject */}
-                  {getDisplayStatus(selected) === 'NEW' && (
-                    <div className="flex gap-2">
-                      <button onClick={() => handleApprove(selected.id)} disabled={actionLoading === selected.id}
-                        className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
-                        {actionLoading === selected.id ? 'İşleniyor...' : 'Onayla'}
-                      </button>
-                      <button onClick={() => handleReject(selected.id)} disabled={actionLoading === selected.id}
-                        className="flex-1 rounded-xl border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
-                        Reddet
-                      </button>
+                  {/* Agent Notes */}
+                  {selected.agentNotes && (
+                    <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
+                      <div className="text-xs font-semibold text-blue-400 mb-1.5">Agent Notları</div>
+                      <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{selected.agentNotes}</div>
                     </div>
                   )}
 
-                  {/* APPROVED (PENDING) → Can reject */}
-                  {getDisplayStatus(selected) === 'APPROVED' && (
-                    <div className="flex gap-2">
-                      <div className="flex-1 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-center text-sm font-medium text-amber-700">
-                        Agent bekliyor...
+                  {selected.prLink && (
+                    <a
+                      href={selected.prLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-blue-400 hover:text-blue-300"
+                    >
+                      PR Linki <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+
+                  {/* Actions */}
+                  <div className="space-y-2 pt-3 border-t border-slate-700/50">
+                    {getDisplayStatus(selected) === 'NEW' && (
+                      <div className="flex gap-2">
+                        <Button variant="primary" icon={Check} onClick={() => handleApprove(selected.id)} disabled={actionLoading === selected.id} className="flex-1 justify-center">
+                          Onayla
+                        </Button>
+                        <Button variant="danger" icon={X} onClick={() => handleReject(selected.id)} disabled={actionLoading === selected.id} className="flex-1 justify-center">
+                          Reddet
+                        </Button>
                       </div>
-                      <button onClick={() => handleReject(selected.id)} disabled={actionLoading === selected.id}
-                        className="rounded-xl border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50">
-                        İptal
-                      </button>
-                    </div>
-                  )}
-
-                  {/* IN_PROGRESS → Show progress */}
-                  {getDisplayStatus(selected) === 'IN_PROGRESS' && (
-                    <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-2.5 text-center text-sm font-medium text-blue-700 animate-pulse">
-                      Agent çalışıyor...
-                    </div>
-                  )}
-
-                  {/* DONE → Show success */}
-                  {getDisplayStatus(selected) === 'DONE' && (
-                    <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-center text-sm font-medium text-emerald-700">
-                      Tamamlandı ve deploy edildi
-                    </div>
-                  )}
-
-                  {/* REJECTED → Can re-approve */}
-                  {getDisplayStatus(selected) === 'REJECTED' && (
-                    <div className="flex gap-2">
-                      <button onClick={() => handleApprove(selected.id)} disabled={actionLoading === selected.id}
-                        className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50">
+                    )}
+                    {getDisplayStatus(selected) === 'APPROVED' && (
+                      <div className="flex gap-2">
+                        <div className="flex-1 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-center text-xs text-amber-300 flex items-center justify-center gap-2">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Agent bekliyor
+                        </div>
+                        <Button variant="ghost" onClick={() => handleReject(selected.id)} disabled={actionLoading === selected.id}>İptal</Button>
+                      </div>
+                    )}
+                    {getDisplayStatus(selected) === 'IN_PROGRESS' && (
+                      <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 px-3 py-2 text-center text-xs text-blue-300 flex items-center justify-center gap-2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Agent çalışıyor
+                      </div>
+                    )}
+                    {getDisplayStatus(selected) === 'DONE' && (
+                      <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-center text-xs text-emerald-300 flex items-center justify-center gap-2">
+                        <Check className="h-3.5 w-3.5" /> Tamamlandı ve deploy edildi
+                      </div>
+                    )}
+                    {getDisplayStatus(selected) === 'REJECTED' && (
+                      <Button variant="primary" onClick={() => handleApprove(selected.id)} disabled={actionLoading === selected.id} className="w-full justify-center">
                         Tekrar Onayla
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Delete button (always available) */}
-                  <button onClick={() => handleDelete(selected.id)} disabled={actionLoading === selected.id}
-                    className="w-full rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50">
-                    Sil
-                  </button>
+                      </Button>
+                    )}
+                    <Button variant="ghost" icon={Trash2} onClick={() => handleDelete(selected.id)} disabled={actionLoading === selected.id} className="w-full justify-center text-rose-400 hover:text-rose-300">
+                      Sil
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </Card>
             )}
           </div>
         </div>

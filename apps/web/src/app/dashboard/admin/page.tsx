@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+  Users, FileText, CreditCard, Wallet, Receipt, MessageSquare,
+  BookOpen, Lightbulb, Target, Megaphone, CheckSquare, Activity,
+  Gift, BarChart3, Mail, ShieldCheck, TrendingUp, ArrowUpRight,
+  LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '../../../lib/auth-context';
 import { api } from '../../../lib/api';
 
@@ -31,105 +37,227 @@ export default function AdminDashboardPage() {
       .finally(() => setLoading(false));
   }, [tokens?.accessToken]);
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Yükleniyor...</div>;
-
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Paneli</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform yönetim ve garanti ücreti takibi</p>
+      {/* Header */}
+      <div className="flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Yönetim Paneli</h1>
+          <p className="text-sm text-slate-400 mt-1">Platform metrikleri, finansal özet ve modül erişimi</p>
+        </div>
+        <div className="text-xs text-slate-500">
+          Canlı veri · {new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </div>
       </div>
 
-      {stats && (
+      {loading && <LoadingState />}
+
+      {!loading && stats && (
         <>
-          {/* Genel Istatistikler */}
+          {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard title="Kullanıcılar" value={stats.totalUsers} color="blue" />
-            <StatCard title="Aktif Sözleşme" value={stats.activeContracts} color="green" />
-            <StatCard title="Toplam Sözleşme" value={stats.totalContracts} color="gray" />
-            <StatCard title="Tamamlanan Ödeme" value={stats.completedPayments} color="purple" />
+            <StatCard
+              label="Kullanıcı"
+              value={stats.totalUsers}
+              icon={Users}
+              accent="blue"
+            />
+            <StatCard
+              label="Aktif Sözleşme"
+              value={stats.activeContracts}
+              sublabel={`/${stats.totalContracts} toplam`}
+              icon={FileText}
+              accent="emerald"
+            />
+            <StatCard
+              label="Tamamlanan Ödeme"
+              value={stats.completedPayments}
+              sublabel={`/${stats.totalPayments} toplam`}
+              icon={CheckSquare}
+              accent="violet"
+            />
+            <StatCard
+              label="Garanti Ücreti Adedi"
+              value={stats.commissionCount}
+              icon={Receipt}
+              accent="amber"
+            />
           </div>
 
-          {/* Finansal Özet */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Finansal Özet</h2>
+          {/* Financial Summary */}
+          <section>
+            <SectionTitle icon={TrendingUp}>Finansal Özet</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <div className="text-sm text-gray-500">Toplam İşlem Hacmi</div>
-                <div className="text-2xl font-bold text-gray-900 mt-1">
-                  {stats.totalRevenue.toLocaleString('tr-TR')} TL
-                </div>
-                <div className="text-xs text-gray-400 mt-1">{stats.commissionCount} işlem</div>
-              </div>
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200 p-5">
-                <div className="text-sm text-yellow-700">Platform Garanti Ücreti (%1)</div>
-                <div className="text-2xl font-bold text-yellow-800 mt-1">
-                  {stats.totalCommission.toLocaleString('tr-TR')} TL
-                </div>
-                <div className="text-xs text-yellow-600 mt-1">Toplam kazanç</div>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <div className="text-sm text-gray-500">Ev Sahibi Ödemeleri</div>
-                <div className="text-2xl font-bold text-green-700 mt-1">
-                  {stats.totalLandlordPayouts.toLocaleString('tr-TR')} TL
-                </div>
-                <div className="text-xs text-gray-400 mt-1">Net ev sahibi ödemesi</div>
-              </div>
+              <FinanceCard
+                label="Toplam İşlem Hacmi"
+                value={stats.totalRevenue}
+                sub={`${stats.commissionCount} işlem`}
+                tone="neutral"
+              />
+              <FinanceCard
+                label="Platform Geliri (%1)"
+                value={stats.totalCommission}
+                sub="Garanti ücreti toplamı"
+                tone="highlight"
+              />
+              <FinanceCard
+                label="Ev Sahibi Ödemeleri"
+                value={stats.totalLandlordPayouts}
+                sub="Net dağıtılan"
+                tone="positive"
+              />
             </div>
-          </div>
+          </section>
         </>
       )}
 
-      {/* Hizli Erisim */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Yönetim</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <AdminLink href="/dashboard/admin/users" title="Kullanıcılar" desc="Tüm kullanıcıları listele" icon="U" />
-          <AdminLink href="/dashboard/admin/contracts" title="Sözleşmeler" desc="Tüm sözleşmeleri görüntüle" icon="S" />
-          <AdminLink href="/dashboard/admin/payments" title="Ödemeler" desc="Ödeme geçmişi ve detaylar" icon="O" />
-          <AdminLink href="/dashboard/admin/commissions" title="Garanti Ücreti Raporu" desc="Gelir ve garanti ücreti detayları" icon="K" />
-          <AdminLink href="/dashboard/admin/support" title="Destek Mesajları" desc="Kullanıcı destek talepleri" icon="D" />
-          <AdminLink href="/dashboard/admin/articles" title="Makaleler" desc="AI taslaklar, incele ve yayınla (Salı+Perş)" icon="M" />
-          <AdminLink href="/dashboard/admin/suggestions" title="Geliştirme Önerileri" desc="Developer Agent görev listesi" icon="G" />
-          <AdminLink href="/dashboard/admin/po" title="PO Günlüğü" desc="Günlük ürün raporu ve öneriler" icon="P" />
-          <AdminLink href="/dashboard/admin/marketing" title="Pazarlama & Strateji" desc="Pazarlama raporları ve araştırma" icon="R" />
-          <AdminLink href="/dashboard/admin/tasks" title="Görev Takibi" desc="Tüm görevler ve son tarihler" icon="T" />
-          <AdminLink href="/dashboard/admin/agents" title="Agent KPI" desc="Agent performansı ve çalışma geçmişi" icon="A" />
-          <AdminLink href="/dashboard/admin/promos" title="Promosyonlar" desc="Şablon oluştur, ata ve takip et" icon="F" />
-          <AdminLink href="/dashboard/admin/analytics" title="Site Analitiği" desc="Sayfa görüntülemesi, cihaz, hata takibi" icon="A" />
-          <AdminLink href="/dashboard/admin/newsletter" title="Bülten Aboneleri" desc="Newsletter aboneleri ve istatistikler" icon="B" />
+      {/* Modules — grouped by category */}
+      <section>
+        <SectionTitle icon={Activity}>Modüller</SectionTitle>
+
+        <CategoryGroup title="Kullanıcı & Sözleşme">
+          <ModuleCard href="/dashboard/admin/users" icon={Users} title="Kullanıcılar" desc="Liste, filtre, KYC durumu" />
+          <ModuleCard href="/dashboard/admin/contracts" icon={FileText} title="Sözleşmeler" desc="Tüm sözleşmeler, durumlar" />
+          <ModuleCard href="/dashboard/admin/kyc-compliance" icon={ShieldCheck} title="KYC Uyumluluk" desc="Doğrulama dağılımı, UAVT oranı" />
+          <ModuleCard href="/dashboard/admin/support" icon={MessageSquare} title="Destek Mesajları" desc="Kullanıcı talepleri" />
+        </CategoryGroup>
+
+        <CategoryGroup title="Finans">
+          <ModuleCard href="/dashboard/admin/payments" icon={CreditCard} title="Ödemeler" desc="Ödeme geçmişi ve detay" />
+          <ModuleCard href="/dashboard/admin/commissions" icon={Wallet} title="Garanti Ücreti Raporu" desc="Gelir, CSV export" />
+          <ModuleCard href="/dashboard/admin/promos" icon={Gift} title="Promosyonlar" desc="Şablon, atama, takip" />
+        </CategoryGroup>
+
+        <CategoryGroup title="İçerik & Pazarlama">
+          <ModuleCard href="/dashboard/admin/articles" icon={BookOpen} title="Makaleler" desc="AI taslakları, yayın" />
+          <ModuleCard href="/dashboard/admin/marketing" icon={Megaphone} title="Pazarlama & Strateji" desc="Raporlar ve araştırma" />
+          <ModuleCard href="/dashboard/admin/newsletter" icon={Mail} title="Bülten Aboneleri" desc="Newsletter ve metrikler" />
+        </CategoryGroup>
+
+        <CategoryGroup title="Agent Sistemi">
+          <ModuleCard href="/dashboard/admin/suggestions" icon={Lightbulb} title="Geliştirme Önerileri" desc="Dev Agent kuyruğu" />
+          <ModuleCard href="/dashboard/admin/po" icon={Target} title="PO Günlüğü" desc="Ürün raporu, öneriler" />
+          <ModuleCard href="/dashboard/admin/tasks" icon={CheckSquare} title="Görev Takibi" desc="Tüm görevler ve tarih" />
+          <ModuleCard href="/dashboard/admin/agents" icon={Activity} title="Agent KPI" desc="Performans ve geçmiş" />
+        </CategoryGroup>
+
+        <CategoryGroup title="Analitik">
+          <ModuleCard href="/dashboard/admin/analytics" icon={BarChart3} title="Site Analitiği" desc="Görüntüleme, hata, cihaz" />
+        </CategoryGroup>
+      </section>
+    </div>
+  );
+}
+
+// ─── Components ────────────────────────────────────────────────
+
+function LoadingState() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="h-28 rounded-xl bg-slate-800/50 border border-slate-700/50 animate-pulse" />
+      ))}
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+      <Icon className="h-4 w-4" />
+      {children}
+    </h2>
+  );
+}
+
+function CategoryGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-6">
+      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">{title}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const ACCENT_CLASSES = {
+  blue: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  violet: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
+  amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+} as const;
+
+type Accent = keyof typeof ACCENT_CLASSES;
+
+function StatCard({
+  label, value, sublabel, icon: Icon, accent,
+}: {
+  label: string; value: number; sublabel?: string; icon: LucideIcon; accent: Accent;
+}) {
+  const c = ACCENT_CLASSES[accent];
+  return (
+    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 hover:border-slate-600 transition">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</div>
+          <div className="mt-2 flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-white">{value.toLocaleString('tr-TR')}</span>
+            {sublabel && <span className="text-xs text-slate-500">{sublabel}</span>}
+          </div>
+        </div>
+        <div className={`h-9 w-9 rounded-lg ${c.bg} ${c.border} border flex items-center justify-center`}>
+          <Icon className={`h-4 w-4 ${c.text}`} />
         </div>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, color }: { title: string; value: number; color: string }) {
-  const colors: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-700 border-blue-200',
-    green: 'bg-green-50 text-green-700 border-green-200',
-    gray: 'bg-gray-50 text-gray-700 border-gray-200',
-    purple: 'bg-purple-50 text-purple-700 border-purple-200',
+function FinanceCard({
+  label, value, sub, tone,
+}: {
+  label: string; value: number; sub: string; tone: 'neutral' | 'highlight' | 'positive';
+}) {
+  const styles = {
+    neutral: 'bg-[#0d1b2a] border-slate-700/50',
+    highlight: 'bg-gradient-to-br from-amber-500/10 to-orange-500/5 border-amber-500/20',
+    positive: 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
+  };
+  const valueColor = {
+    neutral: 'text-white',
+    highlight: 'text-amber-300',
+    positive: 'text-emerald-300',
   };
   return (
-    <div className={`rounded-xl border p-4 ${colors[color] || colors.gray}`}>
-      <div className="text-xs font-medium opacity-75">{title}</div>
-      <div className="text-2xl font-bold mt-1">{value}</div>
+    <div className={`rounded-xl border p-5 ${styles[tone]}`}>
+      <div className="text-sm text-slate-400">{label}</div>
+      <div className={`text-2xl font-bold mt-2 ${valueColor[tone]}`}>
+        {value.toLocaleString('tr-TR')} <span className="text-base font-medium opacity-75">TL</span>
+      </div>
+      <div className="text-xs text-slate-500 mt-1.5">{sub}</div>
     </div>
   );
 }
 
-function AdminLink({ href, title, desc, icon }: { href: string; title: string; desc: string; icon: string }) {
+function ModuleCard({
+  href, icon: Icon, title, desc,
+}: {
+  href: string; icon: LucideIcon; title: string; desc: string;
+}) {
   return (
     <Link
       href={href}
-      className="bg-white rounded-xl border border-gray-200 p-4 hover:border-red-300 hover:shadow-sm transition group"
+      className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 hover:border-blue-500/50 hover:bg-[#0f2037] transition flex flex-col"
     >
-      <div className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center text-sm font-bold mb-2 group-hover:bg-red-200 transition">
-        {icon}
+      <div className="flex items-start justify-between mb-3">
+        <div className="h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center group-hover:bg-blue-500/10 group-hover:border-blue-500/30 transition">
+          <Icon className="h-4 w-4 text-slate-400 group-hover:text-blue-400 transition" />
+        </div>
+        <ArrowUpRight className="h-4 w-4 text-slate-600 group-hover:text-blue-400 transition" />
       </div>
-      <div className="font-semibold text-gray-900 text-sm">{title}</div>
-      <div className="text-xs text-gray-500 mt-1">{desc}</div>
+      <div className="font-semibold text-white text-sm">{title}</div>
+      <div className="text-xs text-slate-400 mt-1 leading-relaxed">{desc}</div>
     </Link>
   );
 }
