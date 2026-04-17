@@ -153,6 +153,22 @@ export class MockBankService extends BankService {
   // ─── KMH Application ──────────────────────────────
 
   async applyForKmh(userId: string, dto: ApplyKmhDto): Promise<KmhApplicationResult> {
+    // KMH başvurusu için kullanıcının NVI doğrulaması tamamlanmış olmalı.
+    // Legacy kullanıcılar (nviVerified=false ve kpsVerified=true) için eski KPS
+    // doğrulamasını kabul et — böylece mevcut kullanıcılar bloklanmaz.
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { nviVerified: true, kpsVerified: true },
+    });
+    if (!user) {
+      throw new BadRequestException('Kullanıcı bulunamadı');
+    }
+    if (!user.nviVerified && !user.kpsVerified) {
+      throw new BadRequestException(
+        'KMH başvurusu için kimlik doğrulaması gereklidir. Lütfen önce profilinizden kimlik doğrulamanızı tamamlayın.',
+      );
+    }
+
     // Check if user already has an active (APPROVED + not onboarded yet, or PENDING) application
     const existing = await this.prisma.kmhApplication.findFirst({
       where: {

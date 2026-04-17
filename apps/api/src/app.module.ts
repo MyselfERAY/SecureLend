@@ -6,6 +6,7 @@ import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { join } from 'path';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { EncryptionModule } from './modules/encryption/encryption.module';
+import { BankPartnerModule } from './modules/bank-partner/bank-partner.module';
 import { ApplicationModule } from './modules/application/application.module';
 import { HealthModule } from './modules/health/health.module';
 import { NotificationModule } from './modules/notification/notification.module';
@@ -71,6 +72,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     ]),
     PrismaModule,
     EncryptionModule,
+    BankPartnerModule,
     NotificationModule,
     AuthModule,
     UserModule,

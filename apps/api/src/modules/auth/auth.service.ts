@@ -13,6 +13,7 @@ import { maskTckn, validateTckn } from '@securelend/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../encryption/encryption.service';
 import { IdentityVerificationService } from '../identity-verification/identity-verification.service';
+import { KkbService } from '../bank-partner/kkb.service';
 import { SmsService } from '../notification/sms.service';
 import { PromoService } from '../promo/promo.service';
 import { ConsentType } from '@prisma/client';
@@ -30,6 +31,7 @@ export class AuthService implements OnModuleInit {
     private readonly configService: ConfigService,
     private readonly encryptionService: EncryptionService,
     private readonly identityService: IdentityVerificationService,
+    private readonly kkbService: KkbService,
     private readonly smsService: SmsService,
     private readonly promoService: PromoService,
   ) {
@@ -82,6 +84,7 @@ export class AuthService implements OnModuleInit {
 
     const maskedTckn = maskTckn(tckn);
     const tcknHash = this.encryptionService.hash(tckn);
+    const tcknEncrypted = this.encryptionService.encrypt(tckn); // null if key missing — safe
 
     // Check duplicate
     const existing = await this.prisma.user.findUnique({
@@ -91,10 +94,42 @@ export class AuthService implements OnModuleInit {
       throw new ConflictException('Bu TCKN ile kayitli bir kullanici mevcut');
     }
 
-    // KPS identity verification
-    const identity = await this.identityService.verifyIdentity(tckn);
-    if (!identity.verified) {
-      throw new BadRequestException('Kimlik dogrulamasi basarisiz');
+    // NVI kimlik doğrulama (TCKN + ad + soyad + doğum yılı)
+    const { firstName, lastName } = this.splitFullName(fullName);
+    const birthYear = new Date(dateOfBirth).getFullYear();
+    let nviVerified = false;
+    let nviVerifiedAt: Date | null = null;
+    try {
+      const identity = await this.identityService.verifyByTcknAndBirthYear(
+        tckn,
+        birthYear,
+        firstName,
+        lastName,
+      );
+      if (!identity.verified) {
+        throw new BadRequestException(
+          'Kimlik doğrulaması başarısız. Ad, soyad, TCKN ve doğum tarihi bilgilerinizi kontrol edin.',
+        );
+      }
+      nviVerified = true;
+      nviVerifiedAt = identity.verifiedAt ?? new Date();
+    } catch (err) {
+      if (err instanceof BadRequestException) throw err;
+      this.logger.error(
+        `NVI verification error: ${err instanceof Error ? err.message : err}`,
+      );
+      throw new BadRequestException(
+        'Kimlik doğrulama servisi geçici olarak kullanılamıyor. Lütfen tekrar deneyin.',
+      );
+    }
+
+    // KKB (banka partneri üzerinden) — TCKN ↔ telefon eşleşme doğrulaması
+    const kkbResult = await this.kkbService.verifyPhoneTcknMatch(tckn, phone);
+    if (!kkbResult.verified) {
+      throw new BadRequestException(
+        kkbResult.reason ||
+          'Telefon numarası TCKN sahibine ait olarak doğrulanamadı',
+      );
     }
 
     // Validate referrer if referral code provided
@@ -119,10 +154,15 @@ export class AuthService implements OnModuleInit {
         data: {
           tcknHash,
           tcknMasked: maskedTckn,
+          tcknEncrypted,
           fullName,
           phone,
           dateOfBirth: new Date(dateOfBirth),
           kpsVerified: true,
+          nviVerified,
+          nviVerifiedAt,
+          phoneTcknVerified: kkbResult.verified,
+          phoneTcknVerifiedAt: kkbResult.checkedAt,
           referralCode: newReferralCode,
         },
       });
@@ -377,6 +417,25 @@ export class AuthService implements OnModuleInit {
   private maskPhone(phone: string): string {
     if (phone.length < 4) return '****';
     return `****${phone.slice(-4)}`;
+  }
+
+  /**
+   * "Ahmet Yılmaz" → { firstName: "Ahmet", lastName: "Yılmaz" }
+   * "Mehmet Ali Kaya" → { firstName: "Mehmet Ali", lastName: "Kaya" }
+   * "Tek" → { firstName: "Tek", lastName: "Tek" } (NVI çoğu zaman reddeder, beklenen davranış)
+   */
+  private splitFullName(fullName: string): { firstName: string; lastName: string } {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      return { firstName: fullName, lastName: fullName };
+    }
+    if (parts.length === 1) {
+      return { firstName: parts[0], lastName: parts[0] };
+    }
+    return {
+      firstName: parts.slice(0, -1).join(' '),
+      lastName: parts[parts.length - 1],
+    };
   }
 
   private async generateReferralCode(): Promise<string> {

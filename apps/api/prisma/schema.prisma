@@ -52,6 +52,7 @@ model User {
   id                String              @id @default(uuid()) @db.Uuid
   tcknHash          String              @unique @map("tckn_hash") @db.VarChar(128)
   tcknMasked        String              @map("tckn_masked") @db.VarChar(13)
+  tcknEncrypted     String?             @map("tckn_encrypted") @db.VarChar(512)
   fullName          String              @map("full_name") @db.VarChar(200)
   phone             String              @db.VarChar(20)
   phoneVerified     Boolean             @default(false) @map("phone_verified")
@@ -62,6 +63,10 @@ model User {
   roles             UserRole[]          @default([])
   kycStatus         KycStatus           @default(PENDING) @map("kyc_status")
   kpsVerified       Boolean             @default(false) @map("kps_verified")
+  nviVerified       Boolean             @default(false) @map("nvi_verified")
+  nviVerifiedAt     DateTime?           @map("nvi_verified_at")
+  phoneTcknVerified Boolean             @default(false) @map("phone_tckn_verified")
+  phoneTcknVerifiedAt DateTime?         @map("phone_tckn_verified_at")
   onboardingCompleted Boolean            @default(false) @map("onboarding_completed")
   referralCode      String?             @unique @map("referral_code") @db.VarChar(10)
   isActive          Boolean             @default(true) @map("is_active")
@@ -182,6 +187,9 @@ model Property {
   currency      String         @default("TRY") @db.VarChar(3)
   description   String?
   status        PropertyStatus @default(ACTIVE)
+  uavtCode      String?        @map("uavt_code") @db.VarChar(20)
+  uavtVerifiedAt DateTime?     @map("uavt_verified_at")
+  ownershipVerified Boolean    @default(false) @map("ownership_verified")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   contracts     Contract[]

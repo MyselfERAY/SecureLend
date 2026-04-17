@@ -85,4 +85,9 @@ export class CreatePropertyDto {
   @IsString({ message: 'Aciklama metin olmali' })
   @MaxLength(2000, { message: 'Aciklama en fazla 2000 karakter olmali' })
   description?: string;
+
+  @IsOptional()
+  @IsString({ message: 'UAVT kodu metin olmali' })
+  @Matches(/^\d{8,10}$/, { message: 'UAVT kodu 8-10 haneli sayısal olmalı' })
+  uavtCode?: string;
 }

@@ -10,6 +10,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BankService } from '../bank/bank.service';
 import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
 import { EmailService } from '../notification/email.service';
+import { EncryptionService } from '../encryption/encryption.service';
+import { KkbService } from '../bank-partner/kkb.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 
 @Injectable()
@@ -21,6 +23,8 @@ export class ContractService {
     private readonly bankService: BankService,
     private readonly inAppNotificationService: InAppNotificationService,
     private readonly emailService: EmailService,
+    private readonly encryptionService: EncryptionService,
+    private readonly kkbService: KkbService,
   ) {}
 
   async create(landlordId: string, dto: CreateContractDto) {
@@ -45,6 +49,32 @@ export class ContractService {
       where: { id: landlordId },
     });
     if (!landlord) throw new NotFoundException('Ev sahibi bulunamadi');
+
+    // KKB (banka partneri üzerinden) — IBAN ev sahibinin TCKN'sine ait mi?
+    // Encrypted TCKN yoksa (legacy user) check skip edilir; log'a yazılır.
+    if (dto.landlordIban && landlord.tcknEncrypted) {
+      const landlordTckn = this.encryptionService.decrypt(landlord.tcknEncrypted);
+      if (landlordTckn) {
+        const ibanCheck = await this.kkbService.verifyIbanTcknMatch(
+          dto.landlordIban,
+          landlordTckn,
+        );
+        if (!ibanCheck.verified) {
+          throw new BadRequestException(
+            ibanCheck.reason ||
+              'Belirtilen IBAN ev sahibine ait olarak doğrulanamadı',
+          );
+        }
+      } else {
+        this.logger.warn(
+          `Landlord ${landlordId} TCKN decrypt failed — IBAN-TCKN check skipped`,
+        );
+      }
+    } else if (dto.landlordIban) {
+      this.logger.warn(
+        `Landlord ${landlordId} has no encrypted TCKN — IBAN-TCKN check skipped (legacy user)`,
+      );
+    }
 
     // Auto-add TENANT role if missing (same pattern as property.service LANDLORD auto-assign)
     if (!tenant.roles.includes(UserRole.TENANT)) {
