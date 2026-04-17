@@ -164,14 +164,21 @@ jobs:
           5. Emin degilsen oneri URETME. Yanlis fix onerisi uretmek, sistemi bozabilir.
 
           == CIKTI FORMATI ==
-          Sadece gecerli JSON dondur:
+          Sadece gecerli JSON dondur. Her oneride `signature` alani ZORUNLU
+          — ayni hata grubu icin deterministic bir imza (endpoint + status code
+          + normalized mesaj). Workflow bu imzadan sha1 hash uretip dedupKey
+          olarak kaydediyor, boylece ayni grup icin tekrar tekrar kayit acilmiyor.
+          Signature icinde degisken parca (UUID, rakam, timestamp, IP) KULLANMA;
+          sadece sabit bolumleri kullan. Ornek:
+            \"signature\": \"POST /api/v1/auth/register 400 tckn_validation_failed\"
           {
             \"analysis\": \"<h2>Saglik Raporu — $TODAY</h2><p>Turkce, sadece hata ozeti, maks 200 kelime</p>\",
             \"suggestions\": [
               {
                 \"title\": \"Kisa baslik (maks 200 karakter)\",
                 \"description\": \"Detayli bug aciklamasi ve fix\",
-                \"priority\": \"MEDIUM|HIGH|CRITICAL\"
+                \"priority\": \"MEDIUM|HIGH|CRITICAL\",
+                \"signature\": \"<method> <endpoint> <status> <normalized_error_tag>\"
               }
             ]
           }"
@@ -236,13 +243,25 @@ jobs:
             TITLE=$(echo "$SUGGESTION" | jq -r '.title')
             DESC=$(echo "$SUGGESTION" | jq -r '.description')
             PRIORITY=$(echo "$SUGGESTION" | jq -r '.priority // "MEDIUM"')
+            SIGNATURE=$(echo "$SUGGESTION" | jq -r '.signature // empty')
 
-            # Step 1: Create suggestion (defaults to REJECTED)
+            # Deterministic dedupKey: title fallback'i, ideal olarak Claude'un
+            # verdigi `signature` alani. Lowercase + non-alnum bosluk + sha1-16.
+            # Ayni grup icin her kosuda ayni key uretilir; service mevcut
+            # kayit varsa yeni kayit acmaz.
+            if [ -z "$SIGNATURE" ] || [ "$SIGNATURE" = "null" ]; then
+              SIGNATURE="$TITLE"
+            fi
+            SIG_SLUG=$(printf '%s' "$SIGNATURE" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' ' ' | tr -s ' ' | sed 's/^ //;s/ $//' | cut -c1-200)
+            DEDUP_HASH=$(printf '%s' "$SIG_SLUG" | sha1sum | cut -c1-16)
+            DEDUP_KEY="health:${DEDUP_HASH}"
+
             CREATE_PAYLOAD=$(jq -n \
               --arg title "[Health] $TITLE" \
               --arg description "$DESC" \
               --arg priority "$PRIORITY" \
-              '{title: $title, description: $description, priority: $priority}')
+              --arg dedupKey "$DEDUP_KEY" \
+              '{title: $title, description: $description, priority: $priority, dedupKey: $dedupKey}')
 
             CREATE_RESPONSE=$(curl -s -X POST \
               -H "x-api-key: $SERVICE_API_KEY" \
@@ -251,18 +270,37 @@ jobs:
               "$API_BASE/api/v1/suggestions")
 
             SID=$(echo "$CREATE_RESPONSE" | jq -r '.data.id // empty')
+            EXISTING_STATUS=$(echo "$CREATE_RESPONSE" | jq -r '.data.status // empty')
+            EXISTING_CREATED=$(echo "$CREATE_RESPONSE" | jq -r '.data.createdAt // empty')
 
             if [ -n "$SID" ] && [ "$SID" != "null" ]; then
-              # Step 2: Only auto-approve CRITICAL and HIGH — MEDIUM stays REJECTED for manual review
-              if [ "$PRIORITY" = "CRITICAL" ] || [ "$PRIORITY" = "HIGH" ]; then
-                curl -s -X PATCH \
-                  -H "x-api-key: $SERVICE_API_KEY" \
-                  -H "Content-Type: application/json" \
-                  -d '{"status":"PENDING"}' \
-                  "$API_BASE/api/v1/suggestions/$SID" > /dev/null
-                echo "::notice::Auto-approved ($PRIORITY): $TITLE (id: $SID)"
+              # Backend dedupKey uzerinden mevcut kayit dondurmus olabilir.
+              # Yeni kayit = status REJECTED + createdAt tazedir (son 30sn icinde).
+              # Mevcut kayit donerse (PENDING/IN_PROGRESS/DONE veya eski REJECTED),
+              # status'u degistirme — Dev Agent'in akisini bozma.
+              IS_NEW="false"
+              if [ "$EXISTING_STATUS" = "REJECTED" ] && [ -n "$EXISTING_CREATED" ]; then
+                # Son 60sn icinde olusturulduysa yeni saydir
+                CREATED_EPOCH=$(date -u -d "$EXISTING_CREATED" +%s 2>/dev/null || echo "0")
+                NOW_EPOCH=$(date -u +%s)
+                if [ "$CREATED_EPOCH" -gt 0 ] && [ $((NOW_EPOCH - CREATED_EPOCH)) -lt 60 ]; then
+                  IS_NEW="true"
+                fi
+              fi
+
+              if [ "$IS_NEW" = "true" ]; then
+                if [ "$PRIORITY" = "CRITICAL" ] || [ "$PRIORITY" = "HIGH" ]; then
+                  curl -s -X PATCH \
+                    -H "x-api-key: $SERVICE_API_KEY" \
+                    -H "Content-Type: application/json" \
+                    -d '{"status":"PENDING"}' \
+                    "$API_BASE/api/v1/suggestions/$SID" > /dev/null
+                  echo "::notice::Auto-approved ($PRIORITY): $TITLE (id: $SID, dedupKey: $DEDUP_KEY)"
+                else
+                  echo "::notice::Created not auto-approved ($PRIORITY): $TITLE (id: $SID, dedupKey: $DEDUP_KEY)"
+                fi
               else
-                echo "::notice::Created but NOT auto-approved ($PRIORITY): $TITLE (id: $SID)"
+                echo "::notice::Dedup hit (status=$EXISTING_STATUS): $TITLE (id: $SID, dedupKey: $DEDUP_KEY) — yeni kayit acilmadi"
               fi
               SUBMITTED=$((SUBMITTED + 1))
             else
