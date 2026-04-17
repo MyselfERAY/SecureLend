@@ -106,11 +106,11 @@ export default function DashboardLayout({
   const fetchUnreadCount = useCallback(async () => {
     if (!tokens?.accessToken) return;
     try {
-      const res = await api<{ count: number }>('/api/v1/notifications/unread-count', {
+      const res = await api<{ unreadCount: number }>('/api/v1/notifications/unread-count', {
         token: tokens.accessToken,
       });
       if (res.status === 'success' && res.data) {
-        setUnreadCount(res.data.count);
+        setUnreadCount(res.data.unreadCount);
       }
     } catch {
       // Notification endpoint may not exist yet
