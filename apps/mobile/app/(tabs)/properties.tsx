@@ -18,15 +18,19 @@ import { PROVINCES, DISTRICTS } from '../../src/data/turkey-locations';
 
 const propertyTypes = [
   { value: 'APARTMENT', label: 'Daire', icon: 'business', color: '#2563eb', bg: '#eff6ff' },
-  { value: 'HOUSE', label: 'Mustakil Ev', icon: 'home', color: '#10b981', bg: '#ecfdf5' },
+  { value: 'HOUSE', label: 'Müstakil Ev', icon: 'home', color: '#10b981', bg: '#ecfdf5' },
+  { value: 'VILLA', label: 'Villa', icon: 'home-outline', color: '#059669', bg: '#ecfdf5' },
+  { value: 'STUDIO', label: 'Stüdyo', icon: 'bed', color: '#0891b2', bg: '#ecfeff' },
   { value: 'OFFICE', label: 'Ofis', icon: 'briefcase', color: '#f59e0b', bg: '#fffbeb' },
-  { value: 'SHOP', label: 'Dukkan', icon: 'storefront', color: '#8b5cf6', bg: '#f5f3ff' },
+  { value: 'SHOP', label: 'Dükkan', icon: 'storefront', color: '#8b5cf6', bg: '#f5f3ff' },
+  { value: 'COMMERCIAL', label: 'Ticari', icon: 'business-outline', color: '#db2777', bg: '#fdf2f8' },
+  { value: 'OTHER', label: 'Diğer', icon: 'ellipsis-horizontal', color: '#64748b', bg: '#f1f5f9' },
 ];
 
 const initialForm = {
   title: '', addressLine1: '', city: '', district: '', neighborhood: '', street: '',
   propertyType: 'APARTMENT', roomCount: '', areaM2: '', floor: '', totalFloors: '',
-  monthlyRent: '', depositAmount: '',
+  monthlyRent: '', depositAmount: '', uavtCode: '',
 };
 
 /* ── Inline Picker View (renders inside BottomSheet, not a separate Modal) ── */
@@ -183,6 +187,7 @@ export default function PropertiesScreen() {
     if (form.floor) body.floor = Number(form.floor);
     if (form.totalFloors) body.totalFloors = Number(form.totalFloors);
     if (form.depositAmount) body.depositAmount = Number(form.depositAmount);
+    if (form.uavtCode.trim()) body.uavtCode = form.uavtCode.trim();
 
     const url = editingId ? `/api/v1/properties/${editingId}` : '/api/v1/properties';
     const method = editingId ? 'PATCH' : 'POST';
@@ -208,6 +213,7 @@ export default function PropertiesScreen() {
       areaM2: p.areaM2?.toString() || '', floor: p.floor?.toString() || '',
       totalFloors: p.totalFloors?.toString() || '', monthlyRent: p.monthlyRent.toString(),
       depositAmount: p.depositAmount?.toString() || '',
+      uavtCode: (p as any).uavtCode || '',
     });
     setEditingId(p.id);
     setShowForm(true);
@@ -432,6 +438,14 @@ export default function PropertiesScreen() {
           </View>
           <Input label="Aylik Kira (TL) *" value={form.monthlyRent} onChangeText={(t) => setForm({ ...form, monthlyRent: t.replace(/\D/g, '') })} keyboardType="number-pad" />
           <Input label="Depozito (TL)" value={form.depositAmount} onChangeText={(t) => setForm({ ...form, depositAmount: t.replace(/\D/g, '') })} keyboardType="number-pad" />
+          <Input
+            label="UAVT Kodu (opsiyonel — tapu doğrulaması)"
+            value={form.uavtCode}
+            onChangeText={(t) => setForm({ ...form, uavtCode: t.replace(/\D/g, '') })}
+            placeholder="12345678"
+            keyboardType="number-pad"
+            maxLength={10}
+          />
 
           <Button title={editingId ? 'Guncelle' : 'Kaydet'} onPress={handleSubmit} loading={submitting} style={{ marginBottom: 16 }} />
         </ScrollView>
