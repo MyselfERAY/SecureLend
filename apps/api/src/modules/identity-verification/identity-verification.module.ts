@@ -3,10 +3,19 @@ import { ConfigService } from '@nestjs/config';
 import { IdentityVerificationService } from './identity-verification.service';
 import { MockIdentityVerificationService } from './mock-identity-verification.service';
 import { NviIdentityVerificationService } from './nvi-identity-verification.service';
-import { IdentityVerificationController } from './identity-verification.controller';
 
+/**
+ * Identity Verification Module (NVI entegrasyonu)
+ *
+ * NVI (Nüfus ve Vatandaşlık İşleri) KPSPublic servisini kullanır.
+ * Public endpoint — herkese açık ama sadece TC+Ad+Soyad+DoğumYılı eşleşmesi kontrol eder.
+ *
+ * NVI_ENABLED=true ise gerçek NVI SOAP servisi, yoksa mock.
+ *
+ * NOT: Dışarı açık controller YOK. Bu servis sadece backend servisleri (AuthService, vb.)
+ * tarafından çağrılır — TCKN fraud riskini önlemek için.
+ */
 @Module({
-  controllers: [IdentityVerificationController],
   providers: [
     {
       provide: IdentityVerificationService,
