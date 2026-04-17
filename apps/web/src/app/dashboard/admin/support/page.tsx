@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { MessageSquare, Send } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import { PageHeader, Button } from '../_components/admin-ui';
 
 interface SupportRoom {
   id: string;
@@ -129,9 +131,14 @@ export default function AdminSupportPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-white">Destek Mesajları</h1>
+      <PageHeader
+        title="Destek Mesajları"
+        desc={`${rooms.length} aktif destek talebi`}
+        icon={MessageSquare}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+      />
 
-      <div className="flex gap-4" style={{ height: 'calc(100vh - 180px)' }}>
+      <div className="flex gap-4" style={{ height: 'calc(100vh - 220px)' }}>
         {/* Room List */}
         <div className="w-80 flex-shrink-0 overflow-y-auto rounded-xl border border-slate-700/50 bg-[#0d1b2a]">
           {rooms.length === 0 ? (
@@ -235,17 +242,18 @@ export default function AdminSupportPage() {
                         handleSend();
                       }
                     }}
-                    placeholder="Mesajinizi yazin..."
+                    placeholder="Mesajınızı yazın..."
                     className="flex-1 rounded-lg border border-slate-600 bg-[#0a1628] px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
                     maxLength={2000}
                   />
-                  <button
+                  <Button
+                    variant="primary"
+                    icon={Send}
                     onClick={handleSend}
                     disabled={!input.trim() || sending}
-                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
                   >
                     {sending ? '...' : 'Gönder'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </>

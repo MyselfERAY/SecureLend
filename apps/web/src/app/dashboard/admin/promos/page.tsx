@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Gift, Plus, Power } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import {
+  PageHeader, Card, Badge, DataTable, EmptyState, LoadingSkeleton, StatCard, Button,
+  type Column, type BadgeTone,
+} from '../_components/admin-ui';
 
 interface PromoTemplate {
   id: string;
@@ -35,21 +40,16 @@ const PROMO_TYPES = [
   { value: 'CUSTOM', label: 'Özel' },
 ];
 
-const typeLabel: Record<string, string> = {
-  FIRST_MONTHS_FREE: 'İlk Aylar Ücretsiz',
-  RENEWAL_DISCOUNT: 'Yenileme İndirimi',
-  REFERRAL_BONUS: 'Referans Bonusu',
-  LOYALTY_REWARD: 'Sadakat Ödülü',
-  CUSTOM: 'Özel',
+const TYPE_META: Record<string, { label: string; tone: BadgeTone }> = {
+  FIRST_MONTHS_FREE: { label: 'İlk Aylar', tone: 'success' },
+  RENEWAL_DISCOUNT: { label: 'Yenileme', tone: 'info' },
+  REFERRAL_BONUS: { label: 'Referans', tone: 'info' },
+  LOYALTY_REWARD: { label: 'Sadakat', tone: 'warning' },
+  CUSTOM: { label: 'Özel', tone: 'neutral' },
 };
 
-const typeColor: Record<string, string> = {
-  FIRST_MONTHS_FREE: 'bg-emerald-100 text-emerald-700',
-  RENEWAL_DISCOUNT: 'bg-blue-100 text-blue-700',
-  REFERRAL_BONUS: 'bg-purple-100 text-purple-700',
-  LOYALTY_REWARD: 'bg-yellow-100 text-yellow-700',
-  CUSTOM: 'bg-gray-100 text-gray-700',
-};
+const fieldCls = 'w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500';
+const labelCls = 'block text-xs font-medium text-slate-400 mb-1';
 
 export default function AdminPromosPage() {
   const { tokens } = useAuth();
@@ -58,18 +58,11 @@ export default function AdminPromosPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  // Create form state
   const [form, setForm] = useState({
-    name: '',
-    type: 'CUSTOM',
-    description: '',
-    discountPercent: 100,
-    durationMonths: 1,
-    isAutoApply: false,
-    maxUsageCount: '',
-    validFrom: '',
-    validUntil: '',
+    name: '', type: 'CUSTOM', description: '',
+    discountPercent: 100, durationMonths: 1,
+    isAutoApply: false, maxUsageCount: '',
+    validFrom: '', validUntil: '',
   });
 
   const load = async () => {
@@ -101,11 +94,7 @@ export default function AdminPromosPage() {
     if (form.validFrom) body.validFrom = form.validFrom;
     if (form.validUntil) body.validUntil = form.validUntil;
 
-    const res = await api('/api/v1/promos/templates', {
-      method: 'POST',
-      body,
-      token: tokens.accessToken,
-    });
+    const res = await api('/api/v1/promos/templates', { method: 'POST', body, token: tokens.accessToken });
     if (res.status === 'success') {
       setShowCreate(false);
       setForm({ name: '', type: 'CUSTOM', description: '', discountPercent: 100, durationMonths: 1, isAutoApply: false, maxUsageCount: '', validFrom: '', validUntil: '' });
@@ -116,243 +105,148 @@ export default function AdminPromosPage() {
 
   const handleToggle = async (id: string) => {
     if (!tokens?.accessToken) return;
-    await api(`/api/v1/promos/templates/${id}/toggle`, {
-      method: 'POST',
-      token: tokens.accessToken,
-    });
+    await api(`/api/v1/promos/templates/${id}/toggle`, { method: 'POST', token: tokens.accessToken });
     await load();
   };
 
+  const columns: Column<PromoTemplate>[] = [
+    {
+      key: 'template',
+      label: 'Şablon',
+      render: (t) => (
+        <div>
+          <div className="font-medium text-white text-sm">{t.name}</div>
+          {t.description && <div className="text-xs text-slate-500 mt-0.5 max-w-xs truncate">{t.description}</div>}
+          {t.isAutoApply && <div className="mt-1"><Badge tone="info">Otomatik</Badge></div>}
+        </div>
+      ),
+    },
+    {
+      key: 'type', label: 'Tür',
+      render: (t) => {
+        const m = TYPE_META[t.type] || { label: t.type, tone: 'neutral' as BadgeTone };
+        return <Badge tone={m.tone}>{m.label}</Badge>;
+      },
+    },
+    {
+      key: 'discount', label: 'İndirim', align: 'center',
+      render: (t) => <span className="font-mono font-semibold text-white">%{t.discountPercent}</span>,
+    },
+    {
+      key: 'duration', label: 'Süre', align: 'center',
+      render: (t) => <span className="text-slate-300 text-sm">{t.durationMonths} ay</span>,
+    },
+    {
+      key: 'usage', label: 'Kullanım', align: 'center',
+      render: (t) => (
+        <div>
+          <span className="font-mono text-white text-sm">{t.currentUsage}</span>
+          {t.maxUsageCount && <span className="text-slate-500 text-sm">/{t.maxUsageCount}</span>}
+          <div className="text-xs text-slate-500 mt-0.5">{t._count.userPromos} atanmış</div>
+        </div>
+      ),
+    },
+    {
+      key: 'status', label: 'Durum', align: 'center',
+      render: (t) => <Badge tone={t.isActive ? 'success' : 'neutral'}>{t.isActive ? 'Aktif' : 'Pasif'}</Badge>,
+    },
+    {
+      key: 'action', label: '', align: 'center',
+      render: (t) => (
+        <Button
+          variant={t.isActive ? 'ghost' : 'primary'}
+          size="sm"
+          icon={Power}
+          onClick={() => handleToggle(t.id)}
+          className={t.isActive ? 'text-rose-400 hover:text-rose-300' : ''}
+        >
+          {t.isActive ? 'Deaktif' : 'Aktif'}
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Promosyon Yönetimi</h1>
-          <p className="text-sm text-gray-500 mt-1">Şablon oluştur, kullanıcılara ata, istatistikleri takip et</p>
-        </div>
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
-        >
-          {showCreate ? 'İptal' : '+ Yeni Şablon'}
-        </button>
-      </div>
+      <PageHeader
+        title="Promosyon Yönetimi"
+        desc="Şablon oluştur, kullanıcılara ata, istatistikleri takip et"
+        icon={Gift}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+        actions={
+          <Button variant="primary" icon={Plus} onClick={() => setShowCreate(!showCreate)}>
+            {showCreate ? 'İptal' : 'Yeni Şablon'}
+          </Button>
+        }
+      />
 
-      {/* Stats */}
       {stats && (
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="text-xs text-gray-500 font-medium">Toplam Şablon</div>
-            <div className="text-2xl font-bold text-gray-900 mt-1">{stats.templates}</div>
-          </div>
-          <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4">
-            <div className="text-xs text-emerald-600 font-medium">Aktif Promosyon</div>
-            <div className="text-2xl font-bold text-emerald-700 mt-1">{stats.totalActive}</div>
-          </div>
-          <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
-            <div className="text-xs text-blue-600 font-medium">Kullanılmış</div>
-            <div className="text-2xl font-bold text-blue-700 mt-1">{stats.totalUsed}</div>
-          </div>
+          <StatCard label="Toplam Şablon" value={stats.templates} accent="slate" />
+          <StatCard label="Aktif Promosyon" value={stats.totalActive} accent="emerald" />
+          <StatCard label="Kullanılmış" value={stats.totalUsed} accent="blue" />
         </div>
       )}
 
-      {/* Create Form */}
       {showCreate && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Yeni Promosyon Şablonu</h2>
+        <Card className="border-blue-500/30">
+          <h3 className="text-sm font-semibold text-white mb-4">Yeni Promosyon Şablonu</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Şablon Adı *</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="orn. Ilk 3 Ay Garanti Ücretsiz"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>Şablon Adı *</label>
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="örn. İlk 3 Ay Ücretsiz" className={fieldCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tür</label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              >
-                {PROMO_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
+              <label className={labelCls}>Tür</label>
+              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={fieldCls}>
+                {PROMO_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-              <input
-                type="text"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Promosyon açıklaması"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>Açıklama</label>
+              <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Promosyon açıklaması" className={fieldCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">İndirim Oranı (%)</label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={form.discountPercent}
-                onChange={(e) => setForm({ ...form, discountPercent: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>İndirim Oranı (%)</label>
+              <input type="number" min="1" max="100" value={form.discountPercent} onChange={(e) => setForm({ ...form, discountPercent: Number(e.target.value) })} className={fieldCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Süre (Ay)</label>
-              <input
-                type="number"
-                min="1"
-                max="36"
-                value={form.durationMonths}
-                onChange={(e) => setForm({ ...form, durationMonths: Number(e.target.value) })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>Süre (Ay)</label>
+              <input type="number" min="1" max="36" value={form.durationMonths} onChange={(e) => setForm({ ...form, durationMonths: Number(e.target.value) })} className={fieldCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Maks Kullanım (boş = sınırsız</label>
-              <input
-                type="number"
-                min="0"
-                value={form.maxUsageCount}
-                onChange={(e) => setForm({ ...form, maxUsageCount: e.target.value })}
-                placeholder="Sınırsız"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>Maks Kullanım (boş = sınırsız)</label>
+              <input type="number" min="0" value={form.maxUsageCount} onChange={(e) => setForm({ ...form, maxUsageCount: e.target.value })} placeholder="Sınırsız" className={fieldCls} />
             </div>
-            <div className="flex items-center gap-2 pt-6">
-              <input
-                id="autoApply"
-                type="checkbox"
-                checked={form.isAutoApply}
-                onChange={(e) => setForm({ ...form, isAutoApply: e.target.checked })}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="autoApply" className="text-sm text-gray-700">Kayıt sırasında otomatik uygula</label>
+            <div className="flex items-end gap-2">
+              <label className="inline-flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                <input type="checkbox" checked={form.isAutoApply} onChange={(e) => setForm({ ...form, isAutoApply: e.target.checked })} className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-blue-600" />
+                Kayıt sırasında otomatik uygula
+              </label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Geçerlilik Başlangıcı</label>
-              <input
-                type="date"
-                value={form.validFrom}
-                onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>Geçerlilik Başlangıcı</label>
+              <input type="date" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} className={fieldCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Geçerlilik Bitişi</label>
-              <input
-                type="date"
-                value={form.validUntil}
-                onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none"
-              />
+              <label className={labelCls}>Geçerlilik Bitişi</label>
+              <input type="date" value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} className={fieldCls} />
             </div>
           </div>
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={handleCreate}
-              disabled={saving || !form.name.trim()}
-              className="px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
+          <div className="mt-4 flex justify-end">
+            <Button variant="primary" onClick={handleCreate} disabled={saving || !form.name.trim()}>
               {saving ? 'Oluşturuluyor...' : 'Şablon Oluştur'}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Templates Table */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
+        <LoadingSkeleton rows={3} />
       ) : templates.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <p className="text-gray-500">Henüz promosyon şablonu oluşturulmamış.</p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            İlk şablonu oluştur
-          </button>
-        </div>
+        <EmptyState icon={Gift} title="Henüz promosyon şablonu yok" desc="Yukarıdaki 'Yeni Şablon' butonuyla oluşturun." />
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Şablon</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Tür</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">İndirim</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Süre</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Kullanım</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Durum</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">İşlem</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {templates.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{t.name}</div>
-                      {t.description && (
-                        <div className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">{t.description}</div>
-                      )}
-                      {t.isAutoApply && (
-                        <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700">
-                          Otomatik
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${typeColor[t.type] || 'bg-gray-100 text-gray-700'}`}>
-                        {typeLabel[t.type] || t.type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="font-semibold text-gray-900">%{t.discountPercent}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
-                      {t.durationMonths} ay
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-gray-900 font-medium">{t.currentUsage}</span>
-                      {t.maxUsageCount && (
-                        <span className="text-gray-400">/{t.maxUsageCount}</span>
-                      )}
-                      <div className="text-xs text-gray-400">{t._count.userPromos} atanmis</div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        t.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {t.isActive ? 'Aktif' : 'Pasif'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleToggle(t.id)}
-                        className={`px-3 py-1 text-xs font-medium rounded-lg transition ${
-                          t.isActive
-                            ? 'border border-red-300 text-red-600 hover:bg-red-50'
-                            : 'border border-green-300 text-green-600 hover:bg-green-50'
-                        }`}
-                      >
-                        {t.isActive ? 'Deaktif Et' : 'Aktif Et'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable columns={columns} data={templates} />
       )}
     </div>
   );
