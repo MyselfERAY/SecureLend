@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Wallet, Download, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../../../lib/auth-context';
 import { api } from '../../../../lib/api';
+import {
+  PageHeader, Card, DataTable, EmptyState, LoadingSkeleton, StatCard, Button,
+  type Column,
+} from '../_components/admin-ui';
 
 interface CommissionRecord {
   id: string;
@@ -25,17 +30,15 @@ interface MonthlyData {
   landlordAmount: number;
 }
 
-interface CommissionTotals {
-  totalRevenue: number;
-  totalCommission: number;
-  totalLandlordPayouts: number;
-  count: number;
-}
-
 interface CommissionReport {
   records: CommissionRecord[];
   monthly: MonthlyData[];
-  totals: CommissionTotals;
+  totals: {
+    totalRevenue: number;
+    totalCommission: number;
+    totalLandlordPayouts: number;
+    count: number;
+  };
 }
 
 export default function AdminCommissionsPage() {
@@ -52,105 +55,120 @@ export default function AdminCommissionsPage() {
       .finally(() => setLoading(false));
   }, [tokens?.accessToken]);
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Yükleniyor...</div>;
-  if (!report) return <div className="text-center py-12 text-gray-500">Veri yuklenemedi</div>;
+  const handleExport = async () => {
+    if (!tokens?.accessToken) return;
+    const url = `/api/v1/admin/commissions/export`;
+    window.open(url, '_blank');
+  };
+
+  const recordColumns: Column<CommissionRecord>[] = [
+    {
+      key: 'property',
+      label: 'Mülk',
+      render: (r) => (
+        <div>
+          <div className="font-medium text-white text-sm">{r.propertyTitle}</div>
+          <div className="text-xs text-slate-500 mt-0.5">{r.periodLabel}</div>
+        </div>
+      ),
+    },
+    { key: 'tenant', label: 'Kiracı', render: (r) => <span className="text-slate-300 text-sm">{r.tenantName}</span> },
+    { key: 'landlord', label: 'Ev Sahibi', render: (r) => <span className="text-slate-300 text-sm">{r.landlordName}</span> },
+    {
+      key: 'gross', label: 'Brüt', align: 'right',
+      render: (r) => <span className="font-mono text-white">{r.totalAmount.toLocaleString('tr-TR')} TL</span>,
+    },
+    {
+      key: 'commission', label: 'Garanti Ücreti', align: 'right',
+      render: (r) => <span className="font-mono text-amber-400">{r.commissionAmount.toLocaleString('tr-TR')} TL</span>,
+    },
+    {
+      key: 'net', label: 'Net', align: 'right',
+      render: (r) => <span className="font-mono text-emerald-400">{r.landlordAmount.toLocaleString('tr-TR')} TL</span>,
+    },
+    {
+      key: 'date', label: 'Tarih',
+      render: (r) => <span className="text-xs text-slate-400">{new Date(r.createdAt).toLocaleDateString('tr-TR')}</span>,
+    },
+  ];
+
+  const monthlyColumns: Column<MonthlyData & { id: string }>[] = [
+    { key: 'month', label: 'Ay', render: (m) => <span className="font-medium text-white">{m.month}</span> },
+    {
+      key: 'count', label: 'İşlem Sayısı', align: 'right',
+      render: (m) => <span className="font-mono text-slate-300">{m.totalPayments}</span>,
+    },
+    {
+      key: 'volume', label: 'İşlem Hacmi', align: 'right',
+      render: (m) => <span className="font-mono text-white">{m.totalAmount.toLocaleString('tr-TR')} TL</span>,
+    },
+    {
+      key: 'commission', label: 'Garanti Ücreti', align: 'right',
+      render: (m) => <span className="font-mono text-amber-400">{m.totalCommission.toLocaleString('tr-TR')} TL</span>,
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Garanti Ücreti Raporu</h1>
+    <div className="space-y-6">
+      <PageHeader
+        title="Garanti Ücreti Raporu"
+        desc="Platform geliri ve ev sahibi ödemeleri"
+        icon={Wallet}
+        back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
+        actions={
+          <Button variant="secondary" icon={Download} onClick={handleExport}>
+            CSV İndir
+          </Button>
+        }
+      />
 
-      {/* Özet Kartlar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500">Toplam İşlem</div>
-          <div className="text-xl font-bold text-gray-900 mt-1">{report.totals.count}</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500">İşlem Hacmi</div>
-          <div className="text-xl font-bold text-gray-900 mt-1">{report.totals.totalRevenue.toLocaleString('tr-TR')} TL</div>
-        </div>
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200 p-4">
-          <div className="text-xs text-yellow-700">Toplam Garanti Ücreti</div>
-          <div className="text-xl font-bold text-yellow-800 mt-1">{report.totals.totalCommission.toLocaleString('tr-TR')} TL</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500">Ev Sahibi Ödemesi</div>
-          <div className="text-xl font-bold text-green-700 mt-1">{report.totals.totalLandlordPayouts.toLocaleString('tr-TR')} TL</div>
-        </div>
-      </div>
+      {loading && <LoadingSkeleton rows={4} />}
 
-      {/* Aylık Özet */}
-      {report.monthly.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Aylık Özet</h2>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Ay</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">İşlem Sayısı</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">İşlem Hacmi</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Garanti Ücreti</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {report.monthly.map((m) => (
-                  <tr key={m.month} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">{m.month}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{m.totalPayments}</td>
-                    <td className="px-4 py-3 text-right text-gray-900">{m.totalAmount.toLocaleString('tr-TR')} TL</td>
-                    <td className="px-4 py-3 text-right font-medium text-yellow-700">{m.totalCommission.toLocaleString('tr-TR')} TL</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {!loading && report && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard label="İşlem Sayısı" value={report.totals.count} accent="slate" />
+            <StatCard
+              label="İşlem Hacmi"
+              value={`${report.totals.totalRevenue.toLocaleString('tr-TR')} TL`}
+              accent="blue"
+            />
+            <StatCard
+              label="Platform Geliri"
+              value={`${report.totals.totalCommission.toLocaleString('tr-TR')} TL`}
+              icon={TrendingUp}
+              accent="amber"
+            />
+            <StatCard
+              label="Ev Sahibi Net"
+              value={`${report.totals.totalLandlordPayouts.toLocaleString('tr-TR')} TL`}
+              accent="emerald"
+            />
           </div>
-        </div>
+
+          {report.monthly.length > 0 && (
+            <section>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Aylık Özet</h2>
+              <DataTable columns={monthlyColumns} data={report.monthly.map((m) => ({ ...m, id: m.month }))} />
+            </section>
+          )}
+
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              Detaylı Kayıtlar · {report.records.length}
+            </h2>
+            {report.records.length === 0 ? (
+              <EmptyState
+                icon={Wallet}
+                title="Henüz garanti ücreti kaydı yok"
+                desc="Ödeme işlendiğinde kayıtlar burada görünecek."
+              />
+            ) : (
+              <DataTable columns={recordColumns} data={report.records} />
+            )}
+          </section>
+        </>
       )}
-
-      {/* Detaylı Kayıtlar */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Garanti Ücreti Kayıtları ({report.records.length})</h2>
-        {report.records.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-            <div className="text-gray-400 text-lg">Henüz garanti ücreti kaydı yok</div>
-            <p className="text-gray-500 text-sm mt-2">Ödeme işlendiğinde garanti ücreti kayıtları burada görünecek.</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Mülk</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Dönem</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Kiracı</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Ev Sahibi</th>
-                    <th className="text-right px-4 py-3 font-medium text-gray-600">Brut</th>
-                    <th className="text-right px-4 py-3 font-medium text-gray-600">Garanti Ücreti (%{(report.records[0]?.rate * 100) || 1})</th>
-                    <th className="text-right px-4 py-3 font-medium text-gray-600">Net</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Tarih</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {report.records.map((r) => (
-                    <tr key={r.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">{r.propertyTitle}</td>
-                      <td className="px-4 py-3 text-gray-600">{r.periodLabel}</td>
-                      <td className="px-4 py-3 text-gray-600">{r.tenantName}</td>
-                      <td className="px-4 py-3 text-gray-600">{r.landlordName}</td>
-                      <td className="px-4 py-3 text-right text-gray-900">{r.totalAmount.toLocaleString('tr-TR')} TL</td>
-                      <td className="px-4 py-3 text-right font-medium text-yellow-700">{r.commissionAmount.toLocaleString('tr-TR')} TL</td>
-                      <td className="px-4 py-3 text-right font-medium text-green-700">{r.landlordAmount.toLocaleString('tr-TR')} TL</td>
-                      <td className="px-4 py-3 text-xs text-gray-500">{new Date(r.createdAt).toLocaleString('tr-TR')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
