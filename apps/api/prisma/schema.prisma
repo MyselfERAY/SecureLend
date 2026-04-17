@@ -176,6 +176,8 @@ model Property {
   neighborhood  String?        @db.VarChar(200)
   street        String?        @db.VarChar(300)
   postalCode    String?        @map("postal_code") @db.VarChar(10)
+  uavtCode      String?        @map("uavt_code") @db.VarChar(10)
+  uavtVerifiedAt DateTime?     @map("uavt_verified_at") @db.Timestamptz()
   propertyType  String         @map("property_type") @db.VarChar(50)
   roomCount     String?        @map("room_count") @db.VarChar(10)
   areaM2        Decimal?       @map("area_m2") @db.Decimal(8, 2)

@@ -10,6 +10,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BankService } from '../bank/bank.service';
 import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
 import { EmailService } from '../notification/email.service';
+import { KkbService } from '../kkb/kkb.service';
+import { EncryptionService } from '../encryption/encryption.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 
 @Injectable()
@@ -21,6 +23,8 @@ export class ContractService {
     private readonly bankService: BankService,
     private readonly inAppNotificationService: InAppNotificationService,
     private readonly emailService: EmailService,
+    private readonly kkbService: KkbService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async create(landlordId: string, dto: CreateContractDto) {
@@ -40,11 +44,55 @@ export class ContractService {
     if (tenant.id === landlordId)
       throw new BadRequestException('Kendinizle sozlesme olusturulamaz');
 
-    // Fetch landlord for email/name
+    // Fetch landlord for email/name + TCKN decrypt
     const landlord = await this.prisma.user.findUnique({
       where: { id: landlordId },
     });
     if (!landlord) throw new NotFoundException('Ev sahibi bulunamadi');
+
+    // Ev sahibinin NVI + KKB doğrulamasından geçmiş olması şart
+    if (!landlord.nviVerified || !landlord.phoneTcknVerified) {
+      throw new BadRequestException(
+        'Hesabinizin kimlik dogrulamasi tamamlanmamis. Musteri destek ile iletisime gecin.',
+      );
+    }
+
+    // Ev sahibi IBAN ↔ TCKN eşleşmesi (KKB üzerinden banka partneri ile)
+    if (landlord.tcknEncrypted) {
+      try {
+        const landlordTckn = this.encryptionService.decrypt(landlord.tcknEncrypted);
+        const ibanMatch = await this.kkbService.verifyIbanTcknMatch(
+          landlordTckn,
+          dto.landlordIban,
+        );
+        if (!ibanMatch.matched) {
+          this.logger.warn(
+            `Landlord IBAN match failed for ${landlord.tcknMasked}: ${ibanMatch.reason}`,
+          );
+          throw new BadRequestException(
+            'Girilen IBAN TC Kimlik No ile eslesmiyor. Kendi hesabinizi girdiginizden emin olun.',
+          );
+        }
+      } catch (err) {
+        if (err instanceof BadRequestException) throw err;
+        this.logger.error(`IBAN verification error: ${err instanceof Error ? err.message : err}`);
+        throw new BadRequestException(
+          'IBAN dogrulamasi sirasinda bir hata olustu. Lutfen tekrar deneyin.',
+        );
+      }
+    } else {
+      // Legacy user without tcknEncrypted — skip IBAN match but log warning
+      this.logger.warn(
+        `Landlord ${landlordId} has no encrypted TCKN — IBAN match skipped (legacy account)`,
+      );
+    }
+
+    // Kiracının da NVI/KKB doğrulamadan geçmiş olması şart
+    if (!tenant.nviVerified || !tenant.phoneTcknVerified) {
+      throw new BadRequestException(
+        'Kiracinin kimlik dogrulamasi tamamlanmamis. Kiracidan hesabini dogrulamasi istenmelidir.',
+      );
+    }
 
     // Auto-add TENANT role if missing (same pattern as property.service LANDLORD auto-assign)
     if (!tenant.roles.includes(UserRole.TENANT)) {

@@ -54,6 +54,12 @@ export class AdminController {
     return { status: 'success', data };
   }
 
+  @Get('kyc-compliance')
+  async getKycCompliance() {
+    const data = await this.adminService.getKycCompliance();
+    return { status: 'success', data };
+  }
+
   @Get('commissions')
   async getCommissionReport() {
     const data = await this.adminService.getCommissionReport();
