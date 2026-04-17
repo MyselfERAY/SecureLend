@@ -115,9 +115,19 @@ export class AnalyticsController {
   @Roles(UserRole.ADMIN)
   async getApiDashboard(
     @Query('days') days?: string,
+    @Query('minutes') minutes?: string,
   ): Promise<JSendSuccess<unknown>> {
-    const d = Math.min(Math.max(parseInt(days || '30', 10) || 30, 1), 365);
-    const data = await this.analyticsService.getApiDashboard(d);
+    // Dakika bazında daha esnek zaman aralığı (1 dakika–1 yıl).
+    // Verilmezse `days` parametresinden türetilir; her ikisi de yoksa 30 gün.
+    const parsedMinutes = minutes ? parseInt(minutes, 10) : NaN;
+    const parsedDays = days ? parseInt(days, 10) : NaN;
+    const options: { days?: number; minutes?: number } = {};
+    if (Number.isFinite(parsedMinutes) && parsedMinutes > 0) {
+      options.minutes = Math.min(Math.max(parsedMinutes, 1), 365 * 24 * 60);
+    } else {
+      options.days = Math.min(Math.max(Number.isFinite(parsedDays) ? parsedDays : 30, 1), 365);
+    }
+    const data = await this.analyticsService.getApiDashboard(options);
     return { status: 'success', data };
   }
 
