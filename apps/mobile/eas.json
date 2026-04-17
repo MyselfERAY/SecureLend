@@ -22,7 +22,8 @@
     "production": {
       "ios": {
         "appleId": "info@kiraguvence.com",
-        "appleTeamId": "7UXNBTPVCA"
+        "appleTeamId": "7UXNBTPVCA",
+        "ascAppId": "6762094524"
       }
     }
   }
