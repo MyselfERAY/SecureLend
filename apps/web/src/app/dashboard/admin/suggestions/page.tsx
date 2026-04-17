@@ -221,6 +221,57 @@ export default function AdminSuggestionsPage() {
         })}
       </div>
 
+      {/* Filters: search + priority + sort */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Başlık veya açıklamada ara..."
+            className="w-full rounded-lg border border-slate-700 bg-[#0d1b2a] pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value as Priority | 'ALL')}
+          className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+        >
+          <option value="ALL">Tüm Öncelikler</option>
+          <option value="CRITICAL">Kritik</option>
+          <option value="HIGH">Yüksek</option>
+          <option value="MEDIUM">Orta</option>
+          <option value="LOW">Düşük</option>
+        </select>
+        <select
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value as typeof sortKey)}
+          className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+        >
+          <option value="created-desc">En yeni</option>
+          <option value="created-asc">En eski</option>
+          <option value="priority">Önceliğe göre</option>
+          <option value="status">Duruma göre</option>
+        </select>
+        {(search || filterPriority !== 'ALL' || filterStatus !== 'ALL') && (
+          <button
+            type="button"
+            onClick={() => { setSearch(''); setFilterPriority('ALL'); setFilterStatus('ALL'); }}
+            className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm text-slate-400 hover:text-white hover:border-slate-600"
+          >
+            Temizle
+          </button>
+        )}
+      </div>
+
+      {/* Result summary */}
+      {(search || filterPriority !== 'ALL' || filterStatus !== 'ALL') && (
+        <div className="text-xs text-slate-400">
+          {filtered.length} sonuç gösteriliyor (toplam {suggestions.length})
+        </div>
+      )}
+
       {/* Create Form */}
       {showForm && (
         <Card className="border-blue-500/30">
