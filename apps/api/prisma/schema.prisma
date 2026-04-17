@@ -615,15 +615,10 @@ model DevSuggestion {
   status      SuggestionStatus   @default(PENDING)
   agentNotes  String?            @map("agent_notes")
   prLink      String?            @map("pr_link") @db.VarChar(500)
-  // Otomatik ajanlarin (Health Agent vb.) ayni hata icin tekrar tekrar
-  // Suggestion yaratmasini onlemek icin deterministic anahtar. Null ise
-  // dedup uygulanmaz — manuel girilen oneriler icin bos birakilir.
-  dedupKey    String?            @map("dedup_key") @db.VarChar(200)
   createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz()
   poItems     PoItem[]
 
-  @@unique([dedupKey], map: "dev_suggestion_dedup_key_key")
   @@index([status], map: "idx_dev_suggestion_status")
   @@index([priority], map: "idx_dev_suggestion_priority")
   @@map("dev_suggestions")

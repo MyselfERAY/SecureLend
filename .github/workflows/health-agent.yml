@@ -237,23 +237,12 @@ jobs:
             DESC=$(echo "$SUGGESTION" | jq -r '.description')
             PRIORITY=$(echo "$SUGGESTION" | jq -r '.priority // "MEDIUM"')
 
-            # Deterministic dedup key — ayni hata icin her koshuda yeni
-            # Suggestion acmayi onler. Backend service dedupKey ile mevcut
-            # aktif/yakın-DONE kaydi varsa onu dondurur (yeni kayit olusmaz).
-            # Anahtar title'dan uretilir: lowercase + alphanumeric + ilk 80 char'in
-            # sha1'i. LLM farkli kosularda benzer title uretirse bile slug benzer
-            # cikar, hash esit olur.
-            TITLE_SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' ' ' | tr -s ' ' | sed 's/^ //;s/ $//' | cut -c1-80)
-            DEDUP_HASH=$(printf '%s' "$TITLE_SLUG" | sha1sum | cut -c1-16)
-            DEDUP_KEY="health:${DEDUP_HASH}"
-
             # Step 1: Create suggestion (defaults to REJECTED)
             CREATE_PAYLOAD=$(jq -n \
               --arg title "[Health] $TITLE" \
               --arg description "$DESC" \
               --arg priority "$PRIORITY" \
-              --arg dedupKey "$DEDUP_KEY" \
-              '{title: $title, description: $description, priority: $priority, dedupKey: $dedupKey}')
+              '{title: $title, description: $description, priority: $priority}')
 
             CREATE_RESPONSE=$(curl -s -X POST \
               -H "x-api-key: $SERVICE_API_KEY" \
@@ -262,28 +251,20 @@ jobs:
               "$API_BASE/api/v1/suggestions")
 
             SID=$(echo "$CREATE_RESPONSE" | jq -r '.data.id // empty')
-            EXISTING_STATUS=$(echo "$CREATE_RESPONSE" | jq -r '.data.status // empty')
 
             if [ -n "$SID" ] && [ "$SID" != "null" ]; then
-              # Backend dedupKey üzerinden mevcut aktif/yakin-DONE Suggestion
-              # dondurmuş olabilir. Sadece yeni yaratilanlari (status=REJECTED)
-              # auto-approve et — aktif bir kaydi yeniden PENDING'e çekmek
-              # Dev Agent'in is akışını bozar.
-              if [ "$EXISTING_STATUS" = "REJECTED" ]; then
-                if [ "$PRIORITY" = "CRITICAL" ] || [ "$PRIORITY" = "HIGH" ]; then
-                  curl -s -X PATCH \
-                    -H "x-api-key: $SERVICE_API_KEY" \
-                    -H "Content-Type: application/json" \
-                    -d '{"status":"PENDING"}' \
-                    "$API_BASE/api/v1/suggestions/$SID" > /dev/null
-                  echo "::notice::Auto-approved ($PRIORITY): $TITLE (id: $SID, dedupKey: $DEDUP_KEY)"
-                else
-                  echo "::notice::Created but NOT auto-approved ($PRIORITY): $TITLE (id: $SID)"
-                fi
-                SUBMITTED=$((SUBMITTED + 1))
+              # Step 2: Only auto-approve CRITICAL and HIGH — MEDIUM stays REJECTED for manual review
+              if [ "$PRIORITY" = "CRITICAL" ] || [ "$PRIORITY" = "HIGH" ]; then
+                curl -s -X PATCH \
+                  -H "x-api-key: $SERVICE_API_KEY" \
+                  -H "Content-Type: application/json" \
+                  -d '{"status":"PENDING"}' \
+                  "$API_BASE/api/v1/suggestions/$SID" > /dev/null
+                echo "::notice::Auto-approved ($PRIORITY): $TITLE (id: $SID)"
               else
-                echo "::notice::Dedup: ayni hata icin mevcut Suggestion dondurdüu (id: $SID, status: $EXISTING_STATUS, dedupKey: $DEDUP_KEY) — yeni kayit olusturulmadi"
+                echo "::notice::Created but NOT auto-approved ($PRIORITY): $TITLE (id: $SID)"
               fi
+              SUBMITTED=$((SUBMITTED + 1))
             else
               echo "::warning::Failed to create: $TITLE"
             fi
