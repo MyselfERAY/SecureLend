@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Query,
+  Controller, Get, Post, Delete, Body, Query,
   HttpCode, HttpStatus, Req,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -170,6 +170,21 @@ export class AnalyticsController {
     const safeLimit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 50, 1), 200);
     const data = await this.analyticsService.getApiErrorsForWindow(fromDate, toDate, safeLimit);
     return { status: 'success', data };
+  }
+
+  // ─── ADMIN: Milat / Reset — tum analytics_events'i sil ───
+  // Hata log'larini temizleyip "milat atmak" icin. Opsiyonel `type`
+  // parametresi (api_error | api_request | page_view | ...) verilirse sadece
+  // o type silinir; aksi halde tablo tamamen truncate edilir. Geri alinmaz.
+
+  @Delete('events')
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  async resetEvents(
+    @Query('type') type?: string,
+  ): Promise<JSendSuccess<{ deleted: number; type: string }>> {
+    const deleted = await this.analyticsService.resetEvents(type);
+    return { status: 'success', data: { deleted, type: type ?? 'ALL' } };
   }
 
   // ─── ADMIN: Extended Metrics (Bounce, Funnel, Referrer, Conversion) ───
