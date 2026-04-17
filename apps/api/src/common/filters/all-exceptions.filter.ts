@@ -91,7 +91,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Track API error in analytics (fire-and-forget)
     const url = request?.url || '';
-    if (this.analyticsService && !this.shouldSkipTracking(url)) {
+    if (this.analyticsService && !this.shouldSkipTracking(url, status)) {
       const startTime = (request as any)?.__apiStartTime;
       const durationMs = startTime ? Date.now() - startTime : undefined;
       this.analyticsService
@@ -110,12 +110,38 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.status(status).json(body);
   }
 
-  private shouldSkipTracking(url: string): boolean {
-    return (
+  /**
+   * Analitik "hata" olarak sayılmaması gereken istekler:
+   *  1) Health/analytics/docs endpoint'leri — altyapı, gürültü yapar
+   *  2) Auth gürültüsü (401/403) — token süresi dolması ve client-side refresh
+   *     sırasında üretilen 401'ler normal davranıştır, gerçek bug değil.
+   *     Gerçek yetkisiz erişim vakalarını ayrı bir security-audit kanalına
+   *     taşımak istersek bunu ileride gevşetebiliriz.
+   *  3) Bot/scanner trafiği — `/.env`, `/.git/*`, `/_profiler/*`, `/wp-*`,
+   *     `/phpmyadmin*`, `/robots.txt`, `/.well-known/*` gibi pattern'lar
+   *     internet taramalarıdır. `/api/` veya `/health` ile başlamayan
+   *     istekler zaten genelde scanner — topluca atlıyoruz.
+   */
+  private shouldSkipTracking(url: string, status: number): boolean {
+    if (
       url === '/health' ||
       url.startsWith('/api/v1/analytics') ||
       url.startsWith('/api/docs') ||
       url.startsWith('/app/')
-    );
+    ) {
+      return true;
+    }
+
+    // Scanner trafiği: /api/ veya /health ile başlamayan her şey botturur
+    if (!url.startsWith('/api/') && !url.startsWith('/health')) {
+      return true;
+    }
+
+    // Auth gürültüsü — 401/403 gerçek bug sinyali değil
+    if (status === HttpStatus.UNAUTHORIZED || status === HttpStatus.FORBIDDEN) {
+      return true;
+    }
+
+    return false;
   }
 }
