@@ -317,8 +317,19 @@ export class AnalyticsService implements OnModuleInit {
 
   // ─── API Dashboard Stats ───
 
-  async getApiDashboard(days = 30) {
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  /**
+   * API dashboard verisi. `minutes` parametresi gelirse onu kullanır;
+   * yoksa `days` üzerinden dakikaya çevirir (geriye dönük uyumluluk).
+   * minutes < 1440 ise grafik saatlik bucket'a geçer (ani trafik
+   * anomalilerini görmek için). Response'ta `granularity` dönülür.
+   */
+  async getApiDashboard(options: { days?: number; minutes?: number } = {}) {
+    const minutes =
+      typeof options.minutes === 'number' && options.minutes > 0
+        ? options.minutes
+        : Math.max(options.days ?? 30, 1) * 24 * 60;
+    const since = new Date(Date.now() - minutes * 60 * 1000);
+    const granularity: 'hour' | 'day' = minutes < 24 * 60 ? 'hour' : 'day';
 
     const [
       totalRequests,
@@ -411,22 +422,38 @@ export class AnalyticsService implements OnModuleInit {
         orderBy: { createdAt: 'desc' },
         take: 50,
       }),
-      // Daily API requests
-      this.prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
-        SELECT DATE(created_at) as day, COUNT(*)::bigint as count
-        FROM analytics_events
-        WHERE event_type = 'api_request' AND created_at >= ${since}
-        GROUP BY DATE(created_at)
-        ORDER BY day ASC
-      `.catch(() => []),
-      // Daily API errors
-      this.prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
-        SELECT DATE(created_at) as day, COUNT(*)::bigint as count
-        FROM analytics_events
-        WHERE event_type = 'api_error' AND created_at >= ${since}
-        GROUP BY DATE(created_at)
-        ORDER BY day ASC
-      `.catch(() => []),
+      // Daily/Hourly API requests (bucket size = granularity)
+      granularity === 'hour'
+        ? this.prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
+            SELECT DATE_TRUNC('hour', created_at) as day, COUNT(*)::bigint as count
+            FROM analytics_events
+            WHERE event_type = 'api_request' AND created_at >= ${since}
+            GROUP BY DATE_TRUNC('hour', created_at)
+            ORDER BY day ASC
+          `.catch(() => [])
+        : this.prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+            SELECT DATE(created_at) as day, COUNT(*)::bigint as count
+            FROM analytics_events
+            WHERE event_type = 'api_request' AND created_at >= ${since}
+            GROUP BY DATE(created_at)
+            ORDER BY day ASC
+          `.catch(() => []),
+      // Daily/Hourly API errors
+      granularity === 'hour'
+        ? this.prisma.$queryRaw<Array<{ day: Date; count: bigint }>>`
+            SELECT DATE_TRUNC('hour', created_at) as day, COUNT(*)::bigint as count
+            FROM analytics_events
+            WHERE event_type = 'api_error' AND created_at >= ${since}
+            GROUP BY DATE_TRUNC('hour', created_at)
+            ORDER BY day ASC
+          `.catch(() => [])
+        : this.prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+            SELECT DATE(created_at) as day, COUNT(*)::bigint as count
+            FROM analytics_events
+            WHERE event_type = 'api_error' AND created_at >= ${since}
+            GROUP BY DATE(created_at)
+            ORDER BY day ASC
+          `.catch(() => []),
     ]);
 
     const total = totalRequests + totalErrors;
@@ -471,12 +498,17 @@ export class AnalyticsService implements OnModuleInit {
         durationMs: e.duration,
         createdAt: e.createdAt,
       })),
+      granularity,
       dailyRequests: (dailyRequests as any[]).map((d) => ({
-        day: String(d.day).slice(0, 10),
+        day: granularity === 'hour'
+          ? new Date(d.day).toISOString()
+          : String(d.day).slice(0, 10),
         count: Number(d.count),
       })),
       dailyErrors: (dailyErrors as any[]).map((d) => ({
-        day: String(d.day).slice(0, 10),
+        day: granularity === 'hour'
+          ? new Date(d.day).toISOString()
+          : String(d.day).slice(0, 10),
         count: Number(d.count),
       })),
     };

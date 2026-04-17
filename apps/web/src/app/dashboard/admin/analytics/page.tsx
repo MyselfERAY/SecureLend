@@ -53,6 +53,7 @@ interface ApiDashboard {
     durationMs: number | null;
     createdAt: string;
   }[];
+  granularity?: 'hour' | 'day';
   dailyRequests: { day: string; count: number }[];
   dailyErrors: { day: string; count: number }[];
 }
@@ -88,6 +89,20 @@ interface ActivationFunnel {
 
 type TabType = 'overview' | 'pages' | 'errors' | 'api' | 'metrics' | 'funnel';
 
+// Zaman aralığı preset'leri — ani trafik/hata artışlarını görebilmek için
+// saatlik seçenekler (1-6 saat) + günlük seçenekler (1-90 gün).
+// minutes: backend'e gönderilen dakika sayısı
+// days: saatlik range'de de eski `days` tabanlı endpoint'ler için 1'e yuvarlanır
+const RANGE_PRESETS: { label: string; minutes: number }[] = [
+  { label: 'Son 1 saat', minutes: 60 },
+  { label: 'Son 6 saat', minutes: 360 },
+  { label: 'Son 1 gün', minutes: 1440 },
+  { label: 'Son 7 gün', minutes: 7 * 1440 },
+  { label: 'Son 14 gün', minutes: 14 * 1440 },
+  { label: 'Son 30 gün', minutes: 30 * 1440 },
+  { label: 'Son 90 gün', minutes: 90 * 1440 },
+];
+
 export default function AdminAnalyticsPage() {
   const { tokens } = useAuth();
   const [data, setData] = useState<AnalyticsDashboard | null>(null);
@@ -98,67 +113,71 @@ export default function AdminAnalyticsPage() {
   const [apiLoading, setApiLoading] = useState(false);
   const [extLoading, setExtLoading] = useState(false);
   const [funnelLoading, setFunnelLoading] = useState(false);
-  const [days, setDays] = useState(30);
+  const [rangeMinutes, setRangeMinutes] = useState(30 * 1440);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+  // `days` — günlük-tabanlı eski endpoint'ler için (dashboard/extended/funnel).
+  // Saatlik aralık seçildiğinde en az 1 gün'e yuvarlanıyor.
+  const daysForLegacy = Math.max(1, Math.ceil(rangeMinutes / 1440));
 
   // Fetch frontend analytics
   useEffect(() => {
     if (!tokens?.accessToken) return;
     setLoading(true);
-    api<AnalyticsDashboard>(`/api/v1/analytics/dashboard?days=${days}`, {
+    api<AnalyticsDashboard>(`/api/v1/analytics/dashboard?days=${daysForLegacy}`, {
       token: tokens.accessToken,
     })
       .then((res) => {
         if (res.status === 'success' && res.data) setData(res.data);
       })
       .finally(() => setLoading(false));
-  }, [tokens?.accessToken, days]);
+  }, [tokens?.accessToken, daysForLegacy]);
 
   // Fetch API analytics (lazy — only when tab active)
   useEffect(() => {
     if (activeTab !== 'api' || !tokens?.accessToken || apiData) return;
     setApiLoading(true);
-    api<ApiDashboard>(`/api/v1/analytics/api-dashboard?days=${days}`, {
+    api<ApiDashboard>(`/api/v1/analytics/api-dashboard?minutes=${rangeMinutes}`, {
       token: tokens.accessToken,
     })
       .then((res) => {
         if (res.status === 'success' && res.data) setApiData(res.data);
       })
       .finally(() => setApiLoading(false));
-  }, [tokens?.accessToken, days, activeTab, apiData]);
+  }, [tokens?.accessToken, rangeMinutes, activeTab, apiData]);
 
   // Fetch extended metrics (lazy)
   useEffect(() => {
     if (activeTab !== 'metrics' || !tokens?.accessToken || extData) return;
     setExtLoading(true);
-    api<ExtendedMetrics>(`/api/v1/analytics/extended?days=${days}`, {
+    api<ExtendedMetrics>(`/api/v1/analytics/extended?days=${daysForLegacy}`, {
       token: tokens.accessToken,
     })
       .then((res) => {
         if (res.status === 'success' && res.data) setExtData(res.data);
       })
       .finally(() => setExtLoading(false));
-  }, [tokens?.accessToken, days, activeTab, extData]);
+  }, [tokens?.accessToken, daysForLegacy, activeTab, extData]);
 
   // Fetch activation funnel (lazy)
   useEffect(() => {
     if (activeTab !== 'funnel' || !tokens?.accessToken || funnelData) return;
     setFunnelLoading(true);
-    api<ActivationFunnel>(`/api/v1/admin/activation-funnel?days=${days}`, {
+    api<ActivationFunnel>(`/api/v1/admin/activation-funnel?days=${daysForLegacy}`, {
       token: tokens.accessToken,
     })
       .then((res) => {
         if (res.status === 'success' && res.data) setFunnelData(res.data);
       })
       .finally(() => setFunnelLoading(false));
-  }, [tokens?.accessToken, days, activeTab, funnelData]);
+  }, [tokens?.accessToken, daysForLegacy, activeTab, funnelData]);
 
-  // Reset lazy data when days change
+  // Reset lazy data when range changes
   useEffect(() => {
     setApiData(null);
     setExtData(null);
     setFunnelData(null);
-  }, [days]);
+  }, [rangeMinutes]);
 
   if (loading) {
     return <div className="text-center py-12 text-slate-400">Yükleniyor...</div>;
@@ -181,14 +200,15 @@ export default function AdminAnalyticsPage() {
         back={{ href: '/dashboard/admin', label: 'Yönetim Paneli' }}
         actions={
           <select
-            value={days}
-            onChange={(e) => setDays(Number(e.target.value))}
+            value={rangeMinutes}
+            onChange={(e) => setRangeMinutes(Number(e.target.value))}
             className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm font-medium text-slate-200"
           >
-            <option value={7}>Son 7 gün</option>
-            <option value={14}>Son 14 gün</option>
-            <option value={30}>Son 30 gün</option>
-            <option value={90}>Son 90 gün</option>
+            {RANGE_PRESETS.map((p) => (
+              <option key={p.minutes} value={p.minutes}>
+                {p.label}
+              </option>
+            ))}
           </select>
         }
       />
@@ -382,7 +402,7 @@ export default function AdminAnalyticsPage() {
                 </svg>
               </div>
               <div className="font-medium text-slate-300">Hata yok!</div>
-              <p className="mt-1 text-sm">Son {days} günde hiçbir frontend hatası raporlanmadı.</p>
+              <p className="mt-1 text-sm">Son {daysForLegacy} günde hiçbir frontend hatası raporlanmadı.</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-700/50">
@@ -412,17 +432,17 @@ export default function AdminAnalyticsPage() {
 
       {/* ─── API Tab ─── */}
       {activeTab === 'api' && (
-        <ApiTabContent data={apiData} loading={apiLoading} days={days} />
+        <ApiTabContent data={apiData} loading={apiLoading} rangeMinutes={rangeMinutes} />
       )}
 
       {/* ─── Metrics Tab ─── */}
       {activeTab === 'metrics' && (
-        <MetricsTabContent data={extData} loading={extLoading} days={days} />
+        <MetricsTabContent data={extData} loading={extLoading} days={daysForLegacy} />
       )}
 
       {/* ─── Funnel Tab ─── */}
       {activeTab === 'funnel' && (
-        <FunnelTabContent data={funnelData} loading={funnelLoading} days={days} />
+        <FunnelTabContent data={funnelData} loading={funnelLoading} days={daysForLegacy} />
       )}
     </div>
   );
@@ -432,9 +452,23 @@ export default function AdminAnalyticsPage() {
 // API Tab Component
 // ═══════════════════════════════════════════════════════════════
 
-function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loading: boolean; days: number }) {
+function ApiTabContent({ data, loading, rangeMinutes }: { data: ApiDashboard | null; loading: boolean; rangeMinutes: number }) {
   if (loading) return <div className="text-center py-12 text-slate-400">API verileri yükleniyor...</div>;
   if (!data) return <div className="text-center py-12 text-slate-400">API verisi yüklenemedi.</div>;
+
+  const isHourly = data.granularity === 'hour';
+  const chartTitle = isHourly ? 'Saatlik API Trafiği' : 'Günlük API Trafiği';
+  // Saatlik görünümde x-ekseni "HH:mm", günlükte "MM-DD"
+  const formatBucketLabel = (day: string): string => {
+    if (isHourly) {
+      const dt = new Date(day);
+      if (Number.isNaN(dt.getTime())) return day;
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mm = String(dt.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+    return day.slice(5);
+  };
 
   const maxDaily = Math.max(...data.dailyRequests.map((d) => d.count), ...data.dailyErrors.map((d) => d.count), 1);
   const totalMethods = data.methods.reduce((s, m) => s + m.count, 0) || 1;
@@ -482,7 +516,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
       {dailyMerged.length > 0 && (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-200">Günlük API Trafiği</h3>
+            <h3 className="text-sm font-semibold text-slate-200">{chartTitle}</h3>
             <div className="flex items-center gap-4 text-xs text-slate-400">
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-blue-500/100 inline-block" /> Istek</span>
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-red-400 inline-block" /> Hata</span>
@@ -507,7 +541,7 @@ function ApiTabContent({ data, loading, days }: { data: ApiDashboard | null; loa
                   )}
                 </div>
                 <div className="mt-1 text-[10px] text-slate-500 rotate-[-45deg] origin-top-left whitespace-nowrap">
-                  {d.day.slice(5)}
+                  {formatBucketLabel(d.day)}
                 </div>
               </div>
             ))}
