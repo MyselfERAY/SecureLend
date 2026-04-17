@@ -24,6 +24,7 @@ interface PropertyForm {
   totalFloors: string;
   monthlyRent: string;
   depositAmount: string;
+  uavtCode: string;
 }
 
 interface FoundUser {
@@ -51,6 +52,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
     totalFloors: '',
     monthlyRent: '',
     depositAmount: '',
+    uavtCode: '',
   });
   const [phoneSearch, setPhoneSearch] = useState('');
   const [foundUser, setFoundUser] = useState<FoundUser | null>(null);
@@ -137,6 +139,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
       if (propertyForm.floor) body.floor = parseInt(propertyForm.floor, 10);
       if (propertyForm.totalFloors) body.totalFloors = parseInt(propertyForm.totalFloors, 10);
       if (propertyForm.depositAmount) body.depositAmount = parseFloat(propertyForm.depositAmount);
+      if (propertyForm.uavtCode.trim()) body.uavtCode = propertyForm.uavtCode.trim();
 
       const res = await api('/api/v1/properties', {
         token,
@@ -518,6 +521,21 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
+        </div>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">
+            UAVT Kodu <span className="text-slate-500">(opsiyonel — tapu doğrulaması için)</span>
+          </label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={propertyForm.uavtCode}
+            onChange={(e) => setPropertyForm((prev) => ({ ...prev, uavtCode: e.target.value.replace(/\D/g, '') }))}
+            placeholder="12345678"
+            maxLength={10}
+            className="w-full rounded-xl border border-slate-700/50 bg-[#0a1628] px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <p className="mt-1 text-xs text-slate-500">8-10 haneli UAVT kodu. Girilirse tapu sahiplik doğrulaması yapılır.</p>
         </div>
       </div>
 
