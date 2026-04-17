@@ -70,6 +70,22 @@ interface ExtendedMetrics {
   scrollDepth: { depth: string; count: number }[];
 }
 
+interface ApiErrorDetail {
+  window: { from: string | null; to: string | null };
+  topEndpoints: { endpoint: string; count: number }[];
+  events: {
+    endpoint: string;
+    method: string | null;
+    statusCode: string | null;
+    errorMessage: string | null;
+    userId: string | null;
+    ip: string | null;
+    durationMs: number | null;
+    createdAt: string;
+  }[];
+  truncated?: boolean;
+}
+
 interface ActivationFunnel {
   steps: { step: number; name: string; count: number; rate: number }[];
   users: {
@@ -452,7 +468,12 @@ export default function AdminAnalyticsPage() {
 // API Tab Component
 // ═══════════════════════════════════════════════════════════════
 
-function ApiTabContent({ data, loading, rangeMinutes }: { data: ApiDashboard | null; loading: boolean; rangeMinutes: number }) {
+function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: ApiDashboard | null; loading: boolean; rangeMinutes: number }) {
+  const { tokens } = useAuth();
+  const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
+  const [bucketDetail, setBucketDetail] = useState<ApiErrorDetail | null>(null);
+  const [bucketLoading, setBucketLoading] = useState(false);
+
   if (loading) return <div className="text-center py-12 text-slate-400">API verileri yükleniyor...</div>;
   if (!data) return <div className="text-center py-12 text-slate-400">API verisi yüklenemedi.</div>;
 
@@ -468,6 +489,54 @@ function ApiTabContent({ data, loading, rangeMinutes }: { data: ApiDashboard | n
       return `${hh}:${mm}`;
     }
     return day.slice(5);
+  };
+
+  // Bar'a tıklandığında bucket (saat / gün) aralığını hesapla + detayı çek.
+  const handleBucketClick = (day: string) => {
+    if (!tokens?.accessToken) return;
+    // Aynı bar'a tekrar tıklandıysa paneli kapat
+    if (selectedBucket === day) {
+      setSelectedBucket(null);
+      setBucketDetail(null);
+      return;
+    }
+    let from: Date;
+    let to: Date;
+    if (isHourly) {
+      from = new Date(day);
+      if (Number.isNaN(from.getTime())) return;
+      to = new Date(from.getTime() + 60 * 60 * 1000);
+    } else {
+      // `day` = "YYYY-MM-DD" — yerel gün başlangıcı
+      const [y, m, d] = day.split('-').map(Number);
+      from = new Date(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
+      to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+    }
+    setSelectedBucket(day);
+    setBucketDetail(null);
+    setBucketLoading(true);
+    api<ApiErrorDetail>(
+      `/api/v1/analytics/api-errors?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}&limit=50`,
+      { token: tokens.accessToken },
+    )
+      .then((res) => {
+        if (res.status === 'success' && res.data) setBucketDetail(res.data);
+      })
+      .finally(() => setBucketLoading(false));
+  };
+
+  const formatBucketTitle = (day: string): string => {
+    if (isHourly) {
+      const dt = new Date(day);
+      if (Number.isNaN(dt.getTime())) return day;
+      return dt.toLocaleString('tr-TR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+    return day;
   };
 
   const maxDaily = Math.max(...data.dailyRequests.map((d) => d.count), ...data.dailyErrors.map((d) => d.count), 1);
@@ -512,7 +581,7 @@ function ApiTabContent({ data, loading, rangeMinutes }: { data: ApiDashboard | n
         </div>
       </div>
 
-      {/* Daily API Chart */}
+      {/* Daily API Chart — bar'a tıklayınca altta detay paneli açılır */}
       {dailyMerged.length > 0 && (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -520,32 +589,118 @@ function ApiTabContent({ data, loading, rangeMinutes }: { data: ApiDashboard | n
             <div className="flex items-center gap-4 text-xs text-slate-400">
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-blue-500/100 inline-block" /> Istek</span>
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-red-400 inline-block" /> Hata</span>
+              <span className="text-slate-500">• Detay için bara tıkla</span>
             </div>
           </div>
           <div className="flex items-end gap-1" style={{ height: 160 }}>
-            {dailyMerged.map((d) => (
-              <div key={d.day} className="group relative flex flex-1 flex-col items-center">
-                <div className="absolute -top-6 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block z-10">
-                  {d.requests} / {d.errors}
-                </div>
-                <div className="w-full flex flex-col-reverse">
-                  <div
-                    className="w-full bg-blue-500/100 transition-all hover:bg-blue-600"
-                    style={{ height: `${Math.max((d.requests / maxDaily) * 130, 2)}px` }}
-                  />
-                  {d.errors > 0 && (
+            {dailyMerged.map((d) => {
+              const isSelected = selectedBucket === d.day;
+              return (
+                <button
+                  key={d.day}
+                  type="button"
+                  onClick={() => handleBucketClick(d.day)}
+                  className={`group relative flex flex-1 flex-col items-center cursor-pointer focus:outline-none ${
+                    isSelected ? 'ring-2 ring-blue-400 rounded-sm' : ''
+                  }`}
+                >
+                  <div className="absolute -top-6 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block z-10">
+                    {d.requests} / {d.errors}
+                  </div>
+                  <div className="w-full flex flex-col-reverse">
                     <div
-                      className="w-full bg-red-400"
-                      style={{ height: `${Math.max((d.errors / maxDaily) * 130, 2)}px` }}
+                      className="w-full bg-blue-500/100 transition-all group-hover:bg-blue-600"
+                      style={{ height: `${Math.max((d.requests / maxDaily) * 130, 2)}px` }}
                     />
-                  )}
-                </div>
-                <div className="mt-1 text-[10px] text-slate-500 rotate-[-45deg] origin-top-left whitespace-nowrap">
-                  {formatBucketLabel(d.day)}
-                </div>
-              </div>
-            ))}
+                    {d.errors > 0 && (
+                      <div
+                        className="w-full bg-red-400 group-hover:bg-red-500"
+                        style={{ height: `${Math.max((d.errors / maxDaily) * 130, 2)}px` }}
+                      />
+                    )}
+                  </div>
+                  <div className="mt-1 text-[10px] text-slate-500 rotate-[-45deg] origin-top-left whitespace-nowrap">
+                    {formatBucketLabel(d.day)}
+                  </div>
+                </button>
+              );
+            })}
           </div>
+
+          {selectedBucket && (
+            <div className="mt-6 border-t border-slate-700/50 pt-5">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-slate-200">
+                  {formatBucketTitle(selectedBucket)} — hata detayı
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedBucket(null); setBucketDetail(null); }}
+                  className="text-xs text-slate-400 hover:text-slate-200"
+                >
+                  Kapat ✕
+                </button>
+              </div>
+
+              {bucketLoading ? (
+                <p className="text-sm text-slate-500">Detay yükleniyor...</p>
+              ) : !bucketDetail ? (
+                <p className="text-sm text-slate-500">Detay yüklenemedi.</p>
+              ) : bucketDetail.truncated ? (
+                <p className="text-sm text-amber-500">
+                  Seçilen aralık 7 günden büyük — detay gösterilmiyor. Daha kısa bir preset seç.
+                </p>
+              ) : bucketDetail.events.length === 0 ? (
+                <p className="text-sm text-emerald-500">Bu bucket'ta API hatası yok. ✨</p>
+              ) : (
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* Top error endpoints */}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-400 mb-2">
+                      En Çok Hata Veren Endpoint'ler
+                    </div>
+                    <div className="rounded-lg border border-slate-700/40 bg-slate-900/40 divide-y divide-slate-700/40">
+                      {bucketDetail.topEndpoints.map((e) => (
+                        <div key={e.endpoint} className="flex items-center justify-between px-3 py-2 text-sm">
+                          <span className="font-mono text-slate-200 truncate">{e.endpoint}</span>
+                          <span className="ml-2 rounded-full bg-red-500/20 text-red-400 px-2 py-0.5 text-xs font-semibold">
+                            {e.count}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Son hata event'leri */}
+                  <div>
+                    <div className="text-xs font-semibold text-slate-400 mb-2">
+                      Son Hatalar ({bucketDetail.events.length})
+                    </div>
+                    <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-700/40 bg-slate-900/40 divide-y divide-slate-700/40">
+                      {bucketDetail.events.map((ev, idx) => (
+                        <div key={idx} className="px-3 py-2 text-xs">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="rounded bg-red-500/20 text-red-400 px-1.5 py-0.5 font-mono">
+                              {ev.statusCode || '???'}
+                            </span>
+                            <span className="font-mono text-slate-400">{ev.method}</span>
+                            <span className="font-mono text-slate-200 truncate">{ev.endpoint}</span>
+                          </div>
+                          {ev.errorMessage && (
+                            <div className="text-slate-400 italic truncate">{ev.errorMessage}</div>
+                          )}
+                          <div className="mt-1 text-[10px] text-slate-500">
+                            {new Date(ev.createdAt).toLocaleString('tr-TR')}
+                            {ev.userId ? ` • user ${ev.userId.slice(0, 8)}` : ' • anonim'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
