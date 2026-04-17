@@ -790,4 +790,16 @@ export class AnalyticsService implements OnModuleInit {
 
     return { device, browser, os };
   }
+
+  // ─── Admin: Reset / Milat ───
+  // Tum analytics_events'i (veya belirli bir event_type'i) siler. Sifirdan
+  // ölçüm başlatmak icin. Geri alinmaz.
+  async resetEvents(type?: string): Promise<number> {
+    const where = type && type.trim() ? { eventType: type.trim() } : {};
+    const result = await this.prisma.analyticsEvent.deleteMany({ where });
+    this.logger.warn(
+      `Analytics events reset — type=${type ?? 'ALL'}, deleted=${result.count}`,
+    );
+    return result.count;
+  }
 }
