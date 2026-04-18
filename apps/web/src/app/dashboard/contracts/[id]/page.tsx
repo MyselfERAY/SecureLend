@@ -36,6 +36,8 @@ interface ContractDetail {
   tenant: { id: string; fullName: string; tcknMasked: string };
   landlord: { id: string; fullName: string; tcknMasked: string };
   signatures: { role: string; signedAt: string; signedByName: string }[];
+  createdAt: string;
+  terminatedAt?: string;
   tenantKmhInfo?: {
     accountId: string;
     accountNumber: string;
@@ -416,10 +418,14 @@ export default function ContractDetailPage() {
         </div>
       )}
 
-      {/* Signatures */}
+      {/* Contract Lifecycle Timeline + Signatures */}
       <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
-        <h2 className="mb-4 text-lg font-semibold text-white">İmza Durumu</h2>
-        <div className="space-y-3">
+        <h2 className="mb-6 text-lg font-semibold text-white">Sözleşme Durumu</h2>
+
+        <ContractLifecycleTimeline contract={contract} />
+
+        {/* Per-party signature detail */}
+        <div className="mt-6 space-y-2">
           {(
             [
               { role: 'LANDLORD', label: 'Ev Sahibi', name: contract.landlord.fullName },
@@ -611,6 +617,171 @@ export default function ContractDetailPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+type TimelineStepState = 'completed' | 'current' | 'warning' | 'pending';
+
+function ContractLifecycleTimeline({ contract }: { contract: ContractDetail }) {
+  const today = new Date();
+  const endDateObj = new Date(contract.endDate);
+  const renewalDate = new Date(endDateObj);
+  renewalDate.setDate(renewalDate.getDate() - 60);
+  const daysToEnd = Math.ceil((endDateObj.getTime() - today.getTime()) / 86400000);
+  const isTerminated = contract.status === 'TERMINATED';
+  const isExpired = contract.status === 'EXPIRED';
+  const isActive = contract.status === 'ACTIVE';
+  const isRenewalWindow = isActive && daysToEnd <= 60 && daysToEnd > 0;
+
+  const statusRank: Record<string, number> = {
+    DRAFT: 0,
+    PENDING_SIGNATURES: 1,
+    PENDING_ACTIVATION: 2,
+    ACTIVE: 3,
+    TERMINATED: 4,
+    EXPIRED: 4,
+  };
+  const rank = statusRank[contract.status] ?? 0;
+
+  const landlordSig = contract.signatures.find((s) => s.role === 'LANDLORD');
+  const tenantSig = contract.signatures.find((s) => s.role === 'TENANT');
+
+  const steps: {
+    id: string;
+    label: string;
+    date?: string;
+    sublabel?: string;
+    nextAction?: string;
+    state: TimelineStepState;
+  }[] = [
+    {
+      id: 'created',
+      label: 'Oluşturuldu',
+      date: new Date(contract.createdAt).toLocaleDateString('tr-TR'),
+      sublabel: contract.landlord.fullName,
+      state: 'completed',
+    },
+    {
+      id: 'signatures',
+      label: 'İmza Bekleniyor',
+      date:
+        landlordSig && tenantSig
+          ? new Date(
+              Math.max(
+                new Date(landlordSig.signedAt).getTime(),
+                new Date(tenantSig.signedAt).getTime(),
+              ),
+            ).toLocaleDateString('tr-TR')
+          : undefined,
+      sublabel: `${contract.signatures.length}/2 imza`,
+      nextAction:
+        rank === 1
+          ? contract.signatures.length === 0
+            ? 'Her iki taraf imzalamalı'
+            : 'Son imza bekleniyor'
+          : undefined,
+      state: rank > 1 ? 'completed' : rank === 1 ? 'current' : 'pending',
+    },
+    {
+      id: 'active',
+      label: rank === 2 ? 'Aktivasyon' : 'Aktif',
+      date: rank >= 3 ? new Date(contract.startDate).toLocaleDateString('tr-TR') : undefined,
+      sublabel:
+        rank === 2
+          ? 'UAVT kodu bekleniyor'
+          : isActive
+            ? 'Devam ediyor'
+            : isTerminated
+              ? 'Feshedildi'
+              : isExpired
+                ? 'Tamamlandı'
+                : undefined,
+      nextAction: rank === 2 ? 'Ev sahibi UAVT girecek' : undefined,
+      state: rank >= 4 ? 'completed' : rank === 2 || rank === 3 ? 'current' : 'pending',
+    },
+    {
+      id: 'renewal',
+      label: 'Yenileme Eşiği',
+      date: renewalDate.toLocaleDateString('tr-TR'),
+      sublabel: isRenewalWindow ? `${daysToEnd} gün kaldı` : undefined,
+      nextAction: isRenewalWindow ? 'Yenileme kararı verilmeli' : undefined,
+      state: isExpired ? 'completed' : isRenewalWindow ? 'warning' : 'pending',
+    },
+    {
+      id: 'end',
+      label: isTerminated ? 'Fesih' : 'Bitiş',
+      date:
+        isTerminated && contract.terminatedAt
+          ? new Date(contract.terminatedAt).toLocaleDateString('tr-TR')
+          : new Date(contract.endDate).toLocaleDateString('tr-TR'),
+      sublabel: isTerminated ? 'Erken fesih' : isExpired ? 'Tamamlandı' : undefined,
+      state: isExpired ? 'completed' : isTerminated ? 'warning' : 'pending',
+    },
+  ];
+
+  const circleClass: Record<TimelineStepState, string> = {
+    completed: 'border-emerald-500 bg-emerald-500/20 text-emerald-400',
+    current: 'border-blue-500 bg-blue-500/20 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]',
+    warning: 'border-yellow-500 bg-yellow-500/20 text-yellow-400',
+    pending: 'border-slate-600 bg-slate-800/60 text-slate-600',
+  };
+  const labelClass: Record<TimelineStepState, string> = {
+    completed: 'text-emerald-400',
+    current: 'text-blue-400',
+    warning: 'text-yellow-400',
+    pending: 'text-slate-500',
+  };
+
+  return (
+    <div className="overflow-x-auto -mx-1 pb-1">
+      <div className="relative flex min-w-[540px] justify-between px-4">
+        {/* Background connector line */}
+        <div className="absolute inset-x-8 h-px bg-slate-700/80" style={{ top: '16px' }} />
+        {steps.map((step, idx) => (
+          <div key={step.id} className="relative z-10 flex w-[96px] flex-col items-center">
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-bold transition-all ${circleClass[step.state]}`}
+            >
+              {step.state === 'completed' ? (
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : step.state === 'current' ? (
+                <div className="h-2 w-2 rounded-full bg-current" />
+              ) : step.state === 'warning' ? (
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              ) : (
+                <span>{idx + 1}</span>
+              )}
+            </div>
+            <div className="mt-2 text-center">
+              <div className={`text-xs font-semibold leading-tight ${labelClass[step.state]}`}>
+                {step.label}
+              </div>
+              {step.date && (
+                <div className="mt-0.5 text-[10px] text-slate-500">{step.date}</div>
+              )}
+              {step.sublabel && (
+                <div
+                  className={`mt-0.5 text-[10px] leading-tight ${
+                    step.state !== 'pending' ? labelClass[step.state] : 'text-slate-600'
+                  }`}
+                >
+                  {step.sublabel}
+                </div>
+              )}
+              {step.nextAction && (
+                <div className="mt-1.5 rounded border border-blue-500/20 bg-blue-500/10 px-1 py-0.5 text-[9px] leading-tight text-blue-300">
+                  {step.nextAction}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
