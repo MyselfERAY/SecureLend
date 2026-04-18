@@ -32,6 +32,7 @@ import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { TenantScoreModule } from './modules/tenant-score/tenant-score.module';
 import { PaymentReminderModule } from './modules/payment-reminder/payment-reminder.module';
+import { ContractRenewalModule } from './modules/contract-renewal/contract-renewal.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -97,6 +98,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     AnalyticsModule,
     TenantScoreModule,
     PaymentReminderModule,
+    ContractRenewalModule,
     HealthModule,
   ],
   providers: [
