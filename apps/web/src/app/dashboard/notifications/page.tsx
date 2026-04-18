@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
 import { api } from '../../../lib/api';
 
@@ -11,7 +12,21 @@ interface Notification {
   body: string;
   isRead: boolean;
   createdAt: string;
-  data?: Record<string, unknown>;
+  entityType?: string | null;
+  entityId?: string | null;
+}
+
+function getNavUrl(n: Notification): string | null {
+  if (n.entityType === 'Contract' && n.entityId) {
+    return `/dashboard/contracts/${n.entityId}`;
+  }
+  if (n.entityType === 'PaymentSchedule') {
+    return '/dashboard/payments';
+  }
+  if (n.type.startsWith('KMH_')) {
+    return '/dashboard/bank';
+  }
+  return null;
 }
 
 interface NotificationsResponse {
@@ -66,6 +81,7 @@ const defaultTypeConfig = {
 
 export default function NotificationsPage() {
   const { tokens } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,6 +117,12 @@ export default function NotificationsPage() {
     } catch {
       // ignore
     }
+  };
+
+  const handleNotificationClick = async (n: Notification) => {
+    if (!n.isRead) await markAsRead(n.id);
+    const url = getNavUrl(n);
+    if (url) router.push(url);
   };
 
   const markAllAsRead = async () => {
@@ -165,11 +187,11 @@ export default function NotificationsPage() {
             return (
               <div
                 key={n.id}
-                className={`flex gap-4 p-4 transition ${
+                className={`flex cursor-pointer gap-4 p-4 transition hover:bg-slate-700/20 ${
                   !n.isRead ? 'bg-blue-500/5' : ''
                 }`}
-                onClick={() => !n.isRead && markAsRead(n.id)}
-                role={!n.isRead ? 'button' : undefined}
+                onClick={() => handleNotificationClick(n)}
+                role="button"
               >
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${config.color}`}>
                   {config.icon}
