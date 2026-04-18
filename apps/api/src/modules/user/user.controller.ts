@@ -1,10 +1,11 @@
-import { Controller, Get, Patch, Post, Body, Req, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Delete, Body, Req, Query, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { Throttle, seconds } from '@nestjs/throttler';
 import { Request } from 'express';
 import type { JSendSuccess } from '@securelend/shared';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserService } from './user.service';
+import { GdprDeletionService } from './gdpr-deletion.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AddRoleDto } from './dto/add-role.dto';
 
@@ -12,7 +13,10 @@ import { AddRoleDto } from './dto/add-role.dto';
 @ApiBearerAuth('access-token')
 @Controller('api/v1/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly gdprDeletionService: GdprDeletionService,
+  ) {}
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get role-aware dashboard aggregate data' })
@@ -87,5 +91,21 @@ export class UserController {
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
     const profile = await this.userService.completeKyc(user.id, ipAddress);
     return { status: 'success', data: profile };
+  }
+
+  @Delete('me')
+  @Throttle({ short: { limit: 1, ttl: seconds(60) } })
+  @ApiOperation({ summary: 'KVKK - Hesap silme ve kişisel veri anonimleştirme talebi' })
+  async requestDeletion(
+    @CurrentUser() user: { id: string },
+    @Body() body: { confirm?: boolean },
+    @Req() req: Request,
+  ): Promise<JSendSuccess<unknown>> {
+    if (!body?.confirm) {
+      throw new BadRequestException('Silme işlemini onaylamanız gerekiyor (confirm: true)');
+    }
+    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
+    await this.gdprDeletionService.requestDeletion(user.id, ipAddress);
+    return { status: 'success', data: { message: 'Hesabınız anonimleştirildi ve silindi.' } };
   }
 }
