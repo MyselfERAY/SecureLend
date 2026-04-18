@@ -119,13 +119,23 @@ export default function OnBilgilendirmePage() {
                 <span className="text-blue-400 font-semibold min-w-[20px]">4.</span>
                 <span><strong className="text-white">Platform Şikayeti:</strong> info@kiraguvence.com (en geç 3 iş günü içinde yanıt)</span>
               </li>
+              <li className="flex gap-2">
+                <span className="text-amber-400 font-semibold min-w-[20px]">5.</span>
+                <span>
+                  <strong className="text-white">Zorunlu Arabuluculuk (7155 Sayılı Kanun):</strong>{' '}
+                  Ticari nitelikteki para alacağı uyuşmazlıklarında dava açılmadan önce
+                  arabuluculuğa başvurulması zorunludur (TTK m.5/A). Tüketici sıfatıyla işlem
+                  yapan kullanıcılar için bu zorunluluk uygulanmaz; bu kullanıcılar yukarıdaki
+                  1–2 numaralı yolları izleyebilir.
+                </span>
+              </li>
             </ul>
           </Section>
 
           {/* Footer */}
           <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4 text-xs text-slate-500 space-y-1">
-            <p>Son Güncelleme: Nisan 2026 — Sürüm: 1.0</p>
-            <p>Dayanak: 6502 sayılı TKHK m.48, Mesafeli Sözleşmeler Yönetmeliği (RG: 27.11.2014 / 29188)</p>
+            <p>Son Güncelleme: Nisan 2026 — Sürüm: 1.1</p>
+            <p>Dayanak: 6502 sayılı TKHK m.48, Mesafeli Sözleşmeler Yönetmeliği (RG: 27.11.2014 / 29188), 7155 sayılı Kanun (TTK m.5/A)</p>
             <p>
               Kişisel verileriniz için:{' '}
               <Link href="/privacy-policy" className="text-blue-400 hover:underline">

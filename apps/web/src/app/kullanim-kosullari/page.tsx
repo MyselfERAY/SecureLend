@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Kullanım Koşulları',
-  description: 'Kira Güvence kullanım koşulları ve hizmet şartları.',
+  description: 'Kira Güvence kullanım koşulları, zorunlu arabuluculuk ve yetki mahkemesi hükümleri.',
   robots: { index: true, follow: true },
   alternates: { canonical: '/kullanim-kosullari' },
 };
@@ -71,7 +71,55 @@ export default function KullanimKosullariPage() {
             Sorularınız için <a href="mailto:info@kiraguvence.com" className="text-blue-600 hover:underline">info@kiraguvence.com</a> adresine ulaşabilirsiniz.
           </p>
 
-          <p className="text-sm text-slate-400 mt-12">Son güncelleme: Nisan 2026</p>
+          <h2 className="text-xl font-bold text-slate-900 mt-8">8. Zorunlu Arabuluculuk (7155 Sayılı Kanun)</h2>
+          <p>
+            7155 sayılı Kanun ile 6102 sayılı Türk Ticaret Kanunu&apos;na eklenen m.5/A hükmü uyarınca,
+            ticari nitelikteki para alacaklarına ilişkin uyuşmazlıklarda dava açılmadan önce
+            arabuluculuğa başvurulması zorunludur. Arabuluculuk dava şartı niteliğindedir; bu
+            aşamaya başvurmaksızın açılan dava usulden reddedilir.
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>
+              <strong>Yetkili Arabuluculuk Merkezi:</strong> Adalet Bakanlığı Arabuluculuk Daire
+              Başkanlığı siciline kayıtlı İstanbul Arabuluculuk Merkezi ya da uyuşmazlık konusu
+              veya tarafların yerleşim yerine göre yetkili diğer resmi arabuluculuk merkezi.
+            </li>
+            <li>
+              Arabuluculuk başvurusu; arabulucuya doğrudan, Arabuluculuk Daire Başkanlığı&apos;na
+              veya yetkili mahkeme yazı işleri müdürlüğüne yapılabilir.
+            </li>
+            <li>
+              Arabuluculuk görüşmelerinin başarısızlıkla sonuçlandığının tutanakla tespitinden
+              itibaren dava açma hakkı doğar.
+            </li>
+            <li>
+              <strong>İstisna:</strong> Tüketici sıfatıyla işlem yapan kullanıcıların
+              uyuşmazlıklarında 6502 sayılı TKHK kapsamındaki tüketici hakem heyeti ve tüketici
+              mahkemesi yolu geçerlidir; bu kullanıcılara zorunlu ticari arabuluculuk hükmü
+              uygulanmaz.
+            </li>
+          </ul>
+
+          <h2 className="text-xl font-bold text-slate-900 mt-8">9. Yetkili Mahkeme ve Yetki Anlaşması</h2>
+          <p>
+            İşbu sözleşmeden doğan ve arabuluculuk yoluyla çözüme kavuşturulamayan
+            uyuşmazlıklarda yetkili yargı mercii aşağıda belirtilmiştir:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>
+              <strong>Ticari uyuşmazlıklar:</strong> İstanbul Mahkemeleri ve İcra Daireleri
+              münhasıran yetkilidir. Bu yetki anlaşması Hukuk Muhakemeleri Kanunu m.17 uyarınca
+              yapılmış olup yalnızca tacir sıfatı taşıyan veya ticari amaçla işlem yapan taraflar
+              arasında geçerlidir.
+            </li>
+            <li>
+              <strong>Tüketici uyuşmazlıkları:</strong> 6502 sayılı TKHK m.73 uyarınca tüketicinin
+              yerleşim yeri veya hizmetin ifa edildiği yer mahkemesi yetkilidir; yukarıdaki ticari
+              yetki anlaşması bu kullanıcılara karşı ileri sürülemez.
+            </li>
+          </ul>
+
+          <p className="text-sm text-slate-400 mt-12">Son güncelleme: Nisan 2026 — Sürüm 1.1</p>
         </div>
       </main>
     </div>
