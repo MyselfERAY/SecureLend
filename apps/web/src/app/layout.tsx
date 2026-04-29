@@ -70,7 +70,6 @@ export const metadata: Metadata = {
   },
   other: {
     'theme-color': '#1d4ed8',
-    'google-site-verification': 'h5BpCsjdu1jdMFvQpiqh1Uat9EVhgNNX7tE',
   },
 };
 
