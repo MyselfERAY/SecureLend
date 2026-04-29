@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard/', '/api/'],
     },
-    sitemap: 'https://kiraguvence.com/sitemap.xml',
+    sitemap: 'https://www.kiraguvence.com/sitemap.xml',
   };
 }

@@ -40,7 +40,7 @@ export default function OnBilgilendirmePage() {
           <Section title="Hizmet Sunucu Bilgileri">
             <InfoRow label="Unvan" value="SecureLend Teknoloji A.Ş." />
             <InfoRow label="E-posta" value="info@kiraguvence.com" />
-            <InfoRow label="Web Sitesi" value="https://kiraguvence.com" />
+            <InfoRow label="Web Sitesi" value="https://www.kiraguvence.com" />
             <InfoRow label="Hizmet" value="Dijital kira sözleşmesi yönetimi ve KMH başvuru aracılık platformu" />
           </Section>
 

@@ -31,7 +31,7 @@ export default function KVKKPage() {
             <p>
               <strong>Veri Sorumlusu:</strong> SecureLend Teknoloji A.Ş. (&quot;Şirket&quot;, &quot;SecureLend&quot;)
               — <a href="mailto:info@kiraguvence.com" className="text-blue-600 hover:underline">info@kiraguvence.com</a>
-              {' '}— <a href="https://kiraguvence.com" className="text-blue-600 hover:underline">kiraguvence.com</a>
+              {' '}— <a href="https://www.kiraguvence.com" className="text-blue-600 hover:underline">kiraguvence.com</a>
             </p>
             <p className="mt-2 text-sm text-slate-500">
               VERBİS Sicil No: [VERBİS Kayıt No] · KEP: [KEP Adresi]

@@ -4,7 +4,7 @@ import { AuthProvider } from '../lib/auth-context';
 import { AnalyticsProvider } from '../components/analytics-provider';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kiraguvence.com'),
+  metadataBase: new URL('https://www.kiraguvence.com'),
   title: {
     default: 'Kira Güvence - Dijital Kira Ödeme Platformu | Güvenli Kira Yönetimi',
     template: '%s | Kira Güvence',
@@ -79,8 +79,8 @@ const jsonLd = {
   '@type': 'Organization',
   name: 'Kira Güvence',
   legalName: 'Kira Güvence Teknoloji',
-  url: 'https://kiraguvence.com',
-  logo: 'https://kiraguvence.com/opengraph-image',
+  url: 'https://www.kiraguvence.com',
+  logo: 'https://www.kiraguvence.com/opengraph-image',
   description:
     'Dijital kira ödeme platformu. Kiracı, ev sahibi ve banka arasındaki süreci tek merkezde yönetir.',
   foundingDate: '2024',
@@ -109,7 +109,7 @@ const jsonLd = {
     addressLocality: 'Istanbul',
   },
   sameAs: [
-    'https://kiraguvence.com',
+    'https://www.kiraguvence.com',
   ],
 };
 
@@ -117,7 +117,7 @@ const webAppJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Kira Güvence',
-  url: 'https://kiraguvence.com',
+  url: 'https://www.kiraguvence.com',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Web, iOS, Android',
   description:
