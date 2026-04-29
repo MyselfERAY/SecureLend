@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li style={li}>
               Web:{" "}
-              <a href="https://kiraguvence.com" style={{ color: "#3b82f6" }}>kiraguvence.com</a>
+              <a href="https://www.kiraguvence.com" style={{ color: "#3b82f6" }}>kiraguvence.com</a>
             </li>
           </ul>
         </div>

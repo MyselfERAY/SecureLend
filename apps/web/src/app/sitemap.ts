@@ -17,7 +17,7 @@ async function getArticleSlugs(): Promise<string[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://kiraguvence.com';
+  const baseUrl = 'https://www.kiraguvence.com';
   const slugs = await getArticleSlugs();
 
   const staticPages: MetadataRoute.Sitemap = [

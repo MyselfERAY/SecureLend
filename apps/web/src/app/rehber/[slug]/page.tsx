@@ -72,11 +72,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     publisher: {
       '@type': 'Organization',
       name: 'Kira Güvence',
-      url: 'https://kiraguvence.com',
+      url: 'https://www.kiraguvence.com',
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://kiraguvence.com/rehber/${slug}`,
+      '@id': `https://www.kiraguvence.com/rehber/${slug}`,
     },
   };
 
@@ -84,8 +84,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://kiraguvence.com' },
-      { '@type': 'ListItem', position: 2, name: 'Rehber', item: 'https://kiraguvence.com/rehber' },
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://www.kiraguvence.com' },
+      { '@type': 'ListItem', position: 2, name: 'Rehber', item: 'https://www.kiraguvence.com/rehber' },
       { '@type': 'ListItem', position: 3, name: article.title },
     ],
   };
