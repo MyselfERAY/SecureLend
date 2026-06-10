@@ -144,8 +144,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome */}
-      <div>
-        <h1 className="text-2xl font-bold text-white sm:text-3xl">
+      <div className="animate-fade-up">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
           Hoş geldiniz, {user?.fullName}
         </h1>
         <p className="mt-1 text-sm text-slate-400">
@@ -261,7 +261,7 @@ export default function DashboardPage() {
               <Link
                 key={c.id}
                 href={`/dashboard/contracts/${c.id}`}
-                className="block rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition hover:border-blue-500/30 hover:bg-[#112240]"
+                className="block rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-[#112240]"
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -381,14 +381,14 @@ function StatCard({
   const c = colorMap[color] || colorMap.slate;
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+    <div className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-400">{title}</span>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.bg}`}>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.bg} transition-transform duration-300 group-hover:scale-110`}>
           <span className={c.icon}>{icon}</span>
         </div>
       </div>
-      <div className={`mt-3 text-3xl font-bold ${c.text}`}>{value}</div>
+      <div className={`mt-3 font-display text-3xl font-bold ${c.text}`}>{value}</div>
     </div>
   );
 }
@@ -407,13 +407,18 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group flex items-start gap-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition hover:border-blue-500/30 hover:bg-[#112240]"
+      className="group flex items-start gap-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-[#112240]"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 transition group-hover:bg-blue-600/30">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-600/30">
         {icon}
       </div>
-      <div>
-        <div className="font-semibold text-white">{title}</div>
+      <div className="flex-1">
+        <div className="flex items-center gap-1.5 font-semibold text-white">
+          {title}
+          <svg className="h-4 w-4 -translate-x-1 text-blue-400 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
         <div className="mt-0.5 text-sm text-slate-400">{desc}</div>
       </div>
     </Link>

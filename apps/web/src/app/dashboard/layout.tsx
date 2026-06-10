@@ -183,10 +183,10 @@ export default function DashboardLayout({
                 key={link.href}
                 href={link.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   active
-                    ? 'bg-blue-600/20 text-blue-400'
-                    : 'text-slate-400 hover:bg-slate-700/40 hover:text-slate-200'
+                    ? 'bg-gradient-to-r from-blue-600/25 to-blue-600/5 text-blue-300 shadow-[inset_3px_0_0_0_#3b82f6]'
+                    : 'text-slate-400 hover:translate-x-0.5 hover:bg-slate-700/40 hover:text-slate-200'
                 }`}
               >
                 {link.icon}
@@ -222,7 +222,7 @@ export default function DashboardLayout({
         {/* User section at bottom */}
         <div className="border-t border-slate-700/50 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600/30 text-sm font-bold text-blue-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/40 to-indigo-600/40 text-sm font-bold text-blue-200 ring-1 ring-blue-400/30">
               {user?.fullName?.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'U'}
             </div>
             <div className="flex-1 min-w-0">

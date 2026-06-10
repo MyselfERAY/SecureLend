@@ -16,18 +16,18 @@ export default function Logo({ className = '', size = 'md', variant = 'dark' }: 
   const colors =
     variant === 'light'
       ? {
-          badge: 'bg-blue-600 group-hover:bg-blue-500',
+          badge: 'bg-gradient-to-br from-blue-500 to-indigo-600 group-hover:from-blue-400 group-hover:to-indigo-500',
           wordmark: 'text-white group-hover:text-blue-200',
         }
       : {
-          badge: 'bg-slate-900 group-hover:bg-blue-700',
+          badge: 'bg-gradient-to-br from-slate-800 to-slate-950 group-hover:from-blue-600 group-hover:to-indigo-700',
           wordmark: 'text-slate-900 group-hover:text-blue-700',
         };
 
   return (
     <Link href="/" className={`inline-flex items-center ${config.gap} group ${className}`}>
       <div
-        className={`flex flex-shrink-0 items-center justify-center ${config.badge} ${colors.badge} font-black text-white shadow-sm transition-colors duration-200`}
+        className={`flex flex-shrink-0 items-center justify-center ${config.badge} ${colors.badge} font-black text-white shadow-soft transition-all duration-200`}
         aria-hidden="true"
       >
         sL

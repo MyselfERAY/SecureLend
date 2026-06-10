@@ -139,7 +139,7 @@ export default function HomePage() {
             <Link
               href="/auth/register"
               data-cta="header-hesap-olustur"
-              className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+              className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-glow active:translate-y-0"
             >
               Ücretsiz Hesap Oluştur
             </Link>
@@ -183,12 +183,19 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl">
             <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
               {/* Left: Text */}
-              <div>
-                <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
+              <div className="animate-fade-up">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-600" />
+                  </span>
                   Türkiye&apos;nin Dijital Kira Platformu
                 </span>
-                <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-                  Kefil derdi bitti. Kiranız banka güvencesinde.
+                <h1 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-[3.4rem]">
+                  Kefil derdi bitti.{' '}
+                  <span className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Kiranız banka güvencesinde.
+                  </span>
                 </h1>
                 <p className="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
                   Findeks raporu, kefil arayışı, noter masrafı — hepsi geride kaldı.
@@ -199,13 +206,16 @@ export default function HomePage() {
                   <Link
                     href="/auth/register"
                     data-cta="hero-ucretsiz-basla"
-                    className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-6 py-3.5 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 active:translate-y-0 active:scale-[0.98]"
                   >
                     Ücretsiz Hesap Oluştur
+                    <svg className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </Link>
                   <a
                     href="#nasil-calisir"
-                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 active:translate-y-0"
                   >
                     Nasıl Çalışır?
                   </a>
@@ -234,10 +244,10 @@ export default function HomePage() {
               </div>
 
               {/* Right: Dashboard mockup illustration */}
-              <div className="hidden lg:block relative">
-                <div className="absolute -right-8 -top-8 h-72 w-72 rounded-full bg-blue-100 opacity-40 blur-3xl" />
-                <div className="absolute -bottom-4 -left-4 h-48 w-48 rounded-full bg-emerald-100 opacity-40 blur-3xl" />
-                <div className="relative rounded-2xl border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-200/60">
+              <div className="hidden lg:block relative animate-fade-up animation-delay-200">
+                <div className="absolute -right-8 -top-8 h-72 w-72 rounded-full bg-blue-200 opacity-50 blur-3xl" />
+                <div className="absolute -bottom-4 -left-4 h-48 w-48 rounded-full bg-emerald-100 opacity-50 blur-3xl" />
+                <div className="relative animate-float rounded-2xl border border-slate-200 bg-white p-1 shadow-card-hover">
                   {/* Window chrome */}
                   <div className="flex items-center gap-1.5 border-b border-slate-100 px-4 py-2.5">
                     <div className="h-2.5 w-2.5 rounded-full bg-rose-400" />
@@ -322,7 +332,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanıtım</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kira Güvence Nasıl Çalışır?</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Kira Güvence Nasıl Çalışır?</h2>
               <p className="mt-3 text-base text-slate-500">Platform tanıtımını adım adım inceleyin.</p>
             </div>
             <div className="mt-10">
@@ -372,7 +382,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Platform</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Her şey tek yerde</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Her şey tek yerde</h2>
               <p className="mt-3 text-base text-slate-500">Kiracıdan ev sahibine, bankadan emlakçıya — tüm süreç dijitalde.</p>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -388,16 +398,16 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Süreç</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Nasıl Çalışır?</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Nasıl Çalışır?</h2>
               <p className="mt-3 text-base text-slate-500">4 adımda dijital kira yönetimine geçin.</p>
             </div>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {steps.map((step, i) => (
-                <div key={step.number} className="relative rounded-2xl bg-white border border-slate-200 p-6 shadow-sm">
+                <div key={step.number} className="group relative rounded-2xl bg-white border border-slate-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover">
                   {i < steps.length - 1 && (
                     <div className="absolute right-0 top-8 hidden h-px w-6 bg-slate-300 lg:block" style={{ right: '-24px' }} />
                   )}
-                  <span className="text-3xl font-black text-blue-100">{step.number}</span>
+                  <span className="font-display text-3xl font-black text-blue-100 transition-colors duration-300 group-hover:text-blue-300">{step.number}</span>
                   <h3 className="mt-3 text-base font-bold text-slate-900">{step.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-500">{step.desc}</p>
                 </div>
@@ -406,7 +416,7 @@ export default function HomePage() {
             <div className="mt-10 text-center">
               <Link
                 href="/auth/register"
-                className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-8 py-3.5 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 active:translate-y-0 active:scale-[0.98]"
               >
                 Ücretsiz Hesap Oluştur
               </Link>
@@ -421,7 +431,7 @@ export default function HomePage() {
               <div className="flex items-end justify-between mb-8">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Rehber</p>
-                  <h2 className="mt-1 text-3xl font-extrabold text-slate-900">Son Yazılar</h2>
+                  <h2 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-900">Son Yazılar</h2>
                 </div>
                 <Link href="/rehber" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
                   Tümünü gör →
@@ -432,7 +442,7 @@ export default function HomePage() {
                   <Link
                     key={article.id}
                     href={`/rehber/${article.slug}`}
-                    className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-blue-200"
+                    className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover"
                   >
                     <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
                       {fixTurkish(article.category)}
@@ -453,7 +463,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Kullanıcılar</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Ne Diyorlar?</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Ne Diyorlar?</h2>
               <p className="mt-3 text-base text-slate-500">Platformumuzu kullanan kiracı, ev sahibi ve emlakçıların görüşleri.</p>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -465,9 +475,11 @@ export default function HomePage() {
         </section>
 
         {/* ── CTA BAND ── */}
-        <section className="bg-blue-700 px-4 py-14 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-extrabold text-white">Hemen başlamaya hazır mısınız?</h2>
+        <section className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-700 to-indigo-800 px-4 py-14 sm:px-6 lg:px-8">
+          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-500/30 blur-3xl" aria-hidden="true" />
+          <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" aria-hidden="true" />
+          <div className="relative mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-3xl font-extrabold tracking-tight text-white">Hemen başlamaya hazır mısınız?</h2>
             <p className="mt-4 text-base text-blue-100">
               Ücretsiz hesap oluşturun, 5 dakikada kira yönetiminizi dijitale taşıyın.
             </p>
@@ -475,13 +487,13 @@ export default function HomePage() {
               <Link
                 href="/auth/register"
                 data-cta="cta-band-ucretsiz-basla"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-blue-700 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-0 active:scale-[0.98]"
               >
                 Ücretsiz Hesap Oluştur
               </Link>
               <Link
                 href="/auth/login"
-                className="inline-flex items-center justify-center rounded-xl border border-blue-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
+                className="inline-flex items-center justify-center rounded-xl border border-blue-400/60 px-8 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-600/50 active:translate-y-0"
               >
                 Giriş Yap
               </Link>
@@ -493,7 +505,7 @@ export default function HomePage() {
         <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl text-center">
             <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Bülten</p>
-            <h2 className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
               Kira Rehberi Bülteni
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -555,7 +567,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-3xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">SSS</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-white">Sıkça Sorulan Sorular</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-white">Sıkça Sorulan Sorular</h2>
               <p className="mt-3 text-base text-slate-400">En çok merak edilen soruların yanıtları.</p>
             </div>
             <div className="mt-10 divide-y divide-slate-700/50 rounded-2xl border border-slate-700/50 bg-[#0d1b2a]">
@@ -590,7 +602,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <Logo size="sm" />
+              <Logo size="sm" variant="light" />
               <p className="mt-4 text-sm leading-6 text-slate-400">
                 Türkiye&apos;nin dijital kira güvence platformu. Kiracı, ev sahibi ve banka arasındaki süreci güvenle yönetin.
               </p>
@@ -657,17 +669,17 @@ function FeatureCard({ icon, title, desc, highlighted }: { icon: string; title: 
   };
 
   return (
-    <article className={`relative rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
+    <article className={`relative rounded-2xl border bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover ${
       highlighted
         ? 'border-blue-500 shadow-blue-100 ring-1 ring-blue-500/20'
-        : 'border-slate-200'
+        : 'border-slate-200 hover:border-blue-200'
     }`}>
       {highlighted && (
         <span className="absolute -top-3 right-4 inline-flex items-center rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
           En Önemli
         </span>
       )}
-      <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${highlighted ? 'bg-blue-100' : 'bg-blue-50'}`}>
+      <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${highlighted ? 'bg-gradient-to-br from-blue-100 to-indigo-100' : 'bg-blue-50'}`}>
         <svg className="h-5 w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={icons[icon]} />
         </svg>
@@ -699,7 +711,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 
 function TestimonialCard({ name, role, comment, avatar }: { name: string; role: string; comment: string; avatar: string }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover">
       <div className="flex">
         {[...Array(5)].map((_, i) => (
           <svg key={i} className="h-4 w-4 fill-amber-400" viewBox="0 0 20 20" aria-hidden="true">
