@@ -86,21 +86,25 @@ function VerifyOtpContent() {
     : '';
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
-        <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white sm:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Second Factor</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight">SMS doğrulama</h1>
-          <p className="mt-4 text-sm leading-6 text-slate-300">
-            Tek kullanımlık kod ile hesabınıza sadece size ait cihazdan erişim sağlayın.
-          </p>
-          <div className="mt-8 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3 text-sm text-slate-200">
-            Gönderilen numara: <span className="font-semibold">{maskedPhone || '-'}</span>
+        <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 text-white sm:p-10 animate-fade-up">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/20 blur-3xl" aria-hidden="true" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-indigo-600/15 blur-3xl" aria-hidden="true" />
+          <div className="relative">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-blue-300">İkinci Adım</p>
+            <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight">SMS doğrulama</h1>
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              Tek kullanımlık kod ile hesabınıza sadece size ait cihazdan erişim sağlayın.
+            </p>
+            <div className="mt-8 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3 text-sm text-slate-200">
+              Gönderilen numara: <span className="font-semibold">{maskedPhone || '-'}</span>
+            </div>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] sm:p-10">
-          <h2 className="text-2xl font-extrabold text-slate-900">OTP Kodu</h2>
+        <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-card sm:p-10 animate-fade-up animation-delay-150">
+          <h2 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">OTP Kodu</h2>
           <p className="mt-2 text-sm text-slate-600">6 haneli kodu girerek girişi tamamlayın.</p>
 
           <div className="mt-6 space-y-6">
@@ -121,7 +125,7 @@ function VerifyOtpContent() {
                   value={digit}
                   onChange={(e) => handleChange(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(i, e)}
-                  className="h-14 w-11 rounded-xl border border-slate-300 bg-white text-center text-2xl font-extrabold text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 sm:w-12"
+                  className="h-14 w-11 rounded-xl border border-slate-300 bg-white text-center text-2xl font-extrabold text-slate-900 shadow-sm outline-none transition-all duration-150 focus:scale-105 focus:border-blue-600 focus:shadow-glow focus:ring-4 focus:ring-blue-100 sm:w-12"
                 />
               ))}
             </div>

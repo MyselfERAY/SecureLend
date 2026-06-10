@@ -15,25 +15,25 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6">
+    <div className="mb-6 animate-fade-up">
       {back && (
         <Link
           href={back.href}
-          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition mb-3"
+          className="group inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition mb-3"
         >
-          <ChevronLeft className="h-3.5 w-3.5" />
+          <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
           {back.label}
         </Link>
       )}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-start gap-3">
           {Icon && (
-            <div className="h-10 w-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/20 flex items-center justify-center shadow-[0_0_20px_-6px_rgba(59,130,246,0.4)]">
               <Icon className="h-5 w-5 text-blue-400" />
             </div>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-white">{title}</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">{title}</h1>
             {desc && <p className="text-sm text-slate-400 mt-1">{desc}</p>}
           </div>
         </div>
@@ -49,7 +49,7 @@ export function Card({
   children, className = '', padding = true,
 }: { children: React.ReactNode; className?: string; padding?: boolean }) {
   return (
-    <div className={`rounded-xl border border-slate-700/50 bg-[#0d1b2a] ${padding ? 'p-5' : ''} ${className}`}>
+    <div className={`rounded-xl border border-slate-700/50 bg-[#0d1b2a] transition-colors duration-300 hover:border-slate-600/60 ${padding ? 'p-5' : ''} ${className}`}>
       {children}
     </div>
   );
@@ -80,22 +80,22 @@ export function StatCard({
   const c = ACCENT_CLASSES[accent];
   const displayValue = typeof value === 'number' ? value.toLocaleString('tr-TR') : value;
   return (
-    <Card>
+    <div className="group animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]">
       <div className="flex items-start justify-between">
         <div>
           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-white">{displayValue}</span>
+            <span className="font-display text-2xl font-bold text-white">{displayValue}</span>
             {sublabel && <span className="text-xs text-slate-500">{sublabel}</span>}
           </div>
         </div>
         {Icon && (
-          <div className={`h-9 w-9 rounded-lg ${c.bg} ${c.border} border flex items-center justify-center`}>
+          <div className={`h-9 w-9 rounded-lg ${c.bg} ${c.border} border flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
             <Icon className={`h-4 w-4 ${c.text}`} />
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -149,7 +149,7 @@ export function DataTable<T extends { id: string }>({
   }
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] overflow-hidden">
+    <div className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-slate-800/40 border-b border-slate-700/50">
@@ -169,7 +169,7 @@ export function DataTable<T extends { id: string }>({
           </thead>
           <tbody className="divide-y divide-slate-700/50">
             {data.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-800/30 transition">
+              <tr key={row.id} className="transition-colors duration-150 hover:bg-blue-500/[0.06]">
                 {columns.map((col) => (
                   <td
                     key={col.key}
@@ -196,9 +196,9 @@ export function EmptyState({
 }: { icon?: LucideIcon; title: string; desc?: string }) {
   return (
     <Card>
-      <div className="py-12 text-center">
+      <div className="py-12 text-center animate-fade-in">
         {Icon && (
-          <div className="inline-flex h-12 w-12 rounded-full bg-slate-800 border border-slate-700 items-center justify-center mb-3">
+          <div className="inline-flex h-12 w-12 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 items-center justify-center mb-3">
             <Icon className="h-6 w-6 text-slate-500" />
           </div>
         )}
@@ -224,10 +224,10 @@ export function LoadingSkeleton({ rows = 3 }: { rows?: number }) {
 /* ─── Button ─────────────────────────────────────────────────── */
 
 const BUTTON_VARIANTS = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white border border-blue-600',
-  secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700',
+  primary: 'bg-blue-600 hover:bg-blue-500 text-white border border-blue-600 shadow-[0_4px_14px_-4px_rgba(59,130,246,0.5)] hover:-translate-y-px',
+  secondary: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600',
   ghost: 'bg-transparent hover:bg-slate-800 text-slate-400 hover:text-white border border-transparent',
-  danger: 'bg-rose-600 hover:bg-rose-700 text-white border border-rose-600',
+  danger: 'bg-rose-600 hover:bg-rose-500 text-white border border-rose-600 shadow-[0_4px_14px_-4px_rgba(244,63,94,0.5)] hover:-translate-y-px',
 } as const;
 
 export function Button({
@@ -245,7 +245,7 @@ export function Button({
   return (
     <button
       {...props}
-      className={`inline-flex items-center gap-1.5 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed ${BUTTON_VARIANTS[variant]} ${sizeClass} ${props.className || ''}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg font-medium transition-all duration-200 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${BUTTON_VARIANTS[variant]} ${sizeClass} ${props.className || ''}`}
     >
       {Icon && <Icon className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
       {children}

@@ -89,8 +89,8 @@ export default function KpsVerification() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+    <div className="max-w-md mx-auto animate-fade-up animation-delay-150 bg-white p-6 rounded-lg shadow-card">
+      <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 mb-6 text-center">
         KPS Kimlik Doğrulama
       </h2>
       
@@ -165,7 +165,7 @@ export default function KpsVerification() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+          className="btn-shine w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-md shadow-glow transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:hover:translate-y-0"
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
@@ -179,7 +179,7 @@ export default function KpsVerification() {
       </form>
 
       {result && (
-        <div className="mt-6">
+        <div className="mt-6 animate-scale-in">
           <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
             result.isValid 
               ? 'bg-green-100 text-green-800 border border-green-200' 

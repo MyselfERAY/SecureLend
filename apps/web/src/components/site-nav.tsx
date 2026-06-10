@@ -73,7 +73,7 @@ export default function SiteNav({ variant = 'light' }: SiteNavProps) {
           </Link>
           <Link
             href="/auth/register"
-            className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+            className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-glow active:translate-y-0"
           >
             Ücretsiz Hesap Oluştur
           </Link>

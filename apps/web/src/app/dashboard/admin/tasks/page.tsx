@@ -229,7 +229,7 @@ export default function TaskTrackingPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Başlık, açıklama, sorumlu ara..."
-              className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-700 bg-slate-900 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-700 bg-slate-900 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -241,7 +241,7 @@ export default function TaskTrackingPage() {
                 <button
                   key={opt.key}
                   onClick={() => setFilterStatus(opt.key)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 active:scale-[0.98] ${
                     active ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -311,7 +311,7 @@ export default function TaskTrackingPage() {
             return (
               <div
                 key={task.id}
-                className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 hover:border-slate-600 transition"
+                className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition-colors duration-300 hover:border-slate-600/60"
               >
                 <div className="flex flex-wrap items-start gap-4">
                   {/* Left: Content */}
@@ -372,7 +372,7 @@ export default function TaskTrackingPage() {
                             setEditingResponsibleId(task.id);
                             setResponsibleDraft(task.responsible || '');
                           }}
-                          className={`mt-0.5 w-full rounded-lg border px-2 py-1.5 text-left text-xs transition ${
+                          className={`mt-0.5 w-full rounded-lg border px-2 py-1.5 text-left text-xs transition-all duration-200 active:scale-[0.98] ${
                             task.responsible
                               ? 'border-slate-700 bg-slate-900 text-white hover:border-slate-600'
                               : 'border-dashed border-slate-600 bg-transparent text-slate-500 hover:border-slate-500 hover:text-slate-400'

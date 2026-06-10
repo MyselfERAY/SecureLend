@@ -17,16 +17,16 @@ export function ResultRejected({
 }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-[0_20px_55px_-30px_rgba(15,23,42,0.4)] sm:p-10">
+      <div className="w-full max-w-xl animate-fade-up rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-card sm:p-10">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
               Reddedildi
             </p>
-            <h1 className="mt-4 text-3xl font-extrabold text-slate-900">Başvuru sonucu olumsuz</h1>
+            <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-slate-900">Başvuru sonucu olumsuz</h1>
             <p className="mt-2 text-sm text-slate-600">TCKN: {application.maskedTckn}</p>
           </div>
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-700">
+          <div className="inline-flex h-12 w-12 animate-scale-in items-center justify-center rounded-full bg-rose-100 text-rose-700">
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -46,7 +46,7 @@ export function ResultRejected({
 
         <Link
           href="/"
-          className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-slate-800 hover:-translate-y-0.5 active:translate-y-0"
         >
           Tekrar Dene
         </Link>

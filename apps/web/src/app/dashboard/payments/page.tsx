@@ -88,7 +88,7 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Ödemelerim</h1>
+      <h1 className="animate-fade-up font-display text-2xl font-bold tracking-tight text-white">Ödemelerim</h1>
 
       {/* Messages */}
       {error && (
@@ -106,8 +106,8 @@ export default function PaymentsPage() {
 
       {/* Confirm modal */}
       {confirmPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-md rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="mx-4 w-full max-w-md rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4 animate-scale-in">
             <h3 className="text-lg font-semibold text-white">Ödeme Onayı</h3>
             <div className="rounded-lg border border-slate-700/50 bg-[#0a1628] p-4 text-sm space-y-2">
               <div className="flex justify-between">
@@ -132,7 +132,7 @@ export default function PaymentsPage() {
               <button
                 onClick={() => handleProcess(confirmPayment.id)}
                 disabled={processing === confirmPayment.id}
-                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50"
               >
                 {processing === confirmPayment.id ? 'İşleniyor...' : 'Ödemeyi Onayla'}
               </button>
@@ -149,11 +149,11 @@ export default function PaymentsPage() {
 
       {/* Pending payments */}
       {pending.length > 0 && (
-        <div>
+        <div className="animate-fade-up animation-delay-75">
           <h2 className="mb-3 text-lg font-semibold text-white">Bekleyen Ödemeler</h2>
           <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
             {pending.map((p) => (
-              <div key={p.id} className="flex items-center justify-between p-4">
+              <div key={p.id} className="flex items-center justify-between p-4 transition-colors hover:bg-slate-800/30">
                 <div>
                   <div className="font-medium text-white">{p.propertyTitle}</div>
                   <div className="mt-0.5 text-sm text-slate-400">{p.periodLabel} &middot; Vade: {p.dueDate}</div>
@@ -169,7 +169,7 @@ export default function PaymentsPage() {
                     <button
                       onClick={() => setConfirmPayment(p)}
                       disabled={processing === p.id}
-                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50"
                     >
                       {processing === p.id ? '...' : 'Ode'}
                     </button>
@@ -183,11 +183,11 @@ export default function PaymentsPage() {
 
       {/* Completed payments */}
       {completed.length > 0 && (
-        <div>
+        <div className="animate-fade-up animation-delay-150">
           <h2 className="mb-3 text-lg font-semibold text-white">Tamamlanan Ödemeler</h2>
           <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
             {completed.map((p) => (
-              <div key={p.id} className="flex items-center justify-between p-4">
+              <div key={p.id} className="flex items-center justify-between p-4 transition-colors hover:bg-slate-800/30">
                 <div>
                   <div className="font-medium text-white">{p.propertyTitle}</div>
                   <div className="mt-0.5 text-sm text-slate-400">{p.periodLabel}</div>
@@ -208,7 +208,7 @@ export default function PaymentsPage() {
 
       {/* Empty */}
       {payments.length === 0 && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+        <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
             <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />

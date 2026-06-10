@@ -61,19 +61,19 @@ export default function VeriTalebiPage() {
             <Link href="/kvkk" className="text-sm text-blue-600 hover:text-blue-700 font-medium">&larr; KVKK Aydınlatma Metni</Link>
           </div>
         </header>
-        <main className="mx-auto max-w-2xl px-6 py-16 text-center">
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+        <main className="mx-auto max-w-2xl px-6 py-16 text-center animate-fade-up">
+          <div className="mb-6 inline-flex h-16 w-16 animate-scale-in items-center justify-center rounded-full bg-green-100">
             <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 mb-2">Talebiniz Alındı</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900 mb-2">Talebiniz Alındı</h1>
           <p className="text-slate-600 mb-1">Referans numaranız: <span className="font-mono font-semibold text-slate-900">{refNo}</span></p>
           <p className="text-sm text-slate-500 mb-8">
             Başvurunuz en geç <strong>30 gün</strong> içinde info@kiraguvence.com adresinden yanıtlanacaktır.
           </p>
 
-          <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-left text-sm text-slate-700 mb-6">
+          <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-left text-sm text-slate-700 mb-6 shadow-card">
             <p className="font-semibold text-slate-900 mb-3">Başvuru Özeti</p>
             <dl className="space-y-1">
               <div className="flex gap-2"><dt className="w-28 shrink-0 font-medium text-slate-500">Ad Soyad</dt><dd>{form.adSoyad}</dd></div>
@@ -85,7 +85,7 @@ export default function VeriTalebiPage() {
 
           <a
             href={mailtoLink()}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
           >
             E-posta ile de gönder
           </a>
@@ -103,14 +103,16 @@ export default function VeriTalebiPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Veri Sahibi Başvuru Formu</h1>
-        <p className="text-sm text-slate-500 mb-8">
-          KVKK Madde 11 kapsamındaki haklarınızı kullanmak için bu formu doldurun.
-          Başvurular en geç <strong>30 gün</strong> içinde ücretsiz yanıtlanır.
-        </p>
+        <div className="animate-fade-up">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 mb-2">Veri Sahibi Başvuru Formu</h1>
+          <p className="text-sm text-slate-500 mb-8">
+            KVKK Madde 11 kapsamındaki haklarınızı kullanmak için bu formu doldurun.
+            Başvurular en geç <strong>30 gün</strong> içinde ücretsiz yanıtlanır.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5 shadow-card">
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -218,7 +220,7 @@ export default function VeriTalebiPage() {
           <button
             type="submit"
             disabled={!form.adSoyad || form.tckn.length !== 11 || !form.email || !form.talepTuru || form.aciklama.length < 10}
-            className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-shine inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:bg-blue-800 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
             Başvuruyu Gönder
           </button>

@@ -17,8 +17,8 @@ export default function PrivacyPolicyPage() {
 
       {/* Content */}
       <div style={{ maxWidth: 760, margin: "48px auto", padding: "0 24px 80px" }}>
-        <div style={{ background: "#fff", borderRadius: 12, padding: 32, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
-          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Gizlilik Politikası</h1>
+        <div className="animate-fade-up rounded-2xl border border-slate-200 shadow-card" style={{ background: "#fff", borderRadius: 12, padding: 32 }}>
+          <h1 className="font-display tracking-tight" style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Gizlilik Politikası</h1>
           <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 40 }}>Son güncelleme: 16 Nisan 2026</p>
 
           <p style={p}>

@@ -72,21 +72,21 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-end justify-between flex-wrap gap-4">
+      <div className="flex items-end justify-between flex-wrap gap-4 animate-fade-up">
         <div>
           <div className="text-xs text-slate-500 mb-1">
             {new Date().toLocaleDateString('tr-TR', {
               weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
             })}
           </div>
-          <h1 className="text-2xl font-bold text-white">Yönetim Paneli</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">Yönetim Paneli</h1>
         </div>
 
         {/* Critical alerts */}
         {!loading && criticalSuggestions > 0 && (
           <Link
             href="/dashboard/admin/suggestions"
-            className="inline-flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300 hover:bg-rose-500/15 transition"
+            className="inline-flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300 hover:bg-rose-500/15 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             <AlertCircle className="h-4 w-4" />
             {criticalSuggestions} kritik öneri bekliyor
@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-12 gap-3">
 
             {/* Revenue card — 5 cols, tall */}
-            <div className="col-span-12 md:col-span-5 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-[#0d1b2a] to-[#0d1b2a] p-5">
+            <div className="col-span-12 md:col-span-5 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-[#0d1b2a] to-[#0d1b2a] p-5 animate-fade-up transition-colors duration-300 hover:border-amber-500/30">
               <div className="flex items-center gap-2 text-xs font-medium text-amber-300 uppercase tracking-wider">
                 <TrendingUp className="h-3.5 w-3.5" />
                 Platform Geliri
@@ -182,7 +182,7 @@ export default function AdminDashboardPage() {
             {/* Agent pipeline — 8 cols */}
             <Link
               href="/dashboard/admin/suggestions"
-              className="col-span-12 md:col-span-8 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 hover:border-slate-600 transition group"
+              className="col-span-12 md:col-span-8 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 animate-fade-up animation-delay-150 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-[#112240] group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function AdminDashboardPage() {
 
             {/* KMH stats — 4 cols */}
             {stats.kmhApplications && (
-              <div className="col-span-12 md:col-span-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+              <div className="col-span-12 md:col-span-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 animate-fade-up animation-delay-200 transition-colors duration-300 hover:border-slate-600/60">
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
                   KMH Başvuruları
                 </div>
@@ -235,7 +235,7 @@ export default function AdminDashboardPage() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Activity className="h-4 w-4 text-slate-400" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Tüm Modüller
               </h2>
             </div>
@@ -284,7 +284,7 @@ function MetricTile({
   return (
     <Link
       href={href}
-      className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 hover:border-slate-600 transition flex flex-col justify-between"
+      className="group animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-[#112240] flex flex-col justify-between"
     >
       <div className="flex items-start justify-between">
         <div className={`h-8 w-8 rounded-lg ${colors.bg} ${colors.border} border flex items-center justify-center`}>
@@ -373,7 +373,7 @@ function ModuleTile({ href, icon: Icon, title, desc }: ModuleDef) {
   return (
     <Link
       href={href}
-      className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-3 hover:border-slate-600 hover:bg-[#0f2037] transition flex items-center gap-3"
+      className="group animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-[#112240] flex items-center gap-3"
     >
       <div className="h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 group-hover:bg-blue-500/10 group-hover:border-blue-500/30 transition">
         <Icon className="h-4 w-4 text-slate-400 group-hover:text-blue-400 transition" />

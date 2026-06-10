@@ -85,7 +85,7 @@ export default function AdminArticlesPage() {
       <div className="flex gap-1 p-1 rounded-lg bg-slate-800/50 border border-slate-700/50 w-fit">
         <button
           onClick={() => { setTab('DRAFT'); setPreview(null); }}
-          className={`px-4 py-1.5 text-sm font-medium rounded-md transition ${
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 active:scale-[0.98] ${
             tab === 'DRAFT' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -98,7 +98,7 @@ export default function AdminArticlesPage() {
         </button>
         <button
           onClick={() => { setTab('PUBLISHED'); setPreview(null); }}
-          className={`px-4 py-1.5 text-sm font-medium rounded-md transition ${
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 active:scale-[0.98] ${
             tab === 'PUBLISHED' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -124,10 +124,10 @@ export default function AdminArticlesPage() {
               <button
                 key={a.id}
                 onClick={() => setPreview(a)}
-                className={`w-full text-left rounded-xl border p-4 transition ${
+                className={`w-full text-left rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                   preview?.id === a.id
                     ? 'border-blue-500/50 bg-[#0f2037]'
-                    : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                    : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30 hover:bg-[#112240]'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -164,7 +164,7 @@ export default function AdminArticlesPage() {
                     <Badge tone="info">{AUDIENCE_LABEL[preview.audience]}</Badge>
                   </div>
 
-                  <h2 className="text-lg font-bold text-white leading-snug">{preview.title}</h2>
+                  <h2 className="font-display text-lg font-bold tracking-tight text-white leading-snug">{preview.title}</h2>
                   <p className="text-sm text-slate-300 border-l-2 border-blue-500/50 pl-3 italic">
                     {preview.summary}
                   </p>

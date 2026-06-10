@@ -233,8 +233,8 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
   if (introSlide >= 0) {
     const slide = introSlides[introSlide];
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/95 backdrop-blur-sm p-4">
-        <div className="w-full max-w-lg rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-8 text-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a1628]/95 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="w-full max-w-lg rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-8 text-center animate-scale-in">
           {/* Dots indicator */}
           <div className="flex justify-center gap-2 mb-8">
             {introSlides.map((_, i) => (
@@ -272,7 +272,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
             </button>
             <button
               onClick={() => introSlide < 2 ? setIntroSlide(introSlide + 1) : setIntroSlide(-1)}
-              className="rounded-lg bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-lg bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98]"
             >
               {introSlide < 2 ? 'Devam' : 'Başlayalım'}
             </button>
@@ -377,7 +377,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
           type="button"
           onClick={handleRoleContinue}
           disabled={!role || loading}
-          className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Kaydediliyor...' : 'Devam Et'}
         </button>
@@ -565,7 +565,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
             type="button"
             onClick={handlePropertySubmit}
             disabled={loading || !propertyForm.title || !propertyForm.addressLine1 || !propertyForm.city || !propertyForm.district || !propertyForm.monthlyRent}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Ekleniyor...' : 'Mülk Ekle'}
           </button>
@@ -603,7 +603,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
               type="button"
               onClick={handleTenantSearch}
               disabled={loading || phoneSearch.length !== 10}
-              className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Aranıyor...' : 'Ara'}
             </button>
@@ -661,7 +661,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
           <button
             type="button"
             onClick={() => setCurrentStep(4)}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98]"
           >
             Devam Et
           </button>
@@ -724,7 +724,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
           type="button"
           onClick={handleComplete}
           disabled={loading}
-          className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50"
         >
           {loading ? 'Yükleniyor...' : 'Panele Git'}
         </button>
@@ -751,7 +751,7 @@ export default function OnboardingWizard({ token, userName, onComplete }: Onboar
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-8 sm:p-10">
+      <div className="animate-fade-up rounded-2xl border border-slate-700/50 bg-[#0d1b2a] p-8 sm:p-10">
         {renderProgressBar()}
         {renderCurrentStep()}
       </div>

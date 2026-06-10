@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SiteNav from '../../components/site-nav';
 import Logo from '../../components/logo';
+import Reveal from '../../components/reveal';
 import { api } from '../../lib/api';
 
 /* ── PLAN DEFINITIONS ─────────────────────────────── */
@@ -233,11 +234,11 @@ export default function PricingContent() {
       <main>
         {/* ── HERO ── */}
         <section className="bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto max-w-3xl text-center animate-fade-up">
             <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
               Fiyatlandırma
             </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
+            <h1 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">
               Her Plana Banka Güvencesi Dahil
             </h1>
             <p className="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
@@ -260,13 +261,13 @@ export default function PricingContent() {
         <section className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="grid gap-6 sm:grid-cols-3">
-              {plans.map((plan) => (
+              {plans.map((plan, i) => (
+                <Reveal key={plan.name} delay={i * 120} className="h-full">
                 <div
-                  key={plan.name}
-                  className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm ${
+                  className={`relative flex h-full flex-col rounded-2xl border bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover ${
                     plan.highlighted
                       ? 'border-blue-500 ring-2 ring-blue-100'
-                      : 'border-slate-200'
+                      : 'border-slate-200 hover:border-blue-200'
                   }`}
                 >
                   {plan.highlighted && (
@@ -281,7 +282,7 @@ export default function PricingContent() {
                   <p className="mt-1 text-sm text-slate-500">{plan.subtitle}</p>
 
                   <div className="mt-5">
-                    <span className="text-3xl font-extrabold text-slate-900">{plan.price}</span>
+                    <span className="font-display text-3xl font-extrabold tracking-tight text-slate-900">{plan.price}</span>
                     <span className="text-sm text-slate-500"> {plan.priceNote}</span>
                   </div>
 
@@ -321,9 +322,9 @@ export default function PricingContent() {
                     <Link
                       href="/auth/register"
                       data-cta={`plan-${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
-                      className={`block w-full rounded-xl px-6 py-3 text-center text-sm font-semibold transition ${
+                      className={`block w-full rounded-xl px-6 py-3 text-center text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 ${
                         plan.highlighted
-                          ? 'bg-blue-700 text-white hover:bg-blue-800'
+                          ? 'btn-shine bg-blue-700 text-white shadow-glow hover:bg-blue-800 active:scale-[0.98]'
                           : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
                       }`}
                     >
@@ -331,6 +332,7 @@ export default function PricingContent() {
                     </Link>
                   </div>
                 </div>
+                </Reveal>
               ))}
             </div>
 
@@ -351,7 +353,7 @@ export default function PricingContent() {
           <div className="mx-auto max-w-5xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Karşılaştırma</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Geleneksel Yöntem vs Kira Güvence</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Geleneksel Yöntem vs Kira Güvence</h2>
               <p className="mt-3 text-base text-slate-500">
                 Kira sürecindeki gizli maliyetleri ve zaman kaybını ortadan kaldırın.
               </p>
@@ -359,7 +361,8 @@ export default function PricingContent() {
 
             <div className="mt-10 grid gap-6 sm:grid-cols-2">
               {/* Traditional */}
-              <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+              <Reveal className="h-full">
+              <div className="h-full rounded-2xl border border-red-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
                 <div className="flex items-center gap-3">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
                     <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -413,9 +416,11 @@ export default function PricingContent() {
                   <span className="text-sm font-semibold text-red-700">Toplam: 600 - 1.200+ TL + günlerce uğraş</span>
                 </div>
               </div>
+              </Reveal>
 
               {/* KiraGuvence */}
-              <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm ring-2 ring-emerald-100">
+              <Reveal delay={120} className="h-full">
+              <div className="h-full rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm ring-2 ring-emerald-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
                 <div className="flex items-center gap-3">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
                     <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -468,6 +473,7 @@ export default function PricingContent() {
                   <span className="text-sm font-semibold text-emerald-700">Toplam: Sadece garanti ücreti + 5 dakika</span>
                 </div>
               </div>
+              </Reveal>
             </div>
 
             {/* Bottom summary */}
@@ -487,25 +493,26 @@ export default function PricingContent() {
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Süre Avantajı</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Uzun Süreli Sözleşme İndirimi</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Uzun Süreli Sözleşme İndirimi</h2>
               <p className="mt-3 text-base text-slate-500">
                 Sözleşme süresine göre garanti ücretinde ek indirim kazanın.
               </p>
             </div>
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {durationDiscounts.map((d) => (
+              {durationDiscounts.map((d, i) => (
+                <Reveal key={d.label} delay={i * 120} className="h-full">
                 <div
-                  key={d.label}
-                  className={`rounded-2xl border p-6 text-center ${
-                    d.discount === 20 ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 bg-white'
+                  className={`h-full rounded-2xl border p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover ${
+                    d.discount === 20 ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 bg-white hover:border-blue-200'
                   }`}
                 >
                   <div className="text-sm font-medium text-slate-500">{d.label}</div>
-                  <div className={`mt-2 text-3xl font-extrabold ${d.discount > 0 ? 'text-blue-700' : 'text-slate-400'}`}>
+                  <div className={`mt-2 font-display text-3xl font-extrabold tracking-tight ${d.discount > 0 ? 'text-blue-700' : 'text-slate-400'}`}>
                     {d.discount > 0 ? `%${d.discount}` : '—'}
                   </div>
                   <div className="mt-1 text-sm text-slate-600">{d.note}</div>
                 </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -516,12 +523,13 @@ export default function PricingContent() {
           <div className="mx-auto max-w-4xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Kira Tutarı</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Kira Tutarına Göre Avantajlar</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Kira Tutarına Göre Avantajlar</h2>
               <p className="mt-3 text-base text-slate-500">
                 Yüksek kira tutarlarında ek garanti ücreti indirimleri uygulanır.
               </p>
             </div>
-            <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <Reveal>
+            <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
               {rentTiers.map((tier, idx) => (
                 <div
                   key={tier.range}
@@ -543,6 +551,7 @@ export default function PricingContent() {
                 </div>
               ))}
             </div>
+            </Reveal>
           </div>
         </section>
 
@@ -551,13 +560,14 @@ export default function PricingContent() {
           <div className="mx-auto max-w-5xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Hesaplayıcı</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Maliyet Hesaplayıcı</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Maliyet Hesaplayıcı</h2>
               <p className="mt-3 text-base text-slate-500">
                 Kira tutarı, mülk adedi ve sözleşme süresini girerek aylık maliyetinizi hesaplayın.
               </p>
             </div>
 
-            <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <Reveal>
+            <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
               <div className="grid gap-6 sm:grid-cols-3">
                 <div>
                   <label htmlFor="rentAmount" className="block text-sm font-semibold text-slate-700">
@@ -715,6 +725,7 @@ export default function PricingContent() {
                 </div>
               )}
             </div>
+            </Reveal>
           </div>
         </section>
 
@@ -723,13 +734,13 @@ export default function PricingContent() {
           <div className="mx-auto max-w-6xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Fırsatlar</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Özel Fırsatlar</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Özel Fırsatlar</h2>
             </div>
             <div className={`mt-10 grid gap-4 sm:grid-cols-2 ${promos.length >= 4 ? 'lg:grid-cols-4' : promos.length === 3 ? 'lg:grid-cols-3' : ''}`}>
-              {promos.map((promo) => (
+              {promos.map((promo, i) => (
+                <Reveal key={promo.name} delay={(i % 4) * 120} className="h-full">
                 <div
-                  key={promo.name}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+                  className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover"
                 >
                   <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
                     <svg className="h-5 w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -748,6 +759,7 @@ export default function PricingContent() {
                     </span>
                   )}
                 </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -762,7 +774,7 @@ export default function PricingContent() {
               </svg>
               Sınırlı Süre Teklifi
             </div>
-            <h2 className="mt-5 text-3xl font-extrabold text-white sm:text-4xl">
+            <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               14 Gün Ücretsiz Çoklu Mülk Planı Deneyin
             </h2>
             <p className="mt-4 text-base leading-7 text-blue-100">
@@ -774,7 +786,7 @@ export default function PricingContent() {
               <Link
                 href="/auth/register"
                 data-cta="pricing-14-gun-ucretsiz"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-blue-700 shadow-lg transition hover:bg-blue-50"
+                className="btn-shine inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-blue-700 shadow-lg transition-all duration-200 hover:bg-blue-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
               >
                 Ücretsiz Hesap Oluştur
               </Link>
@@ -801,9 +813,10 @@ export default function PricingContent() {
           <div className="mx-auto max-w-3xl">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">SSS</p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Sıkça Sorulan Sorular</h2>
+              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Sıkça Sorulan Sorular</h2>
             </div>
-            <div className="mt-10 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+            <Reveal>
+            <div className="mt-10 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white shadow-card">
               {faqItems.map((item, idx) => (
                 <div key={idx}>
                   <button
@@ -827,13 +840,14 @@ export default function PricingContent() {
                 </div>
               ))}
             </div>
+            </Reveal>
           </div>
         </section>
 
         {/* ── CTA BAND ── */}
         <section className="bg-blue-700 px-4 py-14 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-extrabold text-white">Hemen başlamaya hazır mısınız?</h2>
+            <h2 className="font-display text-3xl font-extrabold tracking-tight text-white">Hemen başlamaya hazır mısınız?</h2>
             <p className="mt-4 text-base text-blue-100">
               Ücretsiz hesap oluşturun, banka güvencesi ile kiranızı güvence altına alın.
             </p>
@@ -841,13 +855,13 @@ export default function PricingContent() {
               <Link
                 href="/auth/register"
                 data-cta="pricing-footer-ucretsiz-basla"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition hover:bg-blue-50"
+                className="btn-shine inline-flex items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-blue-700 shadow transition-all duration-200 hover:bg-blue-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
               >
                 Ücretsiz Hesap Oluştur
               </Link>
               <Link
                 href="/auth/login"
-                className="inline-flex items-center justify-center rounded-xl border border-blue-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
+                className="inline-flex items-center justify-center rounded-xl border border-blue-500 px-8 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-blue-600 hover:-translate-y-0.5 active:translate-y-0"
               >
                 Giriş Yap
               </Link>

@@ -153,9 +153,9 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="animate-fade-up flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Bildirimler</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">Bildirimler</h1>
           {unreadCount > 0 && (
             <p className="mt-1 text-sm text-slate-400">{unreadCount} okunmamış bildirim</p>
           )}
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+        <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
             <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -181,13 +181,13 @@ export default function NotificationsPage() {
           <p className="mt-2 text-sm text-slate-500">Ödeme ve sözleşme bildirimleri burada görünecektir.</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
+        <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] divide-y divide-slate-700/50">
           {notifications.map((n) => {
             const config = typeConfig[n.type] || defaultTypeConfig;
             return (
               <div
                 key={n.id}
-                className={`flex cursor-pointer gap-4 p-4 transition hover:bg-slate-700/20 ${
+                className={`flex cursor-pointer gap-4 p-4 transition-colors hover:bg-slate-800/30 ${
                   !n.isRead ? 'bg-blue-500/5' : ''
                 }`}
                 onClick={() => handleNotificationClick(n)}

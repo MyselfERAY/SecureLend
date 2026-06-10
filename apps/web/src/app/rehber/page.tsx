@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import SiteNav from '../../components/site-nav';
+import Reveal from '../../components/reveal';
 import { fixTurkish } from '../../lib/fix-turkish';
 
 interface Article {
@@ -55,9 +56,9 @@ export default async function RehberPage() {
 
       {/* Hero */}
       <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-3xl text-center animate-fade-up">
           <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Rehber</p>
-          <h1 className="mt-3 text-4xl font-extrabold text-slate-900">Kira Dünyasında Rehberiniz</h1>
+          <h1 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-900">Kira Dünyasında Rehberiniz</h1>
           <p className="mt-4 text-base text-slate-600">
             Kiracılar ve ev sahipleri için haklarınızı, sorumluluklarınızı ve finansal süreçleri anlatan sade yazılar.
           </p>
@@ -70,11 +71,11 @@ export default async function RehberPage() {
           <div className="py-20 text-center text-slate-500">Henüz yayınlanmış makale yok.</div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((article) => (
+            {articles.map((article, i) => (
+              <Reveal key={article.id} delay={(i % 3) * 120} className="h-full">
               <Link
-                key={article.id}
                 href={`/rehber/${article.slug}`}
-                className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-blue-200 hover:shadow-md"
+                className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs font-medium text-slate-500">{fixTurkish(article.category)}</span>
@@ -92,6 +93,7 @@ export default async function RehberPage() {
                   })}
                 </p>
               </Link>
+              </Reveal>
             ))}
           </div>
         )}

@@ -87,7 +87,7 @@ export function TcknForm() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+        <div className="animate-fade-in rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
           <p className="text-sm text-rose-700">{error}</p>
         </div>
       )}
@@ -95,7 +95,7 @@ export function TcknForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn-shine inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:bg-blue-800 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
         {isLoading ? (
           <>

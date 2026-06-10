@@ -38,27 +38,38 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-5xl">
         <Logo className="mb-6" />
       </div>
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
-        <section className="rounded-3xl border border-slate-200 bg-slate-900 p-8 text-white sm:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Secure Access</p>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight">Hesabınıza güvenli giriş yapın</h1>
-          <p className="mt-4 text-sm leading-6 text-slate-300">
-            Kimlik doğrulama ve SMS OTP adımları ile kiralama operasyonunu güvenli şekilde yönetin.
-          </p>
-          <div className="mt-8 space-y-3 text-sm text-slate-200">
-            <p>• TCKN bazlı kimlik doğrulama</p>
-            <p>• OTP ile ikinci katman güvenlik</p>
-            <p>• İşlem kayıtları ve izlenebilir süreç</p>
+        <section className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 text-white sm:p-10 animate-fade-up">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/20 blur-3xl" aria-hidden="true" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-indigo-600/15 blur-3xl" aria-hidden="true" />
+          <div className="relative">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-blue-300">Güvenli Giriş</p>
+            <h1 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight">Hesabınıza güvenli giriş yapın</h1>
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              Kimlik doğrulama ve SMS OTP adımları ile kiralama operasyonunu güvenli şekilde yönetin.
+            </p>
+            <ul className="mt-8 space-y-3 text-sm text-slate-200">
+              {['TCKN bazlı kimlik doğrulama', 'OTP ile ikinci katman güvenlik', 'İşlem kayıtları ve izlenebilir süreç'].map((item) => (
+                <li key={item} className="flex items-center gap-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+                    <svg className="h-3 w-3 text-blue-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-[0_18px_45px_-30px_rgba(15,23,42,0.45)] sm:p-10">
+        <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-card sm:p-10 animate-fade-up animation-delay-150">
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900">Giriş Yap</h2>
+            <h2 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">Giriş Yap</h2>
             <p className="mt-2 text-sm text-slate-600">Devam etmek için bilgilerinizi girin.</p>
           </div>
 
@@ -107,7 +118,7 @@ export default function LoginPage() {
               type="submit"
               data-cta="login-devam-et"
               disabled={loading || tckn.length !== 11 || phone.length !== 10}
-              className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 active:translate-y-0 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0"
             >
               {loading ? 'Giriş yapılıyor...' : 'Devam Et'}
             </button>

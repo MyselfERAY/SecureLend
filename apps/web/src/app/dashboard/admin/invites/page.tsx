@@ -168,7 +168,7 @@ export default function AdminInvitesPage() {
       />
 
       {newInvite && (
-        <Card className="border-emerald-500/30 bg-emerald-500/5">
+        <Card className="border-emerald-500/30 bg-emerald-500/5 animate-scale-in">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-emerald-400">Davet linki oluşturuldu!</p>
@@ -185,8 +185,8 @@ export default function AdminInvitesPage() {
       )}
 
       {showForm && (
-        <Card>
-          <h2 className="text-sm font-semibold text-white mb-4">Yeni Kişiselleştirilmiş Davet</h2>
+        <Card className="animate-scale-in">
+          <h2 className="font-display text-sm font-semibold tracking-tight text-white mb-4">Yeni Kişiselleştirilmiş Davet</h2>
           <form onSubmit={handleCreate} className="space-y-4">
             {formError && (
               <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
@@ -202,7 +202,7 @@ export default function AdminInvitesPage() {
                   onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                   placeholder="Ahmet Yılmaz"
                   required
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
                 />
               </div>
               <div>
@@ -212,7 +212,7 @@ export default function AdminInvitesPage() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="ahmet@example.com"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
                 />
               </div>
               <div>
@@ -222,7 +222,7 @@ export default function AdminInvitesPage() {
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                   placeholder="5551234567"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
                 />
               </div>
               <div>
@@ -233,7 +233,7 @@ export default function AdminInvitesPage() {
                   max={30}
                   value={form.expiresInDays}
                   onChange={(e) => setForm({ ...form, expiresInDays: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white transition-colors duration-200 focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function AdminInvitesPage() {
                 onChange={(e) => setForm({ ...form, note: e.target.value })}
                 placeholder="Merhaba, kiranızı güvence altına almak için hazırladığımız platforma davet ediyoruz..."
                 rows={2}
-                className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
             <div className="flex gap-2">

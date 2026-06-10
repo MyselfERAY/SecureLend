@@ -170,10 +170,10 @@ export default function BankPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Banka</h1>
+      <h1 className="animate-fade-up font-display text-2xl font-bold tracking-tight text-white">Banka</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
+      <div className="animate-fade-up animation-delay-75 flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
         {[
           { key: 'kmh' as ActiveTab, label: 'Banka Güvencesi' },
           { key: 'accounts' as ActiveTab, label: 'Hesaplar & İşlemler' },
@@ -210,7 +210,7 @@ export default function BankPage() {
       {activeTab === 'kmh' && (
         <>
           {pendingOnboarding && (
-            <div className="rounded-xl border-2 border-yellow-500/30 bg-yellow-500/10 p-6">
+            <div className="animate-fade-up animation-delay-150 rounded-xl border-2 border-yellow-500/30 bg-yellow-500/10 p-6">
               <h3 className="mb-2 text-lg font-bold text-yellow-400">Digital Onboarding Bekliyor</h3>
               <p className="mb-3 text-sm text-yellow-300/80">
                 Banka güvence başvurunuz onaylandı. Limit: <strong>{Number(pendingOnboarding.approvedLimit).toLocaleString('tr-TR')} TL</strong>.
@@ -235,15 +235,15 @@ export default function BankPage() {
           )}
 
           {canApply && !showForm && (
-            <div className="flex justify-end">
-              <button onClick={() => setShowForm(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+            <div className="animate-fade-up animation-delay-150 flex justify-end">
+              <button onClick={() => setShowForm(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98]">
                 Yeni Güvence Başvurusu
               </button>
             </div>
           )}
 
           {showForm && (
-            <form onSubmit={handleApplyKmh} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
+            <form onSubmit={handleApplyKmh} className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
               <h3 className="text-lg font-semibold text-white">Banka Güvence Hesabı Başvurusu</h3>
               <p className="text-sm text-slate-400">
                 Banka Güvence Hesabı (KMH) başvurusu için aşağıdaki bilgileri doldurun.
@@ -297,7 +297,7 @@ export default function BankPage() {
               </div>
 
               <div className="flex gap-3">
-                <button type="submit" disabled={submitting} className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
+                <button type="submit" disabled={submitting} className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
                   {submitting ? 'Başvuru yapılıyor...' : 'Başvur'}
                 </button>
                 <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-slate-600 px-6 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
@@ -309,10 +309,10 @@ export default function BankPage() {
 
           {/* Application History */}
           {applications.length > 0 && (
-            <div className="space-y-3">
+            <div className="animate-fade-up animation-delay-200 space-y-3">
               <h3 className="font-semibold text-white">Başvuru Geçmişi</h3>
               {applications.map((app) => (
-                <div key={app.id} className={`rounded-xl border-2 p-5 ${
+                <div key={app.id} className={`rounded-xl border-2 p-5 transition-all duration-300 hover:-translate-y-0.5 ${
                   app.status === 'APPROVED' && app.onboardingCompleted ? 'border-emerald-500/30 bg-[#0d1b2a]' :
                   app.status === 'APPROVED' ? 'border-yellow-500/30 bg-[#0d1b2a]' :
                   app.status === 'REJECTED' ? 'border-red-500/30 bg-[#0d1b2a]' : 'border-slate-700/50 bg-[#0d1b2a]'
@@ -366,7 +366,7 @@ export default function BankPage() {
           )}
 
           {applications.length === 0 && !showForm && (
-            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+            <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
                 <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -385,7 +385,7 @@ export default function BankPage() {
       {activeTab === 'accounts' && (
         <>
           {accounts.length === 0 ? (
-            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+            <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
                 <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -397,14 +397,14 @@ export default function BankPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="animate-fade-up animation-delay-150 space-y-4">
               {accounts.map((acc) => (
                 <div
                   key={acc.accountId}
-                  className={`cursor-pointer rounded-xl border-2 p-5 transition-all ${
+                  className={`cursor-pointer rounded-xl border-2 p-5 transition-all duration-300 hover:-translate-y-0.5 ${
                     selectedAccount === acc.accountId
                       ? 'border-blue-500/50 bg-[#112240]'
-                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30 hover:bg-[#112240]'
                   }`}
                   onClick={() => loadTransactions(acc.accountId)}
                 >
@@ -412,7 +412,7 @@ export default function BankPage() {
                     <div>
                       {acc.propertyTitle && <div className="mb-1 text-xs font-medium text-blue-400">{acc.propertyTitle}</div>}
                       <div className="font-mono text-sm text-slate-400">{acc.accountNumber}</div>
-                      <div className="mt-2 text-2xl font-bold text-white">
+                      <div className="mt-2 font-display text-2xl font-bold tracking-tight text-white">
                         {acc.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} {acc.currency}
                       </div>
                     </div>
@@ -432,11 +432,11 @@ export default function BankPage() {
           )}
 
           {selectedAccount && transactions.length > 0 && (
-            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+            <div className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
               <h2 className="mb-4 text-lg font-semibold text-white">Hesap Hareketleri</h2>
               <div className="divide-y divide-slate-700/50">
                 {transactions.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between py-3">
+                  <div key={t.id} className="flex items-center justify-between py-3 transition-colors hover:bg-slate-800/30">
                     <div>
                       <div className="font-medium text-white">{t.description || 'Transfer'}</div>
                       <div className="text-xs text-slate-500">

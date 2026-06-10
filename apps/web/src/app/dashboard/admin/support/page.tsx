@@ -140,7 +140,7 @@ export default function AdminSupportPage() {
 
       <div className="flex gap-4" style={{ height: 'calc(100vh - 220px)' }}>
         {/* Room List */}
-        <div className="w-80 flex-shrink-0 overflow-y-auto rounded-xl border border-slate-700/50 bg-[#0d1b2a]">
+        <div className="w-80 flex-shrink-0 overflow-y-auto rounded-xl border border-slate-700/50 bg-[#0d1b2a] animate-fade-up transition-colors duration-300 hover:border-slate-600/60">
           {rooms.length === 0 ? (
             <div className="py-16 text-center text-sm text-slate-500">
               Henüz destek talebi yok
@@ -150,7 +150,7 @@ export default function AdminSupportPage() {
               <button
                 key={room.id}
                 onClick={() => selectRoom(room.id)}
-                className={`w-full border-b border-slate-700/30 px-4 py-3 text-left transition hover:bg-slate-700/30 ${
+                className={`w-full border-b border-slate-700/30 px-4 py-3 text-left transition-colors duration-150 hover:bg-blue-500/[0.06] ${
                   selectedRoomId === room.id ? 'bg-blue-600/20' : ''
                 }`}
               >
@@ -178,7 +178,7 @@ export default function AdminSupportPage() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex flex-1 flex-col rounded-xl border border-slate-700/50 bg-[#0d1b2a]">
+        <div className="flex flex-1 flex-col rounded-xl border border-slate-700/50 bg-[#0d1b2a] animate-fade-up transition-colors duration-300 hover:border-slate-600/60">
           {!selectedRoomId ? (
             <div className="flex flex-1 items-center justify-center text-slate-500">
               Bir sohbet seçin
@@ -243,7 +243,7 @@ export default function AdminSupportPage() {
                       }
                     }}
                     placeholder="Mesajınızı yazın..."
-                    className="flex-1 rounded-lg border border-slate-600 bg-[#0a1628] px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
+                    className="flex-1 rounded-lg border border-slate-600 bg-[#0a1628] px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 transition-colors duration-200 focus:border-blue-500"
                     maxLength={2000}
                   />
                   <Button

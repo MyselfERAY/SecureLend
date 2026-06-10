@@ -208,14 +208,14 @@ export default function AdminSuggestionsPage() {
             <button
               key={ds}
               onClick={() => setFilterStatus(active ? 'ALL' : ds)}
-              className={`rounded-xl border p-3 text-center transition ${
+              className={`rounded-xl border p-3 text-center transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                 active
                   ? 'border-blue-500/50 bg-blue-500/10'
-                  : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                  : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30 hover:bg-[#112240]'
               }`}
             >
               <div className="text-xs font-medium text-slate-400">{meta.label}</div>
-              <div className="text-2xl font-bold text-white mt-1">{counts[ds]}</div>
+              <div className="font-display text-2xl font-bold text-white mt-1">{counts[ds]}</div>
             </button>
           );
         })}
@@ -230,7 +230,7 @@ export default function AdminSuggestionsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Başlık veya açıklamada ara..."
-            className="w-full rounded-lg border border-slate-700 bg-[#0d1b2a] pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full rounded-lg border border-slate-700 bg-[#0d1b2a] pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
           />
         </div>
         <select
@@ -258,7 +258,7 @@ export default function AdminSuggestionsPage() {
           <button
             type="button"
             onClick={() => { setSearch(''); setFilterPriority('ALL'); setFilterStatus('ALL'); }}
-            className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm text-slate-400 hover:text-white hover:border-slate-600"
+            className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm text-slate-400 hover:text-white hover:border-slate-600 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             Temizle
           </button>
@@ -274,7 +274,7 @@ export default function AdminSuggestionsPage() {
 
       {/* Create Form */}
       {showForm && (
-        <Card className="border-blue-500/30">
+        <Card className="border-blue-500/30 animate-scale-in">
           <h3 className="text-sm font-semibold text-white mb-4">Yeni Geliştirme Önerisi</h3>
           <div className="space-y-3">
             <input
@@ -341,10 +341,10 @@ export default function AdminSuggestionsPage() {
                 <button
                   key={s.id}
                   onClick={() => setSelected(s)}
-                  className={`w-full text-left rounded-xl border p-4 transition ${
+                  className={`w-full text-left rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                     active
                       ? 'border-blue-500/50 bg-[#0f2037]'
-                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30 hover:bg-[#112240]'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -380,7 +380,7 @@ export default function AdminSuggestionsPage() {
                       {PRIORITY_META[selected.priority].label}
                     </Badge>
                   </div>
-                  <h2 className="text-lg font-bold text-white">{selected.title}</h2>
+                  <h2 className="font-display text-lg font-bold tracking-tight text-white">{selected.title}</h2>
                   <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{selected.description}</p>
 
                   {/* Metadata */}

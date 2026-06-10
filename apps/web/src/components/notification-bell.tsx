@@ -201,7 +201,7 @@ export default function NotificationBell({ accessToken, unreadCount, onUnreadCou
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-80 rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-2xl">
+        <div className="animate-scale-in origin-top-right absolute right-0 top-11 z-50 w-80 rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-2xl">
           <div className="flex items-center justify-between border-b border-slate-700/50 px-4 py-3">
             <span className="text-sm font-semibold text-white">Bildirimler</span>
             {unreadCount > 0 && (
@@ -228,7 +228,7 @@ export default function NotificationBell({ accessToken, unreadCount, onUnreadCou
                     key={n.id}
                     type="button"
                     onClick={() => handleClickNotification(n)}
-                    className={`flex w-full gap-3 px-4 py-3 text-left transition hover:bg-slate-700/30 ${
+                    className={`flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-800/30 ${
                       !n.isRead ? 'bg-blue-500/5' : ''
                     }`}
                   >
