@@ -255,7 +255,7 @@ export default function MarketingReportsPage() {
       />
 
       {showResearchForm && (
-        <Card className="border-blue-500/30">
+        <Card className="border-blue-500/30 animate-scale-in">
           <h3 className="text-sm font-semibold text-white mb-3">Yeni Araştırma Talebi</h3>
           <div className="space-y-3">
             <input
@@ -263,14 +263,14 @@ export default function MarketingReportsPage() {
               value={researchForm.topic}
               onChange={(e) => setResearchForm({ ...researchForm, topic: e.target.value })}
               placeholder="Araştırma konusu"
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
             />
             <textarea
               value={researchForm.details}
               onChange={(e) => setResearchForm({ ...researchForm, details: e.target.value })}
               placeholder="Ek detaylar (opsiyonel)..."
               rows={3}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500 resize-none"
             />
             {researchError && (
               <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2 text-xs text-rose-400 flex items-center gap-2">
@@ -293,7 +293,7 @@ export default function MarketingReportsPage() {
           <button
             key={opt.key}
             onClick={() => setFilterType(opt.key)}
-            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+            className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
               filterType === opt.key
                 ? 'border-blue-500/50 bg-blue-500/10 text-blue-300'
                 : 'border-slate-700/50 bg-[#0d1b2a] text-slate-400 hover:border-slate-600 hover:text-white'
@@ -326,10 +326,10 @@ export default function MarketingReportsPage() {
                 <button
                   key={r.id}
                   onClick={() => setSelected(r)}
-                  className={`w-full text-left rounded-xl border p-4 transition ${
+                  className={`w-full text-left rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                     active
                       ? 'border-blue-500/50 bg-[#0f2037]'
-                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30 hover:bg-[#112240]'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -369,7 +369,7 @@ export default function MarketingReportsPage() {
                       </div>
                     </div>
 
-                    <h2 className="text-lg font-bold text-white leading-snug">{selected.title}</h2>
+                    <h2 className="font-display text-lg font-bold tracking-tight text-white leading-snug">{selected.title}</h2>
 
                     <div className="rounded-lg bg-slate-900/50 border border-slate-700/50 p-4">
                       <SafeHtml html={selected.content} />
@@ -422,7 +422,7 @@ export default function MarketingReportsPage() {
 
       {/* Research Requests */}
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+        <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
           Araştırma Talepleri · {researchRequests.length}
         </h2>
         {researchRequests.length === 0 ? (
@@ -432,7 +432,7 @@ export default function MarketingReportsPage() {
             {researchRequests.map((req) => {
               const meta = RESEARCH_STATUS_META[req.status];
               return (
-                <div key={req.id} className="flex items-center gap-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4">
+                <div key={req.id} className="flex items-center gap-4 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition-colors duration-300 hover:border-slate-600/60">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-white truncate">{req.topic}</div>
                     {req.details && (

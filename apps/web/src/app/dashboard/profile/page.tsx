@@ -182,10 +182,10 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-white">Profilim</h1>
+      <h1 className="animate-fade-up font-display text-2xl font-bold tracking-tight text-white">Profilim</h1>
 
       {/* Profile Info */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="mb-6 flex items-start justify-between">
           <h2 className="text-lg font-semibold text-white">Kişisel Bilgiler</h2>
           {!editing && (
@@ -214,7 +214,7 @@ export default function ProfilePage() {
               </div>
             )}
             <div className="flex gap-3">
-              <button onClick={handleSaveProfile} disabled={saving} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
+              <button onClick={handleSaveProfile} disabled={saving} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
                 {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
               <button onClick={() => { setEditing(false); setFullName(user.fullName); setEmail(user.email || ''); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
@@ -236,7 +236,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Roles */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <h2 className="mb-4 text-lg font-semibold text-white">Roller</h2>
 
         {user.roles.length > 0 ? (
@@ -253,12 +253,12 @@ export default function ProfilePage() {
 
         <div className="flex gap-3">
           {!user.roles.includes('TENANT') && (
-            <button onClick={() => handleAddRole('TENANT')} disabled={addingRole} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50">
+            <button onClick={() => handleAddRole('TENANT')} disabled={addingRole} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
               {addingRole ? 'Ekleniyor...' : 'Kiracı Rolü Ekle'}
             </button>
           )}
           {!user.roles.includes('LANDLORD') && (
-            <button onClick={() => handleAddRole('LANDLORD')} disabled={addingRole} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:opacity-50">
+            <button onClick={() => handleAddRole('LANDLORD')} disabled={addingRole} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-purple-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
               {addingRole ? 'Ekleniyor...' : 'Ev Sahibi Rolu Ekle'}
             </button>
           )}
@@ -275,7 +275,7 @@ export default function ProfilePage() {
       </div>
 
       {/* KYC */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up animation-delay-200 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">Kimlik Doğrulama (KYC)</h2>
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${kycStatusLabel[user.kycStatus]?.cls || 'bg-slate-500/20 text-slate-400'}`}>
@@ -288,7 +288,7 @@ export default function ProfilePage() {
             <p className="mb-3 text-sm text-slate-400">
               KYC doğrulamasını tamamlayarak tüm özelliklere erişim sağlayabilirsiniz.
             </p>
-            <button onClick={handleKyc} disabled={kycLoading} className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-700 disabled:opacity-50">
+            <button onClick={handleKyc} disabled={kycLoading} className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-orange-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
               {kycLoading ? 'Doğrulanıyor...' : 'KYC Doğrulamasını Başlat'}
             </button>
           </div>
@@ -306,7 +306,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Payment Reminder Preferences */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up animation-delay-300 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">Ödeme Hatırlatmaları</h2>
           <button
@@ -372,7 +372,7 @@ export default function ProfilePage() {
           <button
             onClick={handleSavePrefs}
             disabled={prefsSaving}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50"
           >
             {prefsSaving ? 'Kaydediliyor...' : 'Tercihleri Kaydet'}
           </button>

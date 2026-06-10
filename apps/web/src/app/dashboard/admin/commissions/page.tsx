@@ -148,13 +148,13 @@ export default function AdminCommissionsPage() {
 
           {report.monthly.length > 0 && (
             <section>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Aylık Özet</h2>
+              <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Aylık Özet</h2>
               <DataTable columns={monthlyColumns} data={report.monthly.map((m) => ({ ...m, id: m.month }))} />
             </section>
           )}
 
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+            <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
               Detaylı Kayıtlar · {report.records.length}
             </h2>
             {report.records.length === 0 ? (

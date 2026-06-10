@@ -96,7 +96,7 @@ export default function AdminNewsletterPage() {
 
           {stats.bySource.length > 0 && (
             <Card>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <h3 className="font-display text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
                 Kaynak Dağılımı
               </h3>
               <div className="flex flex-wrap gap-2">

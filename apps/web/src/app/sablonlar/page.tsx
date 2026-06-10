@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SiteNav from '../../components/site-nav';
+import Reveal from '../../components/reveal';
 
 export const metadata: Metadata = {
   title: 'Hukuki Şablonlar',
@@ -50,8 +51,8 @@ export default function SablonlarPage() {
 
       {/* Hero */}
       <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white py-16 text-center">
-        <div className="mx-auto max-w-3xl px-4">
-          <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+        <div className="mx-auto max-w-3xl px-4 animate-fade-up">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             Hukuki Belge Şablonları
           </h1>
           <p className="mt-4 text-lg text-slate-600">
@@ -74,7 +75,7 @@ export default function SablonlarPage() {
 
       {/* Hero Template — Kira Sözleşmesi */}
       <section className="mx-auto max-w-6xl px-4 pt-12">
-        <div className="relative rounded-2xl border-2 border-blue-200 bg-white p-8 shadow-lg shadow-blue-100 ring-1 ring-blue-100 md:flex md:gap-10">
+        <div className="relative animate-fade-up animation-delay-150 rounded-2xl border-2 border-blue-200 bg-white p-8 shadow-lg shadow-blue-100 ring-1 ring-blue-100 transition-all duration-300 hover:shadow-card-hover md:flex md:gap-10">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-4">
               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${heroTemplate.badgeCls}`}>
@@ -88,7 +89,7 @@ export default function SablonlarPage() {
             <p className="mt-3 text-base leading-relaxed text-slate-500">{heroTemplate.description}</p>
             <Link
               href="/auth/register"
-              className="mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="btn-shine mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
             >
               Ücretsiz Hesap Oluştur
             </Link>
@@ -119,10 +120,10 @@ export default function SablonlarPage() {
           </span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {upcomingTemplates.map((t) => (
+          {upcomingTemplates.map((t, i) => (
+            <Reveal key={t.title} delay={(i % 2) * 120} className="h-full">
             <div
-              key={t.title}
-              className="flex items-start gap-4 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 transition hover:bg-slate-100"
+              className="flex h-full items-start gap-4 rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 transition-all duration-300 hover:bg-slate-100 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -134,10 +135,12 @@ export default function SablonlarPage() {
                 <p className="text-sm text-slate-500 leading-relaxed">{t.description}</p>
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
 
         {/* Notification prompt */}
+        <Reveal>
         <div className="mt-8 rounded-xl border border-blue-200 bg-blue-50 px-6 py-4 text-center">
           <p className="text-sm text-slate-600">
             Yeni şablonlar eklendikçe bildirim almak ister misiniz?{' '}
@@ -146,10 +149,12 @@ export default function SablonlarPage() {
             </Link>
           </p>
         </div>
+        </Reveal>
 
         {/* Info box */}
+        <Reveal delay={120}>
         <div className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
-          <h2 className="mb-3 text-xl font-semibold text-slate-900">
+          <h2 className="mb-3 font-display text-xl font-semibold tracking-tight text-slate-900">
             Neden Kira Güvence Şablonları?
           </h2>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-slate-600">
@@ -160,11 +165,12 @@ export default function SablonlarPage() {
           </p>
           <Link
             href="/auth/register"
-            className="mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="btn-shine mt-6 inline-block rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             Ücretsiz Hesap Oluştur
           </Link>
         </div>
+        </Reveal>
       </section>
 
     </div>

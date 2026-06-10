@@ -170,11 +170,11 @@ export default function PropertiesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Mülklerim</h1>
+      <div className="animate-fade-up flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-white">Mülklerim</h1>
         <button
           onClick={() => showForm ? (setShowForm(false), setEditingId(null)) : openCreateForm()}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
             showForm
               ? 'border border-slate-600 text-slate-300 hover:bg-slate-700/50'
               : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -186,7 +186,7 @@ export default function PropertiesPage() {
 
       {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">
             {editingId ? 'Mülkü Düzenle' : 'Yeni Mülk Ekle'}
           </h2>
@@ -287,7 +287,7 @@ export default function PropertiesPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={submitting} className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
               {submitting ? 'Kaydediliyor...' : editingId ? 'Güncelle' : 'Kaydet'}
             </button>
             <button type="button" onClick={() => { setShowForm(false); setEditingId(null); }} className="rounded-lg border border-slate-600 px-6 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700/50">
@@ -303,7 +303,7 @@ export default function PropertiesPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
         </div>
       ) : properties.length === 0 ? (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+        <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
             <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -313,9 +313,9 @@ export default function PropertiesPage() {
           <p className="mt-2 text-sm text-slate-500">Mülk ekleyerek başlayabilirsiniz.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="animate-fade-up animation-delay-75 grid grid-cols-1 gap-4 md:grid-cols-2">
           {properties.map((p) => (
-            <div key={p.id} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+            <div key={p.id} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-semibold text-white">{p.title}</h3>
@@ -356,8 +356,8 @@ export default function PropertiesPage() {
 
       {/* Delete Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="mx-4 w-full max-w-sm rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 animate-scale-in">
             <h3 className="mb-2 text-lg font-semibold text-white">Mülkü Sil</h3>
             <p className="mb-1 text-sm text-slate-300">
               <strong>{deleteTarget.title}</strong> mülkünü silmek istediğinize emin misiniz?
@@ -369,7 +369,7 @@ export default function PropertiesPage() {
               <button onClick={() => setDeleteTarget(null)} className="rounded-lg border border-slate-600 px-4 py-2 text-sm text-slate-300 transition hover:bg-slate-700/50">
                 Vazgec
               </button>
-              <button onClick={handleDelete} disabled={deleting} className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition hover:bg-red-700 disabled:opacity-50">
+              <button onClick={handleDelete} disabled={deleting} className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
                 {deleting ? 'Siliniyor...' : 'Evet, Sil'}
               </button>
             </div>

@@ -48,7 +48,7 @@ const TYPE_META: Record<string, { label: string; tone: BadgeTone }> = {
   CUSTOM: { label: 'Özel', tone: 'neutral' },
 };
 
-const fieldCls = 'w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500';
+const fieldCls = 'w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500';
 const labelCls = 'block text-xs font-medium text-slate-400 mb-1';
 
 export default function AdminPromosPage() {
@@ -189,7 +189,7 @@ export default function AdminPromosPage() {
       )}
 
       {showCreate && (
-        <Card className="border-blue-500/30">
+        <Card className="border-blue-500/30 animate-scale-in">
           <h3 className="text-sm font-semibold text-white mb-4">Yeni Promosyon Şablonu</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

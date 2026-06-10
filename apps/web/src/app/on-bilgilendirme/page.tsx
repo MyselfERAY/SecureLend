@@ -11,7 +11,7 @@ export default function OnBilgilendirmePage() {
     <div className="min-h-screen bg-[#060e1a] text-white">
       <div className="mx-auto max-w-3xl px-4 py-12">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-up">
           <Link href="/" className="text-sm text-blue-400 hover:text-blue-300">
             &larr; Ana Sayfa
           </Link>
@@ -22,7 +22,7 @@ export default function OnBilgilendirmePage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Ön Bilgilendirme Formu</h1>
+              <h1 className="font-display text-2xl font-bold tracking-tight text-white">Ön Bilgilendirme Formu</h1>
               <p className="text-sm text-slate-400">6502 Sayılı TKHK m.48 — Mesafeli Sözleşmeler Yönetmeliği</p>
             </div>
           </div>

@@ -107,7 +107,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Header */}
-          <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-8 sm:p-10">
+          <div className="animate-fade-up rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-8 shadow-soft sm:p-10">
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="text-xs font-medium text-slate-500">{fixTurkish(article.category)}</span>
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${audienceColor[article.audience]}`}>
@@ -115,7 +115,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </span>
             </div>
 
-            <h1 className="text-2xl font-extrabold text-slate-900 leading-snug sm:text-3xl">
+            <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900 leading-snug sm:text-3xl">
               {article.title}
             </h1>
             <p className="mt-3 text-sm text-slate-500">
@@ -129,7 +129,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Content */}
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+          <div className="mt-6 animate-fade-up animation-delay-150 rounded-3xl border border-slate-200 bg-white p-8 shadow-card sm:p-10">
             {article.content.includes('<') ? (
               <div
                 className="prose max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2 prose-p:text-base prose-p:leading-relaxed prose-p:text-slate-700 prose-strong:text-slate-900 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6 prose-li:text-base prose-li:text-slate-700 prose-li:leading-relaxed prose-table:w-full prose-table:border-collapse prose-th:border prose-th:border-slate-200 prose-th:bg-slate-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-sm prose-th:font-semibold prose-th:text-slate-700 prose-td:border prose-td:border-slate-200 prose-td:px-3 prose-td:py-2 prose-td:text-sm prose-td:text-slate-600 prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"

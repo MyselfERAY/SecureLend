@@ -155,7 +155,7 @@ export default function AdminUsersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Ad, telefon veya TCKN ara..."
-            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-700 bg-[#0d1b2a] text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-700 bg-[#0d1b2a] text-sm text-white placeholder-slate-500 transition-colors duration-200 focus:outline-none focus:border-blue-500"
           />
         </div>
       </div>

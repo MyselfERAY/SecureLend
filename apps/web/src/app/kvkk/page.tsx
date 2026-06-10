@@ -13,7 +13,7 @@ export default function KVKKPage() {
           <Link href="/" className="text-sm text-blue-600 hover:text-blue-700 font-medium">&larr; Ana Sayfa</Link>
           <Link
             href="/veri-talebi"
-            className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 transition"
+            className="btn-shine rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-glow hover:bg-blue-800 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             Veri Talebi Formu
           </Link>
@@ -21,10 +21,12 @@ export default function KVKKPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-2">KVKK Aydınlatma Metni</h1>
-        <p className="text-sm text-slate-500 mb-10">Son güncelleme: Nisan 2026 · Sürüm 2.0</p>
+        <div className="animate-fade-up">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 mb-2">KVKK Aydınlatma Metni</h1>
+          <p className="text-sm text-slate-500 mb-10">Son güncelleme: Nisan 2026 · Sürüm 2.0</p>
+        </div>
 
-        <div className="space-y-8 text-slate-700 leading-relaxed">
+        <div className="space-y-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-8 text-slate-700 leading-relaxed">
 
           {/* Veri Sorumlusu */}
           <section>

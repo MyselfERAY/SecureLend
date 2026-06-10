@@ -240,7 +240,7 @@ export default function PoJournalPage() {
 
       {/* Add item form */}
       {showForm && (
-        <Card className="border-blue-500/30">
+        <Card className="border-blue-500/30 animate-scale-in">
           <h3 className="text-sm font-semibold text-white mb-3">Yeni PO Maddesi</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
@@ -307,10 +307,10 @@ export default function PoJournalPage() {
                 <button
                   key={r.id}
                   onClick={() => setSelectedReportId(r.id)}
-                  className={`w-full text-left rounded-lg border px-3 py-2.5 transition ${
+                  className={`w-full text-left rounded-lg border px-3 py-2.5 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                     active
                       ? 'border-blue-500/50 bg-[#0f2037]'
-                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-slate-600'
+                      : 'border-slate-700/50 bg-[#0d1b2a] hover:border-blue-500/30 hover:bg-[#112240]'
                   }`}
                 >
                   <div className="text-sm font-medium text-white">{formatDate(r.reportDate)}</div>
@@ -338,7 +338,7 @@ export default function PoJournalPage() {
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                       <div className="text-xs text-slate-400 uppercase tracking-wider">Rapor Özeti</div>
-                      <h2 className="text-lg font-bold text-white mt-1">{formatDate(selectedReport.reportDate)}</h2>
+                      <h2 className="font-display text-lg font-bold tracking-tight text-white mt-1">{formatDate(selectedReport.reportDate)}</h2>
                     </div>
                     <div className="flex items-center gap-3">
                       {Object.entries(CATEGORY_META).map(([k, m]) => {
@@ -385,7 +385,7 @@ export default function PoJournalPage() {
                       <button
                         key={opt.key}
                         onClick={() => setFilter(opt.key)}
-                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                           active
                             ? 'border-blue-500/50 bg-blue-500/10 text-blue-300'
                             : 'border-slate-700/50 bg-[#0d1b2a] text-slate-400 hover:border-slate-600 hover:text-white'
@@ -410,7 +410,7 @@ export default function PoJournalPage() {
                       const devMeta = item.devSuggestionStatus ? DEV_STATUS_META[item.devSuggestionStatus] : null;
 
                       return (
-                        <div key={item.id} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4">
+                        <div key={item.id} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-4 transition-colors duration-300 hover:border-slate-600/60">
                           <div className="flex items-start gap-3">
                             <div className="h-8 w-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
                               <CatIcon className="h-4 w-4 text-slate-400" />

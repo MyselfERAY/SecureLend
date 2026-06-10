@@ -235,7 +235,7 @@ export default function AgentKPIDashboardPage() {
               <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-slate-800/50 border border-slate-700/50">
                 <button
                   onClick={() => setFilterType('ALL')}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition ${filterType === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 active:scale-[0.98] ${filterType === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
                 >
                   Tümü
                 </button>
@@ -243,7 +243,7 @@ export default function AgentKPIDashboardPage() {
                   <button
                     key={type}
                     onClick={() => setFilterType(type)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition ${filterType === type ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 active:scale-[0.98] ${filterType === type ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
                   >
                     {AGENT_META[type].label.replace(' Agent', '')}
                   </button>
@@ -254,7 +254,7 @@ export default function AgentKPIDashboardPage() {
             {filteredRuns.length === 0 ? (
               <EmptyState title="Bu filtrede çalışma yok" />
             ) : (
-              <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] overflow-hidden">
+              <div className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] overflow-hidden">
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-800/40 border-b border-slate-700/50">
                     <tr>
@@ -272,7 +272,7 @@ export default function AgentKPIDashboardPage() {
                       const Icon = agentMeta?.icon ?? Activity;
                       const statusMeta = STATUS_META[run.status] ?? { label: run.status, tone: 'neutral' as BadgeTone };
                       return (
-                        <tr key={run.id} className="hover:bg-slate-800/30 transition">
+                        <tr key={run.id} className="transition-colors duration-150 hover:bg-blue-500/[0.06]">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <Icon className="h-3.5 w-3.5 text-slate-400" />
@@ -342,7 +342,7 @@ function MetricCard({
         <div>
           <div className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</div>
           <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-white">{value}</span>
+            <span className="font-display text-2xl font-bold text-white">{value}</span>
             {sub && <span className="text-xs text-slate-500">{sub}</span>}
           </div>
         </div>

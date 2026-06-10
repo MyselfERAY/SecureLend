@@ -65,9 +65,9 @@ export default function DavetPage() {
     const isUsed = state === 'used';
     return (
       <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-slate-950 to-slate-900">
-        <div className="text-center max-w-sm">
+        <div className="text-center max-w-sm animate-fade-up">
           <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-amber-400" />
-          <h1 className="text-xl font-bold text-white mb-2">
+          <h1 className="font-display text-xl font-bold tracking-tight text-white mb-2">
             {isUsed ? 'Bu link zaten kullanıldı' : isExpired ? 'Linkin süresi doldu' : 'Link bulunamadı'}
           </h1>
           <p className="text-sm text-slate-400 mb-6">
@@ -79,7 +79,7 @@ export default function DavetPage() {
           </p>
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition"
+            className="btn-shine inline-flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-glow hover:bg-blue-800 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             Kayıt Ol
           </Link>
@@ -97,14 +97,14 @@ export default function DavetPage() {
       <div className="mx-auto max-w-lg">
         <Logo className="mb-8" />
 
-        <div className="rounded-3xl border border-slate-700/50 bg-slate-900/80 p-8 sm:p-10 shadow-2xl">
+        <div className="animate-fade-up rounded-3xl border border-slate-700/50 bg-slate-900/80 p-8 sm:p-10 shadow-2xl">
           {/* Greeting */}
           <div className="mb-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-xs font-medium text-blue-400 mb-4">
               <CheckCircle className="h-3.5 w-3.5" />
               Kişisel Davetiyeniz
             </div>
-            <h1 className="text-2xl font-extrabold text-white leading-snug">
+            <h1 className="font-display text-2xl font-extrabold tracking-tight text-white leading-snug">
               Sayın {firstName},
             </h1>
             <p className="mt-2 text-base text-slate-300 leading-relaxed">
@@ -136,7 +136,7 @@ export default function DavetPage() {
           {/* CTA */}
           <button
             onClick={handleStart}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-6 py-4 text-base font-semibold text-white hover:bg-blue-800 transition shadow-lg"
+            className="btn-shine flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-6 py-4 text-base font-semibold text-white shadow-glow hover:bg-blue-800 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             Hemen Başla
             <ArrowRight className="h-4 w-4" />

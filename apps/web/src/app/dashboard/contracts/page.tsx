@@ -214,12 +214,12 @@ export default function ContractsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Sözleşmelerim</h1>
+      <div className="animate-fade-up flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-white">Sözleşmelerim</h1>
         {isLandlord && (
           <button
             onClick={() => { setShowForm(!showForm); if (showForm) { resetForm(); } }}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
               showForm
                 ? 'border border-slate-600 text-slate-300 hover:bg-slate-700/50'
                 : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -232,7 +232,7 @@ export default function ContractsPage() {
 
       {/* Tabs */}
       {contracts.length > 0 && (
-        <div className="flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
+        <div className="animate-fade-up animation-delay-75 flex gap-1 rounded-lg border border-slate-700/50 bg-[#0a1628] p-1">
           <button
             onClick={() => setActiveTab('active')}
             className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
@@ -264,7 +264,7 @@ export default function ContractsPage() {
 
       {/* Create Form — 3-Step Wizard */}
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-5">
+        <form onSubmit={handleCreate} className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-5">
           <h3 className="text-lg font-semibold text-white">Yeni Kira Sözleşmesi</h3>
 
           {/* Progress Bar */}
@@ -275,15 +275,15 @@ export default function ContractsPage() {
               { num: 3, label: 'Onay' },
             ].map((s) => (
               <div key={s.num} className="flex items-center gap-2">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all duration-500 ${
                   formStep >= s.num ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'
                 }`}>
                   {s.num}
                 </div>
-                <span className={`text-sm font-medium ${formStep >= s.num ? 'text-white' : 'text-slate-500'}`}>
+                <span className={`text-sm font-medium transition-colors duration-500 ${formStep >= s.num ? 'text-white' : 'text-slate-500'}`}>
                   {s.label}
                 </span>
-                {s.num < 3 && <div className={`h-px w-8 ${formStep > s.num ? 'bg-blue-600' : 'bg-slate-700'}`} />}
+                {s.num < 3 && <div className={`h-px w-8 transition-all duration-500 ${formStep > s.num ? 'bg-blue-600' : 'bg-slate-700'}`} />}
               </div>
             ))}
           </div>
@@ -456,12 +456,12 @@ export default function ContractsPage() {
                   formStep === 1 ? (!tenantResult || !formData.propertyId) :
                   !formData.startDate || !formData.endDate || !formData.monthlyRent || !formData.landlordIban
                 }
-                className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+                className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
                 İleri
               </button>
             ) : (
               <button type="submit" disabled={submitting}
-                className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+                className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50">
                 {submitting ? 'Oluşturuluyor...' : 'Sözleşme Oluştur'}
               </button>
             )}
@@ -471,7 +471,7 @@ export default function ContractsPage() {
 
       {/* Contract list */}
       {contracts.length === 0 && !showForm ? (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
+        <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-16 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-700/50">
             <svg className="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -485,7 +485,7 @@ export default function ContractsPage() {
           </p>
         </div>
       ) : filteredContracts.length === 0 ? (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-12 text-center">
+        <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] py-12 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-700/50">
             {activeTab === 'archive' ? (
               <svg className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -509,12 +509,12 @@ export default function ContractsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="animate-fade-up animation-delay-150 space-y-3">
           {filteredContracts.map((c) => (
             <Link
               key={c.id}
               href={`/dashboard/contracts/${c.id}`}
-              className="block rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition hover:border-blue-500/30 hover:bg-[#112240]"
+              className="block rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-500/30 hover:bg-[#112240]"
             >
               <div className="flex justify-between items-start">
                 <div>

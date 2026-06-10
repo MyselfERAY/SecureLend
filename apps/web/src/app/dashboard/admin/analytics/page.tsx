@@ -237,7 +237,7 @@ export default function AdminAnalyticsPage() {
             <select
               value={rangeMinutes}
               onChange={(e) => setRangeMinutes(Number(e.target.value))}
-              className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm font-medium text-slate-200"
+              className="rounded-lg border border-slate-700 bg-[#0d1b2a] px-3 py-2 text-sm font-medium text-slate-200 transition-colors duration-200 focus:outline-none focus:border-blue-500"
             >
               {RANGE_PRESETS.map((p) => (
                 <option key={p.minutes} value={p.minutes}>
@@ -258,7 +258,7 @@ export default function AdminAnalyticsPage() {
           { label: 'Ort. Sayfa/Oturum', value: data.summary.avgPagesPerSession, color: 'text-amber-600' },
           { label: 'Toplam Hata', value: data.summary.totalErrors, color: data.summary.totalErrors > 0 ? 'text-red-600' : 'text-slate-500' },
         ].map((card) => (
-          <div key={card.label} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+          <div key={card.label} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
             <div className={`text-3xl font-bold ${card.color}`}>{card.value}</div>
             <div className="mt-1 text-sm text-slate-400">{card.label}</div>
           </div>
@@ -278,7 +278,7 @@ export default function AdminAnalyticsPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition ${
+            className={`flex-1 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
               activeTab === tab.key ? 'bg-[#0d1b2a] text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -291,7 +291,7 @@ export default function AdminAnalyticsPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {data.dailyViews.length > 0 && (
-            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
               <h3 className="mb-4 text-sm font-semibold text-slate-200">Gunluk Sayfa Görüntülemesi</h3>
               <div className="flex items-end gap-1" style={{ height: 160 }}>
                 {data.dailyViews.map((d) => (
@@ -313,7 +313,7 @@ export default function AdminAnalyticsPage() {
           )}
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
               <h3 className="mb-4 text-sm font-semibold text-slate-200">Cihaz Dağılımı</h3>
               {data.devices.length === 0 ? (
                 <p className="text-sm text-slate-500">Henüz veri yok</p>
@@ -337,7 +337,7 @@ export default function AdminAnalyticsPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
               <h3 className="mb-4 text-sm font-semibold text-slate-200">Tarayıcı Dağılımı</h3>
               {data.browsers.length === 0 ? (
                 <p className="text-sm text-slate-500">Henüz veri yok</p>
@@ -367,7 +367,7 @@ export default function AdminAnalyticsPage() {
       {/* ─── Pages Tab ─── */}
       {activeTab === 'pages' && (
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+          <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
             <div className="px-6 py-4 border-b border-slate-700/50">
               <h3 className="text-sm font-semibold text-slate-200">Sayfa Görüntülemesi (Toplam)</h3>
             </div>
@@ -382,7 +382,7 @@ export default function AdminAnalyticsPage() {
                 {data.pageViews.length === 0 ? (
                   <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-500">Henüz veri yok</td></tr>
                 ) : data.pageViews.map((p) => (
-                  <tr key={p.page} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+                  <tr key={p.page} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                     <td className="px-6 py-3 font-mono text-sm text-white">{p.page}</td>
                     <td className="px-6 py-3 text-right font-semibold text-slate-200">{p.count}</td>
                   </tr>
@@ -391,7 +391,7 @@ export default function AdminAnalyticsPage() {
             </table>
           </div>
 
-          <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+          <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
             <div className="px-6 py-4 border-b border-slate-700/50">
               <h3 className="text-sm font-semibold text-slate-200">Ortalama Sayfa Süresi</h3>
             </div>
@@ -411,7 +411,7 @@ export default function AdminAnalyticsPage() {
                   const secs = p.avgSeconds % 60;
                   const timeStr = mins > 0 ? `${mins}dk ${secs}sn` : `${secs}sn`;
                   return (
-                    <tr key={p.page} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+                    <tr key={p.page} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                       <td className="px-6 py-3 font-mono text-sm text-white">{p.page}</td>
                       <td className="px-6 py-3 text-right font-medium text-blue-700">{timeStr}</td>
                       <td className="px-6 py-3 text-right text-slate-400">{p.samples}</td>
@@ -426,7 +426,7 @@ export default function AdminAnalyticsPage() {
 
       {/* ─── Errors Tab ─── */}
       {activeTab === 'errors' && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
           <div className="px-6 py-4 border-b border-slate-700/50">
             <h3 className="text-sm font-semibold text-slate-200">Son Frontend Hataları</h3>
           </div>
@@ -443,7 +443,7 @@ export default function AdminAnalyticsPage() {
           ) : (
             <div className="divide-y divide-slate-700/50">
               {data.recentErrors.map((err, idx) => (
-                <div key={idx} className="px-6 py-4 hover:bg-slate-800/40">
+                <div key={idx} className="px-6 py-4 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -588,23 +588,23 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
     <div className="space-y-6">
       {/* API Summary */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className="text-3xl font-bold text-blue-600">{data.summary.totalRequests.toLocaleString('tr-TR')}</div>
           <div className="mt-1 text-sm text-slate-400">Toplam İstek</div>
         </div>
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className={`text-3xl font-bold ${data.summary.totalErrors > 0 ? 'text-red-600' : 'text-slate-500'}`}>
             {data.summary.totalErrors.toLocaleString('tr-TR')}
           </div>
           <div className="mt-1 text-sm text-slate-400">Toplam Hata</div>
         </div>
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className={`text-3xl font-bold ${data.summary.errorRate > 5 ? 'text-red-600' : data.summary.errorRate > 1 ? 'text-amber-600' : 'text-emerald-600'}`}>
             %{data.summary.errorRate}
           </div>
           <div className="mt-1 text-sm text-slate-400">Hata Oranı</div>
         </div>
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className="text-3xl font-bold text-purple-600">{data.summary.avgResponseTime}ms</div>
           <div className="mt-1 text-sm text-slate-400">Ort. Yanıt Süresi</div>
         </div>
@@ -612,7 +612,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
 
       {/* Daily API Chart — bar'a tıklayınca altta detay paneli açılır */}
       {dailyMerged.length > 0 && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-slate-200">{chartTitle}</h3>
             <div className="flex items-center gap-4 text-xs text-slate-400">
@@ -735,7 +735,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
 
       {/* Method & Status Code Distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <h3 className="mb-4 text-sm font-semibold text-slate-200">HTTP Method Dağılımı</h3>
           {data.methods.length === 0 ? (
             <p className="text-sm text-slate-500">Henüz veri yok</p>
@@ -763,7 +763,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <h3 className="mb-4 text-sm font-semibold text-slate-200">Status Code Dağılımı</h3>
           {data.statusCodes.length === 0 ? (
             <p className="text-sm text-slate-500">Henüz veri yok</p>
@@ -791,7 +791,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
       </div>
 
       {/* Top Endpoints */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
         <div className="px-6 py-4 border-b border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-200">En Çok Kullanılan Endpoint&apos;ler</h3>
         </div>
@@ -807,7 +807,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
             {data.topEndpoints.length === 0 ? (
               <tr><td colSpan={3} className="px-6 py-8 text-center text-slate-500">Henüz veri yok</td></tr>
             ) : data.topEndpoints.map((e) => (
-              <tr key={e.endpoint} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+              <tr key={e.endpoint} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                 <td className="px-6 py-3 font-mono text-sm text-white">{e.endpoint}</td>
                 <td className="px-6 py-3 text-right font-semibold text-slate-200">{e.count.toLocaleString('tr-TR')}</td>
                 <td className="px-6 py-3 text-right">
@@ -822,7 +822,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
       </div>
 
       {/* Slowest Endpoints */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
         <div className="px-6 py-4 border-b border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-200">En Yavaş Endpoint&apos;ler</h3>
         </div>
@@ -839,7 +839,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
             {data.slowEndpoints.length === 0 ? (
               <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">Henüz veri yok</td></tr>
             ) : data.slowEndpoints.map((s) => (
-              <tr key={s.endpoint} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+              <tr key={s.endpoint} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                 <td className="px-6 py-3 font-mono text-sm text-white">{s.endpoint}</td>
                 <td className="px-6 py-3 text-right">
                   <span className={`font-medium ${s.avgMs > 500 ? 'text-red-600' : s.avgMs > 200 ? 'text-amber-600' : 'text-emerald-600'}`}>
@@ -856,7 +856,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
 
       {/* Error Endpoints + Recent Errors */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
           <div className="px-6 py-4 border-b border-slate-700/50">
             <h3 className="text-sm font-semibold text-slate-200">En Çok Hata Veren Endpoint&apos;ler</h3>
           </div>
@@ -872,7 +872,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
               </thead>
               <tbody>
                 {data.errorEndpoints.map((e) => (
-                  <tr key={e.endpoint} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+                  <tr key={e.endpoint} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                     <td className="px-6 py-3 font-mono text-sm text-white">{e.endpoint}</td>
                     <td className="px-6 py-3 text-right font-semibold text-red-600">{e.count}</td>
                   </tr>
@@ -882,7 +882,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden max-h-96 overflow-y-auto">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden max-h-96 overflow-y-auto transition-colors duration-300 hover:border-slate-600/60">
           <div className="px-6 py-4 border-b border-slate-700/50 sticky top-0 bg-[#0d1b2a] z-10">
             <h3 className="text-sm font-semibold text-slate-200">Son API Hataları</h3>
           </div>
@@ -891,7 +891,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
           ) : (
             <div className="divide-y divide-slate-700/50">
               {data.recentErrors.slice(0, 20).map((err, idx) => (
-                <div key={idx} className="px-6 py-3 hover:bg-slate-800/40">
+                <div key={idx} className="px-6 py-3 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                   <div className="flex items-center gap-2 text-xs">
                     <span className="rounded bg-red-100 px-1.5 py-0.5 font-semibold text-red-700">{err.statusCode}</span>
                     <span className="font-mono font-medium text-slate-200">{err.method}</span>
@@ -936,7 +936,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
       {/* Top metric cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Bounce Rate */}
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className={`text-3xl font-bold ${data.bounceRate.rate > 70 ? 'text-red-600' : data.bounceRate.rate > 50 ? 'text-amber-600' : 'text-emerald-600'}`}>
             %{data.bounceRate.rate}
           </div>
@@ -945,14 +945,14 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
         </div>
 
         {/* Conversion Rate */}
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className="text-3xl font-bold text-purple-600">%{data.conversionRate.rate}</div>
           <div className="mt-1 text-sm text-slate-400">Dönüşüm Oranı</div>
           <div className="mt-0.5 text-xs text-slate-500">{data.conversionRate.registered} kayıtlı / {data.conversionRate.visitors} ziyaretçi</div>
         </div>
 
         {/* Total CTA Clicks */}
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <div className="text-3xl font-bold text-blue-600">{data.ctaClicks.reduce((s, c) => s + c.count, 0)}</div>
           <div className="mt-1 text-sm text-slate-400">CTA Tıklama</div>
           <div className="mt-0.5 text-xs text-slate-500">{data.ctaClicks.length} farklı CTA</div>
@@ -960,7 +960,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
       </div>
 
       {/* Funnel */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
         <h3 className="mb-4 text-sm font-semibold text-slate-200">Kayıt Akışı (Funnel)</h3>
         <div className="space-y-4">
           {funnelSteps.map((step, idx) => {
@@ -998,7 +998,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
       {/* Referrer + Scroll Depth */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Referrer Categories */}
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <h3 className="mb-4 text-sm font-semibold text-slate-200">Trafik Kaynakları</h3>
           {data.referrers.categories.length === 0 ? (
             <p className="text-sm text-slate-500">Henüz veri yok</p>
@@ -1043,7 +1043,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
         </div>
 
         {/* Scroll Depth */}
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
           <h3 className="mb-4 text-sm font-semibold text-slate-200">Scroll Derinliği</h3>
           {data.scrollDepth.length === 0 ? (
             <p className="text-sm text-slate-500">Henüz veri yok</p>
@@ -1070,7 +1070,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
 
       {/* CTA Clicks */}
       {data.ctaClicks.length > 0 && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
           <div className="px-6 py-4 border-b border-slate-700/50">
             <h3 className="text-sm font-semibold text-slate-200">CTA Tıklamalari</h3>
           </div>
@@ -1084,7 +1084,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
             </thead>
             <tbody>
               {data.ctaClicks.map((c, idx) => (
-                <tr key={idx} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+                <tr key={idx} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                   <td className="px-6 py-3 font-mono text-sm text-white">{c.page}</td>
                   <td className="px-6 py-3 text-sm text-slate-200">{c.label || '-'}</td>
                   <td className="px-6 py-3 text-right font-semibold text-blue-600">{c.count}</td>
@@ -1154,7 +1154,7 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
       </p>
 
       {/* Funnel bars */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm space-y-4">
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm space-y-4 transition-colors duration-300 hover:border-slate-600/60">
         <h3 className="text-sm font-semibold text-slate-200 mb-2">Adım Bazında Dönüşüm</h3>
         {data.steps.map((step, idx) => {
           const barWidth = maxCount > 0 ? Math.max((step.count / maxCount) * 100, step.count > 0 ? 4 : 0) : 0;
@@ -1187,7 +1187,7 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-5">
         {data.steps.map((step, idx) => (
-          <div key={step.step} className={`rounded-xl border border-slate-700/50 p-4 shadow-sm ${STEP_BG_LIGHT[idx]}`}>
+          <div key={step.step} className={`rounded-xl border border-slate-700/50 p-4 shadow-sm transition-colors duration-300 hover:border-slate-600/60 ${STEP_BG_LIGHT[idx]}`}>
             <div className={`text-2xl font-bold ${STEP_TEXT_COLORS[idx]}`}>{step.count}</div>
             <div className="mt-0.5 text-xs font-semibold text-slate-300">{step.name}</div>
             <div className={`mt-1 text-xs font-bold ${STEP_TEXT_COLORS[idx]}`}>%{step.rate}</div>
@@ -1196,7 +1196,7 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
       </div>
 
       {/* Per-user table */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
         <div className="px-6 py-4 border-b border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-200">Kullanıcı Bazında Huni Durumu</h3>
         </div>
@@ -1221,7 +1221,7 @@ function FunnelTabContent({ data, loading, days }: { data: ActivationFunnel | nu
                   const stepIdx = u.currentStep - 1;
                   const stepLabel = data.steps[stepIdx]?.name ?? '?';
                   return (
-                    <tr key={u.userId} className="border-b border-slate-700/50 hover:bg-slate-800/40">
+                    <tr key={u.userId} className="border-b border-slate-700/50 transition-colors duration-150 hover:bg-blue-500/[0.06]">
                       <td className="px-4 py-3">
                         <div className="font-medium text-white">{u.fullName}</div>
                         <div className="text-xs text-slate-500">{u.tcknMasked}</div>
@@ -1313,30 +1313,30 @@ function ResetEventsButton({ onReset }: { onReset: () => void }) {
         type="button"
         disabled={loading}
         onClick={() => setOpen((v) => !v)}
-        className="rounded-lg border border-red-700/50 bg-red-950/40 px-3 py-2 text-sm font-medium text-red-300 hover:bg-red-900/40 disabled:opacity-50"
+        className="rounded-lg border border-red-700/50 bg-red-950/40 px-3 py-2 text-sm font-medium text-red-300 hover:bg-red-900/40 disabled:opacity-50 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
       >
         {loading ? 'Siliniyor...' : 'Milat At ▾'}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 min-w-[220px] rounded-lg border border-slate-700 bg-[#0d1b2a] p-2 shadow-xl z-20">
+        <div className="absolute right-0 top-full mt-1 min-w-[220px] rounded-lg border border-slate-700 bg-[#0d1b2a] p-2 shadow-xl z-20 animate-scale-in">
           <button
             type="button"
             onClick={() => handleReset('api_error')}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition-colors duration-150 hover:bg-slate-800"
           >
             Sadece hatalari sil
           </button>
           <button
             type="button"
             onClick={() => handleReset('api_request')}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+            className="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition-colors duration-150 hover:bg-slate-800"
           >
             Sadece API isteklerini sil
           </button>
           <button
             type="button"
             onClick={() => handleReset()}
-            className="block w-full rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-red-900/40"
+            className="block w-full rounded px-3 py-2 text-left text-sm text-red-300 transition-colors duration-150 hover:bg-red-900/40"
           >
             Tum log'lari sil
           </button>

@@ -18,9 +18,9 @@ export default function GizlilikPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-8">Gizlilik Politikası</h1>
+        <h1 className="animate-fade-up font-display text-3xl font-extrabold tracking-tight text-slate-900 mb-8">Gizlilik Politikası</h1>
 
-        <div className="prose prose-slate max-w-none space-y-6 text-slate-700 leading-relaxed">
+        <div className="prose prose-slate max-w-none space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-card sm:p-8 text-slate-700 leading-relaxed">
           <p>
             SecureLend olarak gizliliğinize saygı duyuyoruz. Bu politika, kişisel verilerinizin nasıl toplandığını,
             kullanıldığını ve korunduğunu açıklamaktadır.

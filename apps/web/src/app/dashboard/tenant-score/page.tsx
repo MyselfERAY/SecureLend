@@ -133,15 +133,15 @@ export default function TenantScorePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Ödeme Güvenilirlik Skorum</h1>
+      <h1 className="animate-fade-up font-display text-2xl font-bold tracking-tight text-white">Ödeme Güvenilirlik Skorum</h1>
 
       {/* Ana Skor Kartı */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-8">
 
           {/* Dairesel skor göstergesi */}
           <div className={`flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-full border-4 ${ringColor} bg-[#0a1628]`}>
-            <span className={`text-4xl font-extrabold leading-none ${scoreColor}`}>
+            <span className={`font-display text-4xl font-extrabold leading-none tracking-tight ${scoreColor}`}>
               {score.hasEnoughData ? score.overallScore.toFixed(0) : '—'}
             </span>
             <span className="mt-1 text-xs text-slate-500">/ 100</span>
@@ -191,7 +191,7 @@ export default function TenantScorePage() {
 
       {/* Alt Skor Kırılımı */}
       {score.hasEnoughData && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-5">
+        <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 space-y-5">
           <h2 className="text-base font-semibold text-white">Skor Kırılımı</h2>
           <ScoreGauge
             score={score.timelinessScore}
@@ -215,7 +215,7 @@ export default function TenantScorePage() {
       )}
 
       {/* İstatistik Kartları */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="animate-fade-up animation-delay-200 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <StatMini label="Toplam" value={score.totalEligiblePayments} color="slate" />
         <StatMini label="Tamamlanan" value={score.completedPayments} color="emerald" />
         <StatMini label="Zamanında" value={score.onTimePayments} color="blue" />
@@ -226,7 +226,7 @@ export default function TenantScorePage() {
 
       {/* Ev Sahibi Bilgi Kutusu */}
       {user?.roles.includes('LANDLORD') && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 space-y-2">
+        <div className="animate-fade-up animation-delay-300 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 space-y-2">
           <h2 className="text-sm font-semibold text-slate-300">Ev Sahipleri İçin</h2>
           <p className="text-sm text-slate-400">
             Kiracılarınızın ödeme güvenilirlik skorunu görüntülemek için
@@ -237,7 +237,7 @@ export default function TenantScorePage() {
       )}
 
       {/* Açıklama: Skor Nasıl Hesaplanır? */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 space-y-3">
+      <div className="animate-fade-up animation-delay-300 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 space-y-3">
         <h2 className="text-sm font-semibold text-slate-300">Skor Nasıl Hesaplanır?</h2>
         <div className="space-y-2 text-sm text-slate-400">
           <div className="flex justify-between">
@@ -274,8 +274,8 @@ function StatMini({ label, value, color }: { label: string; value: number; color
   const c = colorMap[color] || colorMap.slate;
 
   return (
-    <div className={`rounded-xl border border-slate-700/50 ${c.bg} p-4 text-center`}>
-      <div className={`text-2xl font-bold ${c.text}`}>{value}</div>
+    <div className={`rounded-xl border border-slate-700/50 ${c.bg} p-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600`}>
+      <div className={`font-display text-2xl font-bold tracking-tight ${c.text}`}>{value}</div>
       <div className="mt-1 text-xs text-slate-500">{label}</div>
     </div>
   );

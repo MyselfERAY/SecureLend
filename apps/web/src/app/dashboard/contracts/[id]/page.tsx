@@ -238,15 +238,15 @@ export default function ContractDetailPage() {
 
   return (
     <div className="space-y-6">
-      <button onClick={() => router.back()} className="text-sm text-blue-400 hover:text-blue-300">
+      <button onClick={() => router.back()} className="animate-fade-up text-sm text-blue-400 hover:text-blue-300">
         &larr; Geri
       </button>
 
       {/* Header */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-xl font-bold text-white">{contract.property.title}</h1>
+            <h1 className="font-display text-xl font-bold tracking-tight text-white">{contract.property.title}</h1>
             <p className="mt-1 text-sm text-slate-400">{contract.property.addressLine1}, {contract.property.district}, {contract.property.city}</p>
           </div>
           <div className="flex items-center gap-2">
@@ -278,12 +278,12 @@ export default function ContractDetailPage() {
 
       {/* Parties */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+        <div className="animate-fade-up animation-delay-75 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]">
           <h3 className="text-sm font-medium text-slate-400 mb-2">Ev Sahibi</h3>
           <div className="font-semibold text-white">{contract.landlord.fullName}</div>
           <div className="text-sm text-slate-500">{contract.landlord.tcknMasked}</div>
         </div>
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5">
+        <div className="animate-fade-up animation-delay-150 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]">
           <h3 className="text-sm font-medium text-slate-400 mb-2">Kiracı</h3>
           <div className="font-semibold text-white">{contract.tenant.fullName}</div>
           <div className="text-sm text-slate-500">{contract.tenant.tcknMasked}</div>
@@ -292,7 +292,7 @@ export default function ContractDetailPage() {
 
       {/* Contract Conditions (Phase D) */}
       {(contract.rentIncreaseType || contract.furnitureIncluded != null || contract.petsAllowed != null || contract.sublettingAllowed != null || contract.noticePeriodDays) && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <div className="animate-fade-up animation-delay-200 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
           <h2 className="mb-4 text-lg font-semibold text-white">Sözleşme Koşulları</h2>
           <div className="divide-y divide-slate-700/50">
             {contract.rentIncreaseType && (
@@ -351,7 +351,7 @@ export default function ContractDetailPage() {
 
       {/* KMH Account Selection */}
       {isTenant && contract.status === 'PENDING_SIGNATURES' && (
-        <div className={`rounded-xl border p-5 ${
+        <div className={`animate-fade-up animation-delay-200 rounded-xl border p-5 ${
           kmhAccounts.length === 0
             ? 'border-red-500/30 bg-red-500/10'
             : eligibleKmhAccounts.length === 0
@@ -419,7 +419,7 @@ export default function ContractDetailPage() {
       )}
 
       {/* Contract Lifecycle Timeline + Signatures */}
-      <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+      <div className="animate-fade-up animation-delay-300 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
         <h2 className="mb-6 text-lg font-semibold text-white">Sözleşme Durumu</h2>
 
         <ContractLifecycleTimeline contract={contract} />
@@ -436,7 +436,7 @@ export default function ContractDetailPage() {
             return (
               <div
                 key={role}
-                className="flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/30 px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/30 px-4 py-3 transition-colors hover:bg-slate-800/50"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -519,7 +519,7 @@ export default function ContractDetailPage() {
             <button
               onClick={handleSign}
               disabled={signing}
-              className="mt-4 rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+              className="mt-4 rounded-lg bg-emerald-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50"
             >
               {signing ? 'İmzalanıyor...' : 'Sözleşmeyi İmzala'}
             </button>
@@ -544,7 +544,7 @@ export default function ContractDetailPage() {
         {canTerminate && !showTerminate && (
           <button
             onClick={() => setShowTerminate(true)}
-            className="mt-4 ml-3 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-700"
+            className="mt-4 ml-3 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 active:translate-y-0 active:scale-[0.98]"
           >
             Sözleşmeyi Feshet
           </button>
@@ -565,7 +565,7 @@ export default function ContractDetailPage() {
               <button
                 onClick={handleTerminate}
                 disabled={terminating}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 active:translate-y-0 active:scale-[0.98] disabled:opacity-50"
               >
                 {terminating ? 'Feshediliyor...' : 'Feshet'}
               </button>
@@ -582,7 +582,7 @@ export default function ContractDetailPage() {
 
       {/* Payment Schedule */}
       {payments.length > 0 && (
-        <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
+        <div className="animate-fade-up animation-delay-300 rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6">
           <h2 className="mb-4 text-lg font-semibold text-white">Ödeme Takvimi</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -596,7 +596,7 @@ export default function ContractDetailPage() {
               </thead>
               <tbody className="divide-y divide-slate-700/50">
                 {payments.map((p) => (
-                  <tr key={p.id}>
+                  <tr key={p.id} className="transition-colors duration-150 hover:bg-blue-500/[0.06]">
                     <td className="py-3 font-medium text-white">{p.periodLabel}</td>
                     <td className="py-3 text-slate-400">{p.dueDate}</td>
                     <td className="py-3 text-right font-semibold text-white">{p.amount.toLocaleString('tr-TR')} TL</td>
