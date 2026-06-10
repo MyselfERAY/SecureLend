@@ -58,6 +58,31 @@ body {
   background-clip: content-box;
 }
 
+/* ── Primary button shine sweep ───────────────────── */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 60%
+  );
+  transform: translateX(-150%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.btn-shine:hover::after {
+  transform: translateX(150%);
+}
+
 /* ── Animation delay helpers ──────────────────────── */
 .animation-delay-75 { animation-delay: 75ms; }
 .animation-delay-150 { animation-delay: 150ms; }

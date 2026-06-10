@@ -167,6 +167,7 @@ export default function DashboardPage() {
             </svg>
           }
           color="blue"
+          delay={0}
         />
         <StatCard
           title="Bekleyen Ödeme"
@@ -177,6 +178,7 @@ export default function DashboardPage() {
             </svg>
           }
           color="yellow"
+          delay={100}
         />
         <StatCard
           title="Geciken Ödeme"
@@ -187,6 +189,7 @@ export default function DashboardPage() {
             </svg>
           }
           color="red"
+          delay={200}
         />
         {isLandlord ? (
           <StatCard
@@ -198,6 +201,7 @@ export default function DashboardPage() {
               </svg>
             }
             color="emerald"
+            delay={300}
           />
         ) : (
           <StatCard
@@ -209,6 +213,7 @@ export default function DashboardPage() {
               </svg>
             }
             color="slate"
+            delay={300}
           />
         )}
       </div>
@@ -364,11 +369,13 @@ function StatCard({
   value,
   icon,
   color,
+  delay = 0,
 }: {
   title: string;
   value: number;
   icon: React.ReactNode;
   color: string;
+  delay?: number;
 }) {
   const colorMap: Record<string, { bg: string; icon: string; text: string }> = {
     blue: { bg: 'bg-blue-500/10', icon: 'text-blue-400', text: 'text-blue-400' },
@@ -381,7 +388,10 @@ function StatCard({
   const c = colorMap[color] || colorMap.slate;
 
   return (
-    <div className="group rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]">
+    <div
+      className="group animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]"
+      style={delay ? { animationDelay: `${delay}ms` } : undefined}
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-400">{title}</span>
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.bg} transition-transform duration-300 group-hover:scale-110`}>
