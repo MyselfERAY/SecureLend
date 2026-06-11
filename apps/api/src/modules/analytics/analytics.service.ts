@@ -195,6 +195,7 @@ export class AnalyticsService implements OnModuleInit {
 
   async getDashboard(days = 30) {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const until = new Date();
 
     const [
       totalPageViews,
@@ -206,8 +207,12 @@ export class AnalyticsService implements OnModuleInit {
       avgDurations,
       devices,
       browsers,
+      operatingSystems,
       errors,
       dailyViews,
+      hourly,
+      referrers,
+      screenSizes,
     ] = await Promise.all([
       // Total page views
       this.prisma.analyticsEvent.count({
@@ -267,6 +272,14 @@ export class AnalyticsService implements OnModuleInit {
         orderBy: { _count: { browser: 'desc' } },
         take: 10,
       }),
+      // Operating system breakdown
+      this.prisma.analyticsEvent.groupBy({
+        by: ['os'],
+        where: { eventType: 'page_view', os: { not: null }, createdAt: { gte: since } },
+        _count: true,
+        orderBy: { _count: { os: 'desc' } },
+        take: 10,
+      }),
       // Recent errors
       this.prisma.analyticsEvent.findMany({
         where: { eventType: 'error', createdAt: { gte: since } },
@@ -288,7 +301,69 @@ export class AnalyticsService implements OnModuleInit {
         GROUP BY DATE(created_at)
         ORDER BY day ASC
       `.catch(() => []),
+      // Hourly distribution (hour-of-day, Türkiye saati) — ziyaretlerin
+      // günün hangi saatlerinde yoğunlaştığını gösterir.
+      this.prisma.$queryRaw<Array<{ hour: number; count: bigint }>>`
+        SELECT EXTRACT(HOUR FROM (created_at AT TIME ZONE 'Europe/Istanbul'))::int as hour,
+               COUNT(*)::bigint as count
+        FROM analytics_events
+        WHERE event_type = 'page_view' AND created_at >= ${since}
+          AND session_id != 'server'
+        GROUP BY hour
+        ORDER BY hour ASC
+      `.catch(() => []),
+      // Referrer (trafik kaynağı) — ziyaretçilerin siteye nereden geldiği.
+      // null referrer = doğrudan trafik (Direkt).
+      this.prisma.analyticsEvent.groupBy({
+        by: ['referrer'],
+        where: {
+          eventType: 'page_view',
+          createdAt: { gte: since },
+          sessionId: { not: 'server' },
+        },
+        _count: true,
+        orderBy: { _count: { referrer: 'desc' } },
+        take: 30,
+      }),
+      // Screen-width buckets — kullanıcıların ekran/viewport genişliği dağılımı.
+      this.prisma.$queryRaw<Array<{ bucket: string; sort: number; count: bigint }>>`
+        SELECT
+          CASE
+            WHEN screen_width < 640 THEN 'Mobil (<640px)'
+            WHEN screen_width < 1024 THEN 'Tablet (640–1024px)'
+            WHEN screen_width < 1440 THEN 'Laptop (1024–1440px)'
+            ELSE 'Masaüstü (≥1440px)'
+          END as bucket,
+          CASE
+            WHEN screen_width < 640 THEN 0
+            WHEN screen_width < 1024 THEN 1
+            WHEN screen_width < 1440 THEN 2
+            ELSE 3
+          END as sort,
+          COUNT(*)::bigint as count
+        FROM analytics_events
+        WHERE event_type = 'page_view' AND screen_width IS NOT NULL
+          AND created_at >= ${since} AND session_id != 'server'
+        GROUP BY bucket, sort
+        ORDER BY sort ASC
+      `.catch(() => []),
     ]);
+
+    // Referrer'ları kategorilere ayır + en yüksek kaynakları çıkar.
+    const refCategories: Record<string, number> = {};
+    for (const r of referrers) {
+      const category = this.categorizeReferrer(r.referrer);
+      refCategories[category] = (refCategories[category] || 0) + r._count;
+    }
+    const trafficSources = {
+      categories: Object.entries(refCategories)
+        .map(([category, count]) => ({ category, count }))
+        .sort((a, b) => b.count - a.count),
+      topSources: referrers
+        .filter((r) => r.referrer && r.referrer.trim().length > 0)
+        .map((r) => ({ source: r.referrer as string, count: r._count }))
+        .slice(0, 10),
+    };
 
     return {
       summary: {
@@ -298,6 +373,7 @@ export class AnalyticsService implements OnModuleInit {
         totalErrors,
         avgPagesPerSession: uniqueSessions > 0 ? +(totalPageViews / uniqueSessions).toFixed(1) : 0,
       },
+      window: { since: since.toISOString(), until: until.toISOString(), days },
       pageViews: pageViews.map((p) => ({ page: p.page, count: p._count })),
       topPages: topPages.map((p) => ({ page: p.page, sessions: p._count.sessionId })),
       avgDurations: avgDurations.map((p) => ({
@@ -307,12 +383,29 @@ export class AnalyticsService implements OnModuleInit {
       })),
       devices: devices.map((d) => ({ device: d.device, count: d._count })),
       browsers: browsers.map((b) => ({ browser: b.browser, count: b._count })),
+      operatingSystems: operatingSystems.map((o) => ({ os: o.os, count: o._count })),
+      trafficSources,
+      hourly: (hourly as any[]).map((h) => ({ hour: Number(h.hour), count: Number(h.count) })),
+      screenSizes: (screenSizes as any[]).map((s) => ({ bucket: s.bucket as string, count: Number(s.count) })),
       recentErrors: errors,
       dailyViews: dailyViews.map((d) => ({
         day: String(d.day).slice(0, 10),
         count: Number(d.count),
       })),
     };
+  }
+
+  /** Referrer URL'ini trafik kategorisine ayırır. */
+  private categorizeReferrer(referrer: string | null): string {
+    const ref = (referrer || '').toLowerCase();
+    if (!ref) return 'Direkt';
+    if (ref.includes('google') || ref.includes('bing') || ref.includes('yahoo') || ref.includes('yandex') || ref.includes('duckduckgo')) {
+      return 'Arama Motoru';
+    }
+    if (ref.includes('facebook') || ref.includes('instagram') || ref.includes('twitter') || ref.includes('linkedin') || ref.includes('tiktok') || ref.includes('t.co') || ref.includes('youtube')) {
+      return 'Sosyal Medya';
+    }
+    return 'Diğer Site';
   }
 
   // ─── API Dashboard Stats ───

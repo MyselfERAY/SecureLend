@@ -16,11 +16,20 @@ interface AnalyticsDashboard {
     totalErrors: number;
     avgPagesPerSession: number;
   };
+  // Yeni alanlar opsiyonel — backend henüz deploy olmamışsa frontend kırılmaz.
+  window?: { since: string; until: string; days: number };
   pageViews: { page: string; count: number }[];
   topPages: { page: string; sessions: number }[];
   avgDurations: { page: string; avgSeconds: number; samples: number }[];
   devices: { device: string; count: number }[];
   browsers: { browser: string; count: number }[];
+  operatingSystems?: { os: string | null; count: number }[];
+  trafficSources?: {
+    categories: { category: string; count: number }[];
+    topSources: { source: string; count: number }[];
+  };
+  hourly?: { hour: number; count: number }[];
+  screenSizes?: { bucket: string; count: number }[];
   recentErrors: {
     page: string;
     errorMessage: string | null;
@@ -119,6 +128,21 @@ const RANGE_PRESETS: { label: string; minutes: number }[] = [
   { label: 'Son 90 gün', minutes: 90 * 1440 },
 ];
 
+// Trafik kaynağı kategorileri için renk eşlemesi (backend kategori string'leriyle uyumlu)
+const REFERRER_COLORS: Record<string, string> = {
+  'Arama Motoru': 'bg-blue-500/100',
+  'Sosyal Medya': 'bg-pink-500',
+  'Diğer Site': 'bg-amber-500/100',
+  'Direkt': 'bg-slate-400',
+};
+
+// Cihaz tipi için okunaklı Türkçe etiketler
+const DEVICE_LABELS: Record<string, string> = {
+  desktop: 'Masaüstü',
+  mobile: 'Mobil',
+  tablet: 'Tablet',
+};
+
 export default function AdminAnalyticsPage() {
   const { tokens } = useAuth();
   const [data, setData] = useState<AnalyticsDashboard | null>(null);
@@ -207,6 +231,12 @@ export default function AdminAnalyticsPage() {
   const totalDevices = data.devices.reduce((s, d) => s + d.count, 0) || 1;
   const totalBrowsers = data.browsers.reduce((s, b) => s + b.count, 0) || 1;
 
+  // Seçili aralığın gerçek tarih penceresi — "hangi tarihler arası" görünür olsun.
+  const activeRangeLabel = RANGE_PRESETS.find((p) => p.minutes === rangeMinutes)?.label ?? '';
+  const windowLabel = data.window
+    ? `${new Date(data.window.since).toLocaleString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} – ${new Date(data.window.until).toLocaleString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+    : null;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -249,17 +279,43 @@ export default function AdminAnalyticsPage() {
         }
       />
 
+      {/* Aktif tarih penceresi — kullanıcı hangi aralığı gördüğünü net anlasın */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-700/50 bg-[#0d1b2a] px-4 py-3 text-sm">
+        <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span className="font-semibold text-slate-200">{activeRangeLabel}</span>
+        {windowLabel && (
+          <>
+            <span className="text-slate-600">·</span>
+            <span className="text-slate-400">{windowLabel}</span>
+          </>
+        )}
+        <span className="ml-auto text-xs text-slate-500">Tüm saatler Türkiye saatine (UTC+3) göredir</span>
+      </div>
+
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
-          { label: 'Sayfa Görüntülemesi', value: data.summary.totalPageViews, color: 'text-blue-600' },
-          { label: 'Benzersiz Oturum', value: data.summary.uniqueSessions, color: 'text-emerald-600' },
-          { label: 'Girişli Kullanıcı', value: data.summary.uniqueUsers, color: 'text-purple-600' },
-          { label: 'Ort. Sayfa/Oturum', value: data.summary.avgPagesPerSession, color: 'text-amber-600' },
-          { label: 'Toplam Hata', value: data.summary.totalErrors, color: data.summary.totalErrors > 0 ? 'text-red-600' : 'text-slate-500' },
-        ].map((card) => (
-          <div key={card.label} className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
-            <div className={`text-3xl font-bold ${card.color}`}>{card.value}</div>
+          { label: 'Sayfa Görüntülemesi', value: data.summary.totalPageViews, color: 'text-blue-400', icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' },
+          { label: 'Benzersiz Oturum', value: data.summary.uniqueSessions, color: 'text-emerald-400', icon: 'M9 17v-2a4 4 0 014-4h4M3 11h2a2 2 0 002-2V7a2 2 0 00-2-2H3m0 6v6a2 2 0 002 2h2' },
+          { label: 'Girişli Kullanıcı', value: data.summary.uniqueUsers, color: 'text-violet-400', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4z' },
+          { label: 'Ort. Sayfa/Oturum', value: data.summary.avgPagesPerSession, color: 'text-amber-400', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+          { label: 'Toplam Hata', value: data.summary.totalErrors, color: data.summary.totalErrors > 0 ? 'text-rose-400' : 'text-slate-500', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
+        ].map((card, i) => (
+          <div
+            key={card.label}
+            className="group animate-fade-up rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-600 hover:bg-[#112240]"
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <div className="flex items-center justify-between">
+              <div className={`font-display text-3xl font-bold ${card.color}`}>
+                {typeof card.value === 'number' ? card.value.toLocaleString('tr-TR') : card.value}
+              </div>
+              <svg className={`h-5 w-5 opacity-40 transition-transform duration-300 group-hover:scale-110 ${card.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={card.icon} />
+              </svg>
+            </div>
             <div className="mt-1 text-sm text-slate-400">{card.label}</div>
           </div>
         ))}
@@ -273,7 +329,7 @@ export default function AdminAnalyticsPage() {
           { key: 'errors', label: `Hatalar (${data.summary.totalErrors})` },
           { key: 'api', label: 'API' },
           { key: 'metrics', label: 'Metrikler' },
-          { key: 'funnel', label: 'Aktivasyon Hünisi' },
+          { key: 'funnel', label: 'Aktivasyon Hunisi' },
         ] as const).map((tab) => (
           <button
             key={tab.key}
@@ -292,12 +348,12 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-6">
           {data.dailyViews.length > 0 && (
             <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
-              <h3 className="mb-4 text-sm font-semibold text-slate-200">Gunluk Sayfa Görüntülemesi</h3>
+              <h3 className="mb-4 text-sm font-semibold text-slate-200">Günlük Sayfa Görüntülemesi</h3>
               <div className="flex items-end gap-1" style={{ height: 160 }}>
                 {data.dailyViews.map((d) => (
                   <div key={d.day} className="group relative flex flex-1 flex-col items-center">
-                    <div className="absolute -top-6 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block">
-                      {d.count}
+                    <div className="absolute -top-6 hidden rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block z-10">
+                      {d.count.toLocaleString('tr-TR')}
                     </div>
                     <div
                       className="w-full rounded-t bg-blue-500/100 transition-all hover:bg-blue-600"
@@ -312,47 +368,60 @@ export default function AdminAnalyticsPage() {
             </div>
           )}
 
+          {/* Saat bazlı ziyaret dağılımı — günün hangi saatlerinde yoğun */}
+          <HourlyChart hourly={data.hourly} />
+
+          {/* Trafik kaynağı + En popüler sayfalar */}
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
-              <h3 className="mb-4 text-sm font-semibold text-slate-200">Cihaz Dağılımı</h3>
-              {data.devices.length === 0 ? (
+              <h3 className="mb-1 text-sm font-semibold text-slate-200">Trafik Kaynağı</h3>
+              <p className="mb-4 text-xs text-slate-500">Ziyaretçiler siteye nereden geldi</p>
+              {!data.trafficSources || data.trafficSources.categories.length === 0 ? (
                 <p className="text-sm text-slate-500">Henüz veri yok</p>
               ) : (
-                <div className="space-y-3">
-                  {data.devices.map((d) => {
-                    const pct = Math.round((d.count / totalDevices) * 100);
-                    return (
-                      <div key={d.device}>
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium text-slate-200 capitalize">{d.device}</span>
-                          <span className="text-slate-400">{pct}% ({d.count})</span>
-                        </div>
-                        <div className="mt-1 h-2 w-full rounded-full bg-slate-800">
-                          <div className="h-2 rounded-full bg-blue-500/100" style={{ width: `${pct}%` }} />
-                        </div>
+                <>
+                  <Breakdown
+                    items={data.trafficSources.categories.map((c) => ({ label: c.category, count: c.count }))}
+                    colorFor={(label) => REFERRER_COLORS[label] || 'bg-slate-400'}
+                  />
+                  {data.trafficSources.topSources.length > 0 && (
+                    <div className="mt-4 border-t border-slate-700/50 pt-4">
+                      <h4 className="mb-2 text-xs font-semibold text-slate-400">En Yüksek Kaynaklar</h4>
+                      <div className="space-y-1.5">
+                        {data.trafficSources.topSources.map((s, i) => (
+                          <div key={i} className="flex justify-between gap-2 text-xs">
+                            <span className="truncate text-slate-300" title={s.source}>{s.source}</span>
+                            <span className="ml-2 shrink-0 font-medium text-slate-400">{s.count.toLocaleString('tr-TR')}</span>
+                          </div>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
-              <h3 className="mb-4 text-sm font-semibold text-slate-200">Tarayıcı Dağılımı</h3>
-              {data.browsers.length === 0 ? (
+              <h3 className="mb-1 text-sm font-semibold text-slate-200">En Popüler Sayfalar</h3>
+              <p className="mb-4 text-xs text-slate-500">Benzersiz ziyaretçi (oturum) sayısına göre</p>
+              {data.topPages.length === 0 ? (
                 <p className="text-sm text-slate-500">Henüz veri yok</p>
               ) : (
-                <div className="space-y-3">
-                  {data.browsers.map((b) => {
-                    const pct = Math.round((b.count / totalBrowsers) * 100);
+                <div className="space-y-2">
+                  {data.topPages.slice(0, 8).map((p, i) => {
+                    const maxSessions = Math.max(...data.topPages.map((x) => x.sessions), 1);
+                    const pct = Math.round((p.sessions / maxSessions) * 100);
                     return (
-                      <div key={b.browser}>
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium text-slate-200">{b.browser}</span>
-                          <span className="text-slate-400">{pct}% ({b.count})</span>
-                        </div>
-                        <div className="mt-1 h-2 w-full rounded-full bg-slate-800">
-                          <div className="h-2 rounded-full bg-emerald-500/100" style={{ width: `${pct}%` }} />
+                      <div key={p.page} className="flex items-center gap-3">
+                        <span className="w-5 shrink-0 text-right text-xs font-semibold text-slate-500">{i + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate font-mono text-xs text-slate-200" title={p.page}>{p.page}</span>
+                            <span className="shrink-0 text-xs font-semibold text-slate-300">{p.sessions.toLocaleString('tr-TR')}</span>
+                          </div>
+                          <div className="mt-1 h-1.5 w-full rounded-full bg-slate-800">
+                            <div className="h-1.5 rounded-full bg-blue-500/80" style={{ width: `${pct}%` }} />
+                          </div>
                         </div>
                       </div>
                     );
@@ -361,6 +430,59 @@ export default function AdminAnalyticsPage() {
               )}
             </div>
           </div>
+
+          {/* Cihaz / Tarayıcı / İşletim Sistemi */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
+              <h3 className="mb-4 text-sm font-semibold text-slate-200">Cihaz Dağılımı</h3>
+              {data.devices.length === 0 ? (
+                <p className="text-sm text-slate-500">Henüz veri yok</p>
+              ) : (
+                <Breakdown
+                  items={data.devices.map((d) => ({ label: DEVICE_LABELS[d.device ?? ''] || d.device || '—', count: d.count }))}
+                  total={totalDevices}
+                  barColor="bg-blue-500/100"
+                />
+              )}
+            </div>
+
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
+              <h3 className="mb-4 text-sm font-semibold text-slate-200">Tarayıcı Dağılımı</h3>
+              {data.browsers.length === 0 ? (
+                <p className="text-sm text-slate-500">Henüz veri yok</p>
+              ) : (
+                <Breakdown
+                  items={data.browsers.map((b) => ({ label: b.browser || '—', count: b.count }))}
+                  total={totalBrowsers}
+                  barColor="bg-emerald-500/100"
+                />
+              )}
+            </div>
+
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
+              <h3 className="mb-4 text-sm font-semibold text-slate-200">İşletim Sistemi</h3>
+              {!data.operatingSystems || data.operatingSystems.length === 0 ? (
+                <p className="text-sm text-slate-500">Henüz veri yok</p>
+              ) : (
+                <Breakdown
+                  items={data.operatingSystems.map((o) => ({ label: o.os || '—', count: o.count }))}
+                  barColor="bg-violet-500/100"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Ekran boyutu dağılımı */}
+          {data.screenSizes && data.screenSizes.length > 0 && (
+            <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
+              <h3 className="mb-1 text-sm font-semibold text-slate-200">Ekran Boyutu</h3>
+              <p className="mb-4 text-xs text-slate-500">Ziyaretçilerin ekran/pencere genişliği</p>
+              <Breakdown
+                items={data.screenSizes.map((s) => ({ label: s.bucket, count: s.count }))}
+                barColor="bg-amber-500/100"
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -480,6 +602,97 @@ export default function AdminAnalyticsPage() {
       {activeTab === 'funnel' && (
         <FunnelTabContent data={funnelData} loading={funnelLoading} days={daysForLegacy} />
       )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Yatay-bar dağılım listesi (cihaz/tarayıcı/OS/ekran/trafik için ortak)
+// ═══════════════════════════════════════════════════════════════
+
+function Breakdown({
+  items,
+  total,
+  barColor = 'bg-blue-500/100',
+  colorFor,
+}: {
+  items: { label: string; count: number }[];
+  total?: number;
+  barColor?: string;
+  colorFor?: (label: string) => string;
+}) {
+  const sum = total ?? (items.reduce((s, i) => s + i.count, 0) || 1);
+  return (
+    <div className="space-y-3">
+      {items.map((item) => {
+        const pct = Math.round((item.count / sum) * 100);
+        return (
+          <div key={item.label}>
+            <div className="flex justify-between text-sm">
+              <span className="font-medium text-slate-200">{item.label}</span>
+              <span className="text-slate-400">
+                {pct}% <span className="text-slate-500">({item.count.toLocaleString('tr-TR')})</span>
+              </span>
+            </div>
+            <div className="mt-1 h-2 w-full rounded-full bg-slate-800">
+              <div
+                className={`h-2 rounded-full ${colorFor ? colorFor(item.label) : barColor} transition-all`}
+                style={{ width: `${Math.max(pct, 1)}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Saat bazlı ziyaret grafiği (0–23, Türkiye saati) + yoğun saat vurgusu
+// ═══════════════════════════════════════════════════════════════
+
+function HourlyChart({ hourly }: { hourly?: { hour: number; count: number }[] }) {
+  if (!hourly || hourly.length === 0) return null;
+
+  // 0–23 tüm saatleri doldur (eksik saatler 0 olsun ki grafik tutarlı görünsün)
+  const byHour = new Map(hourly.map((h) => [h.hour, h.count]));
+  const hours = Array.from({ length: 24 }, (_, h) => ({ hour: h, count: byHour.get(h) || 0 }));
+  const max = Math.max(...hours.map((h) => h.count), 1);
+  const peak = hours.reduce((a, b) => (b.count > a.count ? b : a), hours[0]);
+  const totalVisits = hours.reduce((s, h) => s + h.count, 0);
+
+  return (
+    <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] p-6 shadow-sm transition-colors duration-300 hover:border-slate-600/60">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-200">Ziyaret Saatleri</h3>
+          <p className="mt-0.5 text-xs text-slate-500">Günün hangi saatlerinde ziyaret ediliyor (Türkiye saati)</p>
+        </div>
+        {totalVisits > 0 && (
+          <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-300">
+            En yoğun: {String(peak.hour).padStart(2, '0')}:00 ({peak.count.toLocaleString('tr-TR')})
+          </span>
+        )}
+      </div>
+      <div className="flex items-end gap-0.5" style={{ height: 140 }}>
+        {hours.map((h) => {
+          const isPeak = h.hour === peak.hour && h.count > 0;
+          return (
+            <div key={h.hour} className="group relative flex flex-1 flex-col items-center">
+              <div className="absolute -top-6 hidden whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:block z-10">
+                {String(h.hour).padStart(2, '0')}:00 — {h.count.toLocaleString('tr-TR')}
+              </div>
+              <div
+                className={`w-full rounded-t transition-all ${isPeak ? 'bg-blue-400' : 'bg-blue-500/60 group-hover:bg-blue-500'}`}
+                style={{ height: `${Math.max((h.count / max) * 120, h.count > 0 ? 4 : 1)}px` }}
+              />
+              {h.hour % 3 === 0 && (
+                <div className="mt-1 text-[9px] text-slate-500">{String(h.hour).padStart(2, '0')}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -616,7 +829,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-slate-200">{chartTitle}</h3>
             <div className="flex items-center gap-4 text-xs text-slate-400">
-              <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-blue-500/100 inline-block" /> Istek</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-blue-500/100 inline-block" /> İstek</span>
               <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-red-400 inline-block" /> Hata</span>
               <span className="text-slate-500">• Detay için bara tıkla</span>
             </div>
@@ -799,7 +1012,7 @@ function ApiTabContent({ data, loading, rangeMinutes: _rangeMinutes }: { data: A
           <thead>
             <tr className="bg-slate-800/40 border-b border-slate-700/50">
               <th className="px-6 py-3 text-left font-semibold text-slate-300">Endpoint</th>
-              <th className="px-6 py-3 text-right font-semibold text-slate-300">Istek</th>
+              <th className="px-6 py-3 text-right font-semibold text-slate-300">İstek</th>
               <th className="px-6 py-3 text-right font-semibold text-slate-300">Ort. Yanıt</th>
             </tr>
           </thead>
@@ -1054,7 +1267,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
                 return (
                   <div key={d.depth}>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="font-medium text-slate-200">{d.depth} kaydirma</span>
+                      <span className="font-medium text-slate-200">{d.depth} kaydırma</span>
                       <span className="text-slate-400">{d.count.toLocaleString('tr-TR')} ({pct}%)</span>
                     </div>
                     <div className="h-3 w-full rounded-full bg-slate-800">
@@ -1072,7 +1285,7 @@ function MetricsTabContent({ data, loading, days }: { data: ExtendedMetrics | nu
       {data.ctaClicks.length > 0 && (
         <div className="rounded-xl border border-slate-700/50 bg-[#0d1b2a] shadow-sm overflow-hidden transition-colors duration-300 hover:border-slate-600/60">
           <div className="px-6 py-4 border-b border-slate-700/50">
-            <h3 className="text-sm font-semibold text-slate-200">CTA Tıklamalari</h3>
+            <h3 className="text-sm font-semibold text-slate-200">CTA Tıklamaları</h3>
           </div>
           <table className="w-full text-sm">
             <thead>
