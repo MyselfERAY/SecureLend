@@ -94,6 +94,18 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // bfcache'ten geri dönüşte (geri tuşu) sayfa, eski oturum görüntüsüyle
+  // bellekten geri yüklenebilir; tam yenileme middleware + oturum kontrolünü zorlar
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
+
   useEffect(() => {
     if (!isLoading && !tokens) {
       router.replace('/auth/login');

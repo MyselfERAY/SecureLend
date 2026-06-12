@@ -22,13 +22,14 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 const RT_COOKIE = '__rt';
-const RT_COOKIE_OPTS = {
+// maxAge token ömrüne göre değişir (admin 8 saat, diğerleri 7 gün) — service belirler
+const rtCookieOpts = (maxAge: number) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   path: '/',
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
+  maxAge,
+});
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -82,7 +83,7 @@ export class AuthController {
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
     const userAgent = (req.headers['user-agent'] as string) || 'unknown';
     const tokens = await this.authService.verifyOtp(dto.phone, dto.code, ipAddress, userAgent);
-    res.cookie(RT_COOKIE, tokens.refreshToken, RT_COOKIE_OPTS);
+    res.cookie(RT_COOKIE, tokens.refreshToken, rtCookieOpts(tokens.refreshExpiresInMs));
     return { status: 'success', data: { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn } };
   }
 
@@ -100,7 +101,7 @@ export class AuthController {
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
     const userAgent = (req.headers['user-agent'] as string) || 'unknown';
     const tokens = await this.authService.refreshTokens(refreshToken, ipAddress, userAgent);
-    res.cookie(RT_COOKIE, tokens.refreshToken, RT_COOKIE_OPTS);
+    res.cookie(RT_COOKIE, tokens.refreshToken, rtCookieOpts(tokens.refreshExpiresInMs));
     return { status: 'success', data: { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn } };
   }
 
