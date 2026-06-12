@@ -450,13 +450,18 @@ export class AuthService implements OnModuleInit {
     // Generate opaque refresh token
     const refreshToken = randomUUID();
     const tokenHash = this.hashRefreshToken(refreshToken);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    // Admin oturumları hassas veriye eriştiği için kısa ömürlü (8 saat),
+    // normal kullanıcılar 7 gün
+    const refreshExpiresInMs = roles.includes('ADMIN')
+      ? 8 * 60 * 60 * 1000
+      : 7 * 24 * 60 * 60 * 1000;
+    const expiresAt = new Date(Date.now() + refreshExpiresInMs);
 
     await this.prisma.refreshToken.create({
       data: { userId, tokenHash, expiresAt, ipAddress: this.safeIp(ipAddress), userAgent: this.safeUserAgent(userAgent) },
     });
 
-    return { accessToken, refreshToken, expiresIn: 900 }; // 15 min
+    return { accessToken, refreshToken, expiresIn: 900, refreshExpiresInMs }; // access: 15 min
   }
 
   private hashRefreshToken(token: string): string {

@@ -20,6 +20,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Oturumlu sayfalar tarayıcı/disk cache'ine ve bfcache'e girmesin:
+        // logout sonrası geri tuşuyla hassas içerik görüntülenemesin
+        source: '/dashboard/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate' },
+          { key: 'Pragma', value: 'no-cache' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
