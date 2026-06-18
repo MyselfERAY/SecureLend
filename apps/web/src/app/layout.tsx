@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '../lib/auth-context';
 import { AnalyticsProvider } from '../components/analytics-provider';
@@ -13,6 +13,12 @@ const inter = Inter({
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-display',
+  display: 'swap',
+});
+
+const grotesk = Space_Grotesk({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-grotesk',
   display: 'swap',
 });
 
@@ -209,7 +215,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className={`${inter.variable} ${jakarta.variable}`}>
+    <html lang="tr" className={`${inter.variable} ${jakarta.variable} ${grotesk.variable}`}>
       <body className="antialiased min-h-screen font-sans">
         <script
           type="application/ld+json"

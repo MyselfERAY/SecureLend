@@ -1,106 +1,85 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+/**
+ * Kira Güvence — landing page redesign (production implementation)
+ *
+ * Fonts: Space Grotesk (display) + Inter (body) are loaded in app/layout.tsx as
+ * the CSS variables --font-grotesk and --font-sans. Display text uses
+ * var(--font-grotesk); body uses var(--font-sans).
+ *
+ * Tailwind: uses only stock utilities (blue-700, slate, emerald) — matches repo conventions.
+ * Interactions are client-side React; no backend calls. CTAs point to /auth/register & /auth/login.
+ */
+
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { fixTurkish } from '../lib/fix-turkish';
 import { useAuth } from '../lib/auth-context';
-import Logo from '../components/logo';
-import Reveal from '../components/reveal';
-import CountUp from '../components/count-up';
 
-const features = [
-  {
-    icon: 'shield',
-    title: 'Kefil & Findeks Gereksiz',
-    desc: 'Banka güvencesiyle kiracınızın ödeme gücü garanti altında. Kefil aramaya, Findeks raporuna gerek yok.',
+const DISPLAY = "var(--font-grotesk), 'Space Grotesk', system-ui, sans-serif";
+
+type Persona = 'tenant' | 'landlord';
+
+const PERSONAS: Record<Persona, {
+  title: React.ReactNode; sub: string; checks: string[]; accent: string; accentSoft: string;
+}> = {
+  tenant: {
+    title: <>Kefil derdi bitti.<br /><span className="text-blue-700">Kiranız banka güvencesinde.</span></>,
+    sub: 'Findeks raporu, kefil arayışı, noter masrafı — hepsi geride kaldı. 5 dakikada dijital sözleşme, banka güvencesiyle.',
+    checks: ['Kefil aramak zorunda değilsiniz', 'Ödeme geçmişinizi inşa edin', 'Birkaç günlük faizle korumadasınız'],
+    accent: 'text-blue-700', accentSoft: 'bg-blue-50 text-blue-700',
   },
-  {
-    icon: 'document',
-    title: '5 Dakikada Dijital Sözleşme',
-    desc: 'Noterci masrafı olmadan, mahkemede geçerli dijital sözleşmeyi anında kurun.',
+  landlord: {
+    title: <>Kiranız her ay,<br /><span className="text-emerald-700">zamanında ve eksiksiz.</span></>,
+    sub: 'Gecikme, tahliye derdi, kefil takibi yok. Banka güvencesiyle kira her ay otomatik hesabınızda.',
+    checks: ['Kira banka güvencesinde', 'Otomatik tahsilat ve takip', 'Mahkemede geçerli dijital sözleşme'],
+    accent: 'text-emerald-700', accentSoft: 'bg-emerald-50 text-emerald-700',
   },
-  {
-    icon: 'bank',
-    title: 'Banka Güvenceli Ödeme',
-    desc: 'Banka güvence hesabı ile kira her ay otomatik ödenir. Ev sahibi zamanında alır, kiracı birkaç günlük faizle korunur.',
-  },
+};
+
+const STEPS = [
+  { n: '01', t: 'Başvur & onaylan', d: 'Kiracı banka güvence hesabı (KMH) için başvurur, kimlik KPS ile doğrulanır ve limit belirlenir.' },
+  { n: '02', t: 'Dijital sözleşme kur', d: 'Kiracı ve ev sahibi sözleşmeyi 5 dakikada dijital imzalar. Noter ve evrak yok.' },
+  { n: '03', t: 'Otomatik öde & al', d: 'Kira her ay otomatik tahsil edilir; ev sahibine zamanında ödenir. Gecikse bile banka güvence verir.' },
 ];
 
-const steps = [
-  { number: '01', title: 'Kayıt Ol', desc: 'TCKN doğrulamalı hızlı kayıt. 5 dakikadan az.' },
-  { number: '02', title: 'Sözleşme Oluştur', desc: 'Kiracı ve ev sahibi dijital sözleşmeyi imzalar.' },
-  { number: '03', title: 'Otomatik Ödeme', desc: 'Kira her ay belirlenen tarihte otomatik tahsil edilir.' },
-  { number: '04', title: 'Takip Et', desc: 'Tüm ödemeler ve belgeler tek panelden görüntülenir.' },
+const FAQS = [
+  { q: 'Kira Güvence nedir?', a: 'Kiracının ödeme gücünü banka güvencesi altına alarak ev sahibine zamanında ve eksiksiz kira ödemesini garanti eden dijital bir platformdur. Kefil ve Findeks gereksinimini ortadan kaldırır.' },
+  { q: 'Kefil olmadan ev kiralayabilir miyim?', a: 'Evet. Banka güvencesi kefil yerine geçer; kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz.' },
+  { q: 'Banka Güvence Hesabı (KMH) nedir?', a: 'Kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşasa bile kira banka tarafından ev sahibine ödenir; kiracı sadece birkaç günlük faiz öder.' },
+  { q: 'Dijital sözleşme mahkemede geçerli mi?', a: 'Evet. Sözleşmeler Türk Borçlar Kanunu (TBK) uyumludur; tüm kayıtlar zaman damgalı olarak saklanır ve hukuki delil olarak kullanılabilir.' },
+  { q: 'Ev sahibi için maliyet nedir?', a: 'Ücretsiz planda güvence ücreti %1.5, ücretli planlarda %0.5–1 arasındadır. Bu, noter + Findeks + kefil riskinden çok daha ekonomiktir.' },
 ];
 
-const trustBadges = [
-  {
-    icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-    title: "Türkiye'nin İlk Dijital Kira Güvence Platformu",
-  },
-  {
-    icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
-    title: 'KVKK Uyumlu, Banka Düzeyinde Güvenlik',
-  },
-  {
-    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    title: '5 Dakikada Dijital Sözleşme',
-  },
-  {
-    icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-    title: 'BDDK Uyumlu Ödeme Modeli',
-  },
-];
+const TRUST = ['BDDK Uyumlu Ödeme Modeli', 'KVKK Uyumlu', 'TBK Geçerli Sözleşme', 'KPS Kimlik Doğrulama', 'Banka Düzeyinde Güvenlik'];
 
-const marqueeItems = [
-  'Kefilsiz kiralama',
-  'Findeks raporu yok',
-  'Noter masrafı yok',
-  '5 dakikada dijital sözleşme',
-  'Banka güvenceli ödeme',
-  'Otomatik kira tahsilatı',
-  'KVKK uyumlu',
-  'TBK uyumlu sözleşme',
-];
-
-const testimonials = [
-  {
-    name: 'Ahmet Yılmaz',
-    role: 'Kiracı',
-    comment: 'Kiramı artık unutmuyorum, otomatik ödeniyor. Çok rahat bir sistem.',
-    avatar: 'AY',
-  },
-  {
-    name: 'Fatma Kaya',
-    role: 'Ev Sahibi',
-    comment: 'Kira gecikmesi tarih oldu. Tüm ödemeler zamanında geliyor.',
-    avatar: 'FK',
-  },
-  {
-    name: 'Mehmet Özkan',
-    role: 'Emlakçı',
-    comment: 'Tüm işlemleri tek platformdan yönetiyorum. Müşterilerim çok memnun.',
-    avatar: 'MÖ',
-  },
-];
-
-interface LatestArticle {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  category: string;
-  audience: 'TENANT' | 'LANDLORD' | 'BOTH';
-  publishedAt: string;
+function useCountUp(target: number, run: boolean, dec = 0) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!run) return;
+    const start = performance.now(), dur = 900;
+    let raf = 0;
+    const frame = (t: number) => {
+      const p = Math.min((t - start) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+      setV(target * e);
+      if (p < 1) raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  }, [run, target]);
+  return dec ? v.toFixed(dec) : Math.round(v).toString();
 }
-
 
 export default function HomePage() {
   const { tokens, isLoading } = useAuth();
   const router = useRouter();
-  const [latestArticles, setLatestArticles] = useState<LatestArticle[]>([]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [persona, setPersona] = useState<Persona>('tenant');
+  const [scrolled, setScrolled] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
+  const [step, setStep] = useState(0);
+  const [yearly, setYearly] = useState(false);
+  const [statsIn, setStatsIn] = useState(false);
+  const bandRef = useRef<HTMLDivElement>(null);
+  const p = PERSONAS[persona];
 
   useEffect(() => {
     if (!isLoading && tokens) {
@@ -109,677 +88,275 @@ export default function HomePage() {
   }, [isLoading, tokens, router]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/articles/latest?limit=3`)
-      .then((r) => r.json())
-      .then((d) => { if (d.status === 'success') setLatestArticles(d.data); })
-      .catch(() => {});
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!bandRef.current) return;
+    const io = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { setStatsIn(true); io.disconnect(); } }), { threshold: 0.3 });
+    io.observe(bandRef.current);
+    return () => io.disconnect();
+  }, []);
+
+  const dk = useCountUp(5, statsIn);
+  const rate = useCountUp(99.8, statsIn, 1);
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-slate-900" style={{ fontFamily: "var(--font-sans), 'Inter', system-ui, sans-serif" }}>
+      <style>{`@keyframes kg-marq{to{transform:translateX(-50%)}}@keyframes kg-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}`}</style>
 
-      {/* ── NAV ── */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Logo size="md" />
-
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-6 md:flex">
-            <a href="#nasil-calisir" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              Nasıl Çalışır?
-            </a>
-            <Link href="/rehber" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              Rehber
-            </Link>
-            <Link href="/fiyatlandirma" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              Fiyatlandırma
-            </Link>
-            <Link href="/sablonlar" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              Şablonlar
-            </Link>
-            <a href="#iletisim" className="min-h-[44px] min-w-[44px] flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-              İletişim
-            </a>
-          </nav>
-
-          <div className="hidden items-center gap-3 md:flex">
-            <Link
-              href="/auth/login"
-              className="min-h-[44px] flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Giriş Yap
-            </Link>
-            <Link
-              href="/auth/register"
-              data-cta="header-hesap-olustur"
-              className="min-h-[44px] flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-glow active:translate-y-0"
-            >
-              Ücretsiz Hesap Oluştur
-            </Link>
-          </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden"
-            aria-label={mobileMenuOpen ? 'Menüyü kapat' : 'Menüyü aç'}
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              {mobileMenuOpen
-                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
-            <div className="flex flex-col gap-3">
-              <a href="#nasil-calisir" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Nasıl Çalışır?</a>
-              <Link href="/rehber" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Rehber</Link>
-              <Link href="/fiyatlandirma" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Fiyatlandırma</Link>
-              <Link href="/sablonlar" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">Şablonlar</Link>
-              <a href="#iletisim" onClick={() => setMobileMenuOpen(false)} className="min-h-[44px] flex items-center text-sm font-medium text-slate-600">İletişim</a>
-              <hr className="border-slate-200" />
-              <Link href="/auth/login" className="min-h-[44px] flex items-center text-sm font-semibold text-slate-700">Giriş Yap</Link>
-              <Link href="/auth/register" data-cta="mobile-hesap-olustur" className="min-h-[44px] flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white">Ücretsiz Hesap Oluştur</Link>
-            </div>
-          </div>
-        )}
-      </header>
-
-      <main>
-
-        {/* ── HERO ── */}
-        <section className="relative bg-gradient-to-b from-slate-50 to-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8 overflow-hidden">
-          {/* Dekoratif arka plan: nokta deseni + süzülen renk küreleri */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle,rgba(29,78,216,0.08)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,black,transparent)]"
-          />
-          <div aria-hidden="true" className="pointer-events-none absolute -top-24 right-[8%] h-80 w-80 rounded-full bg-blue-200/50 blur-3xl animate-drift" />
-          <div aria-hidden="true" className="pointer-events-none absolute top-44 -left-24 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl animate-drift-slow" />
-          <div className="relative mx-auto max-w-6xl">
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-              {/* Left: Text */}
-              <div className="animate-fade-up">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-blue-700">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-600" />
-                  </span>
-                  Türkiye&apos;nin Dijital Kira Platformu
-                </span>
-                <h1 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-[3.4rem]">
-                  Kefil derdi bitti.{' '}
-                  <span className="bg-gradient-to-r from-blue-700 via-indigo-500 to-blue-700 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-pan">
-                    Kiranız banka güvencesinde.
-                  </span>
-                </h1>
-                <p className="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
-                  Findeks raporu, kefil arayışı, noter masrafı — hepsi geride kaldı.
-                  Banka güvenceli dijital sözleşmeyle kontrat 5 dakikada kurulsun.
-                </p>
-
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <Link
-                    href="/auth/register"
-                    data-cta="hero-ucretsiz-basla"
-                    className="btn-shine group inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-6 py-3.5 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 active:translate-y-0 active:scale-[0.98]"
-                  >
-                    Ücretsiz Hesap Oluştur
-                    <svg className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
-                  <a
-                    href="#nasil-calisir"
-                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 active:translate-y-0"
-                  >
-                    Nasıl Çalışır?
-                  </a>
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                  <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Kayıt ücretsiz
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    5 dakikada kurulum
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <svg className="h-4 w-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    SSL & KVKK uyumlu
-                  </span>
-                </div>
-              </div>
-
-              {/* Right: Dashboard mockup illustration */}
-              <div className="hidden lg:block relative animate-fade-up animation-delay-200">
-                <div className="absolute -right-8 -top-8 h-72 w-72 rounded-full bg-blue-200 opacity-50 blur-3xl" />
-                <div className="absolute -bottom-4 -left-4 h-48 w-48 rounded-full bg-emerald-100 opacity-50 blur-3xl" />
-                <div className="relative animate-float rounded-2xl border border-slate-200 bg-white p-1 shadow-card-hover">
-                  {/* Window chrome */}
-                  <div className="flex items-center gap-1.5 border-b border-slate-100 px-4 py-2.5">
-                    <div className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                    <div className="ml-3 h-5 flex-1 rounded-md bg-slate-100" />
-                  </div>
-                  {/* Dashboard content */}
-                  <div className="p-5 space-y-4">
-                    {/* Stats row */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="rounded-xl bg-blue-50 p-3">
-                        <div className="text-[10px] font-medium text-blue-600">Aktif Sözleşme</div>
-                        <div className="mt-0.5 text-lg font-extrabold text-blue-900"><CountUp end={24} /></div>
-                      </div>
-                      <div className="rounded-xl bg-emerald-50 p-3">
-                        <div className="text-[10px] font-medium text-emerald-600">Ödeme Başarısı</div>
-                        <div className="mt-0.5 text-lg font-extrabold text-emerald-900"><CountUp end={99.8} decimals={1} prefix="%" /></div>
-                      </div>
-                      <div className="rounded-xl bg-amber-50 p-3">
-                        <div className="text-[10px] font-medium text-amber-600">Bu Ay</div>
-                        <div className="mt-0.5 text-lg font-extrabold text-amber-900"><CountUp end={42500} suffix=" TL" /></div>
-                      </div>
-                    </div>
-                    {/* Table mockup */}
-                    <div className="rounded-xl border border-slate-100">
-                      <div className="grid grid-cols-4 gap-2 border-b border-slate-100 px-3 py-2 text-[10px] font-semibold text-slate-400 uppercase">
-                        <span>Kiracı</span><span>Tutar</span><span>Tarih</span><span>Durum</span>
-                      </div>
-                      {[
-                        { name: 'Ahmet Y.', amount: '8,500 TL', date: '01 Nis', color: 'emerald' },
-                        { name: 'Zeynep K.', amount: '12,000 TL', date: '01 Nis', color: 'emerald' },
-                        { name: 'Can D.', amount: '6,750 TL', date: '05 Nis', color: 'amber' },
-                      ].map((row) => (
-                        <div key={row.name} className="grid grid-cols-4 gap-2 px-3 py-2.5 text-xs text-slate-700">
-                          <span className="font-medium">{row.name}</span>
-                          <span>{row.amount}</span>
-                          <span className="text-slate-400">{row.date}</span>
-                          <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            row.color === 'emerald' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                          }`}>
-                            {row.color === 'emerald' ? 'Ödendi' : 'Bekliyor'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Chart mockup */}
-                    <div className="flex items-end gap-1.5 h-16 px-2">
-                      {[40, 55, 35, 65, 50, 75, 60, 80, 70, 90, 85, 95].map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 origin-bottom rounded-sm bg-gradient-to-t from-blue-300 to-blue-200 transition-colors animate-grow-bar hover:from-blue-500 hover:to-blue-400"
-                          style={{ height: `${h}%`, animationDelay: `${400 + i * 70}ms` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── MARQUEE ── */}
-        <section className="overflow-hidden border-y border-slate-100 bg-slate-50/70 py-4">
-          <div className="[mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-            <div className="flex w-max items-center gap-3 animate-marquee hover:[animation-play-state:paused]">
-              {[...marqueeItems, ...marqueeItems].map((item, i) => (
-                <span
-                  key={i}
-                  aria-hidden={i >= marqueeItems.length}
-                  className="flex items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-600 shadow-sm"
-                >
-                  <svg className="h-3.5 w-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── TRUST BADGES ── */}
-        <section className="bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl grid grid-cols-2 gap-6 sm:grid-cols-4">
-            {trustBadges.map((badge, i) => (
-              <Reveal key={badge.title} delay={i * 100}>
-                <div className="group flex flex-col items-center text-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-500/30">
-                    <svg className="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={badge.icon} />
-                    </svg>
-                  </div>
-                  <p className="text-sm font-semibold text-slate-200 leading-snug">{badge.title}</p>
-                </div>
-              </Reveal>
+      {/* NAV */}
+      <nav className={`fixed inset-x-0 top-0 z-50 transition-all ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-[0_1px_0_rgba(10,22,40,.06)]' : ''}`}>
+        <div className={`mx-auto flex max-w-6xl items-center gap-8 px-7 transition-all ${scrolled ? 'h-[60px]' : 'h-[72px]'}`}>
+          <a href="#top" className="flex items-center gap-3">
+            <span className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white transition-colors ${scrolled ? 'bg-blue-600' : 'bg-slate-900'}`} style={{ fontFamily: DISPLAY }}>sL</span>
+            <span className="text-xl font-medium tracking-tight" style={{ fontFamily: DISPLAY }}>secure<b className="font-bold">Lend</b></span>
+          </a>
+          <div className="ml-2 hidden gap-1 md:flex">
+            {[['#nasil', 'Nasıl Çalışır'], ['#ozellikler', 'Özellikler'], ['#fiyat', 'Fiyatlandırma'], ['#sss', 'SSS']].map(([href, label]) => (
+              <a key={href} href={href} className="rounded-lg px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">{label}</a>
             ))}
           </div>
-        </section>
-
-        {/* ── VIDEO DEMO ── */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl">
-            <Reveal className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Tanıtım</p>
-              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Kira Güvence Nasıl Çalışır?</h2>
-              <p className="mt-3 text-base text-slate-500">Platform tanıtımını adım adım inceleyin.</p>
-            </Reveal>
-            <Reveal className="mt-10" delay={120}>
-              <a
-                href="https://kiraguvence-7aql6b3.gamma.site/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative block overflow-hidden rounded-2xl border border-slate-200 shadow-lg transition hover:shadow-xl hover:border-blue-300"
-              >
-                <div className="relative aspect-video bg-gradient-to-br from-blue-50 via-white to-slate-50">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-700 shadow-lg transition group-hover:bg-blue-800 group-hover:scale-110">
-                      <svg className="ml-1 h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                    <p className="mt-5 text-lg font-bold text-slate-900">Platform Tanıtım Sunumu</p>
-                    <p className="mt-1.5 text-sm text-slate-500">9 adımda Kira Güvence&apos;yi keşfet</p>
-                    <div className="mt-4 flex items-center gap-6 text-xs text-slate-400">
-                      <span className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        Nasıl Çalışır
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                        Güvenlik
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-                        Fiyatlandırma
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white px-6 py-3 text-center border-t border-slate-100">
-                  <span className="text-sm font-medium text-blue-600 group-hover:text-blue-700 transition">
-                    Sunumu görüntüle &rarr;
-                  </span>
-                </div>
-              </a>
-            </Reveal>
+          <div className="ml-auto flex items-center gap-2.5">
+            <a href="/auth/login" className="hidden rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 transition hover:text-slate-900 md:inline-flex">Giriş Yap</a>
+            <a href="/auth/register" className="inline-flex items-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(37,99,235,.28)] transition hover:-translate-y-0.5 hover:bg-blue-800">Ücretsiz Başla</a>
           </div>
-        </section>
+        </div>
+      </nav>
 
-        {/* ── FEATURES ── */}
-        <section className="px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Platform</p>
-              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Her şey tek yerde</h2>
-              <p className="mt-3 text-base text-slate-500">Kiracıdan ev sahibine, bankadan emlakçıya — tüm süreç dijitalde.</p>
-            </Reveal>
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {features.map((feature, i) => (
-                <Reveal key={feature.title} delay={i * 120}>
-                  <FeatureCard {...feature} highlighted={feature.icon === 'shield'} />
-                </Reveal>
+      <span id="top" />
+
+      {/* HERO */}
+      <header className="relative overflow-hidden px-7 pt-[150px] pb-[90px]"
+        style={{ background: 'radial-gradient(1200px 600px at 80% -10%, #eef4ff 0%, transparent 55%), radial-gradient(900px 500px at 5% 20%, #ecfdf5 0%, transparent 50%), #fff' }}>
+        <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.04fr_.96fr]">
+          <div>
+            <div className="mb-6 inline-flex gap-1 rounded-full bg-slate-100 p-1.5">
+              {(['tenant', 'landlord'] as Persona[]).map(k => (
+                <button key={k} onClick={() => setPersona(k)}
+                  className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${persona === k ? (k === 'tenant' ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,.3)]' : 'bg-emerald-600 text-white shadow-[0_4px_12px_rgba(16,185,129,.3)]') : 'text-slate-600'}`}>
+                  {k === 'tenant' ? 'Kiracıyım' : 'Ev sahibiyim'}
+                </button>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── NASIL ÇALIŞIR ── */}
-        <section id="nasil-calisir" className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Süreç</p>
-              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Nasıl Çalışır?</h2>
-              <p className="mt-3 text-base text-slate-500">4 adımda dijital kira yönetimine geçin.</p>
-            </Reveal>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {steps.map((step, i) => (
-                <Reveal key={step.number} delay={i * 120}>
-                  <div className="group relative h-full rounded-2xl bg-white border border-slate-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover">
-                    {i < steps.length - 1 && (
-                      <div className="absolute right-0 top-8 hidden h-px w-6 bg-slate-300 lg:block" style={{ right: '-24px' }} />
-                    )}
-                    <span className="font-display text-3xl font-black text-blue-100 transition-colors duration-300 group-hover:text-blue-300">{step.number}</span>
-                    <h3 className="mt-3 text-base font-bold text-slate-900">{step.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">{step.desc}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-            <div className="mt-10 text-center">
-              <Link
-                href="/auth/register"
-                className="btn-shine inline-flex items-center justify-center rounded-xl bg-blue-700 px-8 py-3.5 text-sm font-semibold text-white shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 active:translate-y-0 active:scale-[0.98]"
-              >
+            <h1 className="text-5xl font-bold leading-[1.04] tracking-tight sm:text-6xl" style={{ fontFamily: DISPLAY }}>{p.title}</h1>
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate-600">{p.sub}</p>
+            <div className="mt-8 flex flex-wrap gap-3.5">
+              <a href="/auth/register" className="inline-flex items-center gap-2 rounded-2xl bg-blue-700 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(37,99,235,.28)] transition hover:-translate-y-0.5 hover:bg-blue-800">
                 Ücretsiz Hesap Oluştur
-              </Link>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              <a href="#nasil" className="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:border-blue-300">Nasıl Çalışır?</a>
+            </div>
+            <div className="mt-6 flex flex-col gap-2.5">
+              {p.checks.map(c => (
+                <div key={c} className="flex items-center gap-2.5 text-sm font-medium text-slate-600">
+                  <span className={`flex h-[22px] w-[22px] items-center justify-center rounded-full ${p.accentSoft}`}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>{c}
+                </div>
+              ))}
             </div>
           </div>
-        </section>
 
-        {/* ── SON YAZILAR ── */}
-        {latestArticles.length > 0 && (
-          <section className="px-4 py-16 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl">
-              <div className="flex items-end justify-between mb-8">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Rehber</p>
-                  <h2 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-900">Son Yazılar</h2>
-                </div>
-                <Link href="/rehber" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
-                  Tümünü gör →
-                </Link>
+          {/* floating KMH card */}
+          <div className="relative h-[520px]">
+            <div className="absolute inset-y-[30px] left-[30px] right-0 overflow-hidden rounded-[28px] border border-slate-200 bg-white p-[30px] shadow-[0_24px_60px_rgba(10,22,40,.12)]">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-800">● Banka Güvence Hesabı</span>
+                <span className="flex h-11 w-11 items-center justify-center rounded-[13px] text-base font-bold text-white shadow-[0_8px_20px_rgba(37,99,235,.4)]" style={{ fontFamily: DISPLAY, background: 'linear-gradient(160deg,#2f72ef,#1d4ed8)' }}>sL</span>
               </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {latestArticles.map((article, i) => (
-                  <Reveal key={article.id} delay={i * 120}>
-                  <Link
-                    href={`/rehber/${article.slug}`}
-                    className="group block h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover"
-                  >
-                    <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                      {fixTurkish(article.category)}
+              <div className="mt-6 text-[15px] font-medium text-slate-500" style={{ fontFamily: DISPLAY }}>Onaylanan limit</div>
+              <div className="mt-1 text-[46px] font-bold tracking-tight" style={{ fontFamily: DISPLAY }}>25.000 ₺</div>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full" style={{ width: '68%', background: 'linear-gradient(90deg,#2563eb,#60a5fa)' }} /></div>
+              <div className="mt-2.5 flex justify-between text-[12.5px] text-slate-500"><span>Kullanılan: 17.000 ₺</span><span className="font-semibold text-slate-600">8.000 ₺ kaldı</span></div>
+              <div className="mt-5">
+                {[['Mart kirası', '01 Mart · Kadıköy 2+1'], ['Şubat kirası', '01 Şubat · Kadıköy 2+1']].map(([nm, sb]) => (
+                  <div key={nm} className="flex items-center gap-3 border-t border-slate-100 py-[11px]">
+                    <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-emerald-50 text-emerald-700">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                     </span>
-                    <h3 className="mt-3 text-sm font-bold text-slate-900 leading-snug group-hover:text-blue-700 transition line-clamp-2">
-                      {article.title}
-                    </h3>
-                    <p className="mt-2 text-xs text-slate-500 line-clamp-2">{article.summary}</p>
-                  </Link>
-                  </Reveal>
+                    <div><div className="text-[13.5px] font-semibold">{nm}</div><div className="text-xs text-slate-500">{sb}</div></div>
+                    <span className="ml-auto text-sm font-semibold text-emerald-700" style={{ fontFamily: DISPLAY }}>14.500 ₺</span>
+                  </div>
                 ))}
               </div>
             </div>
-          </section>
-        )}
-
-        {/* ── TESTIMONIALS ── */}
-        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Kullanıcılar</p>
-              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-900">Ne Diyorlar?</h2>
-              <p className="mt-3 text-base text-slate-500">Platformumuzu kullanan kiracı, ev sahibi ve emlakçıların görüşleri.</p>
-            </Reveal>
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {testimonials.map((t, i) => (
-                <Reveal key={t.name} delay={i * 120}>
-                  <TestimonialCard {...t} />
-                </Reveal>
-              ))}
+            <div className="absolute right-[-6px] top-[18px] flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_24px_60px_rgba(10,22,40,.12)]" style={{ animation: 'kg-float 5s ease-in-out infinite' }}>
+              <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-amber-50 text-amber-700"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg></span>
+              <span className="text-[13px] font-bold">Otomatik tahsilat<small className="block font-medium text-slate-500">her ayın 1&apos;i</small></span>
             </div>
-          </div>
-        </section>
-
-        {/* ── CTA BAND ── */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-blue-800 bg-[length:200%_200%] animate-gradient-pan px-4 py-14 sm:px-6 lg:px-8">
-          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-500/30 blur-3xl" aria-hidden="true" />
-          <div className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-indigo-500/30 blur-3xl" aria-hidden="true" />
-          <Reveal className="relative mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-extrabold tracking-tight text-white">Hemen başlamaya hazır mısınız?</h2>
-            <p className="mt-4 text-base text-blue-100">
-              Ücretsiz hesap oluşturun, 5 dakikada kira yönetiminizi dijitale taşıyın.
-            </p>
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link
-                href="/auth/register"
-                data-cta="cta-band-ucretsiz-basla"
-                className="btn-shine inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-blue-700 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-50 active:translate-y-0 active:scale-[0.98]"
-              >
-                Ücretsiz Hesap Oluştur
-              </Link>
-              <Link
-                href="/auth/login"
-                className="inline-flex items-center justify-center rounded-xl border border-blue-400/60 px-8 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-600/50 active:translate-y-0"
-              >
-                Giriş Yap
-              </Link>
+            <div className="absolute bottom-2 right-3.5 flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_24px_60px_rgba(10,22,40,.12)]" style={{ animation: 'kg-float 6s ease-in-out .8s infinite' }}>
+              <span className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-emerald-50 text-emerald-700"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg></span>
+              <span className="text-[13px] font-bold">Kira ödendi<small className="block font-medium text-slate-500">zamanında</small></span>
             </div>
-          </Reveal>
-        </section>
-
-        {/* ── NEWSLETTER ── */}
-        <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-          <Reveal className="mx-auto max-w-xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Bülten</p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-              Kira Rehberi Bülteni
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Kiracı hakları, ev sahibi rehberleri, banka güvence bilgileri ve emlak piyasası analizlerini her hafta e-posta kutunuzda alın.
-            </p>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const email = (form.elements.namedItem('nlEmail') as HTMLInputElement).value;
-                const btn = form.querySelector('button') as HTMLButtonElement;
-                btn.textContent = 'Kaydediliyor...';
-                btn.disabled = true;
-                try {
-                  const res = await fetch(
-                    (process.env.NEXT_PUBLIC_API_URL || '') + '/api/v1/newsletter/subscribe',
-                    {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ email, source: 'landing' }),
-                    },
-                  );
-                  const data = await res.json();
-                  if (data.status === 'success') {
-                    btn.textContent = 'Kayıt Başarılı!';
-                    (form.elements.namedItem('nlEmail') as HTMLInputElement).value = '';
-                  } else {
-                    btn.textContent = data.message || 'Hata oluştu';
-                  }
-                } catch {
-                  btn.textContent = 'Hata oluştu';
-                }
-                setTimeout(() => { btn.textContent = 'Abone Ol'; btn.disabled = false; }, 3000);
-              }}
-              className="mt-6 flex gap-2"
-            >
-              <input
-                name="nlEmail"
-                type="email"
-                required
-                placeholder="E-posta adresiniz"
-                className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-              <button
-                type="submit"
-                className="btn-shine shrink-0 rounded-xl bg-blue-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-glow active:translate-y-0"
-              >
-                Abone Ol
-              </button>
-            </form>
-            <p className="mt-3 text-xs text-slate-400">
-              Aboneliğinizi istediğiniz zaman iptal edebilirsiniz. Verileriniz KVKK kapsamında korunmaktadır.
-            </p>
-          </Reveal>
-        </section>
-
-        {/* ── SSS / FAQ ── */}
-        <section className="bg-[#0a1628] px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl">
-            <Reveal className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">SSS</p>
-              <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-white">Sıkça Sorulan Sorular</h2>
-              <p className="mt-3 text-base text-slate-400">En çok merak edilen soruların yanıtları.</p>
-            </Reveal>
-            <Reveal delay={120} className="mt-10 divide-y divide-slate-700/50 rounded-2xl border border-slate-700/50 bg-[#0d1b2a]">
-              <FaqItem
-                question="Kira Güvence nedir?"
-                answer="Kira Güvence, kefil ve Findeks gereksinimini ortadan kaldıran, banka güvenceli dijital kira yönetim platformudur. Ev sahibi kirasını garanti altına alır, kiracı kefil bulmak zorunda kalmaz."
-              />
-              <FaqItem
-                question="Kefil olmadan ev kiralayabilir miyim?"
-                answer="Evet. Kira Güvence ile banka güvencesi kefil yerine geçer. Kiracı kefil aramak, ev sahibi de kefil sormak zorunda kalmaz. Banka güvence sistemi kiracı ödemelerini garanti eder."
-              />
-              <FaqItem
-                question="Banka Güvence Hesabı (KMH) nedir?"
-                answer="Banka Güvence Hesabı (KMH), kira ödemeleri için banka tarafından sağlanan bir güvence hesabıdır. Kiracı geçici bir aksaklık yaşarsa bile kira banka tarafından ev sahibine ödenir, kiracı sadece birkaç günlük faiz öder."
-              />
-              <FaqItem
-                question="Ev sahibi için maliyet nedir?"
-                answer="Ücretsiz planda garanti ücreti %1.5, ücretli planlarda %0.5-1 arasındadır. Bu, noter masrafı + Findeks ücreti + kefil riskinden çok daha ekonomiktir."
-              />
-              <FaqItem
-                question="Dijital sözleşme mahkemede geçerli mi?"
-                answer="Evet. Kira Güvence sözleşmeleri TBK (Türk Borçlar Kanunu) uyumludur. Tüm ödeme kayıtları ve sözleşme geçmişi zaman damgalı olarak saklanır ve hukuki delil olarak kullanılabilir."
-              />
-            </Reveal>
-          </div>
-        </section>
-
-      </main>
-
-      {/* ── FOOTER ── */}
-      <footer id="iletisim" className="border-t border-slate-200 bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <Logo size="sm" variant="light" />
-              <p className="mt-4 text-sm leading-6 text-slate-400">
-                Türkiye&apos;nin dijital kira güvence platformu. Kiracı, ev sahibi ve banka arasındaki süreci güvenle yönetin.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-white">Platform</h3>
-              <ul className="mt-4 space-y-2">
-                <li><a href="#nasil-calisir" className="text-sm text-slate-400 hover:text-white transition">Nasıl Çalışır?</a></li>
-                <li><Link href="/rehber" className="text-sm text-slate-400 hover:text-white transition">Rehber</Link></li>
-                <li><Link href="/fiyatlandirma" className="text-sm text-slate-400 hover:text-white transition">Fiyatlandırma</Link></li>
-                <li><Link href="/auth/register" className="text-sm text-slate-400 hover:text-white transition">Hesap Oluştur</Link></li>
-                <li><Link href="/auth/login" className="text-sm text-slate-400 hover:text-white transition">Giriş Yap</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-white">Yasal</h3>
-              <ul className="mt-4 space-y-2">
-                <li><Link href="/kvkk" className="text-sm text-slate-400 hover:text-white transition">KVKK Aydınlatma Metni</Link></li>
-                <li><Link href="/gizlilik" className="text-sm text-slate-400 hover:text-white transition">Gizlilik Politikası</Link></li>
-                <li><Link href="/kullanim-kosullari" className="text-sm text-slate-400 hover:text-white transition">Kullanım Koşulları</Link></li>
-                <li><Link href="/cerez-politikasi" className="text-sm text-slate-400 hover:text-white transition">Çerez Politikası</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-white">İletişim</h3>
-              <ul className="mt-4 space-y-2">
-                <li>
-                  <a href="mailto:info@kiraguvence.com" className="text-sm text-slate-400 hover:text-white transition">
-                    info@kiraguvence.com
-                  </a>
-                </li>
-                <li className="text-sm text-slate-400">İstanbul, Türkiye</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-10 border-t border-slate-800 pt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-xs text-slate-500">
-              © {new Date().getFullYear()} Kira Güvence. Tüm hakları saklıdır.
-            </p>
-            <p className="text-xs text-slate-500">
-              Bu platform 6698 sayılı KVKK kapsamında kişisel verileri korumaktadır.
-            </p>
-            {/* ek */}
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-3 w-3 text-slate-800 opacity-30" fill="currentColor" aria-hidden="true">
-              <path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 14.93V17a1 1 0 10-2 0v-.07A8.001 8.001 0 014.07 11H4a1 1 0 110-2h.07A8.001 8.001 0 0111 4.07V4a1 1 0 112 0v.07A8.001 8.001 0 0119.93 11H20a1 1 0 110 2h-.07A8.001 8.001 0 0113 16.93z" />
-            </svg>
           </div>
         </div>
-      </footer>
+      </header>
 
+      {/* TRUST MARQUEE */}
+      <div className="overflow-hidden border-y border-slate-200 bg-slate-50 py-5.5" style={{ paddingTop: 22, paddingBottom: 22 }}>
+        <div className="flex w-max gap-[60px] whitespace-nowrap" style={{ animation: 'kg-marq 28s linear infinite' }}>
+          {[...TRUST, ...TRUST].map((t, i) => (
+            <span key={i} className="flex items-center gap-2.5 text-lg font-semibold text-slate-500" style={{ fontFamily: DISPLAY }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></svg>
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* HOW */}
+      <section id="nasil" className="px-7 py-24">
+        <div className="mx-auto max-w-6xl">
+          <SecHead eyebrow="Süreç" title="Üç adımda, herkes kazanır" sub="Banka araya girer; kiracı özgürce kiralar, ev sahibi her ay zamanında alır." />
+          <div className="grid gap-5 md:grid-cols-3">
+            {STEPS.map((s, i) => (
+              <div key={s.n} onMouseEnter={() => setStep(i)}
+                className={`relative cursor-pointer overflow-hidden rounded-[20px] border p-[30px] transition-all ${step === i ? 'border-transparent bg-slate-900 text-white shadow-[0_24px_60px_rgba(10,22,40,.12)] -translate-y-1' : 'border-slate-200 bg-white hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(10,22,40,.06)]'}`}>
+                <div className={`text-sm font-bold ${step === i ? 'text-blue-400' : 'text-blue-700'}`} style={{ fontFamily: DISPLAY }}>{s.n}</div>
+                <h3 className="mt-4 mb-2 text-[22px] font-bold" style={{ fontFamily: DISPLAY }}>{s.t}</h3>
+                <p className={`text-[14.5px] leading-relaxed ${step === i ? 'text-slate-400' : 'text-slate-600'}`}>{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* COUNT-UP BAND */}
+      <section id="ozellikler" className="px-7 pb-24">
+        <div ref={bandRef} className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] bg-slate-900 px-14 py-16 text-white">
+          <div className="absolute -right-28 -top-40 h-[520px] w-[520px] rounded-full" style={{ background: 'radial-gradient(circle,rgba(37,99,235,.34),transparent 68%)' }} />
+          <div className="relative grid gap-10 text-center md:grid-cols-3">
+            <Stat v={`${dk} dk`} l="Ortalama sözleşme kurulumu" />
+            <Stat v={`%${rate}`} l="Zamanında ödeme oranı" em />
+            <Stat v="0 kefil" l="İhtiyacınız olan kefil sayısı" />
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section id="fiyat" className="bg-slate-50 px-7 py-24">
+        <div className="mx-auto max-w-6xl">
+          <SecHead eyebrow="Fiyatlandırma" title="Noter + Findeks + kefil riskinden ucuz" sub="Kayıt ücretsiz. Sadece kullandığınız güvence için ödeyin." />
+          <div className="mb-10 flex items-center justify-center gap-3.5 text-sm font-semibold text-slate-600">
+            <span>Aylık</span>
+            <button onClick={() => setYearly(y => !y)} className={`relative h-[30px] w-[54px] rounded-full transition-colors ${yearly ? 'bg-blue-700' : 'bg-slate-300'}`}>
+              <i className={`absolute top-[3px] h-6 w-6 rounded-full bg-white shadow transition-transform ${yearly ? 'translate-x-[27px]' : 'translate-x-[3px]'}`} />
+            </button>
+            <span>Yıllık <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">2 ay bedava</span></span>
+          </div>
+          <div className="grid items-stretch gap-5 md:grid-cols-3">
+            <Plan name="Başlangıç" desc="Tek mülkü olan ev sahipleri için" price="Ücretsiz" note="Güvence ücreti %1.5"
+              feats={['1 aktif sözleşme', 'Dijital sözleşme + KPS', 'Otomatik ödeme takibi']} cta="Ücretsiz Başla" />
+            <Plan featured name="Profesyonel" desc="Birden fazla mülk yöneten ev sahipleri" price={`${yearly ? '249' : '299'} ₺/ay`} note="Güvence ücreti %0.5–1"
+              feats={['Sınırsız sözleşme', 'Düşük güvence ücreti', 'Portföy paneli + raporlar', 'Öncelikli destek']} cta="Profesyonel'i Seç" />
+            <Plan name="Emlak Ofisi" desc="Acenteler ve kurumsal portföyler" price="Özel" note="Hacme göre teklif"
+              feats={['Çoklu kullanıcı + roller', 'API erişimi', 'Özel entegrasyon']} cta="İletişime Geç" />
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="sss" className="px-7 py-24">
+        <div className="mx-auto max-w-6xl">
+          <SecHead eyebrow="SSS" title="Sıkça sorulan sorular" />
+          <div className="mx-auto max-w-3xl overflow-hidden rounded-[20px] border border-slate-200 bg-white">
+            {FAQS.map((f, i) => (
+              <div key={i} className="border-t border-slate-200 first:border-t-0">
+                <button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} className="flex w-full items-center justify-between gap-4 px-[26px] py-[22px] text-left text-lg font-semibold transition hover:bg-slate-50" style={{ fontFamily: DISPLAY }}>
+                  {f.q}
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 transition-transform ${openFaq === i ? 'rotate-180 text-blue-600' : 'text-slate-500'}`}><polyline points="6 9 12 15 18 9" /></svg>
+                </button>
+                <div className="grid transition-all duration-300" style={{ gridTemplateRows: openFaq === i ? '1fr' : '0fr' }}>
+                  <div className="overflow-hidden"><p className="px-[26px] pb-[22px] text-[15px] leading-relaxed text-slate-600">{f.a}</p></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-7 pb-24">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[28px] px-10 py-[72px] text-center text-white" style={{ background: 'linear-gradient(160deg,#1d4ed8,#1e3a8a)' }}>
+          <h2 className="text-4xl font-bold sm:text-[46px]" style={{ fontFamily: DISPLAY }}>Kefil derdi olmadan kiralamaya hazır mısınız?</h2>
+          <p className="mt-4 text-lg text-blue-100">Ücretsiz hesap oluşturun, 5 dakikada ilk sözleşmenizi kurun.</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3.5">
+            <a href="/auth/register" className="inline-flex items-center rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-blue-800 shadow-[0_10px_30px_rgba(0,0,0,.18)] transition hover:-translate-y-0.5">Ücretsiz Hesap Oluştur</a>
+            <a href="#" className="inline-flex items-center rounded-2xl border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5">Demo İste</a>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-slate-900 px-7 pt-16 pb-8 text-slate-400">
+        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div>
+            <a href="#top" className="mb-4 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white" style={{ fontFamily: DISPLAY }}>sL</span>
+              <span className="text-xl font-medium text-white" style={{ fontFamily: DISPLAY }}>secure<b className="font-bold">Lend</b></span>
+            </a>
+            <p className="max-w-xs text-sm leading-relaxed">Türkiye&apos;nin dijital kira güvence platformu. Kiracı, ev sahibi ve banka tek yerde.</p>
+          </div>
+          <FootCol title="Ürün" links={['Nasıl Çalışır', 'Özellikler', 'Fiyatlandırma', 'Güvence Hesabı']} />
+          <FootCol title="Şirket" links={['Hakkımızda', 'Rehber', 'Kariyer', 'İletişim']} />
+          <FootCol title="Yasal" links={['KVKK', 'Gizlilik', 'Kullanım Koşulları', 'Çerez Politikası']} />
+        </div>
+        <div className="mx-auto mt-11 flex max-w-6xl flex-col justify-between gap-2.5 border-t border-white/10 px-0 pt-7 text-[13px] text-slate-500 sm:flex-row">
+          <span>© 2026 SecureLend · Kira Güvence</span><span>info@kiraguvence.com</span>
+        </div>
+      </footer>
     </div>
   );
 }
 
-function FeatureCard({ icon, title, desc, highlighted }: { icon: string; title: string; desc: string; highlighted?: boolean }) {
-  const icons: Record<string, string> = {
-    shield: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-    document: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    bank: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-  };
-
+function SecHead({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) {
   return (
-    <article className={`relative rounded-2xl border bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover ${
-      highlighted
-        ? 'border-blue-500 shadow-blue-100 ring-1 ring-blue-500/20'
-        : 'border-slate-200 hover:border-blue-200'
-    }`}>
-      {highlighted && (
-        <span className="absolute -top-3 right-4 inline-flex items-center rounded-full bg-blue-600 px-3 py-0.5 text-xs font-semibold text-white shadow-sm">
-          En Önemli
-        </span>
-      )}
-      <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${highlighted ? 'bg-gradient-to-br from-blue-100 to-indigo-100' : 'bg-blue-50'}`}>
-        <svg className="h-5 w-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={icons[icon]} />
-        </svg>
-      </div>
-      <h2 className="mt-4 text-base font-bold text-slate-900">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-500">{desc}</p>
-    </article>
+    <div className="mx-auto mb-14 max-w-2xl text-center">
+      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">{eyebrow}</span>
+      <h2 className="mt-3 text-4xl font-bold leading-tight tracking-tight sm:text-[44px]" style={{ fontFamily: DISPLAY }}>{title}</h2>
+      {sub && <p className="mt-3.5 text-lg leading-relaxed text-slate-600">{sub}</p>}
+    </div>
   );
 }
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
+function Stat({ v, l, em }: { v: string; l: string; em?: boolean }) {
   return (
-    <details className="group">
-      <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-left transition hover:bg-slate-800/30 list-none [&::-webkit-details-marker]:hidden">
-        <span className="text-sm font-semibold text-white">{question}</span>
-        <svg
-          className="h-5 w-5 flex-shrink-0 text-slate-400 transition-transform group-open:rotate-180"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </summary>
-      <div className="px-6 pb-5 group-open:animate-fade-up">
-        <p className="text-sm leading-6 text-slate-400">{answer}</p>
-      </div>
-    </details>
+    <div>
+      <div className={`text-6xl font-bold tracking-tight ${em ? 'text-emerald-400' : 'text-white'}`} style={{ fontFamily: DISPLAY }}>{v}</div>
+      <div className="mt-3 text-[15px] text-slate-400">{l}</div>
+    </div>
   );
 }
 
-function TestimonialCard({ name, role, comment, avatar }: { name: string; role: string; comment: string; avatar: string }) {
+function Plan({ name, desc, price, note, feats, cta, featured }: { name: string; desc: string; price: string; note: string; feats: string[]; cta: string; featured?: boolean }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-card-hover">
-      <div className="flex">
-        {[...Array(5)].map((_, i) => (
-          <svg key={i} className="h-4 w-4 fill-amber-400" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
+    <div className={`relative flex flex-col rounded-[28px] p-[34px] transition-all hover:-translate-y-1 hover:shadow-[0_4px_16px_rgba(10,22,40,.06)] ${featured ? 'bg-slate-900 text-white shadow-[0_24px_60px_rgba(10,22,40,.12)]' : 'border border-slate-200 bg-white'}`}>
+      {featured && <span className="absolute right-6 top-6 rounded-full bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white">En popüler</span>}
+      <div className="text-[22px] font-bold" style={{ fontFamily: DISPLAY }}>{name}</div>
+      <div className={`mt-1.5 text-[13.5px] ${featured ? 'text-slate-400' : 'text-slate-500'}`}>{desc}</div>
+      <div className="mb-1 mt-5.5 text-[46px] font-bold tracking-tight" style={{ fontFamily: DISPLAY }}>{price}</div>
+      <div className={`text-[13.5px] ${featured ? 'text-slate-400' : 'text-slate-500'}`}>{note}</div>
+      <ul className="my-6 flex flex-1 flex-col gap-3">
+        {feats.map(f => (
+          <li key={f} className={`flex items-start gap-2.5 text-sm leading-snug ${featured ? 'text-slate-300' : 'text-slate-600'}`}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className={`mt-0.5 shrink-0 ${featured ? 'text-blue-400' : 'text-emerald-500'}`}><polyline points="20 6 9 17 4 12" /></svg>{f}
+          </li>
         ))}
-      </div>
-      <blockquote className="mt-3 text-sm leading-6 text-slate-600">
-        &ldquo;{comment}&rdquo;
-      </blockquote>
-      <div className="mt-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-          <span className="text-xs font-bold text-blue-700">{avatar}</span>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-slate-900">{name}</p>
-          <p className="text-xs text-slate-500">{role}</p>
-        </div>
-      </div>
-    </article>
+      </ul>
+      <a href="/auth/register" className={`inline-flex w-full items-center justify-center rounded-2xl px-6 py-3.5 text-sm font-semibold transition hover:-translate-y-0.5 ${featured ? 'bg-blue-600 text-white' : 'border border-slate-200 bg-white text-slate-900 hover:border-blue-300'}`}>{cta}</a>
+    </div>
+  );
+}
+
+function FootCol({ title, links }: { title: string; links: string[] }) {
+  return (
+    <div>
+      <h4 className="mb-4 text-xs font-bold uppercase tracking-[0.1em] text-white">{title}</h4>
+      {links.map(l => <a key={l} href="#" className="block py-1.5 text-[14.5px] transition hover:text-white">{l}</a>)}
+    </div>
   );
 }
