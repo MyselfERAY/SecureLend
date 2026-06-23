@@ -65,7 +65,7 @@ export abstract class BankService {
   abstract cancelApplication(applicationId: string, userId: string): Promise<any>;
 
   // Account queries
-  abstract getBalance(accountId: string): Promise<AccountBalance>;
+  abstract getBalance(accountId: string, userId: string): Promise<AccountBalance>;
   abstract getAccountsByUser(userId: string): Promise<AccountBalance[]>;
 
   // Transfer (used internally for payment processing)

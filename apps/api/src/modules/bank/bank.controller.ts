@@ -1,6 +1,6 @@
 import {
   Controller, Post, Get, Body, Param,
-  ParseUUIDPipe, HttpCode, HttpStatus,
+  ParseUUIDPipe, HttpCode, HttpStatus, NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle, seconds } from '@nestjs/throttler';
@@ -246,13 +246,26 @@ export class BankController {
   }
 
   @Get('accounts/:id/balance')
-  async getBalance(@Param('id', ParseUUIDPipe) id: string) {
-    const balance = await this.bankService.getBalance(id);
+  async getBalance(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const balance = await this.bankService.getBalance(id, userId);
     return { status: 'success', data: balance };
   }
 
   @Get('accounts/:id/transactions')
-  async getTransactions(@Param('id', ParseUUIDPipe) id: string) {
+  async getTransactions(
+    @CurrentUser('id') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    // Ownership check: only the account owner may read its transactions.
+    const account = await this.prisma.bankAccount.findFirst({
+      where: { id, userId },
+      select: { id: true },
+    });
+    if (!account) throw new NotFoundException('Hesap bulunamadi');
+
     const transactions = await this.prisma.bankTransaction.findMany({
       where: {
         OR: [{ fromAccountId: id }, { toAccountId: id }],

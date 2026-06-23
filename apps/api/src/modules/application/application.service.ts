@@ -103,10 +103,20 @@ export class ApplicationService {
     };
   }
 
+  // Public access window for the pre-login results page. Beyond this, the
+  // (unauthenticated) endpoint stops exposing the credit decision + masked TCKN
+  // so a leaked/bookmarked URL cannot replay sensitive data indefinitely.
+  private static readonly PUBLIC_RESULT_TTL_MS = 24 * 60 * 60 * 1000;
+
   async findApplication(id: string): Promise<ApplicationResult> {
     const app = await this.prisma.application.findUnique({ where: { id } });
 
     if (!app) {
+      throw new NotFoundException('Başvuru bulunamadı');
+    }
+
+    const ageMs = Date.now() - app.createdAt.getTime();
+    if (ageMs > ApplicationService.PUBLIC_RESULT_TTL_MS) {
       throw new NotFoundException('Başvuru bulunamadı');
     }
 
