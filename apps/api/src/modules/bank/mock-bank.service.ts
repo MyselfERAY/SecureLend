@@ -840,9 +840,10 @@ export class MockBankService extends BankService {
 
   // ─── Account Queries ───────────────────────────────
 
-  async getBalance(accountId: string): Promise<AccountBalance> {
-    const account = await this.prisma.bankAccount.findUnique({
-      where: { id: accountId },
+  async getBalance(accountId: string, userId: string): Promise<AccountBalance> {
+    // Ownership-scoped lookup: an account can only be read by its owner.
+    const account = await this.prisma.bankAccount.findFirst({
+      where: { id: accountId, userId },
     });
     if (!account) throw new NotFoundException('Hesap bulunamadi');
 

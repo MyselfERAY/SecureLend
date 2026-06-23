@@ -16,12 +16,12 @@ import { ApplicationService } from './application.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { Public } from '../auth/decorators/public.decorator';
 
-@Public()
 @Controller('api/v1/applications')
 export class ApplicationController {
   constructor(private readonly applicationService: ApplicationService) {}
 
   @Post()
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ short: { limit: 1, ttl: seconds(2) } })
   async create(
@@ -42,7 +42,12 @@ export class ApplicationController {
     };
   }
 
+  // Public, pre-login results page (server-side fetch, no auth token). The
+  // application id is a high-entropy UUIDv4 acting as a capability token;
+  // throttled to blunt brute-force/enumeration of credit decision + masked TCKN.
   @Get(':id')
+  @Public()
+  @Throttle({ short: { limit: 5, ttl: seconds(10) } })
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<JSendSuccess<ApplicationResult>> {
