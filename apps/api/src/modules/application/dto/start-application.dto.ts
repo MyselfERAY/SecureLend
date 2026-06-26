@@ -1,6 +1,6 @@
 import { IsString, Length, Matches } from 'class-validator';
 
-export class CreateApplicationDto {
+export class StartApplicationDto {
   @IsString({ message: 'TCKN bir metin olmalıdır' })
   @Length(11, 11, { message: 'TCKN 11 haneli olmalıdır' })
   @Matches(/^\d+$/, { message: 'TCKN sadece rakam içermelidir' })
@@ -9,9 +9,4 @@ export class CreateApplicationDto {
   @IsString()
   @Matches(/^5\d{9}$/, { message: 'Geçerli bir telefon numarası girin' })
   phone!: string;
-
-  @IsString()
-  @Length(6, 6, { message: 'Doğrulama kodu 6 haneli olmalıdır' })
-  @Matches(/^\d+$/, { message: 'Doğrulama kodu sadece rakam içermelidir' })
-  code!: string;
 }
