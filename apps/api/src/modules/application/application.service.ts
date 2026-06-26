@@ -3,6 +3,7 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { timingSafeEqual } from 'crypto';
 import { maskTckn, validateTckn, ApplicationStatus } from '@securelend/shared';
@@ -14,7 +15,7 @@ import { IdentityVerificationService } from '../identity-verification/identity-v
 import { SmsService } from '../notification/sms.service';
 
 @Injectable()
-export class ApplicationService {
+export class ApplicationService implements OnModuleInit {
   private readonly logger = new Logger(ApplicationService.name);
 
   /** Aynı telefon/TCKN ile başvuru tekrar penceresi (gün) */
@@ -30,6 +31,44 @@ export class ApplicationService {
     private readonly identityVerificationService: IdentityVerificationService,
     private readonly smsService: SmsService,
   ) {}
+
+  /**
+   * DDL self-heal: Prisma migrate deploy bu DB'de güvenilir olmadığı için
+   * (projedeki diğer servislerle aynı desen) phone_hash/phone_masked kolonlarını
+   * başlangıçta idempotent şekilde oluşturur.
+   */
+  async onModuleInit(): Promise<void> {
+    try {
+      await this.ensureColumn('applications', 'phone_hash', 'VARCHAR(128)');
+      await this.ensureColumn('applications', 'phone_masked', 'VARCHAR(20)');
+      await this.prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "idx_application_phone_hash" ON "applications"("phone_hash");`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Application onModuleInit failed: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
+
+  private async ensureColumn(
+    table: string,
+    column: string,
+    definition: string,
+  ): Promise<void> {
+    const check = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = ${table} AND column_name = ${column}
+      ) as exists`;
+    if (!check[0]?.exists) {
+      this.logger.warn(`${table}.${column} missing — adding via raw SQL`);
+      await this.prisma.$executeRawUnsafe(
+        `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "${column}" ${definition};`,
+      );
+      this.logger.log(`${table}.${column} added`);
+    }
+  }
 
   /**
    * Adım 1: TCKN + telefon ile başvuru başlat. Kredi sorgusuna GİTMEDEN önce
