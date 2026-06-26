@@ -62,6 +62,15 @@ export class NviIdentityVerificationService extends IdentityVerificationService 
     lastName: string,
     birthYear: number,
   ): string {
+    // Defense-in-depth: escape every value entering the SOAP body — including
+    // tckn/birthYear — so a malformed value can't break out of the XML element
+    if (!/^\d{11}$/.test(tckn)) {
+      throw new Error('Gecersiz TCKN formati');
+    }
+    if (!Number.isInteger(birthYear)) {
+      throw new Error('Gecersiz dogum yili');
+    }
+    const safeTckn = this.escapeXml(tckn);
     const safeFirst = this.escapeXml(firstName.toUpperCase());
     const safeLast = this.escapeXml(lastName.toUpperCase());
     return (
@@ -71,7 +80,7 @@ export class NviIdentityVerificationService extends IdentityVerificationService 
       ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">' +
       '<soap:Body>' +
       '<TCKimlikNoDogrula xmlns="http://tckimlik.nvi.gov.tr/WS">' +
-      `<TCKimlikNo>${tckn}</TCKimlikNo>` +
+      `<TCKimlikNo>${safeTckn}</TCKimlikNo>` +
       `<Ad>${safeFirst}</Ad>` +
       `<Soyad>${safeLast}</Soyad>` +
       `<DogumYili>${birthYear}</DogumYili>` +

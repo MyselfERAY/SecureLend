@@ -54,33 +54,46 @@ export class LoggingInterceptor implements NestInterceptor {
     );
   }
 
-  private maskSensitiveData(obj: unknown): unknown {
-    if (!obj || typeof obj !== 'object') return obj;
-    const clone = { ...(obj as Record<string, unknown>) };
+  // Keys that must never be logged in clear (compared case-insensitively)
+  private static readonly REDACT_KEYS = new Set([
+    'code', 'otp', 'refreshtoken', 'accesstoken', 'token',
+    'authorization', 'password', 'secret', 'apikey', 'x-api-key',
+  ]);
+  // Keys shown only partially (KVKK personal data)
+  private static readonly PARTIAL_KEYS = new Set([
+    'email', 'iban', 'toiban', 'accountnumber', 'address',
+  ]);
 
-    // Mask TCKN
-    if (typeof clone['tckn'] === 'string') {
-      clone['tckn'] = maskTckn(clone['tckn']);
+  /** Recursively masks sensitive fields at any nesting depth. */
+  private maskSensitiveData(obj: unknown, depth = 0): unknown {
+    if (depth > 6 || obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+      return obj.map((v) => this.maskSensitiveData(v, depth + 1));
     }
 
-    // Mask phone number (show last 4 digits)
-    if (typeof clone['phone'] === 'string') {
-      const phone = clone['phone'] as string;
-      clone['phone'] = phone.length > 4
-        ? '*'.repeat(phone.length - 4) + phone.slice(-4)
-        : '****';
+    const clone: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      const k = key.toLowerCase();
+      if (typeof value === 'string') {
+        if (k === 'tckn') {
+          clone[key] = maskTckn(value);
+        } else if (k === 'phone') {
+          clone[key] = value.length > 4
+            ? '*'.repeat(value.length - 4) + value.slice(-4)
+            : '****';
+        } else if (LoggingInterceptor.REDACT_KEYS.has(k)) {
+          clone[key] = '***REDACTED***';
+        } else if (LoggingInterceptor.PARTIAL_KEYS.has(k)) {
+          clone[key] = value.length <= 4
+            ? '****'
+            : value.slice(0, 2) + '*'.repeat(Math.max(1, value.length - 4)) + value.slice(-2);
+        } else {
+          clone[key] = value;
+        }
+      } else {
+        clone[key] = this.maskSensitiveData(value, depth + 1);
+      }
     }
-
-    // Mask OTP code
-    if (typeof clone['code'] === 'string') {
-      clone['code'] = '******';
-    }
-
-    // Mask refresh tokens
-    if (typeof clone['refreshToken'] === 'string') {
-      clone['refreshToken'] = '***REDACTED***';
-    }
-
     return clone;
   }
 }
