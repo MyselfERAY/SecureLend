@@ -715,7 +715,7 @@ docker compose logs -f postgres</code></pre>
             <tr><td>Port</td><td>5432</td></tr>
             <tr><td>DB</td><td>securelend</td></tr>
             <tr><td>User</td><td>securelend</td></tr>
-            <tr><td>Password</td><td>securelend_dev_2024</td></tr>
+            <tr><td>Password</td><td>&lt;DB_PASSWORD&gt;</td></tr>
           </table>
         </div>
         <div class="card">
@@ -725,12 +725,12 @@ docker compose logs -f postgres</code></pre>
 PORT=4000
 
 DATABASE_URL=postgresql://securelend:
-  securelend_dev_2024@localhost:5432/
+  &lt;DB_PASSWORD&gt;@localhost:5432/
   securelend
 
-TCKN_HASH_PEPPER=a3f8b2c1d4e5...
+TCKN_HASH_PEPPER=&lt;openssl rand -hex 32&gt;
 
-JWT_SECRET=dev_jwt_secret_change_...
+JWT_SECRET=&lt;openssl rand -hex 32&gt;
 JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=7d
 

@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString, Min, MaxLength } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Min, Max, MaxLength } from 'class-validator';
 
 export enum EmploymentStatusDto {
   EMPLOYED = 'EMPLOYED',
@@ -12,8 +12,9 @@ export class ApplyKmhDto {
   @IsEnum(EmploymentStatusDto, { message: 'Gecerli bir calisma durumu secin' })
   employmentStatus!: EmploymentStatusDto;
 
-  @IsNumber({}, { message: 'Aylik gelir sayi olmalidir' })
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Aylik gelir sayi olmalidir' })
   @Min(0, { message: 'Aylik gelir 0 veya uzerinde olmalidir' })
+  @Max(10_000_000, { message: 'Aylik gelir cok yuksek' })
   monthlyIncome!: number;
 
   @IsOptional()
@@ -25,8 +26,9 @@ export class ApplyKmhDto {
   @MaxLength(500)
   residentialAddress!: string;
 
-  @IsNumber({}, { message: 'Tahmini kira bedeli sayi olmalidir' })
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Tahmini kira bedeli sayi olmalidir' })
   @Min(1, { message: 'Tahmini kira bedeli en az 1 TL olmalidir' })
+  @Max(1_000_000, { message: 'Tahmini kira bedeli cok yuksek' })
   estimatedRent!: number;
 
   @IsOptional()

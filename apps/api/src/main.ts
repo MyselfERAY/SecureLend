@@ -23,12 +23,24 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = new Logger('Bootstrap');
 
+  // Behind Railway's reverse proxy — trust the first proxy hop so req.ip
+  // resolves to the real client IP (correct rate-limiting & audit logging)
+  app.set('trust proxy', 1);
+
   // Increase JSON body limit for base64 photo uploads (default 100KB is too small)
   app.useBodyParser('json', { limit: '10mb' });
   app.useBodyParser('urlencoded', { limit: '10mb', extended: true } as any);
 
   // Security headers & cookie parser
   app.use(helmet());
+  // Helmet doesn't set Permissions-Policy by default — lock down powerful features
+  app.use((_req, res: import('express').Response, next: () => void) => {
+    res.setHeader(
+      'Permissions-Policy',
+      'geolocation=(), camera=(), microphone=(), payment=(), usb=()',
+    );
+    next();
+  });
   app.use(cookieParser());
 
   // CORS — restricted to known origins

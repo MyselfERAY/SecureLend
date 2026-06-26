@@ -1,15 +1,16 @@
-import { IsString, IsNumber, IsUUID, IsOptional, Min, MaxLength } from 'class-validator';
+import { IsString, IsNumber, IsUUID, IsOptional, Min, Max, MaxLength } from 'class-validator';
+import { IsTurkishIban } from '../../../common/validators/iban.validator';
 
 export class TransferDto {
   @IsUUID()
   fromAccountId: string;
 
-  @IsString()
-  @MaxLength(26)
+  @IsTurkishIban()
   toIban: string;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
+  @Max(1_000_000)
   amount: number;
 
   @IsOptional()

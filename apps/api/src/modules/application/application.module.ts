@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { CreditScoringModule } from '../credit-scoring/credit-scoring.module';
 import { IdentityVerificationModule } from '../identity-verification/identity-verification.module';
+import { NotificationModule } from '../notification/notification.module';
 import { ApplicationController } from './application.controller';
 import { ApplicationService } from './application.service';
 import { ApplicationRepository } from './application.repository';
 import { PrismaApplicationRepository } from './prisma-application.repository';
 
 @Module({
-  imports: [CreditScoringModule, IdentityVerificationModule],
+  imports: [CreditScoringModule, IdentityVerificationModule, NotificationModule],
   controllers: [ApplicationController],
   providers: [
     ApplicationService,

@@ -840,11 +840,15 @@ export class MockBankService extends BankService {
 
   // ─── Account Queries ───────────────────────────────
 
-  async getBalance(accountId: string): Promise<AccountBalance> {
+  async getBalance(accountId: string, userId: string): Promise<AccountBalance> {
     const account = await this.prisma.bankAccount.findUnique({
       where: { id: accountId },
     });
     if (!account) throw new NotFoundException('Hesap bulunamadi');
+    // Ownership check — prevent IDOR: only the account owner may read its balance
+    if (account.userId !== userId) {
+      throw new ForbiddenException('Bu hesaba erisim yetkiniz yok');
+    }
 
     const balance = Number(account.balance);
     const creditLimit = account.creditLimit ? Number(account.creditLimit) : undefined;

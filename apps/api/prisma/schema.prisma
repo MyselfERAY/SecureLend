@@ -17,6 +17,8 @@ model Application {
   rejectionReason String?           @map("rejection_reason") @db.VarChar(500)
   kkbScore        Int?              @map("kkb_score")
   kpsVerified     Boolean           @default(false) @map("kps_verified")
+  phoneHash       String?           @map("phone_hash") @db.VarChar(128)
+  phoneMasked     String?           @map("phone_masked") @db.VarChar(20)
   ipAddress       String?           @map("ip_address") @db.VarChar(45)
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
@@ -25,6 +27,7 @@ model Application {
   contracts       Contract[]
 
   @@index([tcknHash], map: "idx_application_tckn_hash")
+  @@index([phoneHash], map: "idx_application_phone_hash")
   @@index([status], map: "idx_application_status")
   @@index([userId], map: "idx_application_user")
   @@index([createdAt], map: "idx_application_created_at")

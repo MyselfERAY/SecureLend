@@ -81,7 +81,7 @@ docker compose logs -f postgres
 | Port | 5432 |
 | Veritabani | securelend |
 | Kullanici | securelend |
-| Sifre | securelend_dev_2024 |
+| Sifre | <DB_PASSWORD> |
 
 ### 2.2 Veritabani (Docker olmadan)
 
@@ -89,7 +89,7 @@ docker compose logs -f postgres
 # PostgreSQL'de veritabani olustur
 createdb securelend
 createuser securelend
-psql -c "ALTER USER securelend WITH PASSWORD 'securelend_dev_2024';"
+psql -c "ALTER USER securelend WITH PASSWORD '<DB_PASSWORD>';"
 psql -c "GRANT ALL PRIVILEGES ON DATABASE securelend TO securelend;"
 ```
 
@@ -102,13 +102,13 @@ NODE_ENV=development
 PORT=4000
 
 # Database
-DATABASE_URL=postgresql://securelend:securelend_dev_2024@localhost:5432/securelend
+DATABASE_URL=postgresql://securelend:<DB_PASSWORD>@localhost:5432/securelend
 
 # Security
-TCKN_HASH_PEPPER=a3f8b2c1d4e5f6789012345678abcdef0123456789abcdef0123456789abcdef
+TCKN_HASH_PEPPER=<64-haneli-hex-uret: openssl rand -hex 32>
 
 # JWT
-JWT_SECRET=dev_jwt_secret_change_in_production_a3f8b2c1d4e5f6789012345678abcdef
+JWT_SECRET=<guclu-rastgele-secret-uret: openssl rand -hex 32>
 JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=7d
 

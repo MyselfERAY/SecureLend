@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsUUID, IsInt, Min, Max, MaxLength } from 'class-validator';
+import { IsNumber, IsUUID, IsInt, Min, Max } from 'class-validator';
+import { IsTurkishIban } from '../../../common/validators/iban.validator';
 
 export class CreatePaymentOrderDto {
   @IsUUID()
@@ -7,12 +8,12 @@ export class CreatePaymentOrderDto {
   @IsUUID()
   fromAccountId: string;
 
-  @IsString()
-  @MaxLength(26)
+  @IsTurkishIban()
   toIban: string;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
+  @Max(1_000_000)
   amount: number;
 
   @IsInt()
