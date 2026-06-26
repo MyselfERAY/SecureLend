@@ -4,6 +4,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
 function buildCorsOrigins(): (string | RegExp)[] {
@@ -34,7 +35,7 @@ async function bootstrap() {
   // Security headers & cookie parser
   app.use(helmet());
   // Helmet doesn't set Permissions-Policy by default — lock down powerful features
-  app.use((_req, res: import('express').Response, next: () => void) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader(
       'Permissions-Policy',
       'geolocation=(), camera=(), microphone=(), payment=(), usb=()',
