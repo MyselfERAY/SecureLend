@@ -11,6 +11,7 @@ export class ArticleService {
     return this.prisma.article.findMany({
       where: { status: ArticleStatus.PUBLISHED },
       orderBy: { publishedAt: 'desc' },
+      take: 100, // public, capsiz büyümeyi engelle
       select: {
         id: true,
         title: true,

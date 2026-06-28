@@ -13,6 +13,7 @@ import { ContractService } from './contract.service';
 import { ContractPdfService } from './contract-pdf.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { ActivateContractDto } from './dto/activate-contract.dto';
+import { UploadDocumentDto } from './dto/upload-document.dto';
 
 @ApiTags('Contract')
 @ApiBearerAuth('access-token')
@@ -85,10 +86,11 @@ export class ContractController {
 
   @Post(':id/upload-document')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { limit: 3, ttl: seconds(60) } })
   async uploadDocumentPhoto(
     @CurrentUser() user: { id: string },
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { photoBase64: string },
+    @Body() body: UploadDocumentDto,
   ): Promise<JSendSuccess<unknown>> {
     const result = await this.contractService.uploadDocumentPhoto(id, user.id, body.photoBase64);
     return { status: 'success', data: result };

@@ -194,6 +194,11 @@ export class MockBankService extends BankService {
     const dtiRounded = Math.round(dti * 10000) / 10000;
 
     // Approval details
+    // GÜVENLİK/UNDERWRITING UYARISI: approvedLimit doğrudan kullanıcının BEYAN
+    // ettiği dto.monthlyIncome'dan türüyor (sunucuda doğrulanmıyor). Üretime
+    // geçmeden ÖNCE gelir KKB/SGK/bordro gibi bağımsız kaynaktan doğrulanmalı;
+    // aksi halde kullanıcı yüksek gelir beyan ederek hak etmediği limiti (500k'a
+    // kadar) açabilir. Şu an mock aşamada — gerçek limit dağıtımından önce kapat.
     const scoreFactor = scoring.score / 1000;
     const approvedLimit = isApproved
       ? Math.round(Math.min(dto.monthlyIncome * 3, 500000) * scoreFactor)

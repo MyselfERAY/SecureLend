@@ -81,12 +81,33 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     } else {
       errMsg = exception instanceof Error ? exception.message : String(exception);
-      this.logger.error(`Unhandled exception: ${errMsg}`, exception instanceof Error ? exception.stack : '');
-      // Never expose internal error details to clients
-      body = {
-        status: 'error',
-        message: 'Bir hata olustu. Lutfen daha sonra tekrar deneyin.',
-      };
+      // body-parser vb. hatalar numeric .status/.statusCode taşır (örn. 413 PayloadTooLarge).
+      // Bunları 500'e düşürmeden doğru istemci-hatası koduyla döndür.
+      const raw = exception as { status?: number; statusCode?: number };
+      const rawStatus =
+        typeof raw?.status === 'number'
+          ? raw.status
+          : typeof raw?.statusCode === 'number'
+            ? raw.statusCode
+            : undefined;
+      if (rawStatus !== undefined && rawStatus >= 400 && rawStatus < 500) {
+        status = rawStatus;
+        body = {
+          status: 'error',
+          message:
+            rawStatus === HttpStatus.PAYLOAD_TOO_LARGE
+              ? 'Istek govdesi cok buyuk.'
+              : 'Istek islenemedi.',
+          code: rawStatus,
+        };
+      } else {
+        this.logger.error(`Unhandled exception: ${errMsg}`, exception instanceof Error ? exception.stack : '');
+        // Never expose internal error details to clients
+        body = {
+          status: 'error',
+          message: 'Bir hata olustu. Lutfen daha sonra tekrar deneyin.',
+        };
+      }
     }
 
     // Track API error in analytics (fire-and-forget)
