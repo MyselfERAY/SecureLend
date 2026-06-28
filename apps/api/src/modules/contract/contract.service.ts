@@ -750,6 +750,11 @@ export class ContractService {
     if (!photoBase64 || photoBase64.length === 0) {
       throw new ForbiddenException('Fotograf verisi bos');
     }
+    // Boyut kontrolünü decode'dan ÖNCE yap (5MB ikili ≈ 6.8MB base64) — büyük
+    // gövdeyi sunucuda decode etmeden reddet (memory/CPU DoS önlemi).
+    if (photoBase64.length > 7_000_000) {
+      throw new ForbiddenException('Fotograf cok buyuk (max 5MB)');
+    }
 
     // Decode and validate MIME type
     const buffer = Buffer.from(photoBase64, 'base64');

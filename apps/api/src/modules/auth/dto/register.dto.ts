@@ -9,6 +9,7 @@ import {
   Length,
   Matches,
   ValidateNested,
+  ArrayMaxSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ConsentType } from '@prisma/client';
@@ -42,6 +43,7 @@ export class RegisterDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20, { message: 'Cok fazla onay girdisi' })
   @ValidateNested({ each: true })
   @Type(() => ConsentItemDto)
   consents?: ConsentItemDto[];

@@ -22,7 +22,8 @@ export class ApplicationService implements OnModuleInit {
   private readonly DEDUP_WINDOW_DAYS = 30;
   /** Anonim başvuru sonucunun UUID ile okunabilir kalma süresi (saat) */
   private readonly RESULT_TTL_HOURS = 24;
-  private readonly OTP_PURPOSE = 'APPLICATION';
+  /** OtpCode.purpose VarChar(50) — "APP:" + 40 hex = 44 char sığar */
+  private readonly OTP_PURPOSE_PREFIX = 'APP';
 
   constructor(
     private readonly prisma: PrismaService,
@@ -90,7 +91,7 @@ export class ApplicationService implements OnModuleInit {
     // OTP bile gönderme, kredi sorgusuna hiç gitme.
     await this.assertNoRecentApplication(tcknHash, phoneHash);
 
-    await this.sendApplicationOtp(phone);
+    await this.sendApplicationOtp(phone, tcknHash);
     this.logger.log(`Application OTP sent for ${this.maskPhone(phone)}`);
 
     return {
@@ -118,8 +119,18 @@ export class ApplicationService implements OnModuleInit {
     const tcknHash = this.encryptionService.hash(tckn);
     const phoneHash = this.encryptionService.hash(phone);
 
-    // Doğrulanmış cep tel + TCKN eşleşmesi: OTP'yi doğrula (kodu tüket).
-    const otpId = await this.checkApplicationOtp(phone, code);
+    // Doğrulanmış cep tel + TCKN eşleşmesi: OTP telefon+TCKN'ye bağlı doğrulanır.
+    const otpId = await this.checkApplicationOtp(phone, code, tcknHash);
+
+    // Atomik tek-kullanım claim: OTP'yi kredi sorgusundan ÖNCE tüket. Eşzamanlı
+    // ikinci istek count=0 alır → çift kredi sorgusu/çift kayıt engellenir (race).
+    const claim = await this.prisma.otpCode.updateMany({
+      where: { id: otpId, verifiedAt: null },
+      data: { verifiedAt: new Date() },
+    });
+    if (claim.count === 0) {
+      throw new BadRequestException('Doğrulama kodu zaten kullanılmış');
+    }
 
     // Kredi sorgusundan önce tekrar dedup (OTP adımıyla arada oluşmuş olabilir).
     await this.assertNoRecentApplication(tcknHash, phoneHash);
@@ -147,11 +158,7 @@ export class ApplicationService implements OnModuleInit {
         );
       }
 
-      await tx.otpCode.update({
-        where: { id: otpId },
-        data: { verifiedAt: new Date() },
-      });
-
+      // OTP yukarıda atomik olarak claim edildi (verifiedAt set) — burada tekrar yok.
       const app = await tx.application.create({
         data: {
           tcknHash,
@@ -253,36 +260,59 @@ export class ApplicationService implements OnModuleInit {
     }
   }
 
-  private async sendApplicationOtp(phone: string): Promise<void> {
+  /**
+   * OTP'yi hem telefona hem TCKN'ye bağlar (purpose alanına gömülü, VarChar(50)
+   * sınırına sığacak şekilde tcknHash'in ilk 40 hex'i). Böylece bir telefon için
+   * alınan OTP, başka bir TCKN ile /create'te kullanılamaz.
+   */
+  private otpPurpose(tcknHash: string): string {
+    return `${this.OTP_PURPOSE_PREFIX}:${tcknHash.slice(0, 40)}`;
+  }
+
+  private async sendApplicationOtp(
+    phone: string,
+    tcknHash: string,
+  ): Promise<void> {
+    const purpose = this.otpPurpose(tcknHash);
+
+    // Hâlâ geçerli, doğrulanmamış bir OTP varsa: deneme sayacını SIFIRLAMA
+    // (re-issue ile lockout bypass'ı engelle), aynı kodu yeniden gönder.
+    const existing = await this.prisma.otpCode.findFirst({
+      where: { phone, purpose, verifiedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (existing) {
+      if (existing.attempts >= existing.maxAttempts) {
+        throw new BadRequestException(
+          'Çok fazla hatalı deneme yapıldı. Lütfen daha sonra tekrar deneyin.',
+        );
+      }
+      await this.smsService.sendOtp(phone, existing.code);
+      return;
+    }
+
     // TODO: SMS entegrasyonu tamamlanınca randomInt(100000, 999999) kullan
     const code = '111111';
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dk
-
-    // Aynı telefonun eski doğrulanmamış başvuru OTP'lerini iptal et
-    await this.prisma.otpCode.updateMany({
-      where: { phone, purpose: this.OTP_PURPOSE, verifiedAt: null },
-      data: { expiresAt: new Date(0) },
-    });
-
     await this.prisma.otpCode.create({
-      data: { phone, code, purpose: this.OTP_PURPOSE, expiresAt },
+      data: { phone, code, purpose, expiresAt },
     });
-
     await this.smsService.sendOtp(phone, code);
   }
 
   /**
-   * OTP kodunu doğrular (timing-safe, deneme limitli). Henüz "verified"
-   * işaretlemez — başarılı başvuru transaction'ında işaretlenir. OTP id döner.
+   * OTP kodunu doğrular (timing-safe, deneme limitli, telefon+TCKN'ye bağlı).
+   * Henüz "verified" işaretlemez — çağıran atomik claim ile tüketir. OTP id döner.
    */
   private async checkApplicationOtp(
     phone: string,
     code: string,
+    tcknHash: string,
   ): Promise<string> {
     const otp = await this.prisma.otpCode.findFirst({
       where: {
         phone,
-        purpose: this.OTP_PURPOSE,
+        purpose: this.otpPurpose(tcknHash),
         verifiedAt: null,
         expiresAt: { gt: new Date() },
       },
@@ -297,12 +327,14 @@ export class ApplicationService implements OnModuleInit {
     if (otp.attempts >= otp.maxAttempts) {
       throw new BadRequestException('Maksimum deneme sayısına ulaşıldı');
     }
-    if (
-      !timingSafeEqual(
-        Buffer.from(otp.code),
-        Buffer.from(code.padEnd(otp.code.length)),
-      )
-    ) {
+
+    // Length-safe sabit-zaman karşılaştırma (padEnd kaldırıldı — RangeError riski yok)
+    const expected = Buffer.from(otp.code);
+    const provided = Buffer.from(code);
+    const ok =
+      expected.length === provided.length &&
+      timingSafeEqual(expected, provided);
+    if (!ok) {
       await this.prisma.otpCode.update({
         where: { id: otp.id },
         data: { attempts: { increment: 1 } },

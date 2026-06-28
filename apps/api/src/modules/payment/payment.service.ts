@@ -1,7 +1,7 @@
 import {
   Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
-import { PaymentStatus, NotificationType } from '@prisma/client';
+import { PaymentStatus, NotificationType, ContractStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BankService } from '../bank/bank.service';
 import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
@@ -85,21 +85,33 @@ export class PaymentService {
       throw new ForbiddenException('Sadece kiraci odeme yapabilir');
     if (payment.status !== PaymentStatus.PENDING && payment.status !== PaymentStatus.OVERDUE)
       throw new BadRequestException('Bu odeme islenebilir durumda degil');
+    // Sonlanmış/aktif olmayan sözleşmede ödeme işleme (terk edilmiş schedule koruması)
+    if (payment.contract.status !== ContractStatus.ACTIVE)
+      throw new BadRequestException('Sozlesme aktif degil, odeme islenemez');
 
     const totalAmount = Number(payment.amount);
     const commissionAmount = Math.round(totalAmount * COMMISSION_RATE * 100) / 100;
     const landlordAmount = Math.round((totalAmount - commissionAmount) * 100) / 100;
+    const paidAt = new Date();
 
-    // DB transaction: mark payment + create commission record
+    // DB transaction: ATOMİK status geçişi (çift-çekim penceresini kapatır) +
+    // komisyon kaydı. updateMany WHERE status IN (PENDING,OVERDUE) → yalnızca tek
+    // eşzamanlı istek count=1 alır; diğeri count=0 ile burada durur (transfer'e gitmez).
     const result = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.paymentSchedule.update({
-        where: { id: paymentId },
+      const upd = await tx.paymentSchedule.updateMany({
+        where: {
+          id: paymentId,
+          status: { in: [PaymentStatus.PENDING, PaymentStatus.OVERDUE] },
+        },
         data: {
           status: PaymentStatus.COMPLETED,
-          paidAt: new Date(),
+          paidAt,
           paidAmount: payment.amount,
         },
       });
+      if (upd.count === 0) {
+        throw new BadRequestException('Bu odeme zaten islenmis veya islenebilir durumda degil');
+      }
 
       // Komisyon kaydı oluştur
       await tx.commission.create({
@@ -131,7 +143,7 @@ export class PaymentService {
         },
       });
 
-      return updated;
+      return { id: paymentId, status: PaymentStatus.COMPLETED, paidAt };
     });
 
     // Bank transfers (best-effort, payment already marked complete)

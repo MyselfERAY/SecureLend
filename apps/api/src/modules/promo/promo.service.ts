@@ -283,7 +283,16 @@ export class PromoService implements OnModuleInit {
 
   // ─── REFERRAL BONUS ───
 
+  /** Bir referrer'ın bu kampanyadan kazanabileceği azami ödül (çiftçilik sınırı) */
+  private readonly REFERRER_BONUS_CAP = 10;
+
   async applyReferralBonus(newUserId: string, referrerId: string) {
+    // Self-referral koruması (defansif — kayıt akışı zaten farklı kullanıcı üretir)
+    if (newUserId === referrerId) {
+      this.logger.warn('Self-referral attempt blocked');
+      return;
+    }
+
     const template = await this.prisma.promoTemplate.findFirst({
       where: { type: 'REFERRAL_BONUS', isActive: true },
     });
@@ -298,32 +307,57 @@ export class PromoService implements OnModuleInit {
       return;
     }
 
+    const expiresAt = new Date(
+      Date.now() + template.durationMonths * 30 * 24 * 60 * 60 * 1000,
+    );
+
     await this.prisma.$transaction(async (tx) => {
-      // Promo for new user (referred)
-      await tx.userPromo.create({
-        data: {
-          userId: newUserId,
-          templateId: template.id,
-          remainingMonths: template.durationMonths,
-          referredByUserId: referrerId,
-          expiresAt: new Date(Date.now() + template.durationMonths * 30 * 24 * 60 * 60 * 1000),
-        },
-      });
+      let granted = 0;
 
-      // Promo for referrer
-      await tx.userPromo.create({
-        data: {
-          userId: referrerId,
-          templateId: template.id,
-          remainingMonths: template.durationMonths,
-          expiresAt: new Date(Date.now() + template.durationMonths * 30 * 24 * 60 * 60 * 1000),
-        },
+      // Yeni kullanıcı bu promo'yu zaten almışsa tekrar verme (dedup)
+      const existingForNew = await tx.userPromo.findFirst({
+        where: { userId: newUserId, templateId: template.id },
+        select: { id: true },
       });
+      if (!existingForNew) {
+        await tx.userPromo.create({
+          data: {
+            userId: newUserId,
+            templateId: template.id,
+            remainingMonths: template.durationMonths,
+            referredByUserId: referrerId,
+            expiresAt,
+          },
+        });
+        granted++;
+      }
 
-      await tx.promoTemplate.update({
-        where: { id: template.id },
-        data: { currentUsage: { increment: 2 } },
+      // Referrer ödül çiftçiliğini sınırla: cap aşılmadıysa referrer'a ödül ver
+      const referrerCount = await tx.userPromo.count({
+        where: { userId: referrerId, templateId: template.id },
       });
+      if (referrerCount < this.REFERRER_BONUS_CAP) {
+        await tx.userPromo.create({
+          data: {
+            userId: referrerId,
+            templateId: template.id,
+            remainingMonths: template.durationMonths,
+            expiresAt,
+          },
+        });
+        granted++;
+      } else {
+        this.logger.warn(
+          `Referrer ${referrerId} referral cap (${this.REFERRER_BONUS_CAP}) reached — bonus skipped`,
+        );
+      }
+
+      if (granted > 0) {
+        await tx.promoTemplate.update({
+          where: { id: template.id },
+          data: { currentUsage: { increment: granted } },
+        });
+      }
     });
 
     this.logger.log(`Referral bonus applied: referrer=${referrerId}, referred=${newUserId}`);

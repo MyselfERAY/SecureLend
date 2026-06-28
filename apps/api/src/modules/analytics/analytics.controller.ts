@@ -7,7 +7,7 @@ import { Throttle, seconds } from '@nestjs/throttler';
 import { Request } from 'express';
 import {
   IsString, IsOptional, IsNumber, IsArray,
-  ValidateNested, MaxLength, Min, Max,
+  ValidateNested, MaxLength, Min, Max, ArrayMaxSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import type { JSendSuccess } from '@securelend/shared';
@@ -51,6 +51,7 @@ class TrackEventDto {
 
 class TrackBatchDto {
   @IsArray()
+  @ArrayMaxSize(50, { message: 'Tek seferde en fazla 50 olay' })
   @ValidateNested({ each: true })
   @Type(() => TrackEventDto)
   events!: TrackEventDto[];

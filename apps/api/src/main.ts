@@ -28,6 +28,26 @@ async function bootstrap() {
   // resolves to the real client IP (correct rate-limiting & audit logging)
   app.set('trust proxy', 1);
 
+  // Content-Length guard: gövde PARSE EDİLMEDEN önce çalışır. Yalnızca foto/KYC
+  // upload route'ları büyük gövdeye izin verir; diğer (ucuz) endpoint'lere 2MB
+  // üstü gövde 413 ile reddedilir → 10MB body spam'iyle memory/CPU tüketimi engellenir.
+  const MAX_DEFAULT_BODY = 2 * 1024 * 1024; // 2MB
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const len = Number(req.headers['content-length'] || 0);
+    const p = req.path || '';
+    const isUpload =
+      p.includes('/upload') || p.includes('/kyc') || p.includes('/document');
+    if (!isUpload && len > MAX_DEFAULT_BODY) {
+      res.status(413).json({
+        status: 'error',
+        message: 'Istek govdesi cok buyuk.',
+        code: 413,
+      });
+      return;
+    }
+    next();
+  });
+
   // Increase JSON body limit for base64 photo uploads (default 100KB is too small)
   app.useBodyParser('json', { limit: '10mb' });
   app.useBodyParser('urlencoded', { limit: '10mb', extended: true } as any);

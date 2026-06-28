@@ -72,12 +72,15 @@ export class InAppNotificationService {
   }
 
   async getUserNotifications(userId: string, limit = 50, offset = 0) {
+    // Capsiz limit DoS'unu engelle: 1..100 aralığına sıkıştır, NaN/negatif güvenli
+    const safeLimit = Math.min(Math.max(Number.isFinite(limit) ? limit : 50, 1), 100);
+    const safeOffset = Math.max(Number.isFinite(offset) ? offset : 0, 0);
     const [notifications, total, unreadCount] = await Promise.all([
       this.prisma.notification.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
+        take: safeLimit,
+        skip: safeOffset,
       }),
       this.prisma.notification.count({ where: { userId } }),
       this.prisma.notification.count({ where: { userId, isRead: false } }),
