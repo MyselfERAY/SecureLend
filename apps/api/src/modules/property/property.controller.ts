@@ -51,9 +51,10 @@ export class PropertyController {
 
   @Get(':id')
   async getById(
+    @CurrentUser() user: { id: string },
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<JSendSuccess<unknown>> {
-    const property = await this.propertyService.getById(id);
+    const property = await this.propertyService.getById(id, user?.id);
     return { status: 'success', data: property };
   }
 

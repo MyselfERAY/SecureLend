@@ -36,7 +36,18 @@ export class AuthService implements OnModuleInit {
     private readonly smsService: SmsService,
     private readonly promoService: PromoService,
   ) {
-    this.refreshSecret = this.configService.getOrThrow<string>('JWT_SECRET');
+    // Refresh token HMAC anahtarı: mümkünse ayrı JWT_REFRESH_SECRET kullan
+    // (access token imzasından bağımsız — birinin sızması diğerini bozmaz).
+    // Set edilmemişse JWT_SECRET'a düşer (geriye dönük uyumluluk) ve uyarı basar.
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    if (!refreshSecret) {
+      this.logger.warn(
+        'JWT_REFRESH_SECRET ayarlanmamış — refresh token HMAC anahtarı olarak ' +
+          'JWT_SECRET kullanılıyor. Production için ayrı bir secret tanımlayın.',
+      );
+    }
+    this.refreshSecret =
+      refreshSecret || this.configService.getOrThrow<string>('JWT_SECRET');
   }
 
   async onModuleInit() {
@@ -304,10 +315,16 @@ export class AuthService implements OnModuleInit {
     code: string,
     ipAddress: string,
     userAgent: string,
+    userId?: string,
   ): Promise<AuthTokens> {
+    // Sadece login/register akışının ürettiği OTP'leri tüket (application akışının
+    // TCKN'ye bağlı OTP'lerini burada kullanılamaz kıl) ve OTP'yi başlatan
+    // kullanıcıya bağla: token yalnızca OTP'nin sahibi olan hesap için kesilir.
     const otp = await this.prisma.otpCode.findFirst({
       where: {
         phone,
+        purpose: { in: ['LOGIN', 'REGISTER'] },
+        userId: userId ?? { not: null },
         verifiedAt: null,
         expiresAt: { gt: new Date() },
       },
@@ -406,9 +423,21 @@ export class AuthService implements OnModuleInit {
 
   // ─── Private helpers ─────────────────────────────
 
+  /**
+   * Kriptografik güvenli 6 haneli OTP üretir. Production'da her zaman rastgele.
+   * Sadece production DIŞINDA ve OTP_TEST_CODE set edilmişse sabit kodu döner
+   * (otomatik testler için). Prod'da sabit koda düşme yolu yoktur.
+   */
+  private generateOtpCode(): string {
+    const testCode = this.configService.get<string>('OTP_TEST_CODE');
+    if (testCode && process.env.NODE_ENV !== 'production') {
+      return testCode;
+    }
+    return randomInt(100000, 1000000).toString();
+  }
+
   private async sendOtp(phone: string, userId: string, purpose: string) {
-    // TODO: SMS entegrasyonu tamamlaninca randomInt(100000, 999999) kullan
-    const code = '111111';
+    const code = this.generateOtpCode();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
     // Eski doğrulanmamış OTP'leri iptal et (race condition önlemi)

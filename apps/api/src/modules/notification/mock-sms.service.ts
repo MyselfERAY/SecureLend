@@ -1,11 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { SmsService } from './sms.service';
 import { SmsResult } from './interfaces/sms-result.interface';
 
 @Injectable()
-export class MockSmsService extends SmsService {
+export class MockSmsService extends SmsService implements OnModuleInit {
   private readonly logger = new Logger(MockSmsService.name);
+
+  onModuleInit(): void {
+    if (process.env.NODE_ENV === 'production') {
+      this.logger.error(
+        '⚠️ GÜVENLİK: MockSmsService PRODUCTION ortamında aktif. Gerçek SMS ' +
+          'gönderilmiyor ve OTP kodları sunucu loglarına yazılıyor. Gerçek bir ' +
+          'SMS sağlayıcısı bağlanana kadar production trafiğine kapatın.',
+      );
+    }
+  }
 
   async sendOtp(phone: string, code: string): Promise<SmsResult> {
     await this.simulateLatency();

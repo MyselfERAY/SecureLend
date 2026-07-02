@@ -1,4 +1,4 @@
-import { IsString, Length, Matches } from 'class-validator';
+import { IsOptional, IsString, IsUUID, Length, Matches } from 'class-validator';
 
 export class VerifyOtpDto {
   @IsString()
@@ -9,4 +9,9 @@ export class VerifyOtpDto {
   @Length(6, 6, { message: 'OTP 6 haneli olmalidir' })
   @Matches(/^\d+$/, { message: 'OTP sadece rakam icermelidir' })
   code!: string;
+
+  // login/register adımının döndürdüğü userId — OTP'yi başlatan hesaba bağlar
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
 }
