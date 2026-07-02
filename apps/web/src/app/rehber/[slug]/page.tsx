@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import SiteNav from '../../../components/site-nav';
+import SafeHtml from '../../../components/safe-html';
 import { fixTurkish } from '../../../lib/fix-turkish';
 
 interface Article {
@@ -131,9 +132,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           {/* Content */}
           <div className="mt-6 animate-fade-up animation-delay-150 rounded-3xl border border-slate-200 bg-white p-8 shadow-card sm:p-10">
             {article.content.includes('<') ? (
-              <div
+              <SafeHtml
                 className="prose max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2 prose-p:text-base prose-p:leading-relaxed prose-p:text-slate-700 prose-strong:text-slate-900 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6 prose-li:text-base prose-li:text-slate-700 prose-li:leading-relaxed prose-table:w-full prose-table:border-collapse prose-th:border prose-th:border-slate-200 prose-th:bg-slate-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-sm prose-th:font-semibold prose-th:text-slate-700 prose-td:border prose-td:border-slate-200 prose-td:px-3 prose-td:py-2 prose-td:text-sm prose-td:text-slate-600 prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-                dangerouslySetInnerHTML={{ __html: article.content }}
+                html={article.content}
               />
             ) : (
               <div className="space-y-4">

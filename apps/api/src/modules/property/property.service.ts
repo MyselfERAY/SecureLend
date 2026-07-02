@@ -97,12 +97,20 @@ export class PropertyService {
     return properties.map((p) => this.formatProperty(p));
   }
 
-  async getById(id: string) {
+  async getById(id: string, userId?: string) {
     const property = await this.prisma.property.findUnique({
       where: { id },
       include: { owner: { select: { fullName: true } } },
     });
     if (!property) throw new NotFoundException('Mulk bulunamadi');
+
+    const isOwner = !!userId && property.ownerId === userId;
+    if (!isOwner) {
+      // Sahibi olmayanlar: yalnızca AKTİF ilanı görebilir (pasif/kaldırılmış
+      // ilanlar sayım/harvest'e kapalı) ve ev sahibinin adını göremez.
+      if (property.status !== 'ACTIVE') throw new NotFoundException('Mulk bulunamadi');
+      return this.formatProperty({ ...property, owner: undefined });
+    }
     return this.formatProperty(property);
   }
 

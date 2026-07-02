@@ -10,6 +10,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { UserRole } from '@prisma/client';
 import { PromoService } from './promo.service';
+import {
+  CreatePromoTemplateDto,
+  UpdatePromoTemplateDto,
+} from './dto/promo-template.dto';
+import { AssignPromoDto } from './dto/assign-promo.dto';
 
 @ApiTags('Promo')
 @ApiBearerAuth('access-token')
@@ -50,17 +55,7 @@ export class PromoController {
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ short: { limit: 2, ttl: seconds(10) } })
   async createTemplate(
-    @Body() body: {
-      name: string;
-      type: string;
-      description?: string;
-      discountPercent: number;
-      durationMonths: number;
-      isAutoApply?: boolean;
-      maxUsageCount?: number;
-      validFrom?: string;
-      validUntil?: string;
-    },
+    @Body() body: CreatePromoTemplateDto,
   ): Promise<JSendSuccess<unknown>> {
     const template = await this.promoService.createTemplate(body);
     return { status: 'success', data: template };
@@ -72,7 +67,7 @@ export class PromoController {
   @Throttle({ short: { limit: 3, ttl: seconds(10) } })
   async updateTemplate(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: Record<string, unknown>,
+    @Body() body: UpdatePromoTemplateDto,
   ): Promise<JSendSuccess<unknown>> {
     const template = await this.promoService.updateTemplate(id, body);
     return { status: 'success', data: template };
@@ -96,7 +91,7 @@ export class PromoController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ short: { limit: 2, ttl: seconds(10) } })
   async assignPromoToUser(
-    @Body() body: { templateId: string; userId: string; contractId?: string },
+    @Body() body: AssignPromoDto,
   ): Promise<JSendSuccess<unknown>> {
     const promo = await this.promoService.assignPromoToUser(
       body.templateId, body.userId, body.contractId,
