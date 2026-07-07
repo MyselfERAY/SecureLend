@@ -1,0 +1,37 @@
+name: CI API Build (diagnostic)
+
+# Railway Dockerfile adımlarını Linux'ta birebir çalıştırıp API build hatasını
+# görünür kılmak için geçici teşhis workflow'u. main'e alınmadan önce silinecek.
+
+on:
+  push:
+    branches:
+      - fix/security-audit-3-hardening
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@8.15.4 --activate
+
+      - name: Install deps
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @securelend/shared build
+
+      - name: Prisma generate
+        run: cd apps/api && npx prisma generate
+
+      - name: Build API (nest build)
+        run: pnpm --filter @securelend/api build
