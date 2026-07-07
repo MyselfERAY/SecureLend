@@ -12,6 +12,4 @@ export interface ApplicationResult {
   interestRate?: number;
   rejectionReason?: string;
   createdAt: string;
-  // Yalnızca oluşturma yanıtında döner; sonucu tekrar okumak (GET) için gerekir.
-  resultToken?: string;
 }

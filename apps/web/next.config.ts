@@ -42,11 +42,7 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // 'unsafe-eval' kaldırıldı (gadget yüzeyini daraltır). 'unsafe-inline'
-              // Next.js'in nonce'suz inline bootstrap script'leri için şimdilik gerekli;
-              // tam nonce tabanlı CSP'ye geçiş ayrı QA gerektiren takip işi (XSS kaynağı
-              // artık DOMPurify ile sanitize edildiği için birincil risk kapatıldı).
-              "script-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",

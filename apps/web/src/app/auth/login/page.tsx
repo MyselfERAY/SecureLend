@@ -28,8 +28,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await login(tckn, phone);
-      router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}&u=${encodeURIComponent(res.userId)}`);
+      await login(tckn, phone);
+      router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}`);
     } catch (err: any) {
       setError(err.message || 'Giriş hatası');
     } finally {

@@ -20,7 +20,6 @@ function VerifyOtpContent() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [phone, setPhone] = useState('');
-  const [userId, setUserId] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -30,7 +29,6 @@ function VerifyOtpContent() {
       return;
     }
     setPhone(p);
-    setUserId(searchParams.get('u') || '');
     inputRefs.current[0]?.focus();
   }, [router, searchParams]);
 
@@ -72,7 +70,7 @@ function VerifyOtpContent() {
     setLoading(true);
 
     try {
-      await verifyOtp(phone, otpCode, userId || undefined);
+      await verifyOtp(phone, otpCode);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'OTP doğrulama hatası');

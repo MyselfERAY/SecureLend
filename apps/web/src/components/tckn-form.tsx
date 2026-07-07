@@ -109,8 +109,7 @@ export function TcknForm() {
       });
       const result = await response.json();
       if (result.status === 'success') {
-        const t = result.data.resultToken ? `&t=${encodeURIComponent(result.data.resultToken)}` : '';
-        router.push(`/result?id=${result.data.applicationId}${t}`);
+        router.push(`/result?id=${result.data.applicationId}`);
       } else {
         setError(readError(result));
       }

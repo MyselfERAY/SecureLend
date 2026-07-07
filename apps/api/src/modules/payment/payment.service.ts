@@ -93,77 +93,16 @@ export class PaymentService {
     const commissionAmount = Math.round(totalAmount * COMMISSION_RATE * 100) / 100;
     const landlordAmount = Math.round((totalAmount - commissionAmount) * 100) / 100;
     const paidAt = new Date();
-    const prevStatus = payment.status; // PENDING veya OVERDUE — hata halinde geri dönüş
 
-    // ── FAZ 1: Schedule'ı ATOMİK olarak PROCESSING'e "claim" et ──────────────
-    // updateMany WHERE status IN (PENDING,OVERDUE) → yalnızca tek eşzamanlı istek
-    // count=1 alır (çift-çekim penceresi kapalı); diğeri burada durur, transfer'e gitmez.
-    const claim = await this.prisma.paymentSchedule.updateMany({
-      where: {
-        id: paymentId,
-        status: { in: [PaymentStatus.PENDING, PaymentStatus.OVERDUE] },
-      },
-      data: { status: PaymentStatus.PROCESSING },
-    });
-    if (claim.count === 0) {
-      throw new BadRequestException('Bu odeme zaten islenmis veya islenebilir durumda degil');
-    }
-
-    // ── FAZ 2: Fon transferi (schedule PROCESSING'te kilitli) ────────────────
-    // Transfer BAŞARILI olmadan ödeme COMPLETED sayılmaz. Herhangi bir hata →
-    // schedule eski durumuna geri alınır ve exception yükseltilir (COMPLETED YOK).
-    try {
-      const tenantAccount = await this.prisma.bankAccount.findFirst({
-        where: { userId, contractId: payment.contractId, status: 'ACTIVE' },
-      });
-      if (!tenantAccount) {
-        throw new BadRequestException(
-          'Odeme icin aktif KMH hesabi bulunamadi; odeme islenemedi',
-        );
-      }
-
-      const landlordAccount = await this.prisma.bankAccount.findFirst({
-        where: {
-          userId: payment.contract.landlordId,
-          contractId: payment.contractId,
-          status: 'ACTIVE',
-        },
-      });
-      const landlordIban = landlordAccount?.accountNumber;
-
-      if (landlordIban) {
-        // Ev sahibine net tutarı transfer et (paymentId ile idempotent — retry'de tekrar etmez)
-        await this.bankService.transfer(
-          tenantAccount.id,
-          landlordIban,
-          landlordAmount,
-          `Kira odemesi - ${payment.periodLabel}`,
-          paymentId,
-        );
-      }
-
-      // Platform komisyon hesabına komisyonu transfer et
-      await this.bankService.transfer(
-        tenantAccount.id,
-        PLATFORM_ACCOUNT_NUMBER,
-        commissionAmount,
-        `Platform komisyonu - ${payment.periodLabel}`,
-        paymentId,
-      );
-    } catch (err) {
-      // Settlement başarısız → COMPLETED YAPMA, schedule'ı eski durumuna geri al
-      await this.prisma.paymentSchedule.updateMany({
-        where: { id: paymentId, status: PaymentStatus.PROCESSING },
-        data: { status: prevStatus },
-      });
-      this.logger.warn(`Settlement failed for payment ${paymentId}, reverted to ${prevStatus}: ${err}`);
-      throw err;
-    }
-
-    // ── FAZ 3: Settlement başarılı → COMPLETED + komisyon + audit (atomik) ────
+    // DB transaction: ATOMİK status geçişi (çift-çekim penceresini kapatır) +
+    // komisyon kaydı. updateMany WHERE status IN (PENDING,OVERDUE) → yalnızca tek
+    // eşzamanlı istek count=1 alır; diğeri count=0 ile burada durur (transfer'e gitmez).
     const result = await this.prisma.$transaction(async (tx) => {
       const upd = await tx.paymentSchedule.updateMany({
-        where: { id: paymentId, status: PaymentStatus.PROCESSING },
+        where: {
+          id: paymentId,
+          status: { in: [PaymentStatus.PENDING, PaymentStatus.OVERDUE] },
+        },
         data: {
           status: PaymentStatus.COMPLETED,
           paidAt,
@@ -171,7 +110,7 @@ export class PaymentService {
         },
       });
       if (upd.count === 0) {
-        throw new BadRequestException('Odeme durumu beklenmedik sekilde degisti');
+        throw new BadRequestException('Bu odeme zaten islenmis veya islenebilir durumda degil');
       }
 
       // Komisyon kaydı oluştur
@@ -206,6 +145,48 @@ export class PaymentService {
 
       return { id: paymentId, status: PaymentStatus.COMPLETED, paidAt };
     });
+
+    // Bank transfers (best-effort, payment already marked complete)
+    try {
+      // Kiracının KMH hesabını bul
+      const tenantAccount = await this.prisma.bankAccount.findFirst({
+        where: { userId, contractId: payment.contractId, status: 'ACTIVE' },
+      });
+
+      if (tenantAccount) {
+        // Ev sahibinin hesabını bul (varsa)
+        const landlordAccount = await this.prisma.bankAccount.findFirst({
+          where: {
+            userId: payment.contract.landlordId,
+            contractId: payment.contractId,
+            status: 'ACTIVE',
+          },
+        });
+
+        const landlordIban = landlordAccount?.accountNumber;
+
+        if (landlordIban) {
+          // Ev sahibine net tutarı transfer et
+          await this.bankService.transfer(
+            tenantAccount.id,
+            landlordIban,
+            landlordAmount,
+            `Kira odemesi - ${payment.periodLabel}`,
+            paymentId,
+          );
+        }
+
+        // Platform komisyon hesabına komisyonu transfer et
+        await this.bankService.transfer(
+          tenantAccount.id,
+          PLATFORM_ACCOUNT_NUMBER,
+          commissionAmount,
+          `Platform komisyonu - ${payment.periodLabel}`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(`Bank transfer failed for payment ${paymentId}: ${err}`);
+    }
 
     this.logger.log(
       `Payment ${paymentId} processed: ${totalAmount} TL (commission: ${commissionAmount} TL, landlord: ${landlordAmount} TL)`,

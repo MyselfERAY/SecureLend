@@ -4,7 +4,6 @@ import {
   Get,
   Body,
   Param,
-  Query,
   Req,
   HttpCode,
   HttpStatus,
@@ -69,11 +68,8 @@ export class ApplicationController {
   @Get(':id')
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('t') token?: string,
   ): Promise<JSendSuccess<ApplicationResult>> {
-    const result = await this.applicationService.findApplication(id, token);
-    // resultToken'ı GET yanıtında geri sızdırma
-    delete (result as { resultToken?: string }).resultToken;
+    const result = await this.applicationService.findApplication(id);
     return {
       status: 'success',
       data: result,

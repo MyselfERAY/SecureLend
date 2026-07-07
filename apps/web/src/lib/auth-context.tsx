@@ -20,7 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (tckn: string, phone: string) => Promise<{ userId: string; phone: string }>;
   register: (tckn: string, phone: string, fullName: string, dateOfBirth: string, consents?: Array<{ type: string; version: string }>) => Promise<{ userId: string }>;
-  verifyOtp: (phone: string, code: string, userId?: string) => Promise<void>;
+  verifyOtp: (phone: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -101,10 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.data;
   };
 
-  const verifyOtp = async (phone: string, code: string, userId?: string) => {
+  const verifyOtp = async (phone: string, code: string) => {
     const res = await api<{ accessToken: string; expiresIn: number }>('/api/v1/auth/verify-otp', {
       method: 'POST',
-      body: { phone, code, ...(userId ? { userId } : {}) },
+      body: { phone, code },
     });
     if (res.status !== 'success' || !res.data) {
       throw new Error((res as any).data?.validation?.[0] || (res as any).data?.message || res.message || 'OTP hatası');

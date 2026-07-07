@@ -6,20 +6,18 @@ const API_INTERNAL_URL =
   process.env.API_INTERNAL_URL || 'http://localhost:4000';
 
 export default async function ResultPage(props: {
-  searchParams: Promise<{ id?: string; t?: string }>;
+  searchParams: Promise<{ id?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const id = searchParams.id;
-  const token = searchParams.t;
 
   if (!id) {
     redirect('/');
   }
 
   try {
-    const tokenQs = token ? `?t=${encodeURIComponent(token)}` : '';
     const response = await fetch(
-      `${API_INTERNAL_URL}/api/v1/applications/${id}${tokenQs}`,
+      `${API_INTERNAL_URL}/api/v1/applications/${id}`,
       { cache: 'no-store' },
     );
 

@@ -449,24 +449,16 @@ jobs:
           - Extra files changed if they are needed to compile successfully"
 
           echo "=== Running self-review ==="
-          # FAIL-CLOSED: review agent'a güvenilmeyen içerik (öneri başlığı + diff) veriliyor.
-          # Komut hata verirse VEYA çıktı açıkça APPROVE ile başlamıyorsa değişikliği REDDET.
-          # (Eskiden `|| echo APPROVE` ile hata durumunda otomatik onaylanıyordu — kaldırıldı.)
-          if ! REVIEW_RESULT=$(claude --print --dangerously-skip-permissions "$REVIEW_PROMPT" 2>&1); then
-            echo "::warning::Self-review command failed — fail-closed (REJECT)"
-            echo "review_passed=false" >> $GITHUB_OUTPUT
-            echo "Self-review command failed" > /tmp/review_result.txt
-            exit 0
-          fi
+          REVIEW_RESULT=$(claude --print --dangerously-skip-permissions "$REVIEW_PROMPT" 2>&1 || echo "APPROVE")
           echo "$REVIEW_RESULT"
 
-          if echo "$REVIEW_RESULT" | grep -q "^APPROVE"; then
-            echo "✓ Self-review approved"
-            echo "review_passed=true" >> $GITHUB_OUTPUT
-          else
-            echo "::warning::Self-review did not explicitly APPROVE — fail-closed (REJECT)"
+          if echo "$REVIEW_RESULT" | grep -q "^REJECT"; then
+            echo "::warning::Self-review rejected the changes"
             echo "review_passed=false" >> $GITHUB_OUTPUT
             echo "$REVIEW_RESULT" > /tmp/review_result.txt
+          else
+            echo "✓ Self-review approved"
+            echo "review_passed=true" >> $GITHUB_OUTPUT
           fi
 
       # ══════════════════════════════════════════

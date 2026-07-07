@@ -25,11 +25,11 @@ function RegisterForm() {
     setLoading(true);
 
     try {
-      const res = await register(tckn, phone, fullName, dateOfBirth, [
+      await register(tckn, phone, fullName, dateOfBirth, [
         { type: 'KVKK_AYDINLATMA', version: '2.0' },
         { type: 'KVKK_ACIK_RIZA', version: '2.0' },
       ]);
-      router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}&u=${encodeURIComponent(res.userId)}`);
+      router.push(`/auth/verify-otp?p=${encodeURIComponent(phone)}`);
     } catch (err: any) {
       setError(err.message || 'Kayıt hatası');
     } finally {

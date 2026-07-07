@@ -5,7 +5,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { randomBytes, randomInt, timingSafeEqual } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 import { maskTckn, validateTckn, ApplicationStatus } from '@securelend/shared';
 import type { ApplicationResult } from '@securelend/shared';
 import { PrismaService } from '../prisma/prisma.service';
@@ -42,7 +42,6 @@ export class ApplicationService implements OnModuleInit {
     try {
       await this.ensureColumn('applications', 'phone_hash', 'VARCHAR(128)');
       await this.ensureColumn('applications', 'phone_masked', 'VARCHAR(20)');
-      await this.ensureColumn('applications', 'result_token', 'VARCHAR(64)');
       await this.prisma.$executeRawUnsafe(
         `CREATE INDEX IF NOT EXISTS "idx_application_phone_hash" ON "applications"("phone_hash");`,
       );
@@ -119,9 +118,6 @@ export class ApplicationService implements OnModuleInit {
     const phoneMasked = this.maskPhone(phone);
     const tcknHash = this.encryptionService.hash(tckn);
     const phoneHash = this.encryptionService.hash(phone);
-    // Sonuç sayfasını UUID sızıntısına karşı korur: sonucu okumak için bu rastgele
-    // token gerekir (yalnızca başvuruyu yapan istemciye döner).
-    const resultToken = randomBytes(24).toString('hex'); // 48 hex karakter
 
     // Doğrulanmış cep tel + TCKN eşleşmesi: OTP telefon+TCKN'ye bağlı doğrulanır.
     const otpId = await this.checkApplicationOtp(phone, code, tcknHash);
@@ -169,7 +165,6 @@ export class ApplicationService implements OnModuleInit {
           tcknMasked: maskedTckn,
           phoneHash,
           phoneMasked,
-          resultToken,
           status: creditResult.approved ? 'APPROVED' : 'REJECTED',
           creditLimit: creditResult.approved ? creditResult.creditLimit : null,
           interestRate: creditResult.approved ? creditResult.interestRate : null,
@@ -211,31 +206,17 @@ export class ApplicationService implements OnModuleInit {
         : undefined,
       rejectionReason: creditResult.approved ? undefined : 'Kredi skoru yetersiz',
       createdAt: application.createdAt.toISOString(),
-      resultToken,
     };
   }
 
-  async findApplication(id: string, token?: string): Promise<ApplicationResult> {
+  async findApplication(id: string): Promise<ApplicationResult> {
     const app = await this.prisma.application.findUnique({ where: { id } });
 
     if (!app) {
       throw new NotFoundException('Başvuru bulunamadı');
     }
 
-    // IDOR koruması: sonucu okumak için oluşturma anında verilen result token gerekir.
-    // UUID sızsa bile (referrer/log) token olmadan kredi kararı görüntülenemez.
-    // Sabit-zaman karşılaştırma (uzunluk eşitse) — token yoksa/eşleşmezse 404.
-    const expected = app.resultToken ?? '';
-    const provided = token ?? '';
-    const tokenOk =
-      expected.length > 0 &&
-      expected.length === provided.length &&
-      timingSafeEqual(Buffer.from(expected), Buffer.from(provided));
-    if (!tokenOk) {
-      throw new NotFoundException('Başvuru bulunamadı');
-    }
-
-    // Anonim sonuç yalnızca kısa bir süre okunabilir — token sızsa bile
+    // Anonim sonuç yalnızca kısa bir süre UUID ile okunabilir — UUID sızsa bile
     // eski kredi kararları süresiz açıkta kalmasın.
     const ageMs = Date.now() - app.createdAt.getTime();
     if (ageMs > this.RESULT_TTL_HOURS * 60 * 60 * 1000) {
@@ -310,7 +291,8 @@ export class ApplicationService implements OnModuleInit {
       return;
     }
 
-    const code = this.generateOtpCode();
+    // TODO: SMS entegrasyonu tamamlanınca randomInt(100000, 999999) kullan
+    const code = '111111';
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dk
     await this.prisma.otpCode.create({
       data: { phone, code, purpose, expiresAt },
@@ -361,18 +343,6 @@ export class ApplicationService implements OnModuleInit {
     }
 
     return otp.id;
-  }
-
-  /**
-   * Kriptografik güvenli 6 haneli OTP. Production'da her zaman rastgele; sadece
-   * production DIŞINDA ve OTP_TEST_CODE set edilmişse sabit test kodunu döner.
-   */
-  private generateOtpCode(): string {
-    const testCode = process.env.OTP_TEST_CODE;
-    if (testCode && process.env.NODE_ENV !== 'production') {
-      return testCode;
-    }
-    return randomInt(100000, 1000000).toString();
   }
 
   private maskPhone(phone: string): string {

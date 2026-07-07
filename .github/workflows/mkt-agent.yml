@@ -46,10 +46,8 @@ jobs:
         id: mode
         env:
           SERVICE_API_KEY: ${{ secrets.SERVICE_API_KEY }}
-          # Kullanıcı girdisini run: içine gömme — shell injection önlemi (env üzerinden).
-          INPUT_RESEARCH_TOPIC: ${{ github.event.inputs.research_topic }}
         run: |
-          MANUAL_TOPIC="$INPUT_RESEARCH_TOPIC"
+          MANUAL_TOPIC="${{ github.event.inputs.research_topic }}"
 
           if [ -n "$MANUAL_TOPIC" ]; then
             echo "mode=research" >> $GITHUB_OUTPUT

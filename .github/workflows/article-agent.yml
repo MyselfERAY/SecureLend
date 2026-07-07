@@ -77,13 +77,9 @@ jobs:
         id: generate
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Kullanıcı girdisini doğrudan run: içine gömme — shell injection önlemi.
-          # env üzerinden geçir ve tırnaklı referansla ($MANUAL_TOPIC).
-          INPUT_TOPIC: ${{ github.event.inputs.topic }}
-          INPUT_AUDIENCE: ${{ github.event.inputs.audience }}
         run: |
-          MANUAL_TOPIC="$INPUT_TOPIC"
-          AUDIENCE="$INPUT_AUDIENCE"
+          MANUAL_TOPIC="${{ github.event.inputs.topic }}"
+          AUDIENCE="${{ github.event.inputs.audience }}"
           if [ -z "$AUDIENCE" ]; then AUDIENCE="BOTH"; fi
           EXISTING=$(cat /tmp/existing_articles.txt)
           CATEGORY_DIST=$(cat /tmp/category_dist.txt)

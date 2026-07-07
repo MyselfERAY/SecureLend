@@ -13,12 +13,10 @@ export class CreateContractDto {
   @IsTurkishIban({ message: 'Gecerli bir Turk IBAN giriniz (TR ile baslamali, 26 karakter, mod97 kontrolu)' })
   landlordIban!: string;
 
-  // Üst sınır: aşırı/istismar amaçlı tutarları engeller (ApplyKmhDto ile tutarlı).
-  // Decimal(12,2) kolonuna karşı gerçekçi bir tavan; ödeme planı + komisyon buradan türer.
-  @IsNumber() @IsPositive() @Max(1_000_000)
+  @IsNumber() @IsPositive()
   monthlyRent!: number;
 
-  @IsOptional() @IsNumber() @IsPositive() @Max(5_000_000)
+  @IsOptional() @IsNumber() @IsPositive()
   depositAmount?: number;
 
   @IsString() @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Tarih YYYY-MM-DD formatinda olmali' })
