@@ -1,3 +1,4 @@
+// redeploy: güvenlik sertleştirme (3. tur) — Railway build retry
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe, Logger } from '@nestjs/common';
