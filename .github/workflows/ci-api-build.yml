@@ -1,12 +1,14 @@
-name: CI API Build (diagnostic)
+name: API Build Check
 
-# Railway Dockerfile adımlarını Linux'ta birebir çalıştırıp API build hatasını
-# görünür kılmak için geçici teşhis workflow'u. main'e alınmadan önce silinecek.
+# apps/api (NestJS) derlemesini Railway Dockerfile adımlarıyla birebir çalıştırır.
+# Amaç: TypeScript/Prisma derleme hatalarını Railway deploy'una ULAŞMADAN önce
+# yakalamak (Vercel yalnızca web'i derler, API build'i aksi halde CI'da doğrulanmaz).
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches:
-      - fix/security-audit-3-hardening
+    branches: [main]
   workflow_dispatch:
 
 jobs:
