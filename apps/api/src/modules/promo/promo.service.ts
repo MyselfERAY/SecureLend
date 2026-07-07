@@ -1,5 +1,9 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  CreatePromoTemplateDto,
+  UpdatePromoTemplateDto,
+} from './dto/promo-template.dto';
 
 @Injectable()
 export class PromoService implements OnModuleInit {
@@ -122,21 +126,11 @@ export class PromoService implements OnModuleInit {
     });
   }
 
-  async createTemplate(data: {
-    name: string;
-    type: string;
-    description?: string;
-    discountPercent: number;
-    durationMonths: number;
-    isAutoApply?: boolean;
-    maxUsageCount?: number;
-    validFrom?: string;
-    validUntil?: string;
-  }) {
+  async createTemplate(data: CreatePromoTemplateDto) {
     return this.prisma.promoTemplate.create({
       data: {
         name: data.name,
-        type: data.type as any,
+        type: data.type,
         description: data.description,
         discountPercent: data.discountPercent,
         durationMonths: data.durationMonths,
@@ -148,10 +142,25 @@ export class PromoService implements OnModuleInit {
     });
   }
 
-  async updateTemplate(id: string, data: Record<string, unknown>) {
+  async updateTemplate(id: string, data: UpdatePromoTemplateDto) {
     const template = await this.prisma.promoTemplate.findUnique({ where: { id } });
     if (!template) throw new NotFoundException('Promosyon sablonu bulunamadi');
-    return this.prisma.promoTemplate.update({ where: { id }, data: data as any });
+    // Yalnızca izin verilen alanları eşle — currentUsage/maxUsageCount muhasebesi
+    // istemciden set edilemez (mass-assignment engeli).
+    return this.prisma.promoTemplate.update({
+      where: { id },
+      data: {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.discountPercent !== undefined ? { discountPercent: data.discountPercent } : {}),
+        ...(data.durationMonths !== undefined ? { durationMonths: data.durationMonths } : {}),
+        ...(data.isAutoApply !== undefined ? { isAutoApply: data.isAutoApply } : {}),
+        ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+        ...(data.maxUsageCount !== undefined ? { maxUsageCount: data.maxUsageCount } : {}),
+        ...(data.validFrom !== undefined ? { validFrom: new Date(data.validFrom) } : {}),
+        ...(data.validUntil !== undefined ? { validUntil: new Date(data.validUntil) } : {}),
+      },
+    });
   }
 
   async toggleTemplate(id: string) {
@@ -210,13 +219,16 @@ export class PromoService implements OnModuleInit {
       // Check usage limit
       if (template.maxUsageCount && template.currentUsage >= template.maxUsageCount) continue;
 
-      // Check if user already has this promo
-      const existing = await this.prisma.userPromo.findFirst({
-        where: { userId, templateId: template.id },
-      });
-      if (existing) continue;
+      // Check-then-insert'i tek transaction + advisory lock içinde atomik yap
+      // (eşzamanlı çift kayıtta aynı promo'nun iki kez verilmesini engeller).
+      const didApply = await this.prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'promo:' + template.id + ':' + userId}))`;
 
-      await this.prisma.$transaction(async (tx) => {
+        const existing = await tx.userPromo.findFirst({
+          where: { userId, templateId: template.id },
+        });
+        if (existing) return false;
+
         await tx.userPromo.create({
           data: {
             userId,
@@ -229,7 +241,10 @@ export class PromoService implements OnModuleInit {
           where: { id: template.id },
           data: { currentUsage: { increment: 1 } },
         });
+        return true;
       });
+
+      if (!didApply) continue;
 
       applied.push(template.name);
       this.logger.log(`Auto-applied promo "${template.name}" to user ${userId}`);
@@ -255,12 +270,15 @@ export class PromoService implements OnModuleInit {
     if (!template) throw new NotFoundException('Promosyon sablonu bulunamadi');
     if (!template.isActive) throw new BadRequestException('Bu promosyon aktif degil');
 
-    const existing = await this.prisma.userPromo.findFirst({
-      where: { userId, templateId, status: 'ACTIVE' },
-    });
-    if (existing) throw new BadRequestException('Kullanicinin zaten bu promosyonu var');
-
     const promo = await this.prisma.$transaction(async (tx) => {
+      // Check-then-insert'i advisory lock ile serileştir (eşzamanlı çift atamayı engelle)
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'promo:' + templateId + ':' + userId}))`;
+
+      const existing = await tx.userPromo.findFirst({
+        where: { userId, templateId, status: 'ACTIVE' },
+      });
+      if (existing) throw new BadRequestException('Kullanicinin zaten bu promosyonu var');
+
       const p = await tx.userPromo.create({
         data: {
           userId,
@@ -312,6 +330,11 @@ export class PromoService implements OnModuleInit {
     );
 
     await this.prisma.$transaction(async (tx) => {
+      // Eşzamanlı kayıtların referrer cap'ini aşmasını engelle: aynı referrer+template
+      // için tüm bonus verme işlemlerini transaction-level advisory lock ile serileştir.
+      // Böylece count→create arasındaki yarış penceresi kapanır (commit'e kadar tutulur).
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'promo:' + template.id + ':' + referrerId}))`;
+
       let granted = 0;
 
       // Yeni kullanıcı bu promo'yu zaten almışsa tekrar verme (dedup)

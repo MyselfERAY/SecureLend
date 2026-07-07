@@ -1,0 +1,39 @@
+name: API Build Check
+
+# apps/api (NestJS) derlemesini Railway Dockerfile adımlarıyla birebir çalıştırır.
+# Amaç: TypeScript/Prisma derleme hatalarını Railway deploy'una ULAŞMADAN önce
+# yakalamak (Vercel yalnızca web'i derler, API build'i aksi halde CI'da doğrulanmaz).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@8.15.4 --activate
+
+      - name: Install deps
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @securelend/shared build
+
+      - name: Prisma generate
+        run: cd apps/api && npx prisma generate
+
+      - name: Build API (nest build)
+        run: pnpm --filter @securelend/api build

@@ -36,6 +36,15 @@ export class ContractService {
     if (property.ownerId !== landlordId)
       throw new ForbiddenException('Bu mulk size ait degil');
 
+    // Sözleşme kirası, ilanda belirtilen kiradan makul ölçüde sapabilir ama aşırı
+    // (istismar amaçlı) tutarları engelle: ilan kirasının %50 üzerini reddet.
+    const listedRent = property.monthlyRent ? Number(property.monthlyRent) : null;
+    if (listedRent && listedRent > 0 && dto.monthlyRent > listedRent * 1.5) {
+      throw new BadRequestException(
+        `Sözleşme kirası (${dto.monthlyRent} TL) ilan kirasının (${listedRent} TL) çok üzerinde`,
+      );
+    }
+
     // Validate tenant exists
     const tenant = await this.prisma.user.findUnique({
       where: { id: dto.tenantId },

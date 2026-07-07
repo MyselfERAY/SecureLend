@@ -19,6 +19,7 @@ model Application {
   kpsVerified     Boolean           @default(false) @map("kps_verified")
   phoneHash       String?           @map("phone_hash") @db.VarChar(128)
   phoneMasked     String?           @map("phone_masked") @db.VarChar(20)
+  resultToken     String?           @map("result_token") @db.VarChar(64)
   ipAddress       String?           @map("ip_address") @db.VarChar(45)
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")

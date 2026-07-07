@@ -82,7 +82,7 @@ export class AuthController {
   ) {
     const ipAddress = (req.headers['x-forwarded-for'] as string) || req.ip || 'unknown';
     const userAgent = (req.headers['user-agent'] as string) || 'unknown';
-    const tokens = await this.authService.verifyOtp(dto.phone, dto.code, ipAddress, userAgent);
+    const tokens = await this.authService.verifyOtp(dto.phone, dto.code, ipAddress, userAgent, dto.userId);
     res.cookie(RT_COOKIE, tokens.refreshToken, rtCookieOpts(tokens.refreshExpiresInMs));
     return { status: 'success', data: { accessToken: tokens.accessToken, expiresIn: tokens.expiresIn } };
   }

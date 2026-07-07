@@ -3,7 +3,7 @@ import {
   BadRequestException, ForbiddenException,
 } from '@nestjs/common';
 import { BankAccountType, BankAccountStatus, KmhApplicationStatus } from '@prisma/client';
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { InAppNotificationService } from '../in-app-notification/in-app-notification.service';
@@ -212,7 +212,7 @@ export class MockBankService extends BankService {
       ? undefined
       : `Kredi skoru yetersiz (${scoring.score}/1000). Minimum 600 puan gereklidir.`;
 
-    const bankReferenceNo = `KMH-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const bankReferenceNo = `KMH-${Date.now()}-${randomInt(0, 1_000_000)}`;
 
     const application = await this.prisma.$transaction(async (tx) => {
       const app = await tx.kmhApplication.create({
@@ -792,6 +792,14 @@ export class MockBankService extends BankService {
       throw new BadRequestException('Kiracinin aktif KMH hesabi bulunamadi');
     }
 
+    // toIban NOT NULL — landlordIban yoksa temiz bir hata ver (non-null assertion yerine).
+    // Local const'a al: closure/transaction içinde property daraltması korunmaz,
+    // bu yüzden narrowed string'i local değişkende sabitle (TS2322 önlemi).
+    if (!contract.landlordIban) {
+      throw new BadRequestException('Sozlesmede ev sahibi IBAN bilgisi eksik');
+    }
+    const landlordIban = contract.landlordIban;
+
     // Link account to contract
     await this.prisma.bankAccount.update({
       where: { id: kmhAccount.id },
@@ -806,7 +814,7 @@ export class MockBankService extends BankService {
         data: {
           contractId,
           fromAccountId: kmhAccount.id,
-          toIban: contract.landlordIban!,
+          toIban: landlordIban,
           amount: Number(contract.monthlyRent),
           dayOfMonth: contract.paymentDayOfMonth,
           nextExecutionDate: nextExecDate,
@@ -902,6 +910,24 @@ export class MockBankService extends BankService {
   ): Promise<TransferResult> {
     if (amount <= 0) throw new BadRequestException('Tutar pozitif olmalidir');
 
+    // İdempotency: aynı schedule + aynı kaynak hesap + aynı tutar için tamamlanmış
+    // bir transfer zaten varsa tekrar çalıştırma (settlement retry'de çift ödeme önlemi).
+    // Bir schedule içinde ev sahibi (net) ve komisyon tutarları farklı olduğu için
+    // iki bacak birbirine karışmaz.
+    if (paymentScheduleId) {
+      const existingTxn = await this.prisma.bankTransaction.findFirst({
+        where: { paymentScheduleId, fromAccountId, amount, status: 'COMPLETED' },
+      });
+      if (existingTxn) {
+        return {
+          transactionId: existingTxn.id,
+          referenceNo: existingTxn.referenceNo,
+          status: existingTxn.status,
+          processedAt: (existingTxn.processedAt ?? existingTxn.createdAt).toISOString(),
+        };
+      }
+    }
+
     const fromAccount = await this.prisma.bankAccount.findUnique({ where: { id: fromAccountId } });
     if (!fromAccount) throw new NotFoundException('Kaynak hesap bulunamadi');
     if (fromAccount.status !== BankAccountStatus.ACTIVE)
@@ -956,7 +982,7 @@ export class MockBankService extends BankService {
 
   private generateMockIban(): string {
     const bankCode = '00061';
-    const accountNo = Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join('');
+    const accountNo = Array.from({ length: 16 }, () => randomInt(0, 10)).join('');
     return `TR00${bankCode}0${accountNo}`;
   }
 
