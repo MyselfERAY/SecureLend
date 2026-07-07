@@ -793,9 +793,12 @@ export class MockBankService extends BankService {
     }
 
     // toIban NOT NULL — landlordIban yoksa temiz bir hata ver (non-null assertion yerine).
+    // Local const'a al: closure/transaction içinde property daraltması korunmaz,
+    // bu yüzden narrowed string'i local değişkende sabitle (TS2322 önlemi).
     if (!contract.landlordIban) {
       throw new BadRequestException('Sozlesmede ev sahibi IBAN bilgisi eksik');
     }
+    const landlordIban = contract.landlordIban;
 
     // Link account to contract
     await this.prisma.bankAccount.update({
@@ -811,7 +814,7 @@ export class MockBankService extends BankService {
         data: {
           contractId,
           fromAccountId: kmhAccount.id,
-          toIban: contract.landlordIban,
+          toIban: landlordIban,
           amount: Number(contract.monthlyRent),
           dayOfMonth: contract.paymentDayOfMonth,
           nextExecutionDate: nextExecDate,
